@@ -12,8 +12,14 @@
   <label>Número de luminaria:</label><br>
   <input type="number" id="no_luminaria" required><br><br>
 
-  <label>Descripción:</label><br>
-  <textarea id="descripcion"></textarea><br><br>
+  <label>Tipo de falla:</label><br>
+<select id="descripcion" required>
+  <option value="">Seleccione una opción</option>
+  <option value="NO_PRENDE">No prende</option>
+  <option value="BAJA_ILUMINACION">No alumbra lo suficiente</option>
+  <option value="SE_APAGA">Se apaga después de un rato</option>
+  <option value="PARPADEA">Parpadea</option>
+</select><br><br>
 
   <button type="submit">Enviar reporte</button>
 </form>
@@ -48,3 +54,4 @@
 
 </body>
 </html>
+
