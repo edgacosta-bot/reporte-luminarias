@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Reporte de Luminaria</title>
+</head>
+<body>
+
+<h2>Reporte de luminaria</h2>
+
+<form id="formReporte">
+  <label>Número de luminaria:</label><br>
+  <input type="number" id="no_luminaria" required><br><br>
+
+  <label>Descripción:</label><br>
+  <textarea id="descripcion"></textarea><br><br>
+
+  <button type="submit">Enviar reporte</button>
+</form>
+
+<p id="mensaje"></p>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const supabaseUrl = 'https://prjxmfhahnzosdwljode.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
+  const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+  document.getElementById('formReporte').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const no_luminaria = document.getElementById('no_luminaria').value;
+    const descripcion = document.getElementById('descripcion').value;
+
+    const { error } = await supabaseClient
+      .from('reportes_vecinales')
+      .insert([{ no_luminaria, descripcion }]);
+
+    if (error) {
+      document.getElementById('mensaje').innerText = 'Error al enviar reporte';
+      console.error(error);
+    } else {
+      document.getElementById('mensaje').innerText = 'Reporte registrado correctamente';
+      document.getElementById('formReporte').reset();
+    }
+  });
+</script>
+
+</body>
+</html>
