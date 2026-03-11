@@ -63,6 +63,7 @@ rows="3"
 class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
 placeholder="Describe brevemente el problema si lo deseas">
 </textarea>
+
 </div>
 
 <button
@@ -105,7 +106,7 @@ mensaje.className = "text-center text-gray-600";
 const { data: luminaria, error: errorConsulta } = await supabaseClient
 .from('control de luminarias')
 .select('id')
-.eq('"No. Luminaria"', no_luminaria)
+.filter('"No. Luminaria"', 'eq', no_luminaria)
 .single();
 
 /* si no existe */
@@ -153,6 +154,7 @@ document.getElementById('formReporte').reset();
 
 </body>
 </html>
+
 
 
 
