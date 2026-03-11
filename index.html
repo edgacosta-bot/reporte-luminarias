@@ -94,7 +94,9 @@ e.preventDefault();
 
 const mensaje = document.getElementById('mensaje');
 
-const no_luminaria = parseInt(document.getElementById('no_luminaria').value);
+try {
+
+const no_luminaria = Number(document.getElementById('no_luminaria').value);
 const descripcion = document.getElementById('descripcion').value;
 const comentario = document.getElementById('comentario').value;
 
@@ -103,49 +105,52 @@ mensaje.className = "text-center text-gray-600";
 
 /* buscar luminaria */
 
-const { data, error } = await supabaseClient
+const { data: luminarias, error: errorConsulta } = await supabaseClient
 .from('luminarias_lookup')
 .select('id')
 .eq('no_luminaria', no_luminaria);
 
-const luminaria = data && data.length > 0 ? data[0] : null;
+if (errorConsulta) {
+throw errorConsulta;
+}
 
-/* si no existe */
-
-if (!luminaria) {
+if (!luminarias || luminarias.length === 0) {
 
 mensaje.innerText = "El número de luminaria no existe. Verifique el número.";
 mensaje.className = "text-center text-red-600";
-
 return;
 
 }
 
+const luminaria_id = luminarias[0].id;
+
 /* insertar reporte */
 
-const { error } = await supabaseClient
+const { error: errorInsert } = await supabaseClient
 .from('reportes_vecinales')
 .insert([{
-
-luminaria_id: luminaria.id,
+luminaria_id: luminaria_id,
 no_luminaria: no_luminaria,
 descripcion: descripcion,
 estatus: 'NUEVO',
 observaciones: comentario
-
 }]);
 
-if (error) {
-
-mensaje.innerText = "Error al enviar el reporte. Intente nuevamente.";
-mensaje.className = "text-center text-red-600";
-
-} else {
+if (errorInsert) {
+throw errorInsert;
+}
 
 mensaje.innerText = "Gracias por tu reporte. Será registrado y atendido a la brevedad.";
 mensaje.className = "text-center text-green-600";
 
 document.getElementById('formReporte').reset();
+
+} catch (error) {
+
+mensaje.innerText = "Error: " + error.message;
+mensaje.className = "text-center text-red-600";
+
+console.error(error);
 
 }
 
