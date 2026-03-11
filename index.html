@@ -108,7 +108,7 @@ const mensaje = document.getElementById('mensaje');
 
 if (error) {
 
-mensaje.innerText = 'Error al enviar el reporte. Intente nuevamente.';
+mensaje.innerText = error.message;
 mensaje.className = 'text-center text-red-600';
 
 } else {
@@ -126,4 +126,5 @@ document.getElementById('formReporte').reset();
 
 </body>
 </html>
+
 
