@@ -26,9 +26,11 @@ Número de luminaria
 type="number"
 id="no_luminaria"
 required
-  <div id="info_luminaria" class="text-sm text-gray-600 mt-2"></div>
 class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
 >
+
+<div id="info_luminaria" class="text-sm mt-2"></div>
+
 </div>
 
 <div>
@@ -89,6 +91,48 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+/* mostrar calle y privada automáticamente */
+
+document.getElementById('no_luminaria').addEventListener('input', async () => {
+
+const numero = Number(document.getElementById('no_luminaria').value);
+
+const info = document.getElementById('info_luminaria');
+
+if (!numero) {
+info.innerHTML = "";
+return;
+}
+
+const { data, error } = await supabaseClient
+.from('luminarias_lookup')
+.select('calle, privada')
+.eq('no_luminaria', numero);
+
+if (error) {
+console.error(error);
+return;
+}
+
+if (data && data.length > 0) {
+
+info.innerHTML =
+"Calle: <b>" + data[0].calle +
+"</b> | Privada: <b>" + data[0].privada + "</b>";
+
+info.className = "text-green-600 text-sm mt-2";
+
+} else {
+
+info.innerHTML = "Número de luminaria no encontrado";
+info.className = "text-red-600 text-sm mt-2";
+
+}
+
+});
+
+/* enviar reporte */
+
 document.getElementById('formReporte').addEventListener('submit', async (e) => {
 
 e.preventDefault();
@@ -146,6 +190,8 @@ mensaje.className = "text-center text-green-600";
 
 document.getElementById('formReporte').reset();
 
+document.getElementById('info_luminaria').innerHTML = "";
+
 } catch (error) {
 
 mensaje.innerText = "Error: " + error.message;
@@ -161,41 +207,3 @@ console.error(error);
 
 </body>
 </html>
-
-document.getElementById('no_luminaria').addEventListener('input', async () => {
-
-const numero = Number(document.getElementById('no_luminaria').value);
-
-if (!numero) return;
-
-const { data } = await supabaseClient
-.from('luminarias_lookup')
-.select('calle, privada')
-.eq('no_luminaria', numero);
-
-const info = document.getElementById('info_luminaria');
-
-if (data && data.length > 0) {
-
-info.innerHTML =
-"Calle: <b>" + data[0].calle +
-"</b> | Privada: <b>" + data[0].privada + "</b>";
-
-info.className = "text-green-600 text-sm mt-2";
-
-} else {
-
-info.innerHTML = "Número de luminaria no encontrado";
-info.className = "text-red-600 text-sm mt-2";
-
-}
-
-});
-
-
-
-
-
-
-
-
