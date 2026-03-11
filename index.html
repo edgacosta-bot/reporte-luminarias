@@ -103,11 +103,12 @@ mensaje.className = "text-center text-gray-600";
 
 /* buscar luminaria */
 
-const { data: luminaria, error: errorConsulta } = await supabaseClient
+const { data, error } = await supabaseClient
 .from('luminarias_lookup')
 .select('id')
-.eq('No. Luminaria', no_luminaria)
-.single();
+.eq('no_luminaria', no_luminaria);
+
+const luminaria = data && data.length > 0 ? data[0] : null;
 
 /* si no existe */
 
@@ -154,6 +155,7 @@ document.getElementById('formReporte').reset();
 
 </body>
 </html>
+
 
 
 
