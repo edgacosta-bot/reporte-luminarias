@@ -70,9 +70,10 @@ placeholder="Describe brevemente el problema si lo deseas">
 </div>
 
 <button
+id="btn_enviar"
 type="submit"
-class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-200"
->
+disabled
+class="w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed">
 Enviar reporte
 </button>
 
@@ -91,22 +92,26 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-/* mostrar calle y privada automáticamente */
+let reporteValido = false;
+
+/* verificar luminaria */
 
 document.getElementById('no_luminaria').addEventListener('input', async () => {
 
 const numero = Number(document.getElementById('no_luminaria').value);
 
 const info = document.getElementById('info_luminaria');
+const boton = document.getElementById('btn_enviar');
 
 if (!numero) {
 info.innerHTML = "";
+boton.disabled = true;
 return;
 }
 
 const { data, error } = await supabaseClient
 .from('luminarias_lookup')
-.select('calle, privada')
+.select('id, calle, privada, situacion')
 .eq('no_luminaria', numero);
 
 if (error) {
@@ -116,16 +121,47 @@ return;
 
 if (data && data.length > 0) {
 
+if (data[0].situacion === "Fuera de servicio") {
+
+info.innerHTML =
+"Calle: <b>" + data[0].calle +
+"</b> | Privada: <b>" + data[0].privada +
+"</b><br><span class='text-orange-600'>Esta luminaria ya está registrada como fuera de servicio.</span>";
+
+reporteValido = false;
+
+boton.disabled = true;
+boton.className =
+"w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed";
+
+return;
+
+}
+
+/* luminaria válida */
+
 info.innerHTML =
 "Calle: <b>" + data[0].calle +
 "</b> | Privada: <b>" + data[0].privada + "</b>";
 
 info.className = "text-green-600 text-sm mt-2";
 
+reporteValido = true;
+
+boton.disabled = false;
+boton.className =
+"w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition";
+
 } else {
 
 info.innerHTML = "Número de luminaria no encontrado";
 info.className = "text-red-600 text-sm mt-2";
+
+reporteValido = false;
+
+boton.disabled = true;
+boton.className =
+"w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed";
 
 }
 
@@ -137,6 +173,8 @@ document.getElementById('formReporte').addEventListener('submit', async (e) => {
 
 e.preventDefault();
 
+if (!reporteValido) return;
+
 const mensaje = document.getElementById('mensaje');
 
 try {
@@ -145,9 +183,6 @@ const no_luminaria = Number(document.getElementById('no_luminaria').value);
 const descripcion = document.getElementById('descripcion').value;
 const comentario = document.getElementById('comentario').value;
 
-mensaje.innerText = "Verificando luminaria...";
-mensaje.className = "text-center text-gray-600";
-
 /* buscar luminaria */
 
 const { data: luminarias, error: errorConsulta } = await supabaseClient
@@ -155,17 +190,7 @@ const { data: luminarias, error: errorConsulta } = await supabaseClient
 .select('id')
 .eq('no_luminaria', no_luminaria);
 
-if (errorConsulta) {
-throw errorConsulta;
-}
-
-if (!luminarias || luminarias.length === 0) {
-
-mensaje.innerText = "El número de luminaria no existe. Verifique el número.";
-mensaje.className = "text-center text-red-600";
-return;
-
-}
+if (errorConsulta) throw errorConsulta;
 
 const luminaria_id = luminarias[0].id;
 
@@ -181,16 +206,17 @@ estatus: 'NUEVO',
 observaciones: comentario
 }]);
 
-if (errorInsert) {
-throw errorInsert;
-}
+if (errorInsert) throw errorInsert;
 
-mensaje.innerText = "Gracias por tu reporte. Será registrado y atendido a la brevedad.";
+mensaje.innerText =
+"Gracias por tu reporte. Será registrado y atendido a la brevedad.";
+
 mensaje.className = "text-center text-green-600";
 
 document.getElementById('formReporte').reset();
-
 document.getElementById('info_luminaria').innerHTML = "";
+
+document.getElementById('btn_enviar').disabled = true;
 
 } catch (error) {
 
