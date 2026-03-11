@@ -1,89 +1,127 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Reporte de Luminaria</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Reporte de Luminaria</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
+
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
-  <div class="bg-white shadow-lg rounded-2xl p-6 w-full max-w-md">
-    
-    <h2 class="text-2xl font-bold text-center mb-6 text-gray-700">
-      Reportar luminaria
-    </h2>
+<div class="bg-white shadow-lg rounded-2xl p-6 w-full max-w-md">
 
-    <form id="formReporte" class="space-y-4">
+<h2 class="text-2xl font-bold text-center mb-6 text-gray-700">
+Reportar luminaria
+</h2>
 
-      <div>
-        <label class="block text-sm font-medium text-gray-600">
-          Número de luminaria
-        </label>
-        <input 
-          type="number" 
-          id="no_luminaria" 
-          required
-          class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-        >
-      </div>
+<form id="formReporte" class="space-y-4">
 
-      <div>
-        <label class="block text-sm font-medium text-gray-600">
-          Tipo de falla
-        </label>
-        <select 
-          id="descripcion" 
-          required
-          class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-        >
-          <option value="">Seleccione una opción</option>
-          <option value="NO_PRENDE">No prende</option>
-          <option value="BAJA_ILUMINACION">No alumbra lo suficiente</option>
-          <option value="SE_APAGA">Se apaga después de un rato</option>
-          <option value="PARPADEA">Parpadea</option>
-        </select>
-      </div>
+<div>
+<label class="block text-sm font-medium text-gray-600">
+Número de luminaria
+</label>
 
-      <button 
-        type="submit"
-        class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-200"
-      >
-        Enviar reporte
-      </button>
+<input 
+type="number" 
+id="no_luminaria"
+required
+class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+>
+</div>
 
-      <p id="mensaje" class="text-center text-sm mt-2"></p>
+<div>
+<label class="block text-sm font-medium text-gray-600">
+Tipo de falla
+</label>
 
-    </form>
-  </div>
+<select 
+id="descripcion"
+required
+class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+>
+
+<option value="">Seleccione una opción</option>
+<option value="NO_PRENDE">No prende</option>
+<option value="BAJA_ILUMINACION">Baja iluminación</option>
+<option value="PARPADEA">Parpadea</option>
+<option value="SE_APAGA">Se apaga después de un rato</option>
+<option value="DAÑO_FISICO">Daño físico</option>
+<option value="OTRO">Otro problema</option>
+
+</select>
+</div>
+
+<div>
+<label class="block text-sm font-medium text-gray-600">
+Comentario (opcional)
+</label>
+
+<textarea
+id="comentario"
+rows="3"
+class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+placeholder="Describe brevemente el problema si lo deseas">
+</textarea>
+
+</div>
+
+<button
+type="submit"
+class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-200"
+>
+Enviar reporte
+</button>
+
+<p id="mensaje" class="text-center text-sm mt-2"></p>
+
+</form>
+
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-  const supabaseUrl = 'TU_PROJECT_URL';
-  const supabaseKey = 'TU_ANON_KEY';
-  const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-  document.getElementById('formReporte').addEventListener('submit', async (e) => {
-    e.preventDefault();
+const supabaseUrl = 'https://prjxmfhahnzosdwljode.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-    const no_luminaria = document.getElementById('no_luminaria').value;
-    const descripcion = document.getElementById('descripcion').value;
+document.getElementById('formReporte').addEventListener('submit', async (e) => {
 
-    const { error } = await supabaseClient
-      .from('reportes_vecinales')
-      .insert([{ no_luminaria, descripcion }]);
+e.preventDefault();
 
-    const mensaje = document.getElementById('mensaje');
+const no_luminaria = document.getElementById('no_luminaria').value;
+const descripcion = document.getElementById('descripcion').value;
+const comentario = document.getElementById('comentario').value;
 
-    if (error) {
-      mensaje.innerText = 'Error al enviar reporte';
-      mensaje.className = 'text-center text-red-600';
-    } else {
-      mensaje.innerText = 'Reporte enviado correctamente';
-      mensaje.className = 'text-center text-green-600';
-      document.getElementById('formReporte').reset();
-    }
-  });
+const { error } = await supabaseClient
+.from('reportes_vecinales')
+.insert([{
+no_luminaria,
+descripcion,
+estatus: 'NUEVO',
+observaciones: comentario
+}]);
+
+const mensaje = document.getElementById('mensaje');
+
+if (error) {
+
+mensaje.innerText = 'Error al enviar el reporte. Intente nuevamente.';
+mensaje.className = 'text-center text-red-600';
+
+} else {
+
+mensaje.innerText = 'Gracias por tu reporte. Será registrado y atendido a la brevedad.';
+mensaje.className = 'text-center text-green-600';
+
+document.getElementById('formReporte').reset();
+
+}
+
+});
+
 </script>
 
 </body>
