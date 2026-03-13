@@ -1,91 +1,113 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Reportes de luminarias</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Reportes de luminarias - En tiempo real</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body class="bg-gray-100 p-4">
 
-<div class="max-w-3xl mx-auto bg-white shadow rounded-2xl p-6">
+    <div class="max-w-5xl mx-auto space-y-6">
 
-<h2 class="text-2xl font-bold text-center mb-4">
-Reportes vecinales de luminarias
-</h2>
+        <div class="bg-white shadow rounded-2xl p-6">
+            <h2 class="text-2xl font-bold text-center mb-2">Reportes vecinales de luminarias</h2>
+            <p class="text-center text-xs text-gray-400 mb-4 uppercase tracking-widest">
+                Sincronizado con Supabase: <span id="last-update" class="font-mono">--:--:--</span>
+            </p>
 
-<p class="text-center text-sm text-gray-500 mb-4">
-Actualización automática en tiempo real
-</p>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm border text-left">
+                    <thead class="bg-gray-200 text-gray-700">
+                        <tr>
+                            <th class="p-2 border">Luminaria</th>
+                            <th class="p-2 border">Falla</th>
+                            <th class="p-2 border text-center">Estado</th>
+                            <th class="p-2 border text-center">Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla_reportes" class="divide-y divide-gray-100">
+                        </tbody>
+                </table>
+            </div>
+        </div>
 
-<table class="w-full text-sm border">
+        <div class="bg-white shadow rounded-2xl p-4">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-lg font-semibold text-gray-700">Análisis Gráfico</h3>
+                <span class="text-[10px] bg-blue-100 text-blue-600 px-2 py-1 rounded">REFRESCO DE CACHÉ FORZADO</span>
+            </div>
+            
+            <div class="relative w-full h-[500px] bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
+                <iframe 
+                    id="looker_iframe"
+                    src="https://lookerstudio.google.com/s/rhIrlpa7AeY" 
+                    frameborder="0" 
+                    style="border:0" 
+                    allowfullscreen 
+                    class="absolute top-0 left-0 w-full h-full">
+                </iframe>
+            </div>
+        </div>
 
-<thead class="bg-gray-200">
-<tr>
-<th class="p-2 border">Luminaria</th>
-<th class="p-2 border">Falla</th>
-<th class="p-2 border">Estado</th>
-<th class="p-2 border">Fecha</th>
-</tr>
-</thead>
+    </div>
 
-<tbody id="tabla_reportes"></tbody>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-</table>
+    <script>
+        const supabaseUrl = 'https://prjxmfhahnzosdwljode.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-</div>
+        // Guardamos la URL base de Looker para no perderla al añadir el timestamp
+        const lookerBaseUrl = "PUESTA_AQUÍ_TU_URL_DE_INSERTAR";
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        async function cargarReportes() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('reportes_vecinales')
+                    .select('no_luminaria, descripcion, estatus, fecha_reporte')
+                    .order('fecha_reporte', { ascending: false });
 
-<script>
+                if (error) throw error;
 
-const supabaseUrl = 'https://prjxmfhahnzosdwljode.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
+                // 1. Actualizar Tabla HTML
+                const tabla = document.getElementById('tabla_reportes');
+                tabla.innerHTML = data.map(r => `
+                    <tr class="hover:bg-blue-50 transition-colors">
+                        <td class="border p-2 text-center font-medium">#${r.no_luminaria}</td>
+                        <td class="border p-2 text-gray-600">${r.descripcion}</td>
+                        <td class="border p-2 text-center">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${r.estatus === 'Pendiente' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'}">
+                                ${r.estatus}
+                            </span>
+                        </td>
+                        <td class="border p-2 text-center text-gray-400">${new Date(r.fecha_reporte).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
 
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+                // 2. Actualizar reloj de control
+                document.getElementById('last-update').innerText = new Date().toLocaleTimeString();
 
-async function cargarReportes() {
+                // 3. FORZAR REFRESCO DE LOOKER
+                const iframe = document.getElementById('looker_iframe');
+                // Añadimos el timestamp para que Looker crea que es una carga nueva
+                const separador = lookerBaseUrl.includes('?') ? '&' : '?';
+                iframe.src = lookerBaseUrl + separador + "refresh=" + new Date().getTime();
 
-const { data, error } = await supabaseClient
-.from('reportes_vecinales')
-.select('no_luminaria, descripcion, estatus, fecha_reporte')
-.order('fecha_reporte', { ascending: false });
+            } catch (err) {
+                console.error("Error al sincronizar:", err.message);
+            }
+        }
 
-if (error) {
-console.error(error);
-return;
-}
+        // Ejecutar al cargar la página
+        cargarReportes();
 
-const tabla = document.getElementById('tabla_reportes');
-tabla.innerHTML = "";
+        // Refrescar cada 30 segundos
+        // (No pongas menos de 15s porque Looker tarda en cargar y podrías bloquear tu propia cuenta por exceso de peticiones)
+        setInterval(cargarReportes, 30000);
 
-data.forEach(r => {
-
-const fila = `
-<tr>
-<td class="border p-2 text-center">${r.no_luminaria}</td>
-<td class="border p-2">${r.descripcion}</td>
-<td class="border p-2 text-center">${r.estatus}</td>
-<td class="border p-2 text-center">${new Date(r.fecha_reporte).toLocaleDateString()}</td>
-</tr>
-`;
-
-tabla.innerHTML += fila;
-
-});
-
-}
-
-/* carga inicial */
-
-cargarReportes();
-
-/* actualización automática cada 10 segundos */
-
-setInterval(cargarReportes, 10000);
-
-</script>
-
+    </script>
 </body>
 </html>
