@@ -1,100 +1,26 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plataforma de Gestión Vecinal</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-
-<body class="bg-gray-100 p-4">
-
-<div class="max-w-md mx-auto space-y-6">
-
-    <div class="text-center bg-white p-5 rounded-2xl shadow">
-        <h1 class="text-xl font-bold text-gray-800">
-            Plataforma de Gestión Vecinal
-        </h1>
-        <p class="text-sm font-semibold text-blue-600">
-            Villas de la Concepción
-        </p>
-    </div>
-
-    <div class="bg-white shadow rounded-2xl p-5">
-
-        <h2 class="text-lg font-bold text-gray-700 mb-3">
-            💡 Reporte de Luminarias
-        </h2>
-
-        <form id="form-reporte" class="space-y-4">
-
-            <div>
-                <label class="block text-sm text-gray-600 mb-1">
-                    No. de luminaria
-                </label>
-
-                <input type="number" id="no_luminaria" required
-                    class="w-full p-3 border rounded-lg">
-
-                <p id="mensaje-validacion" class="text-xs mt-1"></p>
-                <p id="ubicacion" class="text-xs text-gray-500 mt-1"></p>
-            </div>
-
-            <div>
-                <label class="block text-sm text-gray-600 mb-1">
-                    Tipo de falla
-                </label>
-
-                <select id="descripcion" required
-                    class="w-full p-3 border rounded-lg">
-
-                    <option value="" disabled selected>Selecciona una opción</option>
-
-                    <option value="No prende">No prende</option>
-                    <option value="Se apaga despues de algunas horas">No prende</option>
-                    <option value="Parpadea">Parpadea</option>
-                    <option value="Baja iluminación">Baja iluminación</option>
-                    <option value="Daño físico">Daño físico</option>
-
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-sm text-gray-600 mb-1">
-                    Observaciones (opcional)
-                </label>
-
-                <textarea id="observaciones" rows="2"
-                    class="w-full p-3 border rounded-lg"
-                    placeholder="Detalles adicionales..."></textarea>
-            </div>
-
-            <button type="submit"
-                class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl disabled:bg-gray-400">
-                Enviar reporte
-            </button>
-
-        </form>
-
-    </div>
-
-</div>
-
 <script>
+// CONFIGURACIÓN
 const SUPABASE_URL = 'https://prjxmfhahnzosdwljode.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = typeof supabase !== 'undefined' ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwtyJFPJHBne7BAADj4BIRkBXjsCOb88ybuiizjO4xO9JokDLpweA0oge_c7Xnqsam/exec'; // /exec
 const LOOKER_URL_BASE = 'https://lookerstudio.google.com/embed/reporting/d16fb6ac-e2b8-484f-b9cd-18aebbb0e4f1/page/p_81p916em1d';
 
+// 🔥 NUEVOS ELEMENTOS
 const input = document.getElementById('no_luminaria');
-const mensaje = document.getElementById('mensaje-validacion');
-const ubicacionTxt = document.getElementById('ubicacion');
 const boton = document.querySelector('button[type="submit"]');
 
+// crear mensajes dinámicamente (no romper tu diseño)
+const mensaje = document.createElement('p');
+mensaje.className = "text-xs mt-1";
+input.parentNode.appendChild(mensaje);
+
+const ubicacionTxt = document.createElement('p');
+ubicacionTxt.className = "text-xs text-gray-500";
+input.parentNode.appendChild(ubicacionTxt);
+
+// 🔥 VALIDACIÓN (VERSIÓN ORIGINAL RESTAURADA)
 let timeout = null;
 
 input.addEventListener('input', () => {
@@ -112,8 +38,8 @@ input.addEventListener('input', () => {
 
     timeout = setTimeout(async () => {
 
-        // 🔹 1. VALIDAR EXISTENCIA
-        const { data: luminaria, error } = await supabase
+        // 🔹 1. EXISTENCIA
+        const { data: luminaria } = await supabase
             .from('control_luminarias')
             .select('*')
             .eq('No. Luminaria', valor)
@@ -127,7 +53,7 @@ input.addEventListener('input', () => {
             return;
         }
 
-        // 🔹 2. UBICACIÓN
+        // 🔹 2. UBICACIÓN (USANDO TU ESTRUCTURA REAL)
         if (luminaria.ubicacion_id) {
             const { data: ubicacion } = await supabase
                 .from('ubicaciones')
@@ -140,55 +66,79 @@ input.addEventListener('input', () => {
             }
         }
 
-        // 🔹 3. VALIDACIÓN DE ESTADO
+        // 🔹 3. ESTADO
         if (luminaria.situacion_id == 2) {
             mensaje.innerText = "⚠️ Esta luminaria ya se encuentra fuera de servicio";
             mensaje.className = "text-xs mt-1 text-red-600";
             boton.disabled = true;
         } else {
-            mensaje.innerText = "✔ Disponible para reporte";
-            mensaje.className = "text-xs mt-1 text-green-600";
+            mensaje.innerText = "";
             boton.disabled = false;
         }
 
     }, 400);
 });
 
+// -------- RESTO DE TU CÓDIGO ORIGINAL (SIN CAMBIOS) --------
+
+// FUNCIÓN PARA CARGAR DATOS
+async function cargarDatos() {
+    const { data, error } = await supabase
+        .from('reportes_vecinales')
+        .select('*')
+        .order('fecha_reporte', { ascending: false })
+        .limit(5);
+
+    if (!error) {
+        const cuerpo = document.getElementById('tabla-cuerpo');
+        cuerpo.innerHTML = data.map(r => `
+            <tr>
+                <td class="p-3 font-bold">#${r.no_luminaria}</td>
+                <td class="p-3">${r.descripcion}</td>
+                <td class="p-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">${r.estatus}</span></td>
+                <td class="p-3 text-gray-500 italic">${r.observaciones || '-'}</td>
+            </tr>
+        `).join('');
+        document.getElementById('reloj').innerText = "Sincronizado: " + new Date().toLocaleTimeString();
+    }
+}
+
 // ENVÍO
 document.getElementById('form-reporte').addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const datos = {
-        no_luminaria: parseInt(input.value),
+        no_luminaria: document.getElementById('no_luminaria').value,
         descripcion: document.getElementById('descripcion').value,
         observaciones: document.getElementById('observaciones').value,
         estatus: 'NUEVO'
     };
 
     try {
-        const { error } = await supabase
-            .from('reportes_vecinales')
-            .insert([datos]);
-
+        const { error } = await supabase.from('reportes_vecinales').insert([datos]);
         if (error) throw error;
 
-        await fetch(GOOGLE_SCRIPT_URL, {
+        fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
+            mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(datos)
         });
 
-        alert("✅ Reporte enviado correctamente");
-
+        alert("✅ Reporte enviado con éxito");
         document.getElementById('form-reporte').reset();
-        mensaje.innerText = "";
-        ubicacionTxt.innerText = "";
+        cargarDatos();
+
+        const iframe = document.getElementById('looker_iframe');
+        iframe.src = LOOKER_URL_BASE + "?t=" + new Date().getTime();
 
     } catch (err) {
         alert("Error: " + err.message);
     }
 });
-</script>
 
-</body>
-</html>
+// INICIO
+cargarDatos();
+setInterval(cargarDatos, 30000);
+
+</script>
