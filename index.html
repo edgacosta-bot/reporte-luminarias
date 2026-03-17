@@ -13,7 +13,6 @@
 
 <div class="max-w-md mx-auto space-y-6">
 
-    <!-- ENCABEZADO -->
     <div class="text-center bg-white p-5 rounded-2xl shadow">
         <h1 class="text-xl font-bold text-gray-800">
             Plataforma de Gestión Vecinal
@@ -23,7 +22,6 @@
         </p>
     </div>
 
-    <!-- FORMULARIO -->
     <div class="bg-white shadow rounded-2xl p-5">
 
         <h2 class="text-lg font-bold text-gray-700 mb-3">
@@ -32,9 +30,6 @@
 
         <form id="form-reporte" class="space-y-4">
 
-            <input type="hidden" id="tipo_infraestructura" value="LUMINARIA">
-
-            <!-- LUMINARIA -->
             <div>
                 <label class="block text-sm text-gray-600 mb-1">
                     No. de luminaria
@@ -47,7 +42,6 @@
                 <p id="ubicacion" class="text-xs text-gray-500 mt-1"></p>
             </div>
 
-            <!-- FALLA -->
             <div>
                 <label class="block text-sm text-gray-600 mb-1">
                     Tipo de falla
@@ -55,20 +49,14 @@
 
                 <select id="descripcion" required
                     class="w-full p-3 border rounded-lg">
-
-                    <option value="" disabled selected>
-                        Selecciona una opción
-                    </option>
-
+                    <option value="" disabled selected>Selecciona una opción</option>
                     <option value="NO_PRENDE">No prende</option>
                     <option value="PARPADEA">Parpadea</option>
                     <option value="BAJA_ILUMINACION">Baja iluminación</option>
                     <option value="DAÑO_FISICO">Daño físico</option>
-
                 </select>
             </div>
 
-            <!-- OBSERVACIONES -->
             <div>
                 <label class="block text-sm text-gray-600 mb-1">
                     Observaciones (opcional)
@@ -79,7 +67,6 @@
                     placeholder="Detalles adicionales..."></textarea>
             </div>
 
-            <!-- BOTÓN -->
             <button type="submit"
                 class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl disabled:bg-gray-400">
                 Enviar reporte
@@ -106,7 +93,6 @@ const boton = document.querySelector('button[type="submit"]');
 
 let timeout = null;
 
-// 🔥 VALIDACIÓN + UBICACIÓN (AJUSTADA A TU BD REAL)
 input.addEventListener('input', () => {
 
     clearTimeout(timeout);
@@ -122,17 +108,14 @@ input.addEventListener('input', () => {
 
     timeout = setTimeout(async () => {
 
-        const { data, error } = await supabase
+        // 🔹 1. BUSCAR LUMINARIA
+        const { data: luminaria, error } = await supabase
             .from('control_luminarias')
-            .select(`
-                "No. Luminaria",
-                situacion_id,
-                ubicaciones ( calle )
-            `)
+            .select('*')
             .eq('"No. Luminaria"', valor)
             .single();
 
-        if (error || !data) {
+        if (error || !luminaria) {
             mensaje.innerText = "⚠️ Luminaria no encontrada";
             mensaje.className = "text-xs mt-1 text-red-600";
             ubicacionTxt.innerText = "";
@@ -140,15 +123,21 @@ input.addEventListener('input', () => {
             return;
         }
 
-        // 📍 UBICACIÓN
-        if (data.ubicaciones) {
-            ubicacionTxt.innerText = "📍 " + data.ubicaciones.calle;
-        } else {
-            ubicacionTxt.innerText = "";
+        // 🔹 2. UBICACIÓN
+        if (luminaria.ubicacion_id) {
+            const { data: ubicacion } = await supabase
+                .from('ubicaciones')
+                .select('calle')
+                .eq('id', luminaria.ubicacion_id)
+                .single();
+
+            if (ubicacion) {
+                ubicacionTxt.innerText = "📍 " + ubicacion.calle;
+            }
         }
 
-        // 🔴 VALIDACIÓN (AJUSTAR VALOR SI ES NECESARIO)
-        if (data.situacion_id == 2) {
+        // 🔹 3. VALIDACIÓN REAL
+        if (luminaria.situacion_id == 2) {
             mensaje.innerText = "⚠️ Esta luminaria ya se encuentra fuera de servicio";
             mensaje.className = "text-xs mt-1 text-red-600";
             boton.disabled = true;
@@ -166,7 +155,6 @@ document.getElementById('form-reporte').addEventListener('submit', async (e) => 
     e.preventDefault();
 
     const datos = {
-        tipo_infraestructura: 'LUMINARIA',
         no_luminaria: input.value,
         descripcion: document.getElementById('descripcion').value,
         observaciones: document.getElementById('observaciones').value,
