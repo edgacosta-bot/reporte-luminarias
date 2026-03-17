@@ -49,11 +49,15 @@
 
                 <select id="descripcion" required
                     class="w-full p-3 border rounded-lg">
+
                     <option value="" disabled selected>Selecciona una opción</option>
-                    <option value="NO_PRENDE">No prende</option>
-                    <option value="PARPADEA">Parpadea</option>
-                    <option value="BAJA_ILUMINACION">Baja iluminación</option>
-                    <option value="DAÑO_FISICO">Daño físico</option>
+
+                    <option value="No prende">No prende</option>
+                    <option value="Se apaga despues de algunas horas">No prende</option>
+                    <option value="Parpadea">Parpadea</option>
+                    <option value="Baja iluminación">Baja iluminación</option>
+                    <option value="Daño físico">Daño físico</option>
+
                 </select>
             </div>
 
@@ -97,7 +101,7 @@ input.addEventListener('input', () => {
 
     clearTimeout(timeout);
 
-    const valor = input.value;
+    const valor = parseInt(input.value);
 
     if (!valor) {
         mensaje.innerText = "";
@@ -108,15 +112,15 @@ input.addEventListener('input', () => {
 
     timeout = setTimeout(async () => {
 
-        // 🔹 1. BUSCAR LUMINARIA
+        // 🔹 1. VALIDAR EXISTENCIA
         const { data: luminaria, error } = await supabase
             .from('control_luminarias')
             .select('*')
-            .eq('"No. Luminaria"', valor)
-            .single();
+            .eq('No. Luminaria', valor)
+            .maybeSingle();
 
-        if (error || !luminaria) {
-            mensaje.innerText = "⚠️ Luminaria no encontrada";
+        if (!luminaria) {
+            mensaje.innerText = "⚠️ Esta luminaria no existe";
             mensaje.className = "text-xs mt-1 text-red-600";
             ubicacionTxt.innerText = "";
             boton.disabled = true;
@@ -129,14 +133,14 @@ input.addEventListener('input', () => {
                 .from('ubicaciones')
                 .select('calle')
                 .eq('id', luminaria.ubicacion_id)
-                .single();
+                .maybeSingle();
 
             if (ubicacion) {
                 ubicacionTxt.innerText = "📍 " + ubicacion.calle;
             }
         }
 
-        // 🔹 3. VALIDACIÓN REAL
+        // 🔹 3. VALIDACIÓN DE ESTADO
         if (luminaria.situacion_id == 2) {
             mensaje.innerText = "⚠️ Esta luminaria ya se encuentra fuera de servicio";
             mensaje.className = "text-xs mt-1 text-red-600";
@@ -155,7 +159,7 @@ document.getElementById('form-reporte').addEventListener('submit', async (e) => 
     e.preventDefault();
 
     const datos = {
-        no_luminaria: input.value,
+        no_luminaria: parseInt(input.value),
         descripcion: document.getElementById('descripcion').value,
         observaciones: document.getElementById('observaciones').value,
         estatus: 'NUEVO'
