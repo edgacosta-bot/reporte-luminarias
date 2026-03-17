@@ -11,7 +11,7 @@
 
 <body class="bg-gray-100 p-4">
 
-<div class="max-w-md md:max-w-lg mx-auto space-y-6">
+<div class="max-w-md mx-auto space-y-6">
 
     <!-- ENCABEZADO -->
     <div class="text-center bg-white p-5 rounded-2xl shadow">
@@ -20,9 +20,6 @@
         </h1>
         <p class="text-sm font-semibold text-blue-600">
             Villas de la Concepción
-        </p>
-        <p class="text-xs text-gray-500 mt-1">
-            Reporte de infraestructura y servicios comunitarios
         </p>
     </div>
 
@@ -37,15 +34,15 @@
 
             <input type="hidden" id="tipo_infraestructura" value="LUMINARIA">
 
-            <!-- NÚMERO -->
+            <!-- LUMINARIA -->
             <div>
                 <label class="block text-sm text-gray-600 mb-1">
                     No. de luminaria
                 </label>
-                <input type="number" id="no_luminaria" required
-                    class="w-full p-3 border rounded-lg text-base focus:ring-2 focus:ring-blue-500 outline-none">
 
-                <!-- MENSAJES -->
+                <input type="number" id="no_luminaria" required
+                    class="w-full p-3 border rounded-lg">
+
                 <p id="mensaje-validacion" class="text-xs mt-1"></p>
                 <p id="ubicacion" class="text-xs text-gray-500 mt-1"></p>
             </div>
@@ -55,12 +52,19 @@
                 <label class="block text-sm text-gray-600 mb-1">
                     Tipo de falla
                 </label>
+
                 <select id="descripcion" required
-                    class="w-full p-3 border rounded-lg text-base focus:ring-2 focus:ring-blue-500 outline-none">
+                    class="w-full p-3 border rounded-lg">
+
+                    <option value="" disabled selected>
+                        Selecciona una opción
+                    </option>
+
                     <option value="NO_PRENDE">No prende</option>
                     <option value="PARPADEA">Parpadea</option>
                     <option value="BAJA_ILUMINACION">Baja iluminación</option>
                     <option value="DAÑO_FISICO">Daño físico</option>
+
                 </select>
             </div>
 
@@ -69,25 +73,19 @@
                 <label class="block text-sm text-gray-600 mb-1">
                     Observaciones (opcional)
                 </label>
-                <textarea id="observaciones" rows="3"
-                    class="w-full p-3 border rounded-lg text-base focus:ring-2 focus:ring-blue-500 outline-none"
-                    placeholder="Puedes agregar referencias como: frente a casa, esquina, árbol cercano o cualquier detalle que ayude a ubicar mejor la falla."></textarea>
+
+                <textarea id="observaciones" rows="2"
+                    class="w-full p-3 border rounded-lg"
+                    placeholder="Detalles adicionales..."></textarea>
             </div>
 
             <!-- BOTÓN -->
             <button type="submit"
-                class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl transition disabled:bg-gray-400">
+                class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl disabled:bg-gray-400">
                 Enviar reporte
             </button>
 
         </form>
-
-        <!-- CONFIANZA -->
-        <p class="text-xs text-gray-400 text-center mt-4 leading-relaxed">
-            Este sistema es de uso exclusivo para vecinos del fraccionamiento.
-            La información se utiliza únicamente para el mantenimiento y mejora
-            de los servicios comunitarios.
-        </p>
 
     </div>
 
@@ -101,7 +99,6 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwtyJFPJHBne7BAADj4BIRkBXjsCOb88ybuiizjO4xO9JokDLpweA0oge_c7Xnqsam/exec'; // /exec
 const LOOKER_URL_BASE = 'https://lookerstudio.google.com/embed/reporting/d16fb6ac-e2b8-484f-b9cd-18aebbb0e4f1/page/p_81p916em1d';
 
-// ELEMENTOS
 const input = document.getElementById('no_luminaria');
 const mensaje = document.getElementById('mensaje-validacion');
 const ubicacionTxt = document.getElementById('ubicacion');
@@ -109,7 +106,7 @@ const boton = document.querySelector('button[type="submit"]');
 
 let timeout = null;
 
-// VALIDACIÓN + UBICACIÓN
+// 🔥 VALIDACIÓN + UBICACIÓN (AJUSTADA A TU BD REAL)
 input.addEventListener('input', () => {
 
     clearTimeout(timeout);
@@ -125,49 +122,43 @@ input.addEventListener('input', () => {
 
     timeout = setTimeout(async () => {
 
-        // 1. VALIDAR REPORTES
-        const { data: reportes } = await supabase
-            .from('reportes_vecinales')
-            .select('estatus')
-            .eq('no_luminaria', valor)
-            .in('estatus', ['NUEVO', 'EN_PROCESO'])
-            .limit(1);
-
-        // 2. OBTENER UBICACIÓN
-        const { data: luminaria } = await supabase
+        const { data, error } = await supabase
             .from('control_luminarias')
-            .select('ubicacion_id')
-            .eq('no_luminaria', valor)
+            .select(`
+                "No. Luminaria",
+                situacion_id,
+                ubicaciones ( calle )
+            `)
+            .eq('"No. Luminaria"', valor)
             .single();
 
-        if (luminaria) {
-            const { data: ubicacion } = await supabase
-                .from('ubicaciones')
-                .select('nombre')
-                .eq('id', luminaria.ubicacion_id)
-                .single();
-
-            if (ubicacion) {
-                ubicacionTxt.innerText = "📍 " + ubicacion.nombre;
-            }
-        } else {
-            ubicacionTxt.innerText = "⚠️ Luminaria no encontrada";
+        if (error || !data) {
+            mensaje.innerText = "⚠️ Luminaria no encontrada";
+            mensaje.className = "text-xs mt-1 text-red-600";
+            ubicacionTxt.innerText = "";
+            boton.disabled = true;
+            return;
         }
 
-        // 3. VALIDACIÓN
-        if (reportes && reportes.length > 0) {
-            mensaje.innerText = "⚠️ Esta luminaria ya cuenta con un reporte activo";
-            mensaje.className = "text-xs mt-1 text-red-600";
+        // 📍 UBICACIÓN
+        if (data.ubicaciones) {
+            ubicacionTxt.innerText = "📍 " + data.ubicaciones.calle;
+        } else {
+            ubicacionTxt.innerText = "";
+        }
 
+        // 🔴 VALIDACIÓN (AJUSTAR VALOR SI ES NECESARIO)
+        if (data.situacion_id == 2) {
+            mensaje.innerText = "⚠️ Esta luminaria ya se encuentra fuera de servicio";
+            mensaje.className = "text-xs mt-1 text-red-600";
             boton.disabled = true;
         } else {
             mensaje.innerText = "✔ Disponible para reporte";
             mensaje.className = "text-xs mt-1 text-green-600";
-
             boton.disabled = false;
         }
 
-    }, 500);
+    }, 400);
 });
 
 // ENVÍO
