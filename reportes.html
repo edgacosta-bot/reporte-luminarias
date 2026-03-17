@@ -3,151 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Reportes - Luminarias</title>
+    <title>Plataforma de Gestión Vecinal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body class="bg-gray-100 p-4">
 
-    <div class="max-w-4xl mx-auto space-y-6">
+<div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- ENCABEZADO -->
+    <div class="text-center bg-white p-6 rounded-2xl shadow-lg">
+        <h1 class="text-2xl font-bold text-gray-800">
+            Plataforma de Gestión Vecinal
+        </h1>
+        <p class="text-lg font-semibold text-blue-600">
+            Fraccionamiento Villas de la Concepción
+        </p>
+        <p class="text-sm text-gray-500 mt-2">
+            Reporte y seguimiento de infraestructura y servicios
+        </p>
+    </div>
+
+    <!-- FORMULARIO -->
+    <div class="bg-white shadow-xl rounded-2xl p-6">
         
-        <div class="bg-white shadow-xl rounded-2xl p-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Reportar Falla de Luminaria</h2>
-            <form id="form-reporte" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">No. Luminaria</label>
-                        <input type="number" id="no_luminaria" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Tipo de Falla</label>
-                        <select id="descripcion" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="NO_PRENDE">No prende</option>
-                            <option value="PARPADEA">Parpadea</option>
-                            <option value="BAJA_ILUMINACION">Baja iluminación</option>
-                            <option value="DAÑO_FISICO">Daño físico</option>
-                        </select>
-                    </div>
-                </div>
+        <h2 class="text-xl font-bold text-gray-700 mb-4">
+            💡 Reporte de Luminarias
+        </h2>
+
+        <form id="form-reporte" class="space-y-4">
+
+            <!-- CAMPO ESCALABLE -->
+            <input type="hidden" id="tipo_infraestructura" value="LUMINARIA">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Observaciones (Opcional)</label>
-                    <textarea id="observaciones" rows="2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Detalles adicionales..."></textarea>
+                    <label class="block text-sm font-medium text-gray-700">No. Luminaria</label>
+                    <input type="number" id="no_luminaria" required class="w-full p-2 border rounded-lg">
                 </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl transition duration-200">
-                    Enviar Reporte
-                </button>
-            </form>
-        </div>
 
-        <div class="bg-white shadow-lg rounded-2xl p-6 overflow-hidden">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-gray-700">Últimos Reportes (Supabase)</h3>
-                <span id="reloj" class="text-xs text-gray-400">Actualizando...</span>
-            </div>
-            <div class="overflow-x-auto text-sm">
-                <table class="w-full text-left">
-                    <thead class="bg-gray-50 text-gray-600">
-                        <tr>
-                            <th class="p-3">Lum.</th>
-                            <th class="p-3">Falla</th>
-                            <th class="p-3">Estado</th>
-                            <th class="p-3">Observaciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-cuerpo" class="divide-y divide-gray-100">
-                        </tbody>
-                </table>
-            </div>
-        </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Tipo de Falla</label>
+                    <select id="descripcion" required class="w-full p-2 border rounded-lg">
+                        <option value="NO_PRENDE">No prende</option>
+                        <option value="PARPADEA">Parpadea</option>
+                        <option value="BAJA_ILUMINACION">Baja iluminación</option>
+                        <option value="DAÑO_FISICO">Daño físico</option>
+                    </select>
+                </div>
 
-        <div class="bg-white shadow-lg rounded-2xl p-4">
-            <h3 class="text-lg font-bold text-gray-700 mb-3 text-center uppercase tracking-widest text-xs">Gráficas en Tiempo Real (Looker + Sheets)</h3>
-            <div class="relative w-full h-[500px] rounded-xl overflow-hidden border border-gray-100">
-                <iframe id="looker_iframe" 
-                        src="https://lookerstudio.google.com/embed/reporting/d16fb6ac-e2b8-484f-b9cd-18aebbb0e4f1/page/HUTqF" 
-                        frameborder="0" style="border:0" allowfullscreen class="w-full h-full"></iframe>
             </div>
-        </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Observaciones</label>
+                <textarea id="observaciones" rows="2" class="w-full p-2 border rounded-lg" placeholder="Detalles adicionales..."></textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl">
+                Enviar Reporte
+            </button>
+
+        </form>
+
+        <!-- MENSAJE DE CONFIANZA -->
+        <p class="text-xs text-gray-400 text-center mt-4">
+            Este sistema es de uso exclusivo para vecinos del fraccionamiento. 
+            La información se utiliza únicamente para la gestión, mantenimiento 
+            y mejora de los servicios.
+        </p>
 
     </div>
 
-    <script>
-        // CONFIGURACIÓN INICIAL
-        // PASO 1: Reemplaza con tus datos de Supabase
-        const SUPABASE_URL = 'https://prjxmfhahnzosdwljode.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
-        const supabase = typeof supabase !== 'undefined' ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+    <!-- TABLA -->
+    <div class="bg-white shadow-lg rounded-2xl p-6 overflow-hidden">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-700">Últimos Reportes</h3>
+            <span id="reloj" class="text-xs text-gray-400">Actualizando...</span>
+        </div>
 
-        // PASO 2: Reemplaza con la URL de tu Google Apps Script (el que termina en /exec)
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxa8eHPk9pFkgTtz0TSTsyLl7Z0ev2-UeIKtUp5s1eTF9eeexkM__dyX0wwJ-gXEjvi/exec';
-
-        // PASO 3: Reemplaza con la URL de "Insertar" de Looker (la misma del iframe arriba)
-        const LOOKER_URL_BASE = 'https://lookerstudio.google.com/embed/reporting/d16fb6ac-e2b8-484f-b9cd-18aebbb0e4f1/page/HUTqF';
-
-        // FUNCIÓN PARA CARGAR DATOS EN LA TABLA
-        async function cargarDatos() {
-            const { data, error } = await supabase
-                .from('reportes_vecinales')
-                .select('*')
-                .order('fecha_reporte', { ascending: false })
-                .limit(5);
-
-            if (!error) {
-                const cuerpo = document.getElementById('tabla-cuerpo');
-                cuerpo.innerHTML = data.map(r => `
+        <div class="overflow-x-auto text-sm">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 text-gray-600">
                     <tr>
-                        <td class="p-3 font-bold">#${r.no_luminaria}</td>
-                        <td class="p-3">${r.descripcion}</td>
-                        <td class="p-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">${r.estatus}</span></td>
-                        <td class="p-3 text-gray-500 italic">${r.observaciones || '-'}</td>
+                        <th class="p-3">Lum.</th>
+                        <th class="p-3">Falla</th>
+                        <th class="p-3">Estado</th>
+                        <th class="p-3">Obs.</th>
                     </tr>
-                `).join('');
-                document.getElementById('reloj').innerText = "Sincronizado: " + new Date().toLocaleTimeString();
-            }
-        }
+                </thead>
+                <tbody id="tabla-cuerpo" class="divide-y divide-gray-100"></tbody>
+            </table>
+        </div>
+    </div>
 
-        // FUNCIÓN PARA ENVIAR REPORTE (A AMBOS LADOS)
-        document.getElementById('form-reporte').addEventListener('submit', async (e) => {
-            e.preventDefault();
+    <!-- LOOKER -->
+    <div class="bg-white shadow-lg rounded-2xl p-4">
+        <h3 class="text-lg font-bold text-gray-700 mb-3 text-center uppercase text-xs">
+            Gráficas en Tiempo Real
+        </h3>
+        <iframe id="looker_iframe"
+            src="TU_LOOKER_URL"
+            class="w-full h-[500px] border rounded-xl">
+        </iframe>
+    </div>
 
-            const datos = {
-                no_luminaria: document.getElementById('no_luminaria').value,
-                descripcion: document.getElementById('descripcion').value,
-                observaciones: document.getElementById('observaciones').value,
-                estatus: 'NUEVO'
-            };
+</div>
 
-            try {
-                // 1. Enviar a Supabase
-                const { error } = await supabase.from('reportes_vecinales').insert([datos]);
-                if (error) throw error;
+<script>
+const SUPABASE_URL = 'https://prjxmfhahnzosdwljode.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-                // 2. Enviar a Google Sheets (Puente)
-                fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datos)
-                });
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwtyJFPJHBne7BAADj4BIRkBXjsCOb88ybuiizjO4xO9JokDLpweA0oge_c7Xnqsam/exec'; // /exec
+const LOOKER_URL_BASE = 'https://lookerstudio.google.com/embed/reporting/d16fb6ac-e2b8-484f-b9cd-18aebbb0e4f1/page/p_81p916em1d';
 
-                alert("✅ Reporte enviado con éxito a Supabase y Sheets");
-                document.getElementById('form-reporte').reset();
-                
-                // Actualizar tabla local
-                cargarDatos();
+// CARGAR DATOS
+async function cargarDatos() {
+    const { data, error } = await supabase
+        .from('reportes_vecinales')
+        .select('*')
+        .order('fecha_reporte', { ascending: false })
+        .limit(5);
 
-                // Forzar refresco de Looker
-                const iframe = document.getElementById('looker_iframe');
-                iframe.src = LOOKER_URL_BASE + (LOOKER_URL_BASE.includes('?') ? '&' : '?') + "t=" + new Date().getTime();
+    if (error) {
+        console.error(error);
+        return;
+    }
 
-            } catch (err) {
-                alert("Error: " + err.message);
-            }
+    const cuerpo = document.getElementById('tabla-cuerpo');
+
+    cuerpo.innerHTML = data.map(r => `
+        <tr>
+            <td class="p-3 font-bold">#${r.no_luminaria}</td>
+            <td class="p-3">${r.descripcion}</td>
+            <td class="p-3">${r.estatus}</td>
+            <td class="p-3">${r.observaciones || '-'}</td>
+        </tr>
+    `).join('');
+
+    document.getElementById('reloj').innerText =
+        "Actualizado: " + new Date().toLocaleTimeString();
+}
+
+// ENVÍO
+document.getElementById('form-reporte').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const datos = {
+        tipo_infraestructura: document.getElementById('tipo_infraestructura').value,
+        no_luminaria: document.getElementById('no_luminaria').value,
+        descripcion: document.getElementById('descripcion').value,
+        observaciones: document.getElementById('observaciones').value,
+        estatus: 'NUEVO'
+    };
+
+    try {
+        // SUPABASE
+        const { error } = await supabase
+            .from('reportes_vecinales')
+            .insert([datos]);
+
+        if (error) throw error;
+
+        // GOOGLE SHEETS
+        await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
         });
 
-        // Cargar datos al iniciar y cada 30 segundos
+        alert("✅ Reporte enviado correctamente");
+
+        document.getElementById('form-reporte').reset();
+
         cargarDatos();
-        setInterval(cargarDatos, 30000);
-    </script>
+
+        // REFRESCAR LOOKER
+        const iframe = document.getElementById('looker_iframe');
+        iframe.src = LOOKER_URL_BASE + "?t=" + new Date().getTime();
+
+    } catch (err) {
+        console.error(err);
+        alert("Error: " + err.message);
+    }
+});
+
+// INICIO
+cargarDatos();
+setInterval(cargarDatos, 30000);
+</script>
+
 </body>
 </html>
