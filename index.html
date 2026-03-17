@@ -1,234 +1,198 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Reporte de Luminaria</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de Gestión Vecinal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<body class="bg-gray-100 p-4">
 
-<div class="bg-white shadow-lg rounded-2xl p-6 w-full max-w-md">
+<div class="max-w-4xl mx-auto space-y-6">
 
-<h2 class="text-2xl font-bold text-center mb-6 text-gray-700">
-Reportar luminaria
-</h2>
+    <!-- ENCABEZADO -->
+    <div class="text-center bg-white p-6 rounded-2xl shadow-lg">
+        <h1 class="text-2xl font-bold text-gray-800">
+            Plataforma de Gestión Vecinal
+        </h1>
+        <p class="text-lg font-semibold text-blue-600">
+            Fraccionamiento Villas de la Concepción
+        </p>
+        <p class="text-sm text-gray-500 mt-2">
+            Reporte y seguimiento de infraestructura y servicios
+        </p>
+    </div>
 
-<form id="formReporte" class="space-y-4">
+    <!-- FORMULARIO -->
+    <div class="bg-white shadow-xl rounded-2xl p-6">
+        
+        <h2 class="text-xl font-bold text-gray-700 mb-4">
+            💡 Reporte de Luminarias
+        </h2>
 
-<div>
-<label class="block text-sm font-medium text-gray-600">
-Número de luminaria
-</label>
+        <form id="form-reporte" class="space-y-4">
 
-<input 
-type="number"
-id="no_luminaria"
-required
-class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
->
+            <!-- CAMPO ESCALABLE -->
+            <input type="hidden" id="tipo_infraestructura" value="LUMINARIA">
 
-<div id="info_luminaria" class="text-sm mt-2"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">No. Luminaria</label>
+                    <input type="number" id="no_luminaria" required class="w-full p-2 border rounded-lg">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Tipo de Falla</label>
+                    <select id="descripcion" required class="w-full p-2 border rounded-lg">
+                        <option value="NO_PRENDE">No prende</option>
+                        <option value="PARPADEA">Parpadea</option>
+                        <option value="BAJA_ILUMINACION">Baja iluminación</option>
+                        <option value="DAÑO_FISICO">Daño físico</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Observaciones</label>
+                <textarea id="observaciones" rows="2" class="w-full p-2 border rounded-lg" placeholder="Detalles adicionales..."></textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl">
+                Enviar Reporte
+            </button>
+
+        </form>
+
+        <!-- MENSAJE DE CONFIANZA -->
+        <p class="text-xs text-gray-400 text-center mt-4">
+            Este sistema es de uso exclusivo para vecinos del fraccionamiento. 
+            La información se utiliza únicamente para la gestión, mantenimiento 
+            y mejora de los servicios.
+        </p>
+
+    </div>
+
+    <!-- TABLA -->
+    <div class="bg-white shadow-lg rounded-2xl p-6 overflow-hidden">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-700">Últimos Reportes</h3>
+            <span id="reloj" class="text-xs text-gray-400">Actualizando...</span>
+        </div>
+
+        <div class="overflow-x-auto text-sm">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 text-gray-600">
+                    <tr>
+                        <th class="p-3">Lum.</th>
+                        <th class="p-3">Falla</th>
+                        <th class="p-3">Estado</th>
+                        <th class="p-3">Obs.</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-cuerpo" class="divide-y divide-gray-100"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- LOOKER -->
+    <div class="bg-white shadow-lg rounded-2xl p-4">
+        <h3 class="text-lg font-bold text-gray-700 mb-3 text-center uppercase text-xs">
+            Gráficas en Tiempo Real
+        </h3>
+        <iframe id="looker_iframe"
+            src="TU_LOOKER_URL"
+            class="w-full h-[500px] border rounded-xl">
+        </iframe>
+    </div>
 
 </div>
-
-<div>
-<label class="block text-sm font-medium text-gray-600">
-Tipo de falla
-</label>
-
-<select
-id="descripcion"
-required
-class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
->
-
-<option value="">Seleccione una opción</option>
-<option value="NO_PRENDE">No prende</option>
-<option value="BAJA_ILUMINACION">Baja iluminación</option>
-<option value="PARPADEA">Parpadea</option>
-<option value="SE_APAGA">Se apaga después de un rato</option>
-<option value="DAÑO_FISICO">Daño físico</option>
-<option value="OTRO">Otro problema</option>
-
-</select>
-</div>
-
-<div>
-<label class="block text-sm font-medium text-gray-600">
-Comentario (opcional)
-</label>
-
-<textarea
-id="comentario"
-rows="3"
-class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-placeholder="Describe brevemente el problema si lo deseas">
-</textarea>
-
-</div>
-
-<button
-id="btn_enviar"
-type="submit"
-disabled
-class="w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed">
-Enviar reporte
-</button>
-
-<p id="mensaje" class="text-center text-sm mt-2"></p>
-
-</form>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
+const SUPABASE_URL = 'https://prjxmfhahnzosdwljode.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const supabaseUrl = 'https://prjxmfhahnzosdwljode.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwtyJFPJHBne7BAADj4BIRkBXjsCOb88ybuiizjO4xO9JokDLpweA0oge_c7Xnqsam/exec'; // /exec
+const LOOKER_URL_BASE = 'https://lookerstudio.google.com/embed/reporting/d16fb6ac-e2b8-484f-b9cd-18aebbb0e4f1/page/p_81p916em1d';
 
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+// CARGAR DATOS
+async function cargarDatos() {
+    const { data, error } = await supabase
+        .from('reportes_vecinales')
+        .select('*')
+        .order('fecha_reporte', { ascending: false })
+        .limit(5);
 
-let reporteValido = false;
+    if (error) {
+        console.error(error);
+        return;
+    }
 
-/* verificar luminaria */
+    const cuerpo = document.getElementById('tabla-cuerpo');
 
-document.getElementById('no_luminaria').addEventListener('input', async () => {
+    cuerpo.innerHTML = data.map(r => `
+        <tr>
+            <td class="p-3 font-bold">#${r.no_luminaria}</td>
+            <td class="p-3">${r.descripcion}</td>
+            <td class="p-3">${r.estatus}</td>
+            <td class="p-3">${r.observaciones || '-'}</td>
+        </tr>
+    `).join('');
 
-const numero = Number(document.getElementById('no_luminaria').value);
-
-const info = document.getElementById('info_luminaria');
-const boton = document.getElementById('btn_enviar');
-
-if (!numero) {
-info.innerHTML = "";
-boton.disabled = true;
-return;
+    document.getElementById('reloj').innerText =
+        "Actualizado: " + new Date().toLocaleTimeString();
 }
 
-const { data, error } = await supabaseClient
-.from('luminarias_lookup')
-.select('id, calle, privada, situacion')
-.eq('no_luminaria', numero);
+// ENVÍO
+document.getElementById('form-reporte').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-if (error) {
-console.error(error);
-return;
-}
+    const datos = {
+        tipo_infraestructura: document.getElementById('tipo_infraestructura').value,
+        no_luminaria: document.getElementById('no_luminaria').value,
+        descripcion: document.getElementById('descripcion').value,
+        observaciones: document.getElementById('observaciones').value,
+        estatus: 'NUEVO'
+    };
 
-if (data && data.length > 0) {
+    try {
+        // SUPABASE
+        const { error } = await supabase
+            .from('reportes_vecinales')
+            .insert([datos]);
 
-if (data[0].situacion === "Fuera de servicio") {
+        if (error) throw error;
 
-info.innerHTML =
-"Calle: <b>" + data[0].calle +
-"</b> | Privada: <b>" + data[0].privada +
-"</b><br><span class='text-orange-600'>Esta luminaria ya está registrada como fuera de servicio.</span>";
+        // GOOGLE SHEETS
+        await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
 
-reporteValido = false;
+        alert("✅ Reporte enviado correctamente");
 
-boton.disabled = true;
-boton.className =
-"w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed";
+        document.getElementById('form-reporte').reset();
 
-return;
+        cargarDatos();
 
-}
+        // REFRESCAR LOOKER
+        const iframe = document.getElementById('looker_iframe');
+        iframe.src = LOOKER_URL_BASE + "?t=" + new Date().getTime();
 
-/* luminaria válida */
-
-info.innerHTML =
-"Calle: <b>" + data[0].calle +
-"</b> | Privada: <b>" + data[0].privada + "</b>";
-
-info.className = "text-green-600 text-sm mt-2";
-
-reporteValido = true;
-
-boton.disabled = false;
-boton.className =
-"w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition";
-
-} else {
-
-info.innerHTML = "Número de luminaria no encontrado";
-info.className = "text-red-600 text-sm mt-2";
-
-reporteValido = false;
-
-boton.disabled = true;
-boton.className =
-"w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed";
-
-}
-
+    } catch (err) {
+        console.error(err);
+        alert("Error: " + err.message);
+    }
 });
 
-/* enviar reporte */
-
-document.getElementById('formReporte').addEventListener('submit', async (e) => {
-
-e.preventDefault();
-
-if (!reporteValido) return;
-
-const mensaje = document.getElementById('mensaje');
-
-try {
-
-const no_luminaria = Number(document.getElementById('no_luminaria').value);
-const descripcion = document.getElementById('descripcion').value;
-const comentario = document.getElementById('comentario').value;
-
-/* buscar luminaria */
-
-const { data: luminarias, error: errorConsulta } = await supabaseClient
-.from('luminarias_lookup')
-.select('id')
-.eq('no_luminaria', no_luminaria);
-
-if (errorConsulta) throw errorConsulta;
-
-const luminaria_id = luminarias[0].id;
-
-/* insertar reporte */
-
-const { error: errorInsert } = await supabaseClient
-.from('reportes_vecinales')
-.insert([{
-luminaria_id: luminaria_id,
-no_luminaria: no_luminaria,
-descripcion: descripcion,
-estatus: 'NUEVO',
-observaciones: comentario
-}]);
-
-if (errorInsert) throw errorInsert;
-
-mensaje.innerText =
-"Gracias por tu reporte. Será registrado y atendido a la brevedad.";
-
-mensaje.className = "text-center text-green-600";
-
-document.getElementById('formReporte').reset();
-document.getElementById('info_luminaria').innerHTML = "";
-
-document.getElementById('btn_enviar').disabled = true;
-
-} catch (error) {
-
-mensaje.innerText = "Error: " + error.message;
-mensaje.className = "text-center text-red-600";
-
-console.error(error);
-
-}
-
-});
-
+// INICIO
+cargarDatos();
+setInterval(cargarDatos, 30000);
 </script>
 
 </body>
