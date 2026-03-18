@@ -222,6 +222,7 @@ const reporte_id = insertedData[0].id;
 
 await fetch(GAS_URL, {
   method: "POST",
+  mode: "no-cors", // 👈 ESTO ES CLAVE
   headers: {
     "Content-Type": "application/json"
   },
