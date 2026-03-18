@@ -30,7 +30,6 @@ class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:
 >
 
 <div id="info_luminaria" class="text-sm mt-2"></div>
-
 </div>
 
 <div>
@@ -43,7 +42,6 @@ id="descripcion"
 required
 class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
 >
-
 <option value="">Seleccione una opción</option>
 <option value="NO_PRENDE">No prende</option>
 <option value="BAJA_ILUMINACION">Baja iluminación</option>
@@ -51,7 +49,6 @@ class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:
 <option value="SE_APAGA">Se apaga después de un rato</option>
 <option value="DAÑO_FISICO">Daño físico</option>
 <option value="OTRO">Otro problema</option>
-
 </select>
 </div>
 
@@ -66,7 +63,6 @@ rows="3"
 class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
 placeholder="Describe brevemente el problema si lo deseas">
 </textarea>
-
 </div>
 
 <button
@@ -91,13 +87,15 @@ const supabaseUrl = 'https://prjxmfhahnzosdwljode.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+/* 🔗 URL de tu Apps Script */
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzZUt4Y_YYX5ZDdDz2iXXOwrUgGxvi-cfZYEqOaFpXXW78377yC3Oups-TMqYk5Fuw/exec";
+
+/* estado */
 let reporteValido = false;
 let luminariaActual = null;
-
-/* ✅ NUEVO: control de debounce */
 let debounceTimer = null;
 
-/* verificar luminaria */
+/* validar luminaria */
 
 document.getElementById('no_luminaria').addEventListener('input', () => {
 
@@ -149,6 +147,8 @@ return;
 
 }
 
+/* válida */
+
 info.innerHTML =
 "Calle: <b>" + data[0].calle +
 "</b> | Privada: <b>" + data[0].privada + "</b>";
@@ -175,7 +175,7 @@ boton.className =
 
 }
 
-}, 400); // ⏱️ espera 400ms
+}, 400);
 
 });
 
@@ -201,17 +201,39 @@ throw new Error("Luminaria no válida");
 
 const luminaria_id = luminariaActual.id;
 
-const { error: errorInsert } = await supabaseClient
+/* 🔥 INSERT EN SUPABASE + OBTENER ID */
+
+const { data: insertedData, error: errorInsert } = await supabaseClient
 .from('reportes_vecinales')
 .insert([{
-luminaria_id: luminaria_id,
-no_luminaria: no_luminaria,
-descripcion: descripcion,
-estatus: 'NUEVO',
-observaciones: comentario
-}]);
+  luminaria_id: luminaria_id,
+  no_luminaria: no_luminaria,
+  descripcion: descripcion,
+  estatus: 'NUEVO',
+  observaciones: comentario
+}])
+.select();
 
 if (errorInsert) throw errorInsert;
+
+const reporte_id = insertedData[0].id;
+
+/* 🔗 ENVIAR A GOOGLE SHEETS */
+
+await fetch(GAS_URL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    id: reporte_id,
+    no_luminaria: no_luminaria,
+    descripcion: descripcion,
+    observaciones: comentario,
+    estatus: "NUEVO",
+    luminaria_id: luminaria_id
+  })
+});
 
 mensaje.innerText =
 "Gracias por tu reporte. Será registrado y atendido a la brevedad.";
