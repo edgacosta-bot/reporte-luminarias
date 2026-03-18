@@ -89,14 +89,21 @@ Enviar reporte
 
 const supabaseUrl = 'https://prjxmfhahnzosdwljode.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
-
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 let reporteValido = false;
+let luminariaActual = null;
+
+/* ✅ NUEVO: control de debounce */
+let debounceTimer = null;
 
 /* verificar luminaria */
 
-document.getElementById('no_luminaria').addEventListener('input', async () => {
+document.getElementById('no_luminaria').addEventListener('input', () => {
+
+clearTimeout(debounceTimer);
+
+debounceTimer = setTimeout(async () => {
 
 const numero = Number(document.getElementById('no_luminaria').value);
 
@@ -106,6 +113,7 @@ const boton = document.getElementById('btn_enviar');
 if (!numero) {
 info.innerHTML = "";
 boton.disabled = true;
+luminariaActual = null;
 return;
 }
 
@@ -121,6 +129,8 @@ return;
 
 if (data && data.length > 0) {
 
+luminariaActual = data[0];
+
 if (data[0].situacion === "Fuera de servicio") {
 
 info.innerHTML =
@@ -129,6 +139,7 @@ info.innerHTML =
 "</b><br><span class='text-orange-600'>Esta luminaria ya está registrada como fuera de servicio.</span>";
 
 reporteValido = false;
+luminariaActual = null;
 
 boton.disabled = true;
 boton.className =
@@ -137,8 +148,6 @@ boton.className =
 return;
 
 }
-
-/* luminaria válida */
 
 info.innerHTML =
 "Calle: <b>" + data[0].calle +
@@ -158,12 +167,15 @@ info.innerHTML = "Número de luminaria no encontrado";
 info.className = "text-red-600 text-sm mt-2";
 
 reporteValido = false;
+luminariaActual = null;
 
 boton.disabled = true;
 boton.className =
 "w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed";
 
 }
+
+}, 400); // ⏱️ espera 400ms
 
 });
 
@@ -183,18 +195,11 @@ const no_luminaria = Number(document.getElementById('no_luminaria').value);
 const descripcion = document.getElementById('descripcion').value;
 const comentario = document.getElementById('comentario').value;
 
-/* buscar luminaria */
+if (!luminariaActual) {
+throw new Error("Luminaria no válida");
+}
 
-const { data: luminarias, error: errorConsulta } = await supabaseClient
-.from('luminarias_lookup')
-.select('id')
-.eq('no_luminaria', no_luminaria);
-
-if (errorConsulta) throw errorConsulta;
-
-const luminaria_id = luminarias[0].id;
-
-/* insertar reporte */
+const luminaria_id = luminariaActual.id;
 
 const { error: errorInsert } = await supabaseClient
 .from('reportes_vecinales')
@@ -215,6 +220,7 @@ mensaje.className = "text-center text-green-600";
 
 document.getElementById('formReporte').reset();
 document.getElementById('info_luminaria').innerHTML = "";
+luminariaActual = null;
 
 document.getElementById('btn_enviar').disabled = true;
 
