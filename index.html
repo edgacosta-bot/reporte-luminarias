@@ -76,6 +76,13 @@ Enviar reporte
 <p id="mensaje" class="text-center text-sm mt-2"></p>
 
 </form>
+  <iframe 
+  id="lookerFrame"
+  src="https://lookerstudio.google.com/embed/reporting/d16fb6ac-e2b8-484f-b9cd-18aebbb0e4f1/page/p_81p916em1d"
+  width="100%"
+  height="600"
+  class="mt-6 border rounded-lg">
+</iframe>
 
 </div>
 
@@ -181,6 +188,16 @@ boton.className =
 
 /* enviar reporte */
 
+function refrescarLooker() {
+  const iframe = document.getElementById("lookerFrame");
+
+  if (!iframe) return;
+
+  const baseUrl = iframe.src.split("?")[0];
+  const newUrl = baseUrl + "?t=" + new Date().getTime();
+
+  iframe.src = newUrl;
+}
 document.getElementById('formReporte').addEventListener('submit', async (e) => {
 
 e.preventDefault();
@@ -239,6 +256,9 @@ mensaje.innerText =
 "Gracias por tu reporte. Será registrado y atendido a la brevedad.";
 
 mensaje.className = "text-center text-green-600";
+
+/* 🔥 NUEVO */
+refrescarLooker();
 
 document.getElementById('formReporte').reset();
 document.getElementById('info_luminaria').innerHTML = "";
