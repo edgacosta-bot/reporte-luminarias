@@ -88,7 +88,7 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 /* 🔗 URL de tu Apps Script */
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzZUt4Y_YYX5ZDdDz2iXXOwrUgGxvi-cfZYEqOaFpXXW78377yC3Oups-TMqYk5Fuw/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzP6bybwlyaauGSGJl9UWVwC4FABjBBWIFSoauYZCWkVkHC3PaPLuJWuOk9zlpprCQ/exec";
 
 /* estado */
 let reporteValido = false;
@@ -220,20 +220,19 @@ const reporte_id = insertedData[0].id;
 
 /* 🔗 ENVIAR A GOOGLE SHEETS */
 
+const formData = new URLSearchParams();
+formData.append("data", JSON.stringify({
+  id: reporte_id,
+  no_luminaria: no_luminaria,
+  descripcion: descripcion,
+  observaciones: comentario,
+  estatus: "NUEVO",
+  luminaria_id: luminaria_id
+}));
+
 await fetch(GAS_URL, {
   method: "POST",
-  mode: "no-cors", // 👈 ESTO ES CLAVE
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    id: reporte_id,
-    no_luminaria: no_luminaria,
-    descripcion: descripcion,
-    observaciones: comentario,
-    estatus: "NUEVO",
-    luminaria_id: luminaria_id
-  })
+  body: formData
 });
 
 mensaje.innerText =
