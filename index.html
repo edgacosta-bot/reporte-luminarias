@@ -72,7 +72,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
 const SUPABASE_URL = 'https://prjxmfhahnzosdwljode.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
+const SUPABASE_KEY = 'TU_API_KEY_AQUI';
+
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const input = document.getElementById('no_luminaria');
@@ -82,7 +83,6 @@ const boton = document.getElementById('btn-enviar');
 
 let timeout = null;
 
-// 🔥 VALIDACIÓN PRINCIPAL
 input.addEventListener('input', () => {
 
     clearTimeout(timeout);
@@ -98,7 +98,6 @@ input.addEventListener('input', () => {
 
     timeout = setTimeout(async () => {
 
-        // 1️⃣ VALIDAR EXISTENCIA
         const { data: luminaria } = await supabase
             .from('control_luminarias')
             .select('*')
@@ -113,7 +112,6 @@ input.addEventListener('input', () => {
             return;
         }
 
-        // 2️⃣ UBICACIÓN
         if (luminaria.ubicacion_id) {
             const { data: ubicacion } = await supabase
                 .from('ubicaciones')
@@ -126,7 +124,6 @@ input.addEventListener('input', () => {
             }
         }
 
-        // 3️⃣ VALIDAR ESTADO
         if (luminaria.situacion_id == 2) {
             mensaje.innerText = "⚠️ Esta luminaria ya se encuentra fuera de servicio";
             mensaje.className = "text-xs mt-1 text-red-600";
@@ -139,6 +136,8 @@ input.addEventListener('input', () => {
     }, 400);
 });
 
+});
+</script>
 // ENVÍO
 document.getElementById('form-reporte').addEventListener('submit', async (e) => {
     e.preventDefault();
