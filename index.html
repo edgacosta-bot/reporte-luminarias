@@ -27,7 +27,6 @@
                     <input type="number" id="no_luminaria" required
                         class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
 
-                    <!-- mensajes -->
                     <p id="mensaje" class="text-xs mt-1"></p>
                     <p id="ubicacion" class="text-xs text-gray-500"></p>
                 </div>
@@ -39,7 +38,6 @@
                         class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
 
                         <option value="" disabled selected>Selecciona una opción</option>
-
                         <option value="NO_PRENDE">No prende</option>
                         <option value="PARPADEA">Parpadea</option>
                         <option value="BAJA_ILUMINACION">Baja iluminación</option>
@@ -72,7 +70,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
 const SUPABASE_URL = 'https://prjxmfhahnzosdwljode.supabase.co';
-const SUPABASE_KEY = 'TU_API_KEY_AQUI';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'; // ← PON TU KEY
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -83,6 +81,7 @@ const boton = document.getElementById('btn-enviar');
 
 let timeout = null;
 
+// VALIDACIÓN
 input.addEventListener('input', () => {
 
     clearTimeout(timeout);
@@ -98,11 +97,16 @@ input.addEventListener('input', () => {
 
     timeout = setTimeout(async () => {
 
-        const { data: luminaria } = await supabase
+        // 1. EXISTENCIA
+        const { data: luminaria, error } = await supabase
             .from('control_luminarias')
             .select('*')
             .eq('No. Luminaria', valor)
             .maybeSingle();
+
+        if (error) {
+            console.error(error);
+        }
 
         if (!luminaria) {
             mensaje.innerText = "⚠️ Esta luminaria no existe";
@@ -112,6 +116,7 @@ input.addEventListener('input', () => {
             return;
         }
 
+        // 2. UBICACIÓN
         if (luminaria.ubicacion_id) {
             const { data: ubicacion } = await supabase
                 .from('ubicaciones')
@@ -124,6 +129,7 @@ input.addEventListener('input', () => {
             }
         }
 
+        // 3. ESTADO
         if (luminaria.situacion_id == 2) {
             mensaje.innerText = "⚠️ Esta luminaria ya se encuentra fuera de servicio";
             mensaje.className = "text-xs mt-1 text-red-600";
@@ -136,7 +142,6 @@ input.addEventListener('input', () => {
     }, 400);
 });
 
-});
 // ENVÍO
 document.getElementById('form-reporte').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -153,6 +158,7 @@ document.getElementById('form-reporte').addEventListener('submit', async (e) => 
         if (error) throw error;
 
         alert("✅ Reporte enviado correctamente");
+
         document.getElementById('form-reporte').reset();
         mensaje.innerText = "";
         ubicacionTxt.innerText = "";
@@ -166,111 +172,4 @@ document.getElementById('form-reporte').addEventListener('submit', async (e) => 
 </script>
 
 </body>
-</html>    }
-
-    timeout = setTimeout(async () => {
-
-        // 🔹 1. EXISTENCIA
-        const { data: luminaria } = await supabase
-            .from('control_luminarias')
-            .select('*')
-            .eq('No. Luminaria', valor)
-            .maybeSingle();
-
-        if (!luminaria) {
-            mensaje.innerText = "⚠️ Esta luminaria no existe";
-            mensaje.className = "text-xs mt-1 text-red-600";
-            ubicacionTxt.innerText = "";
-            boton.disabled = true;
-            return;
-        }
-
-        // 🔹 2. UBICACIÓN (USANDO TU ESTRUCTURA REAL)
-        if (luminaria.ubicacion_id) {
-            const { data: ubicacion } = await supabase
-                .from('ubicaciones')
-                .select('calle')
-                .eq('id', luminaria.ubicacion_id)
-                .maybeSingle();
-
-            if (ubicacion) {
-                ubicacionTxt.innerText = "📍 " + ubicacion.calle;
-            }
-        }
-
-        // 🔹 3. ESTADO
-        if (luminaria.situacion_id == 2) {
-            mensaje.innerText = "⚠️ Esta luminaria ya se encuentra fuera de servicio";
-            mensaje.className = "text-xs mt-1 text-red-600";
-            boton.disabled = true;
-        } else {
-            mensaje.innerText = "";
-            boton.disabled = false;
-        }
-
-    }, 400);
-});
-
-// -------- RESTO DE TU CÓDIGO ORIGINAL (SIN CAMBIOS) --------
-
-// FUNCIÓN PARA CARGAR DATOS
-async function cargarDatos() {
-    const { data, error } = await supabase
-        .from('reportes_vecinales')
-        .select('*')
-        .order('fecha_reporte', { ascending: false })
-        .limit(5);
-
-    if (!error) {
-        const cuerpo = document.getElementById('tabla-cuerpo');
-        cuerpo.innerHTML = data.map(r => `
-            <tr>
-                <td class="p-3 font-bold">#${r.no_luminaria}</td>
-                <td class="p-3">${r.descripcion}</td>
-                <td class="p-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">${r.estatus}</span></td>
-                <td class="p-3 text-gray-500 italic">${r.observaciones || '-'}</td>
-            </tr>
-        `).join('');
-        document.getElementById('reloj').innerText = "Sincronizado: " + new Date().toLocaleTimeString();
-    }
-}
-
-// ENVÍO
-document.getElementById('form-reporte').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const datos = {
-        no_luminaria: document.getElementById('no_luminaria').value,
-        descripcion: document.getElementById('descripcion').value,
-        observaciones: document.getElementById('observaciones').value,
-        estatus: 'NUEVO'
-    };
-
-    try {
-        const { error } = await supabase.from('reportes_vecinales').insert([datos]);
-        if (error) throw error;
-
-        fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datos)
-        });
-
-        alert("✅ Reporte enviado con éxito");
-        document.getElementById('form-reporte').reset();
-        cargarDatos();
-
-        const iframe = document.getElementById('looker_iframe');
-        iframe.src = LOOKER_URL_BASE + "?t=" + new Date().getTime();
-
-    } catch (err) {
-        alert("Error: " + err.message);
-    }
-});
-
-// INICIO
-cargarDatos();
-setInterval(cargarDatos, 30000);
-
-</script>
+</html>
