@@ -76,14 +76,7 @@ Enviar reporte
 <p id="mensaje" class="text-center text-sm mt-2"></p>
 
 </form>
-  <iframe 
-  id="lookerFrame"
-  src="https://lookerstudio.google.com/embed/reporting/d16fb6ac-e2b8-484f-b9cd-18aebbb0e4f1/page/p_81p916em1d"
-  width="100%"
-  height="600"
-  class="mt-6 border rounded-lg">
-</iframe>
-
+ 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -93,6 +86,14 @@ Enviar reporte
 const supabaseUrl = 'https://prjxmfhahnzosdwljode.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+  function refrescarLooker() {
+  const iframe = document.getElementById("lookerPing");
+
+  const url = "https://lookerstudio.google.com/embed/reporting/d16fb6ac-e2b8-484f-b9cd-18aebbb0e4f1/page/p_81p916em1d" + "?t=" + new Date().getTime();
+
+  iframe.src = url;
+}
 
 /* 🔗 URL de tu Apps Script */
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyTA5oSnLQf8oF4voydTXO5NeyU1tgHOA5L5WV1DzMYfx8czPyGV9bO9HBlI9EhqUg3/exec";
@@ -255,6 +256,8 @@ await fetch(GAS_URL, {
 mensaje.innerText =
 "Gracias por tu reporte. Será registrado y atendido a la brevedad.";
 
+  setTimeout(refrescarLooker, 1500);
+
 mensaje.className = "text-center text-green-600";
 
 /* 🔥 NUEVO */
@@ -279,5 +282,6 @@ console.error(error);
 
 </script>
 
+<iframe id="lookerPing" style="display:none;"></iframe>
 </body>
 </html>
