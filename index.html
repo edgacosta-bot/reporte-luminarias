@@ -2,17 +2,32 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Reporte de Luminaria</title>
+<title>Sistema de Reporte Vecinal - Villas de la Concepción</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
-<div class="bg-white shadow-lg rounded-2xl p-6 w-full max-w-md">
+<div class="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md border border-gray-200">
 
-<h2 class="text-2xl font-bold text-center mb-6 text-gray-700">
-Reportar luminaria
+<!-- ENCABEZADO -->
+<div class="text-center mb-6">
+  <h1 class="text-xl font-semibold text-gray-800">
+    Sistema de Reporte Vecinal
+  </h1>
+  <p class="text-sm text-gray-500">
+    Fraccionamiento Villas de la Concepción
+  </p>
+</div>
+
+<!-- MENSAJE DE CONFIANZA -->
+<div class="bg-blue-50 border border-blue-200 text-blue-700 text-sm rounded-lg p-3 mb-5">
+  Este formulario forma parte del sistema interno de gestión del fraccionamiento para el registro y seguimiento de incidencias en infraestructura.
+</div>
+
+<h2 class="text-lg font-semibold text-gray-700 mb-4 text-center">
+  Reporte de luminaria
 </h2>
 
 <form id="formReporte" class="space-y-4">
@@ -26,7 +41,8 @@ Número de luminaria
 type="number"
 id="no_luminaria"
 required
-class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+placeholder="Ej. 120"
+class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
 >
 
 <div id="info_luminaria" class="text-sm mt-2"></div>
@@ -40,7 +56,7 @@ Tipo de falla
 <select
 id="descripcion"
 required
-class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
 >
 <option value="">Seleccione una opción</option>
 <option value="NO_PRENDE">No prende</option>
@@ -60,7 +76,7 @@ Comentario (opcional)
 <textarea
 id="comentario"
 rows="3"
-class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
 placeholder="Describe brevemente el problema si lo deseas">
 </textarea>
 </div>
@@ -69,14 +85,18 @@ placeholder="Describe brevemente el problema si lo deseas">
 id="btn_enviar"
 type="submit"
 disabled
-class="w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed">
-Enviar reporte
+class="w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed transition">
+Registrar reporte
 </button>
 
 <p id="mensaje" class="text-center text-sm mt-2"></p>
 
 </form>
- 
+
+<p class="text-xs text-gray-400 text-center mt-4">
+La información proporcionada será utilizada únicamente para fines de atención y mantenimiento del fraccionamiento.
+</p>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -87,23 +107,13 @@ const supabaseUrl = 'https://prjxmfhahnzosdwljode.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-  function refrescarLooker() {
-  const iframe = document.getElementById("lookerPing");
-
-  const url = "https://lookerstudio.google.com/embed/reporting/d16fb6ac-e2b8-484f-b9cd-18aebbb0e4f1/page/p_81p916em1d" + "?t=" + new Date().getTime();
-
-  iframe.src = url;
-}
-
-/* 🔗 URL de tu Apps Script */
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyTA5oSnLQf8oF4voydTXO5NeyU1tgHOA5L5WV1DzMYfx8czPyGV9bO9HBlI9EhqUg3/exec";
 
-/* estado */
 let reporteValido = false;
 let luminariaActual = null;
 let debounceTimer = null;
 
-/* validar luminaria */
+/* VALIDAR LUMINARIA */
 
 document.getElementById('no_luminaria').addEventListener('input', () => {
 
@@ -112,7 +122,6 @@ clearTimeout(debounceTimer);
 debounceTimer = setTimeout(async () => {
 
 const numero = Number(document.getElementById('no_luminaria').value);
-
 const info = document.getElementById('info_luminaria');
 const boton = document.getElementById('btn_enviar');
 
@@ -152,7 +161,6 @@ boton.className =
 "w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed";
 
 return;
-
 }
 
 /* válida */
@@ -180,25 +188,22 @@ luminariaActual = null;
 boton.disabled = true;
 boton.className =
 "w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed";
-
 }
 
 }, 400);
 
 });
 
-/* enviar reporte */
+/* REFRESH LOOKER */
 
 function refrescarLooker() {
-  const iframe = document.getElementById("lookerFrame");
-
-  if (!iframe) return;
-
-  const baseUrl = iframe.src.split("?")[0];
-  const newUrl = baseUrl + "?t=" + new Date().getTime();
-
-  iframe.src = newUrl;
+  const iframe = document.getElementById("lookerPing");
+  const url = "https://lookerstudio.google.com/embed/reporting/d16fb6ac-e2b8-484f-b9cd-18aebbb0e4f1/page/p_81p916em1d?t=" + new Date().getTime();
+  iframe.src = url;
 }
+
+/* ENVIAR REPORTE */
+
 document.getElementById('formReporte').addEventListener('submit', async (e) => {
 
 e.preventDefault();
@@ -219,7 +224,7 @@ throw new Error("Luminaria no válida");
 
 const luminaria_id = luminariaActual.id;
 
-/* 🔥 INSERT EN SUPABASE + OBTENER ID */
+/* INSERT */
 
 const { data: insertedData, error: errorInsert } = await supabaseClient
 .from('reportes_vecinales')
@@ -236,7 +241,7 @@ if (errorInsert) throw errorInsert;
 
 const reporte_id = insertedData[0].id;
 
-/* 🔗 ENVIAR A GOOGLE SHEETS */
+/* GOOGLE SHEETS */
 
 const formData = new URLSearchParams();
 formData.append("data", JSON.stringify({
@@ -254,14 +259,13 @@ await fetch(GAS_URL, {
 });
 
 mensaje.innerText =
-"Gracias por tu reporte. Será registrado y atendido a la brevedad.";
-
-  setTimeout(refrescarLooker, 1500);
+"Tu reporte ha sido registrado correctamente. Será atendido a la brevedad.";
 
 mensaje.className = "text-center text-green-600";
 
-/* 🔥 NUEVO */
-refrescarLooker();
+setTimeout(refrescarLooker, 1500);
+
+/* RESET */
 
 document.getElementById('formReporte').reset();
 document.getElementById('info_luminaria').innerHTML = "";
@@ -283,5 +287,6 @@ console.error(error);
 </script>
 
 <iframe id="lookerPing" style="display:none;"></iframe>
+
 </body>
 </html>
