@@ -8,10 +8,6 @@
 <body>
 
 <h2>Registro Vecinal de Reportes de Agua</h2>
-<p>
-Este formulario permite concentrar los números de reporte realizados por vecinos ante CAASIM,
-con el fin de contar con evidencia organizada para la gestión del servicio.
-</p>
 
 <form id="formAgua">
 
@@ -48,7 +44,7 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyTA5oSnLQf8oF4
 
 
 // ===============================
-// 🔽 CARGAR CALLES (CORREGIDO)
+// 🔽 CARGAR CALLES
 // ===============================
 async function cargarCalles() {
   try {
@@ -60,8 +56,6 @@ async function cargarCalles() {
     });
 
     const data = await res.json();
-    console.log("Calles cargadas:", data);
-
     const select = document.getElementById("calle_id");
 
     data.forEach(item => {
@@ -85,7 +79,6 @@ cargarCalles();
 document.getElementById("formAgua").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // 🔹 Datos para Supabase (SIN tipo_formulario)
   const data = {
     fecha_reporte: document.getElementById("fecha_reporte").value,
     numero_reporte: document.getElementById("numero_reporte").value.trim(),
@@ -94,7 +87,6 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
     numero_exterior: document.getElementById("numero_exterior").value.trim()
   };
 
-  // 🔹 Datos para Apps Script (CON tipo_formulario)
   const dataAppsScript = {
     ...data,
     tipo_formulario: "agua"
@@ -103,7 +95,7 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
   try {
 
     // ============================
-    // 1. GUARDAR EN SUPABASE
+    // 1. SUPABASE
     // ============================
     const res = await fetch(`${SUPABASE_URL}/rest/v1/reportes_agua_caasim`, {
       method: "POST",
@@ -117,36 +109,33 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
 
     if (!res.ok) {
       const errorText = await res.text();
-      throw new Error(errorText);
+      console.error("Error Supabase:", errorText);
+
+      if (errorText.includes("duplicate")) {
+        alert("Este número de reporte ya fue registrado");
+        return;
+      } else {
+        throw new Error(errorText);
+      }
     }
 
     // ============================
-    // 2. ENVIAR A APPS SCRIPT
+    // 2. APPS SCRIPT (FORMATO CORRECTO)
     // ============================
     const resScript = await fetch(APPS_SCRIPT_URL, {
-  method: "POST",
-  body: "data=" + encodeURIComponent(JSON.stringify(dataAppsScript))
-});
+      method: "POST",
+      body: "data=" + encodeURIComponent(JSON.stringify(dataAppsScript))
+    });
 
-const result = await resScript.text();
-console.log("Apps Script responde:", result);
-
-if (!resScript.ok) {
-  throw new Error(result);
-}
+    const text = await resScript.text();
+    console.log("Apps Script responde:", text);
 
     alert("Reporte enviado correctamente");
     e.target.reset();
 
   } catch (error) {
-
-    console.error("Error:", error);
-
-    if (error.message.includes("duplicate")) {
-      alert("Este número de reporte ya fue registrado");
-    } else {
-      alert("Error al enviar el reporte");
-    }
+    console.error("Error general:", error);
+    alert("Error al enviar el reporte");
   }
 });
 </script>
@@ -154,6 +143,7 @@ if (!resScript.ok) {
 </body>
 </html>
 ```
+
 
 </body>
 </html>
