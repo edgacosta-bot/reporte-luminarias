@@ -1,0 +1,125 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reporte de Agua – Villas de la Concepción</title>
+</head>
+<body>
+
+<h2>Registro Vecinal de Reportes de Agua</h2>
+<p>
+Este formulario permite concentrar los números de reporte realizados por vecinos ante CAASIM,
+con el fin de contar con evidencia organizada para la gestión del servicio.
+</p>
+
+<form id="formAgua">
+
+  <label>Fecha del reporte</label><br>
+  <input type="date" id="fecha_reporte" required><br><br>
+
+  <label>Número de reporte</label><br>
+  <input type="text" id="numero_reporte" required><br><br>
+
+  <label>Tipo de falla</label><br>
+  <select id="tipo_falla" required>
+    <option value="">Selecciona...</option>
+    <option>Sin suministro de agua</option>
+    <option>Baja presión</option>
+    <option>Servicio intermitente</option>
+    <option>Fuga de agua</option>
+    <option>Otro</option>
+  </select><br><br>
+
+  <label>Calle / Privada</label><br>
+  <select id="calle_id" required></select><br><br>
+
+  <label>Número exterior</label><br>
+  <input type="text" id="numero_exterior"><br><br>
+
+  <button type="submit">Enviar reporte</button>
+
+</form>
+
+<script>
+const SUPABASE_URL = "https://prjxmfhahnzosdwljode.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyTA5oSnLQf8oF4voydTXO5NeyU1tgHOA5L5WV1DzMYfx8czPyGV9bO9HBlI9EhqUg3/exec";
+
+// 🔽 Cargar calles
+async function cargarCalles() {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/ubicaciones?select=id,nombre&order=nombre.asc`, {
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": `Bearer ${SUPABASE_KEY}`
+    }
+  });
+
+  const data = await res.json();
+  const select = document.getElementById("calle_id");
+
+  data.forEach(calle => {
+    const option = document.createElement("option");
+    option.value = calle.id;
+    option.textContent = calle.nombre;
+    select.appendChild(option);
+  });
+}
+
+cargarCalles();
+
+// 🔽 Enviar formulario
+document.getElementById("formAgua").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const data = {
+    tipo_formulario: "agua",
+    fecha_reporte: document.getElementById("fecha_reporte").value,
+    numero_reporte: document.getElementById("numero_reporte").value.trim(),
+    tipo_falla: document.getElementById("tipo_falla").value,
+    calle_id: parseInt(document.getElementById("calle_id").value),
+    numero_exterior: document.getElementById("numero_exterior").value.trim()
+  };
+
+  try {
+    // 🔹 1. Guardar en Supabase
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/reportes_agua_caasim`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(errorText);
+    }
+
+    // 🔹 2. Enviar a Apps Script (Sheets)
+    await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      body: "data=" + encodeURIComponent(JSON.stringify(data))
+    });
+
+    alert("Reporte enviado correctamente");
+    e.target.reset();
+
+  } catch (error) {
+
+    if (error.message.includes("duplicate")) {
+      alert("Este número de reporte ya fue registrado");
+    } else {
+      alert("Error al enviar el reporte");
+      console.error(error);
+    }
+
+  }
+});
+</script>
+
+</body>
+</html>
+```
