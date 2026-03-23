@@ -46,29 +46,37 @@ const SUPABASE_URL = "https://prjxmfhahnzosdwljode.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs";
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyTA5oSnLQf8oF4voydTXO5NeyU1tgHOA5L5WV1DzMYfx8czPyGV9bO9HBlI9EhqUg3/exec";
 
-// 🔽 Cargar calles
+// 🔽 Cargar calles (CORREGIDO: usa "calle")
 async function cargarCalles() {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/ubicaciones?select=id,nombre&order=nombre.asc`, {
-    headers: {
-      "apikey": SUPABASE_KEY,
-      "Authorization": `Bearer ${SUPABASE_KEY}`
-    }
-  });
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/ubicaciones?select=id,calle&order=calle.asc`, {
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`
+      }
+    });
 
-  const data = await res.json();
-  const select = document.getElementById("calle_id");
+    const data = await res.json();
+    console.log("Calles cargadas:", data);
 
-  data.forEach(calle => {
-    const option = document.createElement("option");
-    option.value = calle.id;
-    option.textContent = calle.nombre;
-    select.appendChild(option);
-  });
+    const select = document.getElementById("calle_id");
+
+    data.forEach(item => {
+      const option = document.createElement("option");
+      option.value = item.id;
+      option.textContent = item.calle;
+      select.appendChild(option);
+    });
+
+  } catch (error) {
+    console.error("Error cargando calles:", error);
+  }
 }
 
 cargarCalles();
 
-// 🔽 Enviar formulario
+
+// 🔽 Envío del formulario
 document.getElementById("formAgua").addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -82,7 +90,7 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
   };
 
   try {
-    // 🔹 1. Guardar en Supabase
+    // 🔹 1. Supabase
     const res = await fetch(`${SUPABASE_URL}/rest/v1/reportes_agua_caasim`, {
       method: "POST",
       headers: {
@@ -98,7 +106,7 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
       throw new Error(errorText);
     }
 
-    // 🔹 2. Enviar a Apps Script (Sheets)
+    // 🔹 2. Apps Script
     await fetch(APPS_SCRIPT_URL, {
       method: "POST",
       body: "data=" + encodeURIComponent(JSON.stringify(data))
@@ -108,17 +116,20 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
     e.target.reset();
 
   } catch (error) {
+    console.error(error);
 
     if (error.message.includes("duplicate")) {
       alert("Este número de reporte ya fue registrado");
     } else {
       alert("Error al enviar el reporte");
-      console.error(error);
     }
-
   }
 });
 </script>
+
+</body>
+</html>
+```
 
 </body>
 </html>
