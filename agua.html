@@ -11,9 +11,6 @@
 
 <form id="formAgua">
 
-  <!-- 🔥 IDENTIFICADOR CLAVE -->
-  <input type="hidden" id="tipo_sistema" value="agua">
-
   <label>Fecha del reporte</label><br>
   <input type="date" id="fecha_reporte" required><br><br>
 
@@ -43,7 +40,7 @@
 <script>
 const SUPABASE_URL = "https://prjxmfhahnzosdwljode.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs";
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbaZGtmzwE1FzoqK4quprhtjLpeYkle9IlUFHjCch1PnrfHsHcTdH4AwCZDMCJ2epb/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTuvIdmDjMaEqw8G1qPkfTx7Ti6w67pgordGTO4GOUgnYXRllKdGJzkRP6PLOjdCI/exec";
 
 
 // ===============================
@@ -82,17 +79,14 @@ cargarCalles();
 document.getElementById("formAgua").addEventListener("submit", async (e) => {
   e.preventDefault();
 
+  const select = document.getElementById("calle_id");
+
   const data = {
     fecha_reporte: document.getElementById("fecha_reporte").value,
     numero_reporte: document.getElementById("numero_reporte").value.trim(),
     tipo_falla: document.getElementById("tipo_falla").value,
-    calle_id: parseInt(document.getElementById("calle_id").value),
+    calle: select.options[select.selectedIndex].text, // 🔥 nombre, no ID
     numero_exterior: document.getElementById("numero_exterior").value.trim()
-  };
-
-  const dataAppsScript = {
-    ...data,
-    tipo_sistema: "agua" // 🔥 CLAVE
   };
 
   try {
@@ -107,7 +101,10 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
         "apikey": SUPABASE_KEY,
         "Authorization": `Bearer ${SUPABASE_KEY}`
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify({
+        ...data,
+        calle_id: parseInt(select.value)
+      })
     });
 
     if (!res.ok) {
@@ -127,7 +124,7 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
     // ============================
     const resScript = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
-      body: "data=" + encodeURIComponent(JSON.stringify(dataAppsScript))
+      body: "data=" + encodeURIComponent(JSON.stringify(data))
     });
 
     const text = await resScript.text();
@@ -142,10 +139,6 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
   }
 });
 </script>
-
-</body>
-</html>
-```
 
 </body>
 </html>
