@@ -64,18 +64,22 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
 
   e.preventDefault();
 
-  const select = document.getElementById("calle_id");
+ const select = document.getElementById("calle_id");
 
-  const data = {
-    fecha_reporte: document.getElementById("fecha_reporte").value,
-    numero_reporte: document.getElementById("numero_reporte").value.trim(),
-    tipo_falla: document.getElementById("tipo_falla").value,
+// 👉 SOLO lo que Supabase necesita
+const dataSupabase = {
+  fecha_reporte: document.getElementById("fecha_reporte").value,
+  numero_reporte: document.getElementById("numero_reporte").value.trim(),
+  tipo_falla: document.getElementById("tipo_falla").value,
+  calle_id: parseInt(select.value),
+  numero_exterior: document.getElementById("numero_exterior").value.trim()
+};
 
-    calle_id: parseInt(select.value), // Supabase
-    calle: select.options[select.selectedIndex].text, // Sheets
-
-    numero_exterior: document.getElementById("numero_exterior").value.trim()
-  };
+// 👉 lo que irá a Sheets
+const dataSheets = {
+  ...dataSupabase,
+  calle: select.options[select.selectedIndex].text
+};
 
   try {
 
@@ -87,7 +91,7 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
         apikey: SUPABASE_KEY,
         Authorization: `Bearer ${SUPABASE_KEY}`
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(dataSupabase)
     });
 
     if (!res.ok) {
