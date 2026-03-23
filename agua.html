@@ -128,9 +128,6 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
   body: "data=" + encodeURIComponent(JSON.stringify(data))
 });
 
-    const text = await resScript.text();
-    console.log("Apps Script responde:", text);
-
     alert("Reporte enviado correctamente");
     e.target.reset();
 
