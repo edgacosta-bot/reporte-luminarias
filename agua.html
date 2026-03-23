@@ -122,10 +122,11 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
     // ============================
     // 2. ENVIAR A APPS SCRIPT
     // ============================
-    const resScript = await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      body: "data=" + encodeURIComponent(JSON.stringify(data))
-    });
+   await fetch(APPS_SCRIPT_URL, {
+  method: "POST",
+  mode: "no-cors", // 🔥 SOLUCIÓN CORS
+  body: "data=" + encodeURIComponent(JSON.stringify(data))
+});
 
     const text = await resScript.text();
     console.log("Apps Script responde:", text);
