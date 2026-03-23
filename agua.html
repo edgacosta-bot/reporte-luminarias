@@ -82,12 +82,12 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
   const select = document.getElementById("calle_id");
 
   const data = {
-    fecha_reporte: document.getElementById("fecha_reporte").value,
-    numero_reporte: document.getElementById("numero_reporte").value.trim(),
-    tipo_falla: document.getElementById("tipo_falla").value,
-    calle: select.options[select.selectedIndex].text, // 🔥 nombre, no ID
-    numero_exterior: document.getElementById("numero_exterior").value.trim()
-  };
+  fecha_reporte: document.getElementById("fecha_reporte").value,
+  numero_reporte: document.getElementById("numero_reporte").value.trim(),
+  tipo_falla: document.getElementById("tipo_falla").value,
+  calle_id: parseInt(document.getElementById("calle_id").value), // ✅ único campo
+  numero_exterior: document.getElementById("numero_exterior").value.trim()
+};
 
   try {
 
