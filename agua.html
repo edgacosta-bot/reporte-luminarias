@@ -100,11 +100,11 @@ const dataSheets = {
     }
 
     // 🔹 2. GUARDAR EN SHEETS (ESPEJO)
-    await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      body: "data=" + encodeURIComponent(JSON.stringify(data))
-    });
+   await fetch(APPS_SCRIPT_URL, {
+  method: "POST",
+  mode: "no-cors",
+  body: "data=" + encodeURIComponent(JSON.stringify(dataSheets))
+});
 
     alert("Reporte enviado correctamente");
     e.target.reset();
