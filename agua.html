@@ -46,7 +46,10 @@ const SUPABASE_URL = "https://prjxmfhahnzosdwljode.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs";
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyTA5oSnLQf8oF4voydTXO5NeyU1tgHOA5L5WV1DzMYfx8czPyGV9bO9HBlI9EhqUg3/exec";
 
-// 🔽 Cargar calles (CORREGIDO: usa "calle")
+
+// ===============================
+// 🔽 CARGAR CALLES (CORREGIDO)
+// ===============================
 async function cargarCalles() {
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/ubicaciones?select=id,calle&order=calle.asc`, {
@@ -76,12 +79,14 @@ async function cargarCalles() {
 cargarCalles();
 
 
-// 🔽 Envío del formulario
+// ===============================
+// 🔽 ENVÍO DEL FORMULARIO
+// ===============================
 document.getElementById("formAgua").addEventListener("submit", async (e) => {
   e.preventDefault();
 
+  // 🔹 Datos para Supabase (SIN tipo_formulario)
   const data = {
-    tipo_formulario: "agua",
     fecha_reporte: document.getElementById("fecha_reporte").value,
     numero_reporte: document.getElementById("numero_reporte").value.trim(),
     tipo_falla: document.getElementById("tipo_falla").value,
@@ -89,8 +94,17 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
     numero_exterior: document.getElementById("numero_exterior").value.trim()
   };
 
+  // 🔹 Datos para Apps Script (CON tipo_formulario)
+  const dataAppsScript = {
+    ...data,
+    tipo_formulario: "agua"
+  };
+
   try {
-    // 🔹 1. Supabase
+
+    // ============================
+    // 1. GUARDAR EN SUPABASE
+    // ============================
     const res = await fetch(`${SUPABASE_URL}/rest/v1/reportes_agua_caasim`, {
       method: "POST",
       headers: {
@@ -106,17 +120,20 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
       throw new Error(errorText);
     }
 
-    // 🔹 2. Apps Script
+    // ============================
+    // 2. ENVIAR A APPS SCRIPT
+    // ============================
     await fetch(APPS_SCRIPT_URL, {
       method: "POST",
-      body: "data=" + encodeURIComponent(JSON.stringify(data))
+      body: "data=" + encodeURIComponent(JSON.stringify(dataAppsScript))
     });
 
     alert("Reporte enviado correctamente");
     e.target.reset();
 
   } catch (error) {
-    console.error(error);
+
+    console.error("Error:", error);
 
     if (error.message.includes("duplicate")) {
       alert("Este número de reporte ya fue registrado");
