@@ -11,6 +11,9 @@
 
 <form id="formAgua">
 
+  <!-- 🔥 IDENTIFICADOR CLAVE -->
+  <input type="hidden" id="tipo_sistema" value="agua">
+
   <label>Fecha del reporte</label><br>
   <input type="date" id="fecha_reporte" required><br><br>
 
@@ -89,13 +92,13 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
 
   const dataAppsScript = {
     ...data,
-    tipo_formulario: "agua"
+    tipo_sistema: "agua" // 🔥 CLAVE
   };
 
   try {
 
     // ============================
-    // 1. SUPABASE
+    // 1. GUARDAR EN SUPABASE
     // ============================
     const res = await fetch(`${SUPABASE_URL}/rest/v1/reportes_agua_caasim`, {
       method: "POST",
@@ -120,7 +123,7 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
     }
 
     // ============================
-    // 2. APPS SCRIPT (FORMATO CORRECTO)
+    // 2. ENVIAR A APPS SCRIPT
     // ============================
     const resScript = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
@@ -143,7 +146,6 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
 </body>
 </html>
 ```
-
 
 </body>
 </html>
