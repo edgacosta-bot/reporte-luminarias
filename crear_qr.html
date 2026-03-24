@@ -2,40 +2,146 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Acceso de Visitantes</title>
+  <title>Acceso Visitantes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      color: black;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+      margin: auto;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    #qrcode {
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
 </head>
 
 <body>
 
-<h2>Generar QR</h2>
+<div class="card">
+  <h2>Acceso de Visitantes</h2>
 
-<select id="tipo">
-  <option value="residente">Residente</option>
-  <option value="administracion">Administración</option>
-</select>
+  <select id="tipo">
+    <option value="residente">Residente</option>
+    <option value="administracion">Administración</option>
+  </select>
 
-<input id="privada" placeholder="Privada">
-<input id="casa" placeholder="Casa">
-<input id="clave" placeholder="Clave">
+  <div id="datosCasa">
+    <input id="privada" placeholder="Privada">
+    <input id="casa" placeholder="Casa">
+  </div>
 
-<input id="visitante" placeholder="Visitante">
-<input id="fecha" type="date">
+  <input id="clave" placeholder="Clave">
+  <input id="visitante" placeholder="Nombre visitante">
+  <input id="fecha" type="date">
 
-<button onclick="generarQR()">Generar QR</button>
+  <button onclick="generarQR()">Generar QR</button>
 
-<div id="qrcode"></div>
+  <div id="qrcode"></div>
+</div>
 
 <script>
-const supabase = window.supabase.createClient(
+const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
+document.getElementById('tipo').addEventListener('change', function() {
+  document.getElementById('datosCasa').style.display =
+    this.value === 'residente' ? 'block' : 'none';
+});
+
 async function generarQR() {
-  alert("Función ejecutada"); // prueba
+
+  const tipo = document.getElementById('tipo').value;
+  const privada = document.getElementById('privada').value;
+  const casa = document.getElementById('casa').value;
+  const clave = document.getElementById('clave').value;
+  const visitante = document.getElementById('visitante').value;
+  const fecha = document.getElementById('fecha').value;
+
+  if (!clave || !visitante || !fecha) {
+    alert("Completa todos los campos");
+    return;
+  }
+
+  let query = client.from('residentes').select('*');
+
+  if (tipo === 'residente') {
+    query = query
+      .eq('tipo', 'residente')
+      .eq('privada', privada)
+      .eq('casa', casa)
+      .eq('clave', clave);
+  } else {
+    query = query
+      .eq('tipo', 'administracion')
+      .eq('clave', clave);
+  }
+
+  const { data: user, error } = await query.single();
+
+  if (error || !user) {
+    alert("Datos incorrectos");
+    return;
+  }
+
+  const codigo = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
+
+  const { error: insertError } = await client
+    .from('visitas_qr')
+    .insert([{
+      residente_id: user.id,
+      tipo_generador: tipo,
+      nombre_visitante: visitante,
+      fecha_visita: fecha,
+      codigo_qr: codigo,
+      privada: user.privada,
+      casa: user.casa,
+      residente_nombre: user.nombre
+    }]);
+
+  if (insertError) {
+    alert("Error al guardar");
+    return;
+  }
+
+  document.getElementById('qrcode').innerHTML = "";
+
+  new QRCode(document.getElementById("qrcode"), {
+    text: `https://reporte-luminarias-3lj5.vercel.app/validar.html?qr=${codigo}`,
+    width: 200,
+    height: 200
+  });
 }
 </script>
 
