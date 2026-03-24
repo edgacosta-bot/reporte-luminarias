@@ -19,17 +19,17 @@
 
 <div class="text-center mb-6">
   <h1 class="text-xl font-semibold text-gray-800">
-    Sistema de Reporte Vecinal
+    Sistema de Información Vecinal
   </h1>
   <p class="text-sm text-gray-500">
     Fraccionamiento Villas de la Concepción
   </p>
 </div>
 
-<!-- MENSAJE DE CONFIANZA -->
+<!-- MENSAJE DE CONTEXTO -->
 
 <div class="bg-blue-50 border border-blue-200 text-blue-700 text-sm rounded-lg p-3 mb-5">
-  Este formulario permite registrar reportes relacionados con el suministro de agua para dar seguimiento ante el organismo operador.
+  Si realizaste un reporte a CAASIM, regístralo aquí. Esta información permitirá documentar fallas en el servicio y generar evidencia colectiva para exigir atención oportuna.
 </div>
 
 <h2 class="text-lg font-semibold text-gray-700 mb-4 text-center">
@@ -48,9 +48,7 @@ type="date"
 id="fecha_reporte"
 required
 class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-
 >
-
 </div>
 
 <div>
@@ -64,9 +62,27 @@ id="numero_reporte"
 required
 placeholder="Ej. 123456"
 class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-
 >
+</div>
 
+<!-- NUEVO CAMPO -->
+
+<div>
+<label class="block text-sm font-medium text-gray-600">
+¿Cómo realizaste el reporte?
+</label>
+
+<select
+id="medio_reporte"
+required
+class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+>
+<option value="">Seleccione una opción</option>
+<option>Teléfono</option>
+<option>App</option>
+<option>Presencial</option>
+<option>Otro</option>
+</select>
 </div>
 
 <div>
@@ -78,9 +94,7 @@ Tipo de falla
 id="tipo_falla"
 required
 class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-
 >
-
 <option value="">Seleccione una opción</option>
 <option>Sin suministro de agua</option>
 <option>Baja presión</option>
@@ -99,7 +113,6 @@ Calle / Privada
 id="calle_id"
 required
 class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-
 > </select>
 
 </div>
@@ -114,22 +127,21 @@ type="text"
 id="numero_exterior"
 placeholder="Ej. 12"
 class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-
 >
-
 </div>
 
 <button
 type="submit"
 class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
-Registrar reporte </button>
+Registrar reporte
+</button>
 
 <p id="mensaje" class="text-center text-sm mt-2"></p>
 
 </form>
 
 <p class="text-xs text-gray-400 text-center mt-4">
-La información será utilizada para documentar incidencias y dar seguimiento ante la autoridad correspondiente.
+La información será utilizada como respaldo para documentar incidencias y gestionar atención ante CAASIM.
 </p>
 
 </div>
@@ -139,7 +151,7 @@ La información será utilizada para documentar incidencias y dar seguimiento an
 <script>
 
 const SUPABASE_URL = "https://prjxmfhahnzosdwljode.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"; // (mantén tu key original)
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyKWLCyjXmziMIFu_2bQoaawhzE4IUAbRnf71fvNsCjuea5DmH150w93FgLC9WqMIw/exec";
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -176,6 +188,7 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
     const dataSupabase = {
       fecha_reporte: document.getElementById("fecha_reporte").value,
       numero_reporte: document.getElementById("numero_reporte").value.trim(),
+      medio_reporte: document.getElementById("medio_reporte").value,
       tipo_falla: document.getElementById("tipo_falla").value,
       calle_id: parseInt(select.value),
       numero_exterior: document.getElementById("numero_exterior").value.trim()
@@ -209,4 +222,3 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
 
 </body>
 </html>
-
