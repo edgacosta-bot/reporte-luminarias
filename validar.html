@@ -5,35 +5,37 @@
   <title>Validación de acceso</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     body {
       font-family: Arial;
-      background: #f4f6f8;
+      margin: 0;
+      height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      margin: 0;
+      background: #0f172a;
+      color: white;
     }
 
     .card {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
       text-align: center;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
     }
 
-    .ok { color: green; }
-    .error { color: red; }
-    .warn { color: orange; }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
 
-    h1 { margin-bottom: 10px; }
+    .ok { color: #22c55e; }
+    .error { color: #ef4444; }
+    .warn { color: #f59e0b; }
+
+    .detalle {
+      margin-top: 15px;
+      font-size: 16px;
+    }
   </style>
 </head>
 
@@ -41,17 +43,17 @@
 
 <div class="card">
   <h1 id="estado">Validando...</h1>
-  <p id="detalle"></p>
+  <div id="detalle" class="detalle"></div>
 </div>
 
 <script>
-const supabaseUrl = 'https://prjxmfhahnzosdwljode.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const supabase = window.supabase.createClient(
+  'https://prjxmfhahnzosdwljode.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
+);
 
-// Obtener QR de la URL
 const params = new URLSearchParams(window.location.search);
-const qr = params.get("qr");
+const qr = params.get("qr")?.trim();
 
 validarQR();
 
@@ -63,41 +65,45 @@ async function validarQR() {
   }
 
   const { data, error } = await supabase
-  .from('visitas_qr')
-  .select('*')
-  .eq('codigo_qr', qr);
+    .from('visitas_qr')
+    .select('*')
+    .eq('codigo_qr', qr);
 
-console.log("QR recibido:", qr);
-console.log("DATA:", data);
-console.log("ERROR:", error);
+  console.log("QR:", qr);
+  console.log("DATA:", data);
+  console.log("ERROR:", error);
 
-  if (!data) {
+  if (error) {
+    mostrar("Error en validación", "error");
+    return;
+  }
+
+  if (!data || data.length === 0) {
     mostrar("QR NO EXISTE", "error");
     return;
   }
 
-  // Fecha actual
+  const visita = data[0];
+
   const hoy = new Date().toISOString().split('T')[0];
 
-  // Validaciones
-  if (data.estatus !== 'activo') {
-    mostrar("QR YA UTILIZADO", "warn", data);
+  if (visita.estatus !== 'activo') {
+    mostrar("QR YA UTILIZADO", "warn", visita);
     return;
   }
 
-  if (data.fecha_visita < hoy) {
-    mostrar("QR VENCIDO", "warn", data);
+  if (visita.fecha_visita < hoy) {
+    mostrar("QR VENCIDO", "warn", visita);
     return;
   }
 
-  // TODO OK
-  mostrar("ACCESO PERMITIDO", "ok", data);
+  mostrar("ACCESO PERMITIDO", "ok", visita);
 
-  // Opcional: marcar como usado
+  // Marcar como usado
   await supabase
     .from('visitas_qr')
     .update({ estatus: 'usado' })
-    .eq('id', data.id);
+    .eq('id', visita.id);
 }
 
 function mostrar(mensaje, tipo, data = null) {
