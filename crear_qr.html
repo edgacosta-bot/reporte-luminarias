@@ -2,40 +2,102 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Acceso Visitantes</title>
+  <title>Acceso de Visitantes - Villas de la Concepción</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- QR -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
     body {
-      font-family: Arial;
-      background: #0f172a;
-      color: white;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      margin: 0;
       padding: 20px;
     }
 
-    .card {
-      background: white;
-      color: black;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 400px;
+    .container {
+      max-width: 420px;
       margin: auto;
     }
 
-    input, select, button {
-      width: 100%;
-      padding: 10px;
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 5px;
+      color: #0f172a;
+      font-size: 22px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
       margin-top: 10px;
+      display: block;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
     }
 
     button {
-      background: #2563eb;
+      width: 100%;
+      margin-top: 18px;
+      padding: 14px;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
       color: white;
+      font-weight: bold;
       border: none;
+      border-radius: 12px;
+      font-size: 15px;
       cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 15px rgba(37,99,235,0.4);
+    }
+
+    .divider {
+      margin: 20px 0;
+      height: 1px;
+      background: #e2e8f0;
+    }
+
+    #resultado {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #0f172a;
     }
 
     #qrcode {
@@ -47,34 +109,58 @@
 
 <body>
 
-<div class="card">
-  <h2>Acceso de Visitantes</h2>
+<div class="container">
+  <div class="card">
 
-  <select id="tipo">
-    <option value="residente">Residente</option>
-    <option value="administracion">Administración</option>
-  </select>
+    <h1>Acceso de Visitantes</h1>
+    <div class="subtitle">Fraccionamiento Villas de la Concepción</div>
 
-  <div id="datosCasa">
-    <input id="privada" placeholder="Privada">
-    <input id="casa" placeholder="Casa">
+    <label>Tipo de acceso</label>
+    <select id="tipo">
+      <option value="residente">Residente</option>
+      <option value="administracion">Administración</option>
+    </select>
+
+    <div id="datosCasa">
+      <label>Privada</label>
+      <select id="privada">
+        <option value="">Selecciona privada</option>
+        <option value="I">Privada I</option>
+        <option value="II">Privada II</option>
+        <option value="III">Privada III</option>
+        <option value="IV">Privada IV</option>
+      </select>
+
+      <label>Número de casa</label>
+      <input id="casa" type="number" placeholder="Ej. 12">
+    </div>
+
+    <label>Clave</label>
+    <input id="clave" placeholder="Clave de acceso">
+
+    <div class="divider"></div>
+
+    <label>Nombre del visitante</label>
+    <input id="visitante" placeholder="Ej. Juan Pérez">
+
+    <label>Fecha de visita</label>
+    <input id="fecha" type="date">
+
+    <button onclick="generarQR()">Generar código QR</button>
+
+    <div id="resultado"></div>
+    <div id="qrcode"></div>
+
   </div>
-
-  <input id="clave" placeholder="Clave">
-  <input id="visitante" placeholder="Nombre visitante">
-  <input id="fecha" type="date">
-
-  <button onclick="generarQR()">Generar QR</button>
-
-  <div id="qrcode"></div>
 </div>
 
 <script>
 const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs' // ⚠️ pega tu key real
 );
 
+// Mostrar/ocultar privada
 document.getElementById('tipo').addEventListener('change', function() {
   document.getElementById('datosCasa').style.display =
     this.value === 'residente' ? 'block' : 'none';
@@ -83,14 +169,19 @@ document.getElementById('tipo').addEventListener('change', function() {
 async function generarQR() {
 
   const tipo = document.getElementById('tipo').value;
-  const privada = document.getElementById('privada').value;
-  const casa = document.getElementById('casa').value;
-  const clave = document.getElementById('clave').value;
-  const visitante = document.getElementById('visitante').value;
+  const privada = document.getElementById('privada').value.trim();
+  const casa = document.getElementById('casa').value.trim();
+  const clave = document.getElementById('clave').value.trim();
+  const visitante = document.getElementById('visitante').value.trim();
   const fecha = document.getElementById('fecha').value;
 
   if (!clave || !visitante || !fecha) {
     alert("Completa todos los campos");
+    return;
+  }
+
+  if (tipo === 'residente' && (!privada || !casa)) {
+    alert("Falta privada o casa");
     return;
   }
 
@@ -131,6 +222,7 @@ async function generarQR() {
     }]);
 
   if (insertError) {
+    console.error(insertError);
     alert("Error al guardar");
     return;
   }
@@ -142,6 +234,12 @@ async function generarQR() {
     width: 200,
     height: 200
   });
+
+  document.getElementById('resultado').innerHTML = `
+    <p><b>Visitante:</b> ${visitante}</p>
+    <p><b>Fecha:</b> ${fecha}</p>
+    <p><b>Generado por:</b> ${user.identificador}</p>
+  `;
 }
 </script>
 
