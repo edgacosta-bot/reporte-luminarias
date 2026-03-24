@@ -63,10 +63,13 @@ async function validarQR() {
   }
 
   const { data, error } = await supabase
-    .from('visitas_qr')
-    .select('*')
-    .eq('codigo_qr', qr)
-    .single();
+  .from('visitas_qr')
+  .select('*')
+  .eq('codigo_qr', qr);
+
+console.log("QR recibido:", qr);
+console.log("DATA:", data);
+console.log("ERROR:", error);
 
   if (!data) {
     mostrar("QR NO EXISTE", "error");
