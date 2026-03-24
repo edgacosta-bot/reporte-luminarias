@@ -2,48 +2,133 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Acceso visitante</title>
+  <title>Pase de acceso</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
     body {
       font-family: Arial;
       background: #0f172a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
       color: white;
-      text-align: center;
-      padding: 30px;
     }
 
-    h2 {
-      margin-bottom: 20px;
+    .card {
+      background: white;
+      color: black;
+      border-radius: 16px;
+      padding: 20px;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .header {
+      background: #1e293b;
+      color: white;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+
+    .nombre {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .info {
+      font-size: 14px;
+      color: #475569;
+      margin-bottom: 10px;
     }
 
     #qrcode {
-      margin-top: 20px;
+      margin-top: 15px;
+    }
+
+    .footer {
+      margin-top: 15px;
+      font-size: 11px;
+      color: #94a3b8;
     }
   </style>
 </head>
 
 <body>
 
-<h2>Acceso autorizado</h2>
-<p>Muestra este código en la entrada</p>
+<div class="card">
 
-<div id="qrcode"></div>
+  <div class="header">
+    Villas de la Concepción
+  </div>
+
+  <div class="nombre" id="nombre">Cargando...</div>
+
+  <div class="info" id="info"></div>
+
+  <div id="qrcode"></div>
+
+  <div class="footer">
+    Mostrar este código en la entrada
+  </div>
+
+</div>
 
 <script>
+const client = window.supabase.createClient(
+  'https://prjxmfhahnzosdwljode.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
+);
+
 const params = new URLSearchParams(window.location.search);
 const qr = params.get("qr");
 
-const link = `https://reporte-luminarias-3lj5.vercel.app/validar.html?qr=${qr}`;
+cargar();
 
-new QRCode(document.getElementById("qrcode"), {
-  text: link,
-  width: 220,
-  height: 220
-});
+async function cargar() {
+
+  const { data } = await client
+    .from('visitas_qr')
+    .select('*')
+    .eq('codigo_qr', qr);
+
+  if (!data || data.length === 0) {
+    document.getElementById("nombre").innerText = "QR inválido";
+    return;
+  }
+
+  const visita = data[0];
+
+  // Mostrar datos
+  document.getElementById("nombre").innerText = visita.nombre_visitante;
+
+  document.getElementById("info").innerHTML = `
+    📅 ${visita.fecha_visita}<br>
+    🏠 ${
+      visita.tipo_generador === 'administracion'
+        ? 'ADMINISTRACIÓN'
+        : visita.privada + '-' + visita.casa
+    }
+  `;
+
+  // Generar QR
+  const link = `https://reporte-luminarias-3lj5.vercel.app/validar.html?qr=${qr}`;
+
+  new QRCode(document.getElementById("qrcode"), {
+    text: link,
+    width: 180,
+    height: 180
+  });
+}
 </script>
 
 </body>
