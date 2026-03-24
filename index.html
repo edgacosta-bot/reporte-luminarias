@@ -15,20 +15,19 @@
       overflow-x: hidden;
     }
 
-    /* LOGO DE FONDO */
-   body::before {
-  content: "";
-  position: fixed;
-  top: 45%;              /* 🔥 sube el logo */
-  left: 50%;
-  width: 900px;
-  height: 900px;
-  background: url('logo.png') no-repeat center;
-  background-size: contain;
-  transform: translate(-50%, -50%);
-  opacity: 0.04;         /* 🔥 más sutil */
-  z-index: 0;
-}
+    body::before {
+      content: "";
+      position: fixed;
+      top: 45%;
+      left: 50%;
+      width: 900px;
+      height: 900px;
+      background: url('logo.png') no-repeat center;
+      background-size: contain;
+      transform: translate(-50%, -50%);
+      opacity: 0.04;
+      z-index: 0;
+    }
 
     .container {
       max-width: 500px;
@@ -105,7 +104,7 @@
   </a>
 
   <a href="videocamaras.html" class="button camaras">
-    📹 Videocámaras
+    📹 Videovigilancia
   </a>
 
   <a href="cerco_electrico.html" class="button cerco">
@@ -124,8 +123,9 @@
     🛡 Vigilancia
   </a>
 
-  <a href="qr_visitantes.html" class="button qr">
-    📱 Códigos QR para visitantes
+  <!-- 🔥 NUEVO MÓDULO QR CORRECTO -->
+  <a href="crear_qr.html" class="button qr">
+    📱 Acceso de visitantes (QR)
   </a>
 
 </div>
