@@ -2,14 +2,13 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Validación de acceso</title>
+  <title>Validación</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     body {
-      font-family: Arial;
       margin: 0;
       height: 100vh;
       display: flex;
@@ -17,114 +16,48 @@
       justify-content: center;
       background: #0f172a;
       color: white;
+      font-family: Arial;
     }
 
-    .card {
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 28px;
-      margin-bottom: 10px;
-    }
-
+    h1 { font-size: 30px; }
     .ok { color: #22c55e; }
     .error { color: #ef4444; }
     .warn { color: #f59e0b; }
-
-    .detalle {
-      margin-top: 15px;
-      font-size: 16px;
-    }
   </style>
 </head>
 
 <body>
 
-<div class="card">
-  <h1 id="estado">Validando...</h1>
-  <div id="detalle" class="detalle"></div>
-</div>
+<h1 id="estado">Validando...</h1>
 
 <script>
-const supabase = window.supabase.createClient(
+const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
 const params = new URLSearchParams(window.location.search);
-const qr = params.get("qr")?.trim();
+const qr = params.get("qr");
 
-validarQR();
+validar();
 
-async function validarQR() {
+async function validar() {
 
-  if (!qr) {
-    mostrar("QR inválido", "error");
-    return;
-  }
-
-  const { data, error } = await supabase
+  const { data } = await client
     .from('visitas_qr')
     .select('*')
     .eq('codigo_qr', qr);
 
-  console.log("QR:", qr);
-  console.log("DATA:", data);
-  console.log("ERROR:", error);
-
-  if (error) {
-    mostrar("Error en validación", "error");
-    return;
-  }
-
   if (!data || data.length === 0) {
-    mostrar("QR NO EXISTE", "error");
+    document.getElementById("estado").innerText = "QR inválido";
+    document.getElementById("estado").className = "error";
     return;
   }
 
   const visita = data[0];
 
-  const hoy = new Date().toISOString().split('T')[0];
-
-  if (visita.estatus !== 'activo') {
-    mostrar("QR YA UTILIZADO", "warn", visita);
-    return;
-  }
-
-  if (visita.fecha_visita < hoy) {
-    mostrar("QR VENCIDO", "warn", visita);
-    return;
-  }
-
-  mostrar("ACCESO PERMITIDO", "ok", visita);
-
-  // Marcar como usado
-  await supabase
-    .from('visitas_qr')
-    .update({ estatus: 'usado' })
-    .eq('id', visita.id);
-}
-
-function mostrar(mensaje, tipo, data = null) {
-
-  const estado = document.getElementById("estado");
-  const detalle = document.getElementById("detalle");
-
-  estado.innerText = mensaje;
-  estado.className = tipo;
-
-  if (data) {
-    detalle.innerHTML = `
-      <b>Visitante:</b> ${data.nombre_visitante}<br>
-      <b>Fecha:</b> ${data.fecha_visita}<br>
-      <b>Generado por:</b> ${
-        data.tipo_generador === 'administracion'
-          ? 'ADMINISTRACIÓN'
-          : data.privada + '-' + data.casa
-      }
-    `;
-  }
+  document.getElementById("estado").innerText = "ACCESO PERMITIDO";
+  document.getElementById("estado").className = "ok";
 }
 </script>
 
