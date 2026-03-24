@@ -86,7 +86,7 @@ async function validar() {
   const hoy = new Date().toISOString().split('T')[0];
 
 if (visita.fecha_visita !== hoy) {
-  const ahora = new Date().toTimeString().slice(0,5);
+  const ahora = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
 // Validar antes de la hora
 if (visita.hora_inicio && ahora < visita.hora_inicio) {
