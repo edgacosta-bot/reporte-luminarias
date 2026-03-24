@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Acceso visitante</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+      padding: 30px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    #qrcode {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Acceso autorizado</h2>
+<p>Muestra este código en la entrada</p>
+
+<div id="qrcode"></div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const qr = params.get("qr");
+
+const link = `https://reporte-luminarias-3lj5.vercel.app/validar.html?qr=${qr}`;
+
+new QRCode(document.getElementById("qrcode"), {
+  text: link,
+  width: 220,
+  height: 220
+});
+</script>
+
+</body>
+</html>
