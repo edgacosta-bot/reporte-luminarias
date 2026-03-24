@@ -86,6 +86,19 @@ async function validar() {
   const hoy = new Date().toISOString().split('T')[0];
 
 if (visita.fecha_visita !== hoy) {
+  const ahora = new Date().toTimeString().slice(0,5);
+
+// Validar antes de la hora
+if (visita.hora_inicio && ahora < visita.hora_inicio) {
+  pintar("AÚN NO PERMITIDO", "warn", visita);
+  return;
+}
+
+// Validar después de la hora
+if (visita.hora_fin && ahora > visita.hora_fin) {
+  pintar("FUERA DE HORARIO", "warn", visita);
+  return;
+}
   pintar("QR NO VÁLIDO PARA HOY", "warn", visita);
   return;
 }
