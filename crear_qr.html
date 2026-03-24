@@ -184,6 +184,8 @@ async function generarQR() {
   const clave = document.getElementById('clave').value.trim();
   const visitante = document.getElementById('visitante').value.trim();
   const fecha = document.getElementById('fecha').value;
+  const hora_inicio = document.getElementById('hora_inicio').value;
+  const hora_fin = document.getElementById('hora_fin').value;
 
   if (!clave || !visitante || !fecha) {
     alert("Completa todos los campos");
@@ -221,16 +223,20 @@ async function generarQR() {
   const { error: insertError } = await client
     .from('visitas_qr')
     .insert([{
-      residente_id: user.id,
-      tipo_generador: tipo,
-      nombre_visitante: visitante,
-      fecha_visita: fecha,
-      codigo_qr: codigo,
-      privada: user.privada,
-      casa: user.casa,
-      residente_nombre: user.nombre,
-      estatus: 'activo'
-    }]);
+  residente_id: user.id,
+  tipo_generador: tipo,
+  nombre_visitante: visitante,
+  fecha_visita: fecha,
+
+  hora_inicio: hora_inicio,
+  hora_fin: hora_fin,
+
+  codigo_qr: codigo,
+  privada: user.privada,
+  casa: user.casa,
+  residente_nombre: user.nombre,
+  estatus: 'activo'
+}]);
 
   if (insertError) {
     alert("Error al guardar");
