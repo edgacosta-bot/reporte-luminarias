@@ -60,13 +60,6 @@
       border-radius: 10px;
       border: 1px solid #cbd5e1;
       font-size: 14px;
-      transition: 0.2s;
-    }
-
-    input:focus, select:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
     }
 
     button {
@@ -80,12 +73,6 @@
       border-radius: 12px;
       font-size: 15px;
       cursor: pointer;
-      transition: 0.2s;
-    }
-
-    button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 5px 15px rgba(37,99,235,0.4);
     }
 
     .divider {
@@ -103,6 +90,14 @@
     #qrcode {
       margin-top: 20px;
       text-align: center;
+    }
+
+    .whatsapp {
+      background: #25D366;
+    }
+
+    .volver {
+      background: #374151;
     }
   </style>
 </head>
@@ -151,13 +146,23 @@
     <div id="resultado"></div>
     <div id="qrcode"></div>
 
+    <!-- 🔥 BOTÓN WHATSAPP -->
+    <button id="btnWhatsapp" class="whatsapp" style="display:none;">
+      📲 Enviar por WhatsApp
+    </button>
+
+    <!-- 🔥 VOLVER -->
+    <a href="index.html">
+      <button class="volver">← Volver al inicio</button>
+    </a>
+
   </div>
 </div>
 
 <script>
 const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs' // ⚠️ pega tu key real
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
 // Mostrar/ocultar privada
@@ -206,7 +211,7 @@ async function generarQR() {
     return;
   }
 
-  const codigo = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
+  const codigo = crypto.randomUUID();
 
   const { error: insertError } = await client
     .from('visitas_qr')
@@ -218,19 +223,21 @@ async function generarQR() {
       codigo_qr: codigo,
       privada: user.privada,
       casa: user.casa,
-      residente_nombre: user.nombre
+      residente_nombre: user.nombre,
+      estatus: 'activo'
     }]);
 
   if (insertError) {
-    console.error(insertError);
     alert("Error al guardar");
     return;
   }
 
+  const link = `https://reporte-luminarias-3lj5.vercel.app/validar.html?qr=${codigo}`;
+
   document.getElementById('qrcode').innerHTML = "";
 
   new QRCode(document.getElementById("qrcode"), {
-    text: `https://reporte-luminarias-3lj5.vercel.app/validar.html?qr=${codigo}`,
+    text: link,
     width: 200,
     height: 200
   });
@@ -240,6 +247,17 @@ async function generarQR() {
     <p><b>Fecha:</b> ${fecha}</p>
     <p><b>Generado por:</b> ${user.identificador}</p>
   `;
+
+  // 🔥 WHATSAPP
+  const mensaje = `🏡 Villas de la Concepción\n\nAcceso autorizado:\n${link}`;
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+
+  const btn = document.getElementById("btnWhatsapp");
+  btn.style.display = "block";
+
+  btn.onclick = () => {
+    window.open(whatsappUrl, "_blank");
+  };
 }
 </script>
 
