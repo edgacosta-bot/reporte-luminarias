@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
 
   <style>
     body {
@@ -17,12 +17,10 @@
       align-items: center;
       height: 100vh;
       margin: 0;
-      color: white;
     }
 
     .card {
       background: white;
-      color: black;
       border-radius: 16px;
       padding: 20px;
       width: 320px;
@@ -40,30 +38,17 @@
     .nombre {
       font-size: 20px;
       font-weight: bold;
+      margin-top: 10px;
     }
 
     .info {
       margin-top: 10px;
       font-size: 14px;
+      color: #475569;
     }
 
-    #qrcode {
+    canvas {
       margin-top: 20px;
-    }
-
-    .link {
-      margin-top: 15px;
-      font-size: 12px;
-      word-break: break-all;
-    }
-
-    .btn {
-      margin-top: 10px;
-      padding: 10px;
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 8px;
     }
   </style>
 </head>
@@ -71,20 +56,12 @@
 <body>
 
 <div class="card">
-
   <div class="header">Villas de la Concepción</div>
 
   <div class="nombre" id="nombre">Cargando...</div>
   <div class="info" id="info"></div>
 
-  <div id="qrcode"></div>
-
-  <!-- 🔥 BOTÓN FALLBACK -->
-  <button id="btnAbrir" class="btn">Abrir acceso manual</button>
-
-  <!-- 🔍 LINK VISIBLE -->
-  <div id="linkTexto" class="link"></div>
-
+  <canvas id="qr"></canvas>
 </div>
 
 <script>
@@ -94,14 +71,12 @@ const client = window.supabase.createClient(
 );
 
 const params = new URLSearchParams(window.location.search);
-let qr = params.get("qr");
+const qrParam = params.get("qr");
 
-if (!qr) {
+if (!qrParam) {
   document.getElementById("nombre").innerText = "QR inválido";
   throw new Error("QR inválido");
 }
-
-qr = qr.trim();
 
 cargar();
 
@@ -110,7 +85,7 @@ async function cargar() {
   const { data } = await client
     .from('visitas_qr')
     .select('*')
-    .eq('codigo_qr', qr);
+    .eq('codigo_qr', qrParam);
 
   if (!data || data.length === 0) {
     document.getElementById("nombre").innerText = "QR inválido";
@@ -123,32 +98,15 @@ async function cargar() {
 
   document.getElementById("info").innerHTML = `
     📅 ${visita.fecha_visita}<br>
-    🏠 ${
-      visita.tipo_generador === 'administracion'
-        ? 'ADMINISTRACIÓN'
-        : visita.privada + '-' + visita.casa
-    }
+    🏠 ${visita.privada}-${visita.casa}
   `;
 
-  // 🔥 LINK FORZADO
-  const link = `https://reporte-luminarias-3lj5.vercel.app/validar.html?qr=${qr}`;
+  const link = `https://reporte-luminarias-3lj5.vercel.app/validar.html?qr=${qrParam}`;
 
-  // Mostrar link visible (debug)
-  document.getElementById("linkTexto").innerText = link;
-
-  // Botón manual
-  document.getElementById("btnAbrir").onclick = () => {
-    window.location.href = link;
-  };
-
-  // Generar QR
-  const qrContainer = document.getElementById("qrcode");
-  qrContainer.innerHTML = "";
-
-  new QRCode(qrContainer, {
-    text: link,
-    width: 220,
-    height: 220
+  new QRious({
+    element: document.getElementById('qr'),
+    value: link,
+    size: 220
   });
 }
 </script>
