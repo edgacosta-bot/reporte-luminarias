@@ -27,7 +27,6 @@
       padding: 20px;
       width: 320px;
       text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
     }
 
     .header {
@@ -35,30 +34,21 @@
       color: white;
       padding: 10px;
       border-radius: 10px;
-      font-size: 14px;
       margin-bottom: 15px;
     }
 
     .nombre {
       font-size: 20px;
       font-weight: bold;
-      margin: 10px 0;
     }
 
     .info {
+      margin-top: 10px;
       font-size: 14px;
-      color: #475569;
-      margin-bottom: 10px;
     }
 
     #qrcode {
-      margin-top: 15px;
-    }
-
-    .footer {
-      margin-top: 15px;
-      font-size: 11px;
-      color: #94a3b8;
+      margin-top: 20px;
     }
   </style>
 </head>
@@ -66,21 +56,12 @@
 <body>
 
 <div class="card">
-
-  <div class="header">
-    Villas de la Concepción
-  </div>
+  <div class="header">Villas de la Concepción</div>
 
   <div class="nombre" id="nombre">Cargando...</div>
-
   <div class="info" id="info"></div>
 
   <div id="qrcode"></div>
-
-  <div class="footer">
-    Mostrar este código en la entrada
-  </div>
-
 </div>
 
 <script>
@@ -90,25 +71,32 @@ const client = window.supabase.createClient(
 );
 
 const params = new URLSearchParams(window.location.search);
-const qr = params.get("qr");
+const qr = params.get("qr")?.trim();
+
+console.log("QR recibido:", qr);
+
+// 🚨 VALIDACIÓN CRÍTICA
+if (!qr) {
+  document.getElementById("nombre").innerText = "QR inválido";
+  throw new Error("QR vacío");
+}
 
 cargar();
 
 async function cargar() {
 
-  const { data } = await client
+  const { data, error } = await client
     .from('visitas_qr')
     .select('*')
     .eq('codigo_qr', qr);
 
-  if (!data || data.length === 0) {
+  if (error || !data || data.length === 0) {
     document.getElementById("nombre").innerText = "QR inválido";
     return;
   }
 
   const visita = data[0];
 
-  // Mostrar datos
   document.getElementById("nombre").innerText = visita.nombre_visitante;
 
   document.getElementById("info").innerHTML = `
@@ -120,13 +108,19 @@ async function cargar() {
     }
   `;
 
-  // Generar QR
+  // 🔥 LINK CORRECTO
   const link = `https://reporte-luminarias-3lj5.vercel.app/validar.html?qr=${qr}`;
 
+  console.log("LINK QR:", link);
+
+  // LIMPIAR
+  document.getElementById("qrcode").innerHTML = "";
+
+  // GENERAR QR
   new QRCode(document.getElementById("qrcode"), {
     text: link,
-    width: 180,
-    height: 180
+    width: 200,
+    height: 200
   });
 }
 </script>
