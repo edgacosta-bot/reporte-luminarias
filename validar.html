@@ -83,10 +83,12 @@ async function validar() {
     return;
   }
 
-  if (visita.fecha_visita < hoy) {
-    pintar("QR VENCIDO", "warn", visita);
-    return;
-  }
+  const hoy = new Date().toISOString().split('T')[0];
+
+if (visita.fecha_visita !== hoy) {
+  pintar("QR NO VÁLIDO PARA HOY", "warn", visita);
+  return;
+}
 
   pintar("ACCESO PERMITIDO", "ok", visita);
 
