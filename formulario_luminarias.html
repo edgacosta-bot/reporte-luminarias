@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Sistema de Reporte Vecinal - Villas de la Concepción</title>
+<title>Sistema de Información Vecinal - Villas de la Concepción</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
@@ -14,16 +14,16 @@
 <!-- ENCABEZADO -->
 <div class="text-center mb-6">
   <h1 class="text-xl font-semibold text-gray-800">
-    Sistema de Reporte Vecinal
+    Sistema de Información Vecinal
   </h1>
   <p class="text-sm text-gray-500">
     Fraccionamiento Villas de la Concepción
   </p>
 </div>
 
-<!-- MENSAJE DE CONFIANZA -->
+<!-- MENSAJE DE CONTEXTO -->
 <div class="bg-blue-50 border border-blue-200 text-blue-700 text-sm rounded-lg p-3 mb-5">
-  Este formulario forma parte del sistema interno de gestión del fraccionamiento para el registro y seguimiento de incidencias en infraestructura.
+  Este formulario permite registrar fallas en luminarias para su atención y seguimiento dentro del fraccionamiento.
 </div>
 
 <h2 class="text-lg font-semibold text-gray-700 mb-4 text-center">
@@ -59,12 +59,12 @@ required
 class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
 >
 <option value="">Seleccione una opción</option>
-<option value="NO_PRENDE">No prende</option>
+<option value="NO_PRENDE">No enciende</option>
 <option value="BAJA_ILUMINACION">Baja iluminación</option>
 <option value="PARPADEA">Parpadea</option>
-<option value="SE_APAGA">Se apaga después de un rato</option>
+<option value="SE_APAGA">Se apaga</option>
 <option value="DAÑO_FISICO">Daño físico</option>
-<option value="OTRO">Otro problema</option>
+<option value="OTRO">Otro</option>
 </select>
 </div>
 
@@ -93,6 +93,11 @@ Registrar reporte
 
 </form>
 
+<!-- BOTÓN REGRESAR -->
+<a href="luminarias.html" class="block text-center mt-4 text-sm text-blue-600">
+← Volver a Luminarias
+</a>
+
 <p class="text-xs text-gray-400 text-center mt-4">
 La información proporcionada será utilizada únicamente para fines de atención y mantenimiento del fraccionamiento.
 </p>
@@ -104,7 +109,7 @@ La información proporcionada será utilizada únicamente para fines de atenció
 <script>
 
 const supabaseUrl = 'https://prjxmfhahnzosdwljode.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'; // ← deja tu key real aquí
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwaH8lMepC5iFCLTOXVsMroOeKCT1i3opN7O19Ha02vRyB6C2QvesO-eT_nU9fKaYhA/exec";
@@ -162,8 +167,6 @@ boton.className =
 
 return;
 }
-
-/* válida */
 
 info.innerHTML =
 "Calle: <b>" + data[0].calle +
@@ -224,8 +227,6 @@ throw new Error("Luminaria no válida");
 
 const luminaria_id = luminariaActual.id;
 
-/* INSERT */
-
 const { data: insertedData, error: errorInsert } = await supabaseClient
 .from('reportes_vecinales')
 .insert([{
@@ -240,8 +241,6 @@ const { data: insertedData, error: errorInsert } = await supabaseClient
 if (errorInsert) throw errorInsert;
 
 const reporte_id = insertedData[0].id;
-
-/* GOOGLE SHEETS */
 
 const formData = new URLSearchParams();
 formData.append("data", JSON.stringify({
@@ -259,13 +258,11 @@ await fetch(GAS_URL, {
 });
 
 mensaje.innerText =
-"Tu reporte ha sido registrado correctamente. Será atendido a la brevedad.";
+"Reporte registrado correctamente. Gracias por tu apoyo para el mantenimiento del fraccionamiento.";
 
 mensaje.className = "text-center text-green-600";
 
 setTimeout(refrescarLooker, 1500);
-
-/* RESET */
 
 document.getElementById('formReporte').reset();
 document.getElementById('info_luminaria').innerHTML = "";
