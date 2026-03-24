@@ -72,6 +72,7 @@ const client = window.supabase.createClient(
 
 const params = new URLSearchParams(window.location.search);
 const qr = params.get("qr")?.trim();
+alert("QR recibido: " + qr);
 
 console.log("QR recibido:", qr);
 
