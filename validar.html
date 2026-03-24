@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Validación</title>
+  <title>Validación de acceso</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -14,21 +14,38 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #0f172a;
-      color: white;
       font-family: Arial;
+      text-align: center;
+      color: white;
+      transition: background 0.3s;
     }
 
-    h1 { font-size: 30px; }
-    .ok { color: #22c55e; }
-    .error { color: #ef4444; }
-    .warn { color: #f59e0b; }
+    .container {
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 40px;
+      margin-bottom: 15px;
+    }
+
+    .detalle {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .ok { background: #16a34a; }
+    .error { background: #dc2626; }
+    .warn { background: #f59e0b; color: black; }
   </style>
 </head>
 
 <body>
 
-<h1 id="estado">Validando...</h1>
+<div class="container">
+  <h1 id="estado">Validando...</h1>
+  <div id="detalle" class="detalle"></div>
+</div>
 
 <script>
 const client = window.supabase.createClient(
@@ -37,11 +54,16 @@ const client = window.supabase.createClient(
 );
 
 const params = new URLSearchParams(window.location.search);
-const qr = params.get("qr");
+const qr = params.get("qr")?.trim();
 
 validar();
 
 async function validar() {
+
+  if (!qr) {
+    pintar("QR inválido", "error");
+    return;
+  }
 
   const { data } = await client
     .from('visitas_qr')
@@ -49,15 +71,52 @@ async function validar() {
     .eq('codigo_qr', qr);
 
   if (!data || data.length === 0) {
-    document.getElementById("estado").innerText = "QR inválido";
-    document.getElementById("estado").className = "error";
+    pintar("QR NO EXISTE", "error");
     return;
   }
 
   const visita = data[0];
+  const hoy = new Date().toISOString().split('T')[0];
 
-  document.getElementById("estado").innerText = "ACCESO PERMITIDO";
-  document.getElementById("estado").className = "ok";
+  if (visita.estatus !== 'activo') {
+    pintar("QR YA UTILIZADO", "warn", visita);
+    return;
+  }
+
+  if (visita.fecha_visita < hoy) {
+    pintar("QR VENCIDO", "warn", visita);
+    return;
+  }
+
+  pintar("ACCESO PERMITIDO", "ok", visita);
+
+  // Marcar como usado
+  await client
+    .from('visitas_qr')
+    .update({ estatus: 'usado' })
+    .eq('id', visita.id);
+}
+
+function pintar(mensaje, tipo, data = null) {
+
+  document.body.className = tipo;
+
+  const estado = document.getElementById("estado");
+  const detalle = document.getElementById("detalle");
+
+  estado.innerText = mensaje;
+
+  if (data) {
+    detalle.innerHTML = `
+      👤 ${data.nombre_visitante}<br>
+      📅 ${data.fecha_visita}<br>
+      🏠 ${
+        data.tipo_generador === 'administracion'
+          ? 'ADMINISTRACIÓN'
+          : data.privada + '-' + data.casa
+      }
+    `;
+  }
 }
 </script>
 
