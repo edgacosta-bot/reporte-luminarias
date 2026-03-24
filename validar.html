@@ -9,34 +9,49 @@
 
   <style>
     body {
-      font-family: Arial;
-      background: #0f172a;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
       margin: 0;
+      font-family: Arial;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
       color: white;
-    }
-
-    .card {
       text-align: center;
+      transition: background 0.3s ease;
     }
 
-    .ok { color: #22c55e; }
-    .error { color: #ef4444; }
-    .warn { color: #f59e0b; }
+    .container {
+      padding: 20px;
+    }
 
     h1 {
-      font-size: 28px;
+      font-size: 32px;
       margin-bottom: 10px;
+    }
+
+    p {
+      margin: 5px 0;
+      font-size: 16px;
+    }
+
+    /* 🎯 COLORES SEMÁFORO */
+    .ok {
+      background: #16a34a; /* verde */
+    }
+
+    .warn {
+      background: #f59e0b; /* naranja */
+    }
+
+    .error {
+      background: #dc2626; /* rojo */
     }
   </style>
 </head>
 
 <body>
 
-<div class="card">
+<div class="container">
   <h1 id="estado">Validando...</h1>
   <div id="detalle"></div>
 </div>
@@ -61,19 +76,19 @@ async function validar() {
     return;
   }
 
-  const { data } = await client
+  const { data, error } = await client
     .from('visitas_qr')
     .select('*')
     .eq('codigo_qr', qr);
 
-  if (!data || data.length === 0) {
+  if (error || !data || data.length === 0) {
     pintar("QR NO EXISTE", "error");
     return;
   }
 
   const visita = data[0];
 
-  // 🔥 FECHA (UNA SOLA VEZ)
+  // 🔥 FECHA
   const hoy = new Date().toISOString().split('T')[0];
 
   if (visita.fecha_visita !== hoy) {
@@ -102,11 +117,11 @@ async function validar() {
     return;
   }
 
-  // ✅ ACCESO
+  // ✅ ACCESO PERMITIDO
   pintar("ACCESO PERMITIDO", "ok", visita);
 
-  // Marcar como usado
-  await client
+  // Marcar como usado (sin bloquear UI)
+  client
     .from('visitas_qr')
     .update({ estatus: 'usado' })
     .eq('id', visita.id);
@@ -119,7 +134,9 @@ function pintar(mensaje, tipo, data = null) {
   const detalle = document.getElementById("detalle");
 
   estado.innerText = mensaje;
-  estado.className = tipo;
+
+  // 🔥 FONDO COMPLETO TIPO SEMÁFORO
+  document.body.className = tipo;
 
   if (data) {
     detalle.innerHTML = `
