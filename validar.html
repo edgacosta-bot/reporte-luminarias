@@ -9,42 +9,36 @@
 
   <style>
     body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       font-family: Arial;
-      text-align: center;
+      background: #0f172a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
       color: white;
-      transition: background 0.3s;
     }
 
-    .container {
-      padding: 20px;
+    .card {
+      text-align: center;
     }
+
+    .ok { color: #22c55e; }
+    .error { color: #ef4444; }
+    .warn { color: #f59e0b; }
 
     h1 {
-      font-size: 40px;
-      margin-bottom: 15px;
+      font-size: 28px;
+      margin-bottom: 10px;
     }
-
-    .detalle {
-      font-size: 18px;
-      margin-top: 10px;
-    }
-
-    .ok { background: #16a34a; }
-    .error { background: #dc2626; }
-    .warn { background: #f59e0b; color: black; }
   </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="card">
   <h1 id="estado">Validando...</h1>
-  <div id="detalle" class="detalle"></div>
+  <div id="detalle"></div>
 </div>
 
 <script>
@@ -53,9 +47,11 @@ const client = window.supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
+// Obtener QR
 const params = new URLSearchParams(window.location.search);
-const qr = params.get("qr")?.trim();
+const qr = params.get("qr");
 
+// Ejecutar
 validar();
 
 async function validar() {
@@ -76,33 +72,37 @@ async function validar() {
   }
 
   const visita = data[0];
+
+  // 🔥 FECHA (UNA SOLA VEZ)
   const hoy = new Date().toISOString().split('T')[0];
+
+  if (visita.fecha_visita !== hoy) {
+    pintar("QR NO VÁLIDO PARA HOY", "warn", visita);
+    return;
+  }
+
+  // 🔥 HORA
+  const ahora = new Date().toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  if (visita.hora_inicio && ahora < visita.hora_inicio) {
+    pintar("AÚN NO PERMITIDO", "warn", visita);
+    return;
+  }
+
+  if (visita.hora_fin && ahora > visita.hora_fin) {
+    pintar("FUERA DE HORARIO", "warn", visita);
+    return;
+  }
 
   if (visita.estatus !== 'activo') {
     pintar("QR YA UTILIZADO", "warn", visita);
     return;
   }
 
-  const hoy = new Date().toISOString().split('T')[0];
-
-if (visita.fecha_visita !== hoy) {
-  const ahora = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-
-// Validar antes de la hora
-if (visita.hora_inicio && ahora < visita.hora_inicio) {
-  pintar("AÚN NO PERMITIDO", "warn", visita);
-  return;
-}
-
-// Validar después de la hora
-if (visita.hora_fin && ahora > visita.hora_fin) {
-  pintar("FUERA DE HORARIO", "warn", visita);
-  return;
-}
-  pintar("QR NO VÁLIDO PARA HOY", "warn", visita);
-  return;
-}
-
+  // ✅ ACCESO
   pintar("ACCESO PERMITIDO", "ok", visita);
 
   // Marcar como usado
@@ -112,24 +112,24 @@ if (visita.hora_fin && ahora > visita.hora_fin) {
     .eq('id', visita.id);
 }
 
+// Mostrar resultado
 function pintar(mensaje, tipo, data = null) {
-
-  document.body.className = tipo;
 
   const estado = document.getElementById("estado");
   const detalle = document.getElementById("detalle");
 
   estado.innerText = mensaje;
+  estado.className = tipo;
 
   if (data) {
     detalle.innerHTML = `
-      👤 ${data.nombre_visitante}<br>
-      📅 ${data.fecha_visita}<br>
-      🏠 ${
+      <p><b>Visitante:</b> ${data.nombre_visitante}</p>
+      <p><b>Fecha:</b> ${data.fecha_visita}</p>
+      <p><b>Origen:</b> ${
         data.tipo_generador === 'administracion'
           ? 'ADMINISTRACIÓN'
           : data.privada + '-' + data.casa
-      }
+      }</p>
     `;
   }
 }
