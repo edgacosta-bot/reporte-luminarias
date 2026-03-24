@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Validación de acceso</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f6f8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+
+    .ok { color: green; }
+    .error { color: red; }
+    .warn { color: orange; }
+
+    h1 { margin-bottom: 10px; }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+  <h1 id="estado">Validando...</h1>
+  <p id="detalle"></p>
+</div>
+
+<script>
+const supabaseUrl = 'https://prjxmfhahnzosdwljode.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+// Obtener QR de la URL
+const params = new URLSearchParams(window.location.search);
+const qr = params.get("qr");
+
+validarQR();
+
+async function validarQR() {
+
+  if (!qr) {
+    mostrar("QR inválido", "error");
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from('visitas_qr')
+    .select('*')
+    .eq('codigo_qr', qr)
+    .single();
+
+  if (!data) {
+    mostrar("QR NO EXISTE", "error");
+    return;
+  }
+
+  // Fecha actual
+  const hoy = new Date().toISOString().split('T')[0];
+
+  // Validaciones
+  if (data.estatus !== 'activo') {
+    mostrar("QR YA UTILIZADO", "warn", data);
+    return;
+  }
+
+  if (data.fecha_visita < hoy) {
+    mostrar("QR VENCIDO", "warn", data);
+    return;
+  }
+
+  // TODO OK
+  mostrar("ACCESO PERMITIDO", "ok", data);
+
+  // Opcional: marcar como usado
+  await supabase
+    .from('visitas_qr')
+    .update({ estatus: 'usado' })
+    .eq('id', data.id);
+}
+
+function mostrar(mensaje, tipo, data = null) {
+
+  const estado = document.getElementById("estado");
+  const detalle = document.getElementById("detalle");
+
+  estado.innerText = mensaje;
+  estado.className = tipo;
+
+  if (data) {
+    detalle.innerHTML = `
+      <b>Visitante:</b> ${data.nombre_visitante}<br>
+      <b>Fecha:</b> ${data.fecha_visita}<br>
+      <b>Generado por:</b> ${
+        data.tipo_generador === 'administracion'
+          ? 'ADMINISTRACIÓN'
+          : data.privada + '-' + data.casa
+      }
+    `;
+  }
+}
+</script>
+
+</body>
+</html>
