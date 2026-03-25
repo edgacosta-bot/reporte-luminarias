@@ -68,6 +68,11 @@
       border-radius: 12px;
       font-weight: bold;
       cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:active {
+      transform: scale(0.98);
     }
 
     .btn-primary { background: #2563eb; color: white; }
@@ -79,40 +84,77 @@
       text-align: center;
     }
 
-    /* MODALES */
+    /* MODAL BASE */
     .modal {
       display: none;
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
+      inset: 0;
       background: rgba(0,0,0,0.6);
       z-index: 999;
+      display: flex;
       align-items: center;
       justify-content: center;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .modal-content {
       background: white;
-      border-radius: 16px;
-      padding: 20px;
+      border-radius: 18px;
+      padding: 24px;
       width: 90%;
       max-width: 360px;
       text-align: center;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.35);
+      animation: scaleIn 0.2s ease;
+      color: #1f2937;
     }
 
-    .modal-warning h3 { color: #b45309; }
-    .modal-danger h3 { color: #b91c1c; }
+    @keyframes scaleIn {
+      from { transform: scale(0.9); }
+      to { transform: scale(1); }
+    }
+
+    .modal-icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .modal-text {
+      font-size: 14px;
+      color: #374151;
+      line-height: 1.5;
+      margin-bottom: 15px;
+    }
+
+    .modal-question {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
 
     .modal-buttons {
       display: flex;
       gap: 10px;
-      margin-top: 15px;
     }
 
     .btn-gray { background: #6b7280; color: white; }
     .btn-blue { background: #2563eb; color: white; }
     .btn-red { background: #b91c1c; color: white; }
+
+    /* COLORES POR TIPO */
+    .warning .modal-title { color: #b45309; }
+    .danger .modal-title { color: #b91c1c; }
+
   </style>
 </head>
 
@@ -182,13 +224,16 @@
 
 <!-- 🟡 MODAL ATRASO -->
 <div id="modalAviso" class="modal">
-  <div class="modal-content modal-warning">
-    <h3>⚠️ Aviso importante</h3>
-    <p>
+  <div class="modal-content warning">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title">Aviso importante</div>
+
+    <div class="modal-text">
       Se detecta un atraso en tu cuota de mantenimiento.<br><br>
-      Puedes generar el acceso en esta ocasión, pero te invitamos a regularizar tu pago para evitar restricciones.
-    </p>
-    <p><strong>¿Deseas continuar?</strong></p>
+      Puedes generar el acceso en esta ocasión, pero te invitamos a regularizar tu pago para evitar futuras restricciones.
+    </div>
+
+    <div class="modal-question">¿Deseas continuar?</div>
 
     <div class="modal-buttons">
       <button class="btn-gray" onclick="cerrarModal(false)">Cancelar</button>
@@ -199,12 +244,14 @@
 
 <!-- 🔴 MODAL MOROSO -->
 <div id="modalBloqueo" class="modal">
-  <div class="modal-content modal-danger">
-    <h3>⛔ Acceso restringido</h3>
-    <p>
+  <div class="modal-content danger">
+    <div class="modal-icon">⛔</div>
+    <div class="modal-title">Acceso restringido</div>
+
+    <div class="modal-text">
       Actualmente presentas adeudos en tus cuotas de mantenimiento.<br><br>
       Por esta razón, la generación de accesos QR se encuentra temporalmente deshabilitada.
-    </p>
+    </div>
 
     <div class="modal-buttons">
       <button class="btn-red" onclick="cerrarBloqueo()">Entendido</button>
@@ -273,13 +320,11 @@ async function generarQR() {
 
   const estado = user.estado_pago || "corriente";
 
-  // 🔴 BLOQUEO
   if (estado === "moroso") {
     mostrarBloqueo();
     return;
   }
 
-  // 🟡 ADVERTENCIA
   if (estado === "atraso_1") {
     const continuar = await mostrarModal();
     if (!continuar) return;
