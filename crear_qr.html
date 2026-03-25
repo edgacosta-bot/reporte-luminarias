@@ -243,7 +243,7 @@ async function generarQR() {
     return;
   }
 
-  const link = `https://reporte-luminarias-3lj5.vercel.app/mostrar_qr.html?qr=${codigo}`;
+  const link = `${window.location.origin}/validar.html?qr=${codigo}`;
 
   document.getElementById('qrcode').innerHTML = "";
 
