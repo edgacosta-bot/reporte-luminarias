@@ -140,7 +140,6 @@
 
     <label>Fecha de visita</label>
     <input id="fecha" type="date">
-
     <label>Hora de inicio</label>
     <input id="hora_inicio" type="time">
 
@@ -152,10 +151,12 @@
     <div id="resultado"></div>
     <div id="qrcode"></div>
 
+    <!-- 🔥 BOTÓN WHATSAPP -->
     <button id="btnWhatsapp" class="whatsapp" style="display:none;">
       📲 Enviar por WhatsApp
     </button>
 
+    <!-- 🔥 VOLVER -->
     <a href="index.html">
       <button class="volver">← Volver al inicio</button>
     </a>
@@ -222,52 +223,44 @@ async function generarQR() {
   const { error: insertError } = await client
     .from('visitas_qr')
     .insert([{
-      residente_id: user.id,
-      tipo_generador: tipo,
-      nombre_visitante: visitante,
-      fecha_visita: fecha,
-      hora_inicio: hora_inicio,
-      hora_fin: hora_fin,
-      codigo_qr: codigo,
-      privada: user.privada,
-      casa: user.casa,
-      residente_nombre: user.nombre,
-      estatus: 'activo'
-    }]);
+  residente_id: user.id,
+  tipo_generador: tipo,
+  nombre_visitante: visitante,
+  fecha_visita: fecha,
+
+  hora_inicio: hora_inicio,
+  hora_fin: hora_fin,
+
+  codigo_qr: codigo,
+  privada: user.privada,
+  casa: user.casa,
+  residente_nombre: user.nombre,
+  estatus: 'activo'
+}]);
 
   if (insertError) {
-    console.error(insertError);
     alert("Error al guardar");
     return;
   }
 
-  // 🔥 LINK DINÁMICO (NUNCA SE ROMPE)
-  const link = `${window.location.origin}/validar.html?qr=${codigo}`;
+  const link = `https://reporte-luminarias-3lj5.vercel.app/mostrar_qr.html?qr=${codigo}`;
 
-  // LIMPIAR QR
-  const qrContainer = document.getElementById("qrcode");
-  qrContainer.innerHTML = "";
+  document.getElementById('qrcode').innerHTML = "";
 
-  // GENERAR QR
-  new QRCode(qrContainer, {
+  new QRCode(document.getElementById("qrcode"), {
     text: link,
-    width: 220,
-    height: 220,
-    correctLevel: QRCode.CorrectLevel.H
+    width: 200,
+    height: 200
   });
 
-  // MOSTRAR RESULTADO
   document.getElementById('resultado').innerHTML = `
     <p><b>Visitante:</b> ${visitante}</p>
     <p><b>Fecha:</b> ${fecha}</p>
     <p><b>Generado por:</b> ${user.identificador}</p>
-    <p style="font-size:12px;color:gray;">
-      📲 Muestre este código QR al ingresar
-    </p>
   `;
 
-  // WHATSAPP
-  const mensaje = `🏡 Villas de la Concepción\n\nPresenta este código QR en el acceso:\n${link}`;
+  // 🔥 WHATSAPP
+  const mensaje = `🏡 Villas de la Concepción\n\nAcceso autorizado:\n${link}`;
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
 
   const btn = document.getElementById("btnWhatsapp");
