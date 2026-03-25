@@ -2,42 +2,136 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Acceso de Visitantes - Villas de la Concepción</title>
+  <title>Acceso de Visitantes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+    }
+
+    .container {
+      max-width: 420px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      color: black;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .header {
+      background: #1e293b;
+      color: white;
+      padding: 12px;
+      border-radius: 10px;
+      text-align: center;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+    }
+
+    .btn-wa {
+      background: #25D366;
+      color: white;
+    }
+
+    .btn-back {
+      background: #374151;
+      color: white;
+    }
+
+    #qrcode {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    #resultado {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+  </style>
 </head>
 
 <body>
 
-<h2>Generar acceso visitante</h2>
+<div class="container">
+  <div class="card">
 
-<select id="tipo">
-  <option value="residente">Residente</option>
-  <option value="administracion">Administración</option>
-</select>
+    <div class="header">
+      Villas de la Concepción<br>
+      Acceso de visitantes
+    </div>
 
-<div id="datosCasa">
-  <input id="privada" placeholder="Privada (I, II, III, IV)">
-  <input id="casa" placeholder="Número de casa">
+    <select id="tipo">
+      <option value="residente">Residente</option>
+      <option value="administracion">Administración</option>
+    </select>
+
+    <div id="datosCasa">
+      <input id="privada" placeholder="Privada (I, II, III, IV)">
+      <input id="casa" placeholder="Número de casa">
+    </div>
+
+    <input id="clave" placeholder="Clave">
+
+    <hr>
+
+    <input id="visitante" placeholder="Nombre del visitante">
+    <input id="fecha" type="date">
+    <input id="hora_inicio" type="time">
+    <input id="hora_fin" type="time">
+
+    <button class="btn-primary" onclick="generarQR()">
+      Generar código QR
+    </button>
+
+    <div id="resultado"></div>
+    <div id="qrcode"></div>
+
+    <button id="btnWhatsapp" class="btn-wa" style="display:none;">
+      Enviar por WhatsApp
+    </button>
+
+    <a href="index.html">
+      <button class="btn-back">Volver</button>
+    </a>
+
+  </div>
 </div>
-
-<input id="clave" placeholder="Clave">
-
-<hr>
-
-<input id="visitante" placeholder="Nombre del visitante">
-<input id="fecha" type="date">
-<input id="hora_inicio" type="time">
-<input id="hora_fin" type="time">
-
-<button onclick="generarQR()">Generar QR</button>
-
-<div id="resultado"></div>
-<div id="qrcode"></div>
-
-<button id="btnWhatsapp" style="display:none;">Enviar por WhatsApp</button>
 
 <script>
 const client = window.supabase.createClient(
@@ -92,7 +186,6 @@ async function generarQR() {
     estatus: 'activo'
   }]);
 
-  // 🔥 LINK CORREGIDO
   const link = `${window.location.origin}/mostrar_qr.html?qr=${codigo}`;
 
   document.getElementById('qrcode').innerHTML = "";
@@ -104,9 +197,9 @@ async function generarQR() {
   });
 
   document.getElementById('resultado').innerHTML = `
-    <p><b>Visitante:</b> ${visitante}</p>
-    <p><b>Fecha:</b> ${fecha}</p>
-    <p><b>Generado por:</b> ${user.identificador}</p>
+    <b>Visitante:</b> ${visitante}<br>
+    <b>Fecha:</b> ${fecha}<br>
+    <b>Generado por:</b> ${user.identificador}
   `;
 
   const mensaje = `Acceso autorizado:\n${link}`;
