@@ -89,7 +89,7 @@ async function validar() {
   const visita = data[0];
 
   // 🔥 FECHA
-  const hoy = new Date().toISOString().split('T')[0];
+  const hoy = new Date().toLocaleDateString('en-CA');
 
   if (visita.fecha_visita !== hoy) {
     pintar("QR NO VÁLIDO PARA HOY", "warn", visita);
