@@ -7,97 +7,13 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-
-  <style>
-    body {
-      font-family: Arial;
-      background: #0f172a;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-
-    .card {
-      background: white;
-      border-radius: 18px;
-      padding: 20px;
-      width: 320px;
-      text-align: center;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-    }
-
-    .header {
-      background: #1e293b;
-      color: white;
-      padding: 12px;
-      border-radius: 10px;
-      font-size: 14px;
-      margin-bottom: 15px;
-    }
-
-    .status {
-      background: #16a34a;
-      color: white;
-      padding: 6px;
-      border-radius: 6px;
-      font-size: 12px;
-      margin-bottom: 10px;
-      font-weight: bold;
-    }
-
-    .nombre {
-      font-size: 22px;
-      font-weight: bold;
-      margin-top: 5px;
-    }
-
-    .info {
-      margin-top: 10px;
-      font-size: 14px;
-      color: #475569;
-      line-height: 1.4;
-    }
-
-    canvas {
-      margin-top: 18px;
-    }
-
-    .instruccion {
-      margin-top: 18px;
-      font-size: 13px;
-      color: #1e293b;
-      background: #f1f5f9;
-      padding: 10px;
-      border-radius: 8px;
-    }
-  </style>
 </head>
 
 <body>
 
-<div class="card">
-
-  <div class="header">
-    Villas de la Concepción<br>
-    Acceso autorizado
-  </div>
-
-  <!-- 🟢 ESTADO -->
-  <div class="status">✔ VÁLIDO HOY</div>
-
-  <div class="nombre" id="nombre">Cargando...</div>
-
-  <div class="info" id="info"></div>
-
-  <canvas id="qr"></canvas>
-
-  <div class="instruccion">
-    📲 Muestre este código al ingresar al fraccionamiento
-  </div>
-
-</div>
+<h2 id="nombre">Cargando...</h2>
+<div id="info"></div>
+<canvas id="qr"></canvas>
 
 <script>
 const client = window.supabase.createClient(
@@ -108,11 +24,6 @@ const client = window.supabase.createClient(
 const params = new URLSearchParams(window.location.search);
 const qrParam = params.get("qr");
 
-if (!qrParam) {
-  document.getElementById("nombre").innerText = "QR inválido";
-  throw new Error("QR inválido");
-}
-
 cargar();
 
 async function cargar() {
@@ -122,25 +33,16 @@ async function cargar() {
     .select('*')
     .eq('codigo_qr', qrParam);
 
-  if (!data || data.length === 0) {
-    document.getElementById("nombre").innerText = "QR inválido";
-    return;
-  }
-
   const visita = data[0];
 
   document.getElementById("nombre").innerText = visita.nombre_visitante;
 
   document.getElementById("info").innerHTML = `
-    📅 ${visita.fecha_visita}<br>
-    🏠 ${
-      visita.tipo_generador === 'administracion'
-        ? 'ADMINISTRACIÓN'
-        : visita.privada + '-' + visita.casa
-    }
+    ${visita.fecha_visita} - ${visita.privada}-${visita.casa}
   `;
 
-  const link = `https://reporte-luminarias-3lj5.vercel.app/validar.html?qr=${qrParam}`;
+  // 🔥 LINK CORREGIDO
+  const link = `${window.location.origin}/validar.html?qr=${qrParam}`;
 
   new QRious({
     element: document.getElementById('qr'),
