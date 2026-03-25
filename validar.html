@@ -92,7 +92,7 @@ async function validar() {
   const hoy = new Date().toLocaleDateString('en-CA');
 
   if (visita.fecha_visita !== hoy) {
-    pintar("QR NO VÁLIDO PARA HOY", "warn", visita);
+    pintar("QR NO VÁLIDO PARA HOY", "error", visita);
     return;
   }
 
