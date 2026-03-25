@@ -1,5 +1,3 @@
-<!-- FORZAR DEPLOY -->
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
     * { box-sizing: border-box; }
@@ -72,6 +71,12 @@
 
     .btn-primary { background: #2563eb; color: white; }
     .btn-back { background: #374151; color: white; }
+    .btn-wa { background: #25D366; color: white; }
+
+    #qrcode {
+      margin-top: 20px;
+      text-align: center;
+    }
   </style>
 </head>
 
@@ -85,14 +90,12 @@
       Acceso de visitantes
     </div>
 
-    <!-- TIPO -->
     <label>Tipo de acceso</label>
     <select id="tipo">
       <option value="residente">Residente</option>
       <option value="administracion">Administración</option>
     </select>
 
-    <!-- UBICACIÓN -->
     <div id="datosCasa">
 
       <label>Privada</label>
@@ -109,17 +112,14 @@
 
     </div>
 
-    <!-- CLAVE -->
     <label>Clave</label>
     <input id="clave" placeholder="Clave de acceso">
 
     <hr>
 
-    <!-- VISITANTE -->
     <label>Nombre del visitante</label>
     <input id="visitante" placeholder="Ej. Juan Pérez">
 
-    <!-- FECHA Y HORA -->
     <label>Fecha de visita</label>
     <input id="fecha" type="date">
 
@@ -131,6 +131,14 @@
 
     <button class="btn-primary" onclick="generarQR()">
       Generar código QR
+    </button>
+
+    <!-- 🔥 AQUÍ VUELVE EL QR -->
+    <div id="qrcode"></div>
+
+    <!-- 🔥 BOTÓN WHATSAPP -->
+    <button id="btnWhatsapp" class="btn-wa" style="display:none;">
+      Enviar por WhatsApp
     </button>
 
     <a href="index.html">
@@ -195,12 +203,23 @@ async function generarQR() {
 
   const link = `${window.location.origin}/mostrar_qr.html?qr=${codigo}`;
 
+  // 🔥 GENERAR QR
+  const qrContainer = document.getElementById("qrcode");
+  qrContainer.innerHTML = "";
+
+  new QRCode(qrContainer, {
+    text: link,
+    width: 200,
+    height: 200
+  });
+
+  // 🔥 ACTIVAR BOTÓN WHATSAPP
   const mensaje = `🏡 Villas de la Concepción\n\nPresenta este código QR en la entrada:\n${link}`;
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
 
   const btn = document.getElementById("btnWhatsapp");
-btn.style.display = "block";
-btn.onclick = () => window.open(whatsappUrl, "_blank");
+  btn.style.display = "block";
+  btn.onclick = () => window.open(whatsappUrl, "_blank");
 }
 </script>
 
