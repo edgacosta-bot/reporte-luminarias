@@ -9,13 +9,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: Arial;
       background: #0f172a;
       color: white;
     }
@@ -44,10 +42,17 @@
       font-weight: bold;
     }
 
+    label {
+      font-size: 13px;
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+    }
+
     input, select {
       width: 100%;
       padding: 12px;
-      margin-top: 8px;
+      margin-top: 6px;
       margin-bottom: 10px;
       border-radius: 10px;
       border: 1px solid #ccc;
@@ -64,25 +69,11 @@
       cursor: pointer;
     }
 
-    .btn-primary {
-      background: #2563eb;
-      color: white;
-    }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-wa { background: #25D366; color: white; }
+    .btn-back { background: #374151; color: white; }
 
-    .btn-wa {
-      background: #25D366;
-      color: white;
-    }
-
-    .btn-back {
-      background: #374151;
-      color: white;
-    }
-
-    #resultado {
-      margin-top: 15px;
-      font-size: 14px;
-    }
+    #resultado { margin-top: 15px; font-size: 14px; }
 
     .qr-card {
       margin-top: 20px;
@@ -95,7 +86,6 @@
 
     .qr-title {
       font-weight: bold;
-      font-size: 14px;
       margin-bottom: 10px;
       color: #1e293b;
     }
@@ -104,10 +94,6 @@
       margin-top: 10px;
       font-size: 12px;
       color: #475569;
-    }
-
-    #qrcode canvas {
-      border-radius: 10px;
     }
   </style>
 </head>
@@ -122,23 +108,48 @@
       Acceso de visitantes
     </div>
 
+    <!-- TIPO -->
+    <label>Tipo de acceso</label>
     <select id="tipo">
       <option value="residente">Residente</option>
       <option value="administracion">Administración</option>
     </select>
 
+    <!-- UBICACIÓN -->
     <div id="datosCasa">
-      <input id="privada" placeholder="Privada (I, II, III, IV)">
-      <input id="casa" placeholder="Número de casa">
+
+      <label>Privada</label>
+      <select id="privada">
+        <option value="">Selecciona privada</option>
+        <option value="I">Privada I</option>
+        <option value="II">Privada II</option>
+        <option value="III">Privada III</option>
+        <option value="IV">Privada IV</option>
+      </select>
+
+      <label>Número de casa</label>
+      <input id="casa" type="number" placeholder="Ej. 76">
+
     </div>
 
-    <input id="clave" placeholder="Clave">
+    <!-- CLAVE -->
+    <label>Clave</label>
+    <input id="clave" placeholder="Clave de acceso">
 
     <hr>
 
-    <input id="visitante" placeholder="Nombre del visitante">
+    <!-- VISITANTE -->
+    <label>Nombre del visitante</label>
+    <input id="visitante" placeholder="Ej. Juan Pérez">
+
+    <!-- FECHA Y HORA -->
+    <label>Fecha de visita</label>
     <input id="fecha" type="date">
+
+    <label>Hora de inicio</label>
     <input id="hora_inicio" type="time">
+
+    <label>Hora de fin</label>
     <input id="hora_fin" type="time">
 
     <button class="btn-primary" onclick="generarQR()">
@@ -147,12 +158,12 @@
 
     <div id="resultado"></div>
 
-    <!-- 🔥 TARJETA QR -->
+    <!-- QR -->
     <div class="qr-card">
       <div class="qr-title">Código de acceso</div>
       <div id="qrcode"></div>
       <div class="qr-instruction">
-        Muestre este código en la entrada
+        Muestre este código al ingresar
       </div>
     </div>
 
