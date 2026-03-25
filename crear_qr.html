@@ -71,27 +71,21 @@
       transition: 0.2s;
     }
 
-    button:active {
-      transform: scale(0.98);
-    }
+    button:active { transform: scale(0.98); }
 
     .btn-primary { background: #2563eb; color: white; }
     .btn-back { background: #374151; color: white; }
     .btn-wa { background: #25D366; color: white; }
 
-    #qrcode {
-      margin-top: 20px;
-      text-align: center;
-    }
+    #qrcode { margin-top: 20px; text-align: center; }
 
-    /* MODAL BASE */
+    /* MODAL */
     .modal {
       display: none;
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.6);
       z-index: 999;
-      display: flex;
       align-items: center;
       justify-content: center;
       animation: fadeIn 0.2s ease;
@@ -119,10 +113,7 @@
       to { transform: scale(1); }
     }
 
-    .modal-icon {
-      font-size: 40px;
-      margin-bottom: 10px;
-    }
+    .modal-icon { font-size: 40px; margin-bottom: 10px; }
 
     .modal-title {
       font-size: 18px;
@@ -151,10 +142,8 @@
     .btn-blue { background: #2563eb; color: white; }
     .btn-red { background: #b91c1c; color: white; }
 
-    /* COLORES POR TIPO */
     .warning .modal-title { color: #b45309; }
     .danger .modal-title { color: #b91c1c; }
-
   </style>
 </head>
 
@@ -227,14 +216,11 @@
   <div class="modal-content warning">
     <div class="modal-icon">⚠️</div>
     <div class="modal-title">Aviso importante</div>
-
     <div class="modal-text">
       Se detecta un atraso en tu cuota de mantenimiento.<br><br>
       Puedes generar el acceso en esta ocasión, pero te invitamos a regularizar tu pago para evitar futuras restricciones.
     </div>
-
     <div class="modal-question">¿Deseas continuar?</div>
-
     <div class="modal-buttons">
       <button class="btn-gray" onclick="cerrarModal(false)">Cancelar</button>
       <button class="btn-blue" onclick="cerrarModal(true)">Continuar</button>
@@ -247,12 +233,10 @@
   <div class="modal-content danger">
     <div class="modal-icon">⛔</div>
     <div class="modal-title">Acceso restringido</div>
-
     <div class="modal-text">
       Actualmente presentas adeudos en tus cuotas de mantenimiento.<br><br>
       Por esta razón, la generación de accesos QR se encuentra temporalmente deshabilitada.
     </div>
-
     <div class="modal-buttons">
       <button class="btn-red" onclick="cerrarBloqueo()">Entendido</button>
     </div>
@@ -318,7 +302,8 @@ async function generarQR() {
     return;
   }
 
-  const estado = user.estado_pago || "corriente";
+  const estado = (user.estado_pago || "corriente").toLowerCase().trim();
+  console.log("Estado detectado:", estado);
 
   if (estado === "moroso") {
     mostrarBloqueo();
