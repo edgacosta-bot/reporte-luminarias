@@ -33,6 +33,7 @@
       padding: 10px;
       border-radius: 10px;
       margin-bottom: 15px;
+      font-size: 14px;
     }
 
     .nombre {
@@ -50,18 +51,34 @@
     canvas {
       margin-top: 20px;
     }
+
+    .instruccion {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #1e293b;
+      background: #f1f5f9;
+      padding: 10px;
+      border-radius: 8px;
+    }
   </style>
 </head>
 
 <body>
 
 <div class="card">
+
   <div class="header">Villas de la Concepción</div>
 
   <div class="nombre" id="nombre">Cargando...</div>
   <div class="info" id="info"></div>
 
   <canvas id="qr"></canvas>
+
+  <!-- 🔥 INSTRUCCIÓN -->
+  <div class="instruccion">
+    📲 Muestre este código al ingresar al fraccionamiento
+  </div>
+
 </div>
 
 <script>
@@ -98,7 +115,11 @@ async function cargar() {
 
   document.getElementById("info").innerHTML = `
     📅 ${visita.fecha_visita}<br>
-    🏠 ${visita.privada}-${visita.casa}
+    🏠 ${
+      visita.tipo_generador === 'administracion'
+        ? 'ADMINISTRACIÓN'
+        : visita.privada + '-' + visita.casa
+    }
   `;
 
   const link = `https://reporte-luminarias-3lj5.vercel.app/validar.html?qr=${qrParam}`;
