@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
     * { box-sizing: border-box; }
@@ -70,31 +69,7 @@
     }
 
     .btn-primary { background: #2563eb; color: white; }
-    .btn-wa { background: #25D366; color: white; }
     .btn-back { background: #374151; color: white; }
-
-    #resultado { margin-top: 15px; font-size: 14px; }
-
-    .qr-card {
-      margin-top: 20px;
-      background: #f8fafc;
-      border-radius: 14px;
-      padding: 15px;
-      text-align: center;
-      border: 1px solid #e2e8f0;
-    }
-
-    .qr-title {
-      font-weight: bold;
-      margin-bottom: 10px;
-      color: #1e293b;
-    }
-
-    .qr-instruction {
-      margin-top: 10px;
-      font-size: 12px;
-      color: #475569;
-    }
   </style>
 </head>
 
@@ -154,21 +129,6 @@
 
     <button class="btn-primary" onclick="generarQR()">
       Generar código QR
-    </button>
-
-    <div id="resultado"></div>
-
-    <!-- QR -->
-    <div class="qr-card">
-      <div class="qr-title">Código de acceso</div>
-      <div id="qrcode"></div>
-      <div class="qr-instruction">
-        Muestre este código al ingresar
-      </div>
-    </div>
-
-    <button id="btnWhatsapp" class="btn-wa" style="display:none;">
-      Enviar por WhatsApp
     </button>
 
     <a href="index.html">
@@ -233,27 +193,10 @@ async function generarQR() {
 
   const link = `${window.location.origin}/mostrar_qr.html?qr=${codigo}`;
 
-  const qrContainer = document.getElementById("qrcode");
-  qrContainer.innerHTML = "";
-
-  new QRCode(qrContainer, {
-    text: link,
-    width: 200,
-    height: 200
-  });
-
-  document.getElementById('resultado').innerHTML = `
-    <b>Visitante:</b> ${visitante}<br>
-    <b>Fecha:</b> ${fecha}<br>
-    <b>Generado por:</b> ${user.identificador}
-  `;
-
-  const mensaje = `Acceso autorizado:\n${link}`;
+  const mensaje = `🏡 Villas de la Concepción\n\nPresenta este código QR en la entrada:\n${link}`;
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
 
-  const btn = document.getElementById("btnWhatsapp");
-  btn.style.display = "block";
-  btn.onclick = () => window.open(whatsappUrl, "_blank");
+  window.open(whatsappUrl, "_blank");
 }
 </script>
 
