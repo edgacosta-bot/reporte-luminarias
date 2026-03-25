@@ -21,39 +21,51 @@
 
     .card {
       background: white;
-      border-radius: 16px;
+      border-radius: 18px;
       padding: 20px;
       width: 320px;
       text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
     }
 
     .header {
       background: #1e293b;
       color: white;
-      padding: 10px;
+      padding: 12px;
       border-radius: 10px;
-      margin-bottom: 15px;
       font-size: 14px;
+      margin-bottom: 15px;
+    }
+
+    .status {
+      background: #16a34a;
+      color: white;
+      padding: 6px;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-bottom: 10px;
+      font-weight: bold;
     }
 
     .nombre {
-      font-size: 20px;
+      font-size: 22px;
       font-weight: bold;
-      margin-top: 10px;
+      margin-top: 5px;
     }
 
     .info {
       margin-top: 10px;
       font-size: 14px;
       color: #475569;
+      line-height: 1.4;
     }
 
     canvas {
-      margin-top: 20px;
+      margin-top: 18px;
     }
 
     .instruccion {
-      margin-top: 20px;
+      margin-top: 18px;
       font-size: 13px;
       color: #1e293b;
       background: #f1f5f9;
@@ -67,14 +79,20 @@
 
 <div class="card">
 
-  <div class="header">Villas de la Concepción</div>
+  <div class="header">
+    Villas de la Concepción<br>
+    Acceso autorizado
+  </div>
+
+  <!-- 🟢 ESTADO -->
+  <div class="status">✔ VÁLIDO HOY</div>
 
   <div class="nombre" id="nombre">Cargando...</div>
+
   <div class="info" id="info"></div>
 
   <canvas id="qr"></canvas>
 
-  <!-- 🔥 INSTRUCCIÓN -->
   <div class="instruccion">
     📲 Muestre este código al ingresar al fraccionamiento
   </div>
