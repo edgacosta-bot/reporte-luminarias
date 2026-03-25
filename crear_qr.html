@@ -198,7 +198,9 @@ async function generarQR() {
   const mensaje = `🏡 Villas de la Concepción\n\nPresenta este código QR en la entrada:\n${link}`;
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
 
-  window.open(whatsappUrl, "_blank");
+  const btn = document.getElementById("btnWhatsapp");
+btn.style.display = "block";
+btn.onclick = () => window.open(whatsappUrl, "_blank");
 }
 </script>
 
