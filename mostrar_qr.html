@@ -7,13 +7,107 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .header {
+      background: #1e293b;
+      color: white;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    .status {
+      background: #16a34a;
+      color: white;
+      padding: 6px;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .nombre {
+      font-size: 22px;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    .info {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.4;
+    }
+
+    .qr-box {
+      margin-top: 15px;
+      padding: 12px;
+      background: #f1f5f9;
+      border-radius: 12px;
+      display: inline-block;
+    }
+
+    canvas {
+      margin-top: 5px;
+    }
+
+    .footer {
+      margin-top: 15px;
+      font-size: 12px;
+      color: #1e293b;
+      background: #f8fafc;
+      padding: 10px;
+      border-radius: 8px;
+    }
+  </style>
 </head>
 
 <body>
 
-<h2 id="nombre">Cargando...</h2>
-<div id="info"></div>
-<canvas id="qr"></canvas>
+<div class="card">
+
+  <div class="header">
+    Villas de la Concepción<br>
+    Pase de visitante
+  </div>
+
+  <div class="status">✔ ACCESO VÁLIDO</div>
+
+  <div class="nombre" id="nombre">Cargando...</div>
+
+  <div class="info" id="info"></div>
+
+  <div class="qr-box">
+    <canvas id="qr"></canvas>
+  </div>
+
+  <div class="footer">
+    📲 Muestre este código al vigilante para permitir el acceso
+  </div>
+
+</div>
 
 <script>
 const client = window.supabase.createClient(
@@ -24,24 +118,39 @@ const client = window.supabase.createClient(
 const params = new URLSearchParams(window.location.search);
 const qrParam = params.get("qr");
 
+if (!qrParam) {
+  document.getElementById("nombre").innerText = "QR inválido";
+  throw new Error("QR inválido");
+}
+
 cargar();
 
 async function cargar() {
 
-  const { data } = await client
+  const { data, error } = await client
     .from('visitas_qr')
     .select('*')
     .eq('codigo_qr', qrParam);
+
+  if (error || !data || data.length === 0) {
+    document.getElementById("nombre").innerText = "QR inválido";
+    return;
+  }
 
   const visita = data[0];
 
   document.getElementById("nombre").innerText = visita.nombre_visitante;
 
   document.getElementById("info").innerHTML = `
-    ${visita.fecha_visita} - ${visita.privada}-${visita.casa}
+    📅 ${visita.fecha_visita}<br>
+    🏠 ${
+      visita.tipo_generador === 'administracion'
+        ? 'ADMINISTRACIÓN'
+        : visita.privada + '-' + visita.casa
+    }
   `;
 
-  // 🔥 LINK CORREGIDO
+  // 🔥 LINK DINÁMICO (CLAVE)
   const link = `${window.location.origin}/validar.html?qr=${qrParam}`;
 
   new QRious({
