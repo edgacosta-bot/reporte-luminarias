@@ -108,13 +108,16 @@ async function validar() {
   pintar("ACCESO PERMITIDO", "ok", visita);
 
   // 🔥 ACTUALIZACIÓN SEGURA (AQUÍ ESTÁ EL CAMBIO)
-  client
-    .from('visitas_qr')
-    .update({
-      estatus: 'usado',
-      hora_ingreso: new Date().toISOString()
-    })
-    .eq('id', visita.id);
+  const { data: updateData, error: updateError } = await client
+  .from('visitas_qr')
+  .update({
+    estatus: 'usado',
+    hora_ingreso: new Date().toISOString()
+  })
+  .eq('id', visita.id);
+
+console.log("UPDATE DATA:", updateData);
+console.log("UPDATE ERROR:", updateError);
 }
 
 // Mostrar resultado
