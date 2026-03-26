@@ -34,18 +34,9 @@
       font-size: 16px;
     }
 
-    /* 🎯 COLORES SEMÁFORO */
-    .ok {
-      background: #16a34a; /* verde */
-    }
-
-    .warn {
-      background: #f59e0b; /* naranja */
-    }
-
-    .error {
-      background: #dc2626; /* rojo */
-    }
+    .ok { background: #16a34a; }
+    .warn { background: #f59e0b; }
+    .error { background: #dc2626; }
   </style>
 </head>
 
@@ -62,11 +53,9 @@ const client = window.supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
-// Obtener QR
 const params = new URLSearchParams(window.location.search);
 const qr = params.get("qr");
 
-// Ejecutar
 validar();
 
 async function validar() {
@@ -88,7 +77,6 @@ async function validar() {
 
   const visita = data[0];
 
-  // 🔥 FECHA
   const hoy = new Date().toLocaleDateString('en-CA');
 
   if (visita.fecha_visita !== hoy) {
@@ -96,7 +84,6 @@ async function validar() {
     return;
   }
 
-  // 🔥 HORA
   const ahora = new Date().toLocaleTimeString('en-GB', {
     hour: '2-digit',
     minute: '2-digit'
@@ -120,10 +107,13 @@ async function validar() {
   // ✅ ACCESO PERMITIDO
   pintar("ACCESO PERMITIDO", "ok", visita);
 
-  // Marcar como usado (sin bloquear UI)
+  // 🔥 ACTUALIZACIÓN SEGURA (AQUÍ ESTÁ EL CAMBIO)
   client
     .from('visitas_qr')
-    .update({ estatus: 'usado' })
+    .update({
+      estatus: 'usado',
+      hora_ingreso: new Date().toISOString()
+    })
     .eq('id', visita.id);
 }
 
@@ -134,8 +124,6 @@ function pintar(mensaje, tipo, data = null) {
   const detalle = document.getElementById("detalle");
 
   estado.innerText = mensaje;
-
-  // 🔥 FONDO COMPLETO TIPO SEMÁFORO
   document.body.className = tipo;
 
   if (data) {
