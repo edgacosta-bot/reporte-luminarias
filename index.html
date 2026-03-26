@@ -86,10 +86,104 @@
     .agua { background: #2563eb; }
     .qr { background: #4338ca; }
 
+    /* =========================
+       SPLASH SCREEN
+    ========================= */
+
+    #splash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      overflow: hidden;
+    }
+
+    .bg-anim {
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 30%, #1e293b, transparent),
+                  radial-gradient(circle at 70% 70%, #334155, transparent);
+      animation: moveBg 8s linear infinite;
+      opacity: 0.6;
+    }
+
+    @keyframes moveBg {
+      0% { transform: translate(0,0); }
+      50% { transform: translate(-10%, -10%); }
+      100% { transform: translate(0,0); }
+    }
+
+    .splash-content {
+      position: relative;
+      text-align: center;
+      z-index: 2;
+    }
+
+    .title {
+      font-size: 24px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 1.2s ease forwards;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      margin-top: 8px;
+      opacity: 0;
+      color: #9ca3af;
+      animation: fadeUp 1.8s ease forwards;
+    }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .loader-line {
+      position: absolute;
+      bottom: 60px;
+      width: 60%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+      animation: slideLine 2s ease infinite;
+    }
+
+    @keyframes slideLine {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    #splash.hidden {
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.8s ease;
+    }
+
   </style>
 </head>
 
 <body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="bg-anim"></div>
+
+  <div class="splash-content">
+    <h1 class="title">Villas de la Concepción</h1>
+    <p class="subtitle">Sistema de Información Vecinal</p>
+  </div>
+
+  <div class="loader-line"></div>
+</div>
 
 <div class="container">
 
@@ -130,6 +224,14 @@
   </a>
 
 </div>
+
+<script>
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    document.getElementById("splash").classList.add("hidden");
+  }, 2600);
+});
+</script>
 
 </body>
 </html>
