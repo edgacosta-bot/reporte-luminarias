@@ -16,7 +16,6 @@
       position: relative;
       overflow-x: hidden;
 
-      /* Fade-in */
       opacity: 0;
       transition: opacity 0.4s ease;
     }
@@ -25,7 +24,6 @@
       opacity: 1;
     }
 
-    /* Fade-out */
     .fade-out {
       opacity: 0;
       transform: scale(0.98);
@@ -102,13 +100,11 @@
     .qr { background: #4338ca; }
 
     /* =========================
-       SPLASH SCREEN
+       SPLASH
     ========================= */
 
     #splash {
       position: fixed;
-      top: 0;
-      left: 0;
       width: 100%;
       height: 100%;
       background: #0f172a;
@@ -116,71 +112,38 @@
       align-items: center;
       justify-content: center;
       z-index: 9999;
-      overflow: hidden;
-    }
-
-    .bg-anim {
-      position: absolute;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle at 30% 30%, #1e293b, transparent),
-                  radial-gradient(circle at 70% 70%, #334155, transparent);
-      animation: moveBg 8s linear infinite;
-      opacity: 0.6;
-    }
-
-    @keyframes moveBg {
-      0% { transform: translate(0,0); }
-      50% { transform: translate(-10%, -10%); }
-      100% { transform: translate(0,0); }
-    }
-
-    .splash-content {
-      position: relative;
-      text-align: center;
-      z-index: 2;
-    }
-
-    .title {
-      font-size: 24px;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeUp 1.2s ease forwards;
-    }
-
-    .subtitle {
-      font-size: 14px;
-      margin-top: 8px;
-      opacity: 0;
-      color: #9ca3af;
-      animation: fadeUp 1.8s ease forwards;
-    }
-
-    @keyframes fadeUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .loader-line {
-      position: absolute;
-      bottom: 60px;
-      width: 60%;
-      height: 3px;
-      background: linear-gradient(90deg, transparent, #38bdf8, transparent);
-      animation: slideLine 2s ease infinite;
-    }
-
-    @keyframes slideLine {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
     }
 
     #splash.hidden {
       opacity: 0;
       visibility: hidden;
       transition: all 0.8s ease;
+    }
+
+    /* =========================
+       EXIT SCREEN
+    ========================= */
+
+    #exitScreen {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      background: #0f172a;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      z-index: 10000;
+    }
+
+    .exit-content h1 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .exit-content p {
+      font-size: 14px;
+      color: #9ca3af;
     }
 
   </style>
@@ -190,14 +153,18 @@
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="bg-anim"></div>
-
-  <div class="splash-content">
-    <h1 class="title">Villas de la Concepción</h1>
-    <p class="subtitle">Sistema de Información Vecinal</p>
+  <div>
+    <h1>Villas de la Concepción</h1>
+    <p>Sistema de Información Vecinal</p>
   </div>
+</div>
 
-  <div class="loader-line"></div>
+<!-- EXIT -->
+<div id="exitScreen">
+  <div class="exit-content">
+    <h1>Gracias por utilizar el Sistema de Información de Colonos</h1>
+    <p>Villas de la Concepción</p>
+  </div>
 </div>
 
 <div class="container">
@@ -210,66 +177,60 @@
 
   <div class="section-title">Infraestructura</div>
 
-  <a href="luminarias.html" class="button luminarias">
-    💡 Luminarias
-  </a>
-
-  <a href="videocamaras.html" class="button camaras">
-    📹 Videovigilancia
-  </a>
-
-  <a href="cerco_electrico.html" class="button cerco">
-    ⚡ Cerco eléctrico
-  </a>
+  <a href="luminarias.html" class="button luminarias">💡 Luminarias</a>
+  <a href="videocamaras.html" class="button camaras">📹 Videovigilancia</a>
+  <a href="cerco_electrico.html" class="button cerco">⚡ Cerco eléctrico</a>
 
   <div class="section-title">Servicios</div>
 
-  <a href="agua.html" class="button agua">
-    💧 Suministro de agua
-  </a>
+  <a href="agua.html" class="button agua">💧 Suministro de agua</a>
 
   <div class="section-title">Seguridad</div>
 
-  <a href="vigilancia.html" class="button vigilancia">
-    🛡 Vigilancia
-  </a>
-
-  <a href="crear_qr.html" class="button qr">
-    📱 Acceso de visitantes (QR)
-  </a>
+  <a href="vigilancia.html" class="button vigilancia">🛡 Vigilancia</a>
+  <a href="crear_qr.html" class="button qr">📱 Acceso de visitantes (QR)</a>
 
 </div>
 
 <script>
-// Fade-in + control de splash
+// Splash una sola vez por sesión
 window.addEventListener("load", () => {
 
   document.body.classList.add("loaded");
 
-  const yaVioSplash = sessionStorage.getItem("splash_mostrado");
+  const yaVio = sessionStorage.getItem("splash");
 
-  if (yaVioSplash) {
+  if (yaVio) {
     document.getElementById("splash").style.display = "none";
     return;
   }
 
-  sessionStorage.setItem("splash_mostrado", "true");
+  sessionStorage.setItem("splash", "true");
 
   setTimeout(() => {
     document.getElementById("splash").classList.add("hidden");
-  }, 2600);
+  }, 2000);
 
 });
 
-// Fade-out navegación
+// Función reutilizable de salida
+function mostrarSalida() {
+  const exit = document.getElementById("exitScreen");
+  exit.style.display = "flex";
+
+  setTimeout(() => {
+    window.location.href = "index.html";
+  }, 2200);
+}
+
+// Fade navegación
 document.querySelectorAll("a").forEach(link => {
   link.addEventListener("click", function(e) {
     const href = this.getAttribute("href");
 
-    if (!href || href.startsWith("#")) return;
+    if (!href) return;
 
     e.preventDefault();
-
     document.body.classList.add("fade-out");
 
     setTimeout(() => {
