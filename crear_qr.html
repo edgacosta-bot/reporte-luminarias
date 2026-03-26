@@ -76,13 +76,6 @@
     .btn-back { background: #374151; color: white; }
     .btn-wa { background: #25D366; color: white; }
 
-    /* 🔘 BOTÓN FINALIZAR */
-    .btn-finalizar {
-      background: #111827;
-      color: #9ca3af;
-      font-size: 13px;
-    }
-
     #qrcode { margin-top: 20px; text-align: center; }
 
     /* MODAL */
@@ -94,6 +87,12 @@
       z-index: 999;
       align-items: center;
       justify-content: center;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .modal-content {
@@ -104,12 +103,34 @@
       max-width: 360px;
       text-align: center;
       box-shadow: 0 15px 40px rgba(0,0,0,0.35);
+      animation: scaleIn 0.2s ease;
       color: #1f2937;
     }
 
+    @keyframes scaleIn {
+      from { transform: scale(0.9); }
+      to { transform: scale(1); }
+    }
+
     .modal-icon { font-size: 40px; margin-bottom: 10px; }
-    .modal-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
-    .modal-text { font-size: 14px; margin-bottom: 15px; }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .modal-text {
+      font-size: 14px;
+      color: #374151;
+      line-height: 1.5;
+      margin-bottom: 15px;
+    }
+
+    .modal-question {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
 
     .modal-buttons {
       display: flex;
@@ -120,28 +141,8 @@
     .btn-blue { background: #2563eb; color: white; }
     .btn-red { background: #b91c1c; color: white; }
 
-    /* 🟣 EXIT SCREEN */
-    #exitScreen {
-      position: fixed;
-      inset: 0;
-      background: #0f172a;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      z-index: 2000;
-    }
-
-    .exit-content h1 {
-      font-size: 20px;
-      margin-bottom: 10px;
-    }
-
-    .exit-content p {
-      color: #9ca3af;
-      font-size: 14px;
-    }
-
+    .warning .modal-title { color: #b45309; }
+    .danger .modal-title { color: #b91c1c; }
   </style>
 </head>
 
@@ -172,16 +173,16 @@
       </select>
 
       <label>Número de casa</label>
-      <input id="casa" type="number">
+      <input id="casa" type="number" placeholder="Ej. 76">
     </div>
 
     <label>Clave</label>
-    <input id="clave">
+    <input id="clave" placeholder="Clave de acceso">
 
     <hr>
 
     <label>Nombre del visitante</label>
-    <input id="visitante">
+    <input id="visitante" placeholder="Ej. Juan Pérez">
 
     <label>Fecha de visita</label>
     <input id="fecha" type="date">
@@ -202,10 +203,6 @@
       Enviar por WhatsApp
     </button>
 
-    <button class="btn-finalizar" onclick="mostrarSalida()">
-      Finalizar
-    </button>
-
     <a href="index.html">
       <button class="btn-back">Volver</button>
     </a>
@@ -213,11 +210,35 @@
   </div>
 </div>
 
-<!-- EXIT -->
-<div id="exitScreen">
-  <div class="exit-content">
-    <h1>Gracias por utilizar el Sistema de Información de Colonos</h1>
-    <p>Villas de la Concepción</p>
+<!-- 🟡 MODAL ATRASO -->
+<div id="modalAviso" class="modal">
+  <div class="modal-content warning">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title">Aviso importante</div>
+    <div class="modal-text">
+      Se detecta un atraso en tus aportaciones.<br><br>
+      Puedes generar el acceso en esta ocasión, pero te invitamos a regularizar tu pago para evitar futuras restricciones.
+    </div>
+    <div class="modal-question">¿Deseas continuar?</div>
+    <div class="modal-buttons">
+      <button class="btn-gray" onclick="cerrarModal(false)">Cancelar</button>
+      <button class="btn-blue" onclick="cerrarModal(true)">Continuar</button>
+    </div>
+  </div>
+</div>
+
+<!-- 🔴 MODAL MOROSO -->
+<div id="modalBloqueo" class="modal">
+  <div class="modal-content danger">
+    <div class="modal-icon">⛔</div>
+    <div class="modal-title">Acceso restringido</div>
+    <div class="modal-text">
+      Actualmente presentas adeudos en tus aportaciones.<br><br>
+      Por esta razón, la generación de accesos QR se encuentra temporalmente deshabilitada.
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-red" onclick="cerrarBloqueo()">Entendido</button>
+    </div>
   </div>
 </div>
 
@@ -227,12 +248,105 @@ const client = window.supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
-// 👉 FUNCIÓN SALIDA
-function mostrarSalida() {
-  document.getElementById("exitScreen").style.display = "flex";
-  setTimeout(() => {
-    window.location.href = "index.html";
-  }, 2200);
+document.getElementById('tipo').addEventListener('change', function() {
+  document.getElementById('datosCasa').style.display =
+    this.value === 'residente' ? 'block' : 'none';
+});
+
+let resolverModal;
+
+function mostrarModal() {
+  return new Promise((resolve) => {
+    resolverModal = resolve;
+    document.getElementById("modalAviso").style.display = "flex";
+  });
+}
+
+function cerrarModal(respuesta) {
+  document.getElementById("modalAviso").style.display = "none";
+  resolverModal(respuesta);
+}
+
+function mostrarBloqueo() {
+  document.getElementById("modalBloqueo").style.display = "flex";
+}
+
+function cerrarBloqueo() {
+  window.location.href = "index.html";
+}
+
+async function generarQR() {
+
+  const tipo = document.getElementById('tipo').value;
+  const privada = document.getElementById('privada').value;
+  const casa = document.getElementById('casa').value;
+  const clave = document.getElementById('clave').value;
+  const visitante = document.getElementById('visitante').value;
+  const fecha = document.getElementById('fecha').value;
+  const hora_inicio = document.getElementById('hora_inicio').value;
+  const hora_fin = document.getElementById('hora_fin').value;
+
+  let query = client.from('residentes').select('*');
+
+  if (tipo === 'residente') {
+    query = query.eq('privada', privada).eq('casa', casa).eq('clave', clave);
+  } else {
+    query = query.eq('tipo', 'administracion').eq('clave', clave);
+  }
+
+  const { data: user } = await query.single();
+
+  if (!user) {
+    alert("Datos incorrectos");
+    return;
+  }
+
+  const estado = (user.estado_pago || "corriente").toLowerCase().trim();
+  console.log("Estado detectado:", estado);
+
+  if (estado === "moroso") {
+    mostrarBloqueo();
+    return;
+  }
+
+  if (estado === "atraso_1") {
+    const continuar = await mostrarModal();
+    if (!continuar) return;
+  }
+
+  const codigo = crypto.randomUUID();
+
+  await client.from('visitas_qr').insert([{
+    residente_id: user.id,
+    tipo_generador: tipo,
+    nombre_visitante: visitante,
+    fecha_visita: fecha,
+    hora_inicio: hora_inicio,
+    hora_fin: hora_fin,
+    codigo_qr: codigo,
+    privada: user.privada,
+    casa: user.casa,
+    residente_nombre: user.nombre,
+    estatus: 'activo'
+  }]);
+
+  const link = `${window.location.origin}/mostrar_qr.html?qr=${codigo}`;
+
+  const qrContainer = document.getElementById("qrcode");
+  qrContainer.innerHTML = "";
+
+  new QRCode(qrContainer, {
+    text: link,
+    width: 200,
+    height: 200
+  });
+
+  const mensaje = `🏡 Villas de la Concepción\n\nPresenta este código QR en la entrada:\n${link}`;
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+
+  const btn = document.getElementById("btnWhatsapp");
+  btn.style.display = "block";
+  btn.onclick = () => window.open(whatsappUrl, "_blank");
 }
 </script>
 
