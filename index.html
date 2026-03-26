@@ -15,6 +15,21 @@
       color: white;
       position: relative;
       overflow-x: hidden;
+
+      /* Fade-in */
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    body.loaded {
+      opacity: 1;
+    }
+
+    /* Fade-out */
+    .fade-out {
+      opacity: 0;
+      transform: scale(0.98);
+      transition: all 0.35s ease;
     }
 
     body::before {
@@ -226,10 +241,30 @@
 </div>
 
 <script>
+// Fade-in
 window.addEventListener("load", () => {
+  document.body.classList.add("loaded");
+
   setTimeout(() => {
     document.getElementById("splash").classList.add("hidden");
   }, 2600);
+});
+
+// Fade-out navegación
+document.querySelectorAll("a").forEach(link => {
+  link.addEventListener("click", function(e) {
+    const href = this.getAttribute("href");
+
+    if (!href || href.startsWith("#")) return;
+
+    e.preventDefault();
+
+    document.body.classList.add("fade-out");
+
+    setTimeout(() => {
+      window.location.href = href;
+    }, 300);
+  });
 });
 </script>
 
