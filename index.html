@@ -241,13 +241,24 @@
 </div>
 
 <script>
-// Fade-in
+// Fade-in + control de splash
 window.addEventListener("load", () => {
+
   document.body.classList.add("loaded");
+
+  const yaVioSplash = sessionStorage.getItem("splash_mostrado");
+
+  if (yaVioSplash) {
+    document.getElementById("splash").style.display = "none";
+    return;
+  }
+
+  sessionStorage.setItem("splash_mostrado", "true");
 
   setTimeout(() => {
     document.getElementById("splash").classList.add("hidden");
   }, 2600);
+
 });
 
 // Fade-out navegación
