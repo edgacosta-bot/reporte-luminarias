@@ -123,15 +123,13 @@ const client = window.supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
-// 🔥 FUNCIÓN PARA CORREGIR ZONA HORARIA
+// ✅ FUNCIÓN CORRECTA (SIN DESFASE)
 function toUTC(date, end=false) {
-  const d = new Date(date);
   if (end) {
-    d.setHours(23,59,59,999);
+    return date + "T23:59:59.999Z";
   } else {
-    d.setHours(0,0,0,0);
+    return date + "T00:00:00.000Z";
   }
-  return d.toISOString();
 }
 
 async function consultar() {
