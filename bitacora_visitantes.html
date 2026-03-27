@@ -27,17 +27,6 @@
       padding: 20px;
     }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 15px;
-    }
-
-    label {
-      font-size: 13px;
-      margin-top: 10px;
-      display: block;
-    }
-
     input, select {
       width: 100%;
       padding: 10px;
@@ -62,20 +51,11 @@
     .btn-primary { background: #2563eb; }
     .btn-back { background: #374151; }
 
-    .resultado { margin-top: 20px; }
-
     .item {
       background: #1e293b;
       padding: 12px;
       border-radius: 10px;
       margin-bottom: 10px;
-      font-size: 14px;
-    }
-
-    .vacio {
-      text-align: center;
-      margin-top: 15px;
-      color: #9ca3af;
     }
   </style>
 </head>
@@ -87,32 +67,23 @@
 
     <h2>Bitácora de visitantes</h2>
 
-    <label>Privada</label>
     <select id="privada">
-      <option value="">Selecciona</option>
-      <option value="I">Privada I</option>
-      <option value="II">Privada II</option>
-      <option value="III">Privada III</option>
-      <option value="IV">Privada IV</option>
+      <option value="">Privada</option>
+      <option value="I">I</option>
+      <option value="II">II</option>
     </select>
 
-    <label>Casa</label>
-    <input id="casa" type="number">
+    <input id="casa" placeholder="Casa">
+    <input id="clave" type="password" placeholder="Clave">
 
-    <label>Clave</label>
-    <input id="clave" type="password">
-
-    <label>Desde</label>
     <input id="desde" type="date">
-
-    <label>Hasta</label>
     <input id="hasta" type="date">
 
     <button class="btn-primary" onclick="consultar()">Consultar</button>
 
-    <div id="resultado" class="resultado"></div>
+    <div id="resultado"></div>
 
-    <button class="btn-back" onclick="volverInicio()">← Volver al inicio</button>
+    <button class="btn-back" onclick="volverInicio()">← Volver</button>
 
   </div>
 </div>
@@ -123,13 +94,10 @@ const client = window.supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
-// ✅ FUNCIÓN CORRECTA (SIN DESFASE)
 function toUTC(date, end=false) {
-  if (end) {
-    return date + "T23:59:59.999Z";
-  } else {
-    return date + "T00:00:00.000Z";
-  }
+  return end
+    ? date + "T23:59:59.999Z"
+    : date + "T00:00:00.000Z";
 }
 
 async function consultar() {
@@ -143,7 +111,6 @@ async function consultar() {
   const contenedor = document.getElementById("resultado");
   contenedor.innerHTML = "Consultando...";
 
-  // 🔐 VALIDAR RESIDENTE
   const { data: user } = await client
     .from('residentes')
     .select('*')
@@ -153,46 +120,31 @@ async function consultar() {
     .single();
 
   if (!user) {
-    contenedor.innerHTML = "<div class='vacio'>Datos incorrectos</div>";
+    contenedor.innerHTML = "Datos incorrectos";
     return;
   }
-
-  const inicio = desde ? toUTC(desde) : null;
-  const fin = hasta ? toUTC(hasta, true) : null;
 
   let query = client
     .from('visitas_qr')
     .select('*')
     .eq('residente_id', user.id)
-    .not('hora_ingreso', 'is', null)
-    .order('hora_ingreso', { ascending: false });
+    .not('hora_ingreso_utc', 'is', null)
+    .order('hora_ingreso_utc', { ascending: false });
 
-  if (inicio) query = query.gte('hora_ingreso', inicio);
-  if (fin) query = query.lte('hora_ingreso', fin);
+  if (desde) query = query.gte('hora_ingreso_utc', toUTC(desde));
+  if (hasta) query = query.lte('hora_ingreso_utc', toUTC(hasta, true));
 
-  const { data, error } = await query;
-
-  if (error) {
-    contenedor.innerHTML = "<div class='vacio'>Error al consultar</div>";
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    contenedor.innerHTML = "<div class='vacio'>Sin registros</div>";
-    return;
-  }
+  const { data } = await query;
 
   contenedor.innerHTML = "";
 
   data.forEach(v => {
-    const fecha = new Date(v.hora_ingreso);
+    const fecha = new Date(v.hora_ingreso_utc);
 
     contenedor.innerHTML += `
       <div class="item">
         <b>${v.nombre_visitante}</b><br>
-        📅 ${fecha.toLocaleDateString()}<br>
-        🕒 ${fecha.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}<br>
-        🏠 ${v.privada}-${v.casa}
+        ${fecha.toLocaleString()}
       </div>
     `;
   });
