@@ -59,17 +59,10 @@
       cursor: pointer;
     }
 
-    .btn-primary {
-      background: #2563eb;
-    }
+    .btn-primary { background: #2563eb; }
+    .btn-back { background: #374151; }
 
-    .btn-back {
-      background: #374151;
-    }
-
-    .resultado {
-      margin-top: 20px;
-    }
+    .resultado { margin-top: 20px; }
 
     .item {
       background: #1e293b;
@@ -94,7 +87,6 @@
 
     <h2>Bitácora de visitantes</h2>
 
-    <!-- 🔐 AUTENTICACIÓN -->
     <label>Privada</label>
     <select id="privada">
       <option value="">Selecciona</option>
@@ -110,7 +102,6 @@
     <label>Clave</label>
     <input id="clave" type="password">
 
-    <!-- 📅 FILTRO -->
     <label>Desde</label>
     <input id="desde" type="date">
 
@@ -121,10 +112,7 @@
 
     <div id="resultado" class="resultado"></div>
 
-    <!-- 🔙 BOTÓN VOLVER -->
-    <button class="btn-back" onclick="volverInicio()">
-      ← Volver al inicio
-    </button>
+    <button class="btn-back" onclick="volverInicio()">← Volver al inicio</button>
 
   </div>
 </div>
@@ -134,6 +122,17 @@ const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
+
+// 🔥 FUNCIÓN PARA CORREGIR ZONA HORARIA
+function toUTC(date, end=false) {
+  const d = new Date(date);
+  if (end) {
+    d.setHours(23,59,59,999);
+  } else {
+    d.setHours(0,0,0,0);
+  }
+  return d.toISOString();
+}
 
 async function consultar() {
 
@@ -160,9 +159,8 @@ async function consultar() {
     return;
   }
 
-  // 📅 CONVERTIR FECHAS
-  const inicio = desde ? desde + "T00:00:00" : null;
-  const fin = hasta ? hasta + "T23:59:59" : null;
+  const inicio = desde ? toUTC(desde) : null;
+  const fin = hasta ? toUTC(hasta, true) : null;
 
   let query = client
     .from('visitas_qr')
