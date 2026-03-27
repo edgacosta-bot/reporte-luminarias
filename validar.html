@@ -22,21 +22,61 @@
 
     .container {
       padding: 20px;
+      max-width: 320px;
+      width: 100%;
     }
 
     h1 {
-      font-size: 32px;
+      font-size: 28px;
       margin-bottom: 10px;
     }
 
     p {
       margin: 5px 0;
-      font-size: 16px;
+      font-size: 15px;
     }
 
     .ok { background: #16a34a; }
     .warn { background: #f59e0b; }
     .error { background: #dc2626; }
+
+    /* 🔐 CONTROL */
+    .control {
+      margin-top: 20px;
+      display: none;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      margin-top: 10px;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: none;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .btn {
+      background: #1e293b;
+      color: white;
+      opacity: 0.5;
+    }
+
+    .btn.enabled {
+      opacity: 1;
+      background: #0f172a;
+    }
   </style>
 </head>
 
@@ -45,9 +85,19 @@
 <div class="container">
   <h1 id="estado">Validando...</h1>
   <div id="detalle"></div>
+
+  <!-- 🔐 CONTROL DE ACCESO -->
+  <div id="control" class="control">
+    <input type="password" id="pin" placeholder="Ingrese PIN">
+    <button id="btnAutorizar" class="btn" disabled>
+      Autorizar acceso
+    </button>
+  </div>
 </div>
 
 <script>
+const PIN_CORRECTO = "7482"; // 🔐 puedes cambiarlo
+
 const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
@@ -55,6 +105,8 @@ const client = window.supabase.createClient(
 
 const params = new URLSearchParams(window.location.search);
 const qr = params.get("qr");
+
+let visitaGlobal = null;
 
 validar();
 
@@ -76,6 +128,7 @@ async function validar() {
   }
 
   const visita = data[0];
+  visitaGlobal = visita;
 
   const hoy = new Date().toLocaleDateString('en-CA');
 
@@ -104,21 +157,48 @@ async function validar() {
     return;
   }
 
-  // ✅ ACCESO PERMITIDO
+  // ✅ ACCESO PERMITIDO (pero aún no registrado)
   pintar("ACCESO PERMITIDO", "ok", visita);
 
-  // 🔥 ACTUALIZACIÓN SEGURA (AQUÍ ESTÁ EL CAMBIO)
-  const { data: updateData, error: updateError } = await client
-  .from('visitas_qr')
-  .update({
-    estatus: 'usado',
-    hora_ingreso: new Date().toISOString()
-  })
-  .eq('id', visita.id);
-
-console.log("UPDATE DATA:", updateData);
-console.log("UPDATE ERROR:", updateError);
+  // Mostrar control
+  document.getElementById("control").style.display = "block";
 }
+
+// 🔐 Validar PIN
+const pinInput = document.getElementById("pin");
+const btn = document.getElementById("btnAutorizar");
+
+pinInput.addEventListener("input", () => {
+  if (pinInput.value === PIN_CORRECTO) {
+    btn.disabled = false;
+    btn.classList.add("enabled");
+  } else {
+    btn.disabled = true;
+    btn.classList.remove("enabled");
+  }
+});
+
+// 🔥 Autorizar acceso REAL
+btn.addEventListener("click", async () => {
+
+  if (!visitaGlobal) return;
+
+  const { error } = await client
+    .from('visitas_qr')
+    .update({
+      estatus: 'usado',
+      hora_ingreso: new Date().toISOString()
+    })
+    .eq('id', visitaGlobal.id);
+
+  if (error) {
+    alert("Error al registrar acceso");
+    console.log(error);
+    return;
+  }
+
+  document.getElementById("estado").innerText = "ACCESO REGISTRADO";
+});
 
 // Mostrar resultado
 function pintar(mensaje, tipo, data = null) {
