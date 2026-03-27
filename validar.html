@@ -8,6 +8,10 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: Arial;
@@ -50,10 +54,16 @@
       width: 100%;
       padding: 12px;
       border-radius: 8px;
-      border: none;
+      border: 1px solid #334155;
       margin-top: 10px;
       font-size: 16px;
       text-align: center;
+      background: #0f172a;
+      color: white;
+    }
+
+    input::placeholder {
+      color: #94a3b8;
     }
 
     button {
@@ -68,14 +78,14 @@
     }
 
     .btn {
-      background: #1e293b;
+      background: #020617;
       color: white;
-      opacity: 0.5;
+      opacity: 0.4;
     }
 
     .btn.enabled {
       opacity: 1;
-      background: #0f172a;
+      background: #020617;
     }
   </style>
 </head>
@@ -157,7 +167,7 @@ async function validar() {
     return;
   }
 
-  // ✅ ACCESO PERMITIDO (pero aún no registrado)
+  // ✅ ACCESO PERMITIDO (pero no registrado aún)
   pintar("ACCESO PERMITIDO", "ok", visita);
 
   // Mostrar control
