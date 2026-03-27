@@ -8,9 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -30,40 +28,22 @@
       width: 100%;
     }
 
-    h1 {
-      font-size: 28px;
-      margin-bottom: 10px;
-    }
-
-    p {
-      margin: 5px 0;
-      font-size: 15px;
-    }
+    h1 { font-size: 28px; }
 
     .ok { background: #16a34a; }
     .warn { background: #f59e0b; }
     .error { background: #dc2626; }
 
-    /* 🔐 CONTROL */
-    .control {
-      margin-top: 20px;
-      display: none;
-    }
+    .control { margin-top: 20px; display: none; }
 
     input {
       width: 100%;
       padding: 12px;
       border-radius: 8px;
       border: 1px solid #334155;
-      margin-top: 10px;
-      font-size: 16px;
-      text-align: center;
       background: #0f172a;
       color: white;
-    }
-
-    input::placeholder {
-      color: #94a3b8;
+      text-align: center;
     }
 
     button {
@@ -73,20 +53,11 @@
       border-radius: 8px;
       border: none;
       font-weight: bold;
-      font-size: 16px;
       cursor: pointer;
     }
 
-    .btn {
-      background: #020617;
-      color: white;
-      opacity: 0.4;
-    }
-
-    .btn.enabled {
-      opacity: 1;
-      background: #020617;
-    }
+    .btn { background: #020617; opacity: 0.4; }
+    .btn.enabled { opacity: 1; }
   </style>
 </head>
 
@@ -96,17 +67,14 @@
   <h1 id="estado">Validando...</h1>
   <div id="detalle"></div>
 
-  <!-- 🔐 CONTROL DE ACCESO -->
   <div id="control" class="control">
     <input type="password" id="pin" placeholder="Ingrese PIN">
-    <button id="btnAutorizar" class="btn" disabled>
-      Autorizar acceso
-    </button>
+    <button id="btnAutorizar" class="btn" disabled>Autorizar acceso</button>
   </div>
 </div>
 
 <script>
-const PIN_CORRECTO = "7482"; // 🔐 puedes cambiarlo
+const PIN_CORRECTO = "7482";
 
 const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
@@ -122,59 +90,28 @@ validar();
 
 async function validar() {
 
-  if (!qr) {
-    pintar("QR inválido", "error");
-    return;
-  }
-
-  const { data, error } = await client
+  const { data } = await client
     .from('visitas_qr')
     .select('*')
     .eq('codigo_qr', qr);
 
-  if (error || !data || data.length === 0) {
-    pintar("QR NO EXISTE", "error");
+  if (!data || data.length === 0) {
+    pintar("QR inválido", "error");
     return;
   }
 
   const visita = data[0];
   visitaGlobal = visita;
 
-  const hoy = new Date().toLocaleDateString('en-CA');
-
-  if (visita.fecha_visita !== hoy) {
-    pintar("QR NO VÁLIDO PARA HOY", "error", visita);
-    return;
-  }
-
-  const ahora = new Date().toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-
-  if (visita.hora_inicio && ahora < visita.hora_inicio) {
-    pintar("AÚN NO PERMITIDO", "warn", visita);
-    return;
-  }
-
-  if (visita.hora_fin && ahora > visita.hora_fin) {
-    pintar("FUERA DE HORARIO", "warn", visita);
-    return;
-  }
-
   if (visita.estatus !== 'activo') {
     pintar("QR YA UTILIZADO", "warn", visita);
     return;
   }
 
-  // ✅ ACCESO PERMITIDO (pero no registrado aún)
   pintar("ACCESO PERMITIDO", "ok", visita);
-
-  // Mostrar control
   document.getElementById("control").style.display = "block";
 }
 
-// 🔐 Validar PIN
 const pinInput = document.getElementById("pin");
 const btn = document.getElementById("btnAutorizar");
 
@@ -188,46 +125,31 @@ pinInput.addEventListener("input", () => {
   }
 });
 
-// 🔥 Autorizar acceso REAL
 btn.addEventListener("click", async () => {
-
-  if (!visitaGlobal) return;
 
   const { error } = await client
     .from('visitas_qr')
     .update({
       estatus: 'usado',
-      hora_ingreso: new Date().toISOString()
+      hora_ingreso_utc: new Date().toISOString()
     })
     .eq('id', visitaGlobal.id);
 
   if (error) {
     alert("Error al registrar acceso");
-    console.log(error);
     return;
   }
 
   document.getElementById("estado").innerText = "ACCESO REGISTRADO";
 });
 
-// Mostrar resultado
 function pintar(mensaje, tipo, data = null) {
-
-  const estado = document.getElementById("estado");
-  const detalle = document.getElementById("detalle");
-
-  estado.innerText = mensaje;
+  document.getElementById("estado").innerText = mensaje;
   document.body.className = tipo;
 
   if (data) {
-    detalle.innerHTML = `
-      <p><b>Visitante:</b> ${data.nombre_visitante}</p>
-      <p><b>Fecha:</b> ${data.fecha_visita}</p>
-      <p><b>Origen:</b> ${
-        data.tipo_generador === 'administracion'
-          ? 'ADMINISTRACIÓN'
-          : data.privada + '-' + data.casa
-      }</p>
+    document.getElementById("detalle").innerHTML = `
+      <p><b>${data.nombre_visitante}</b></p>
     `;
   }
 }
