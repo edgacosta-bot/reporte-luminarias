@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Bitácora de visitantes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+    }
+
+    .container {
+      max-width: 420px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: #111827;
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-size: 13px;
+      margin-top: 10px;
+      display: block;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: none;
+      background: #1f2937;
+      color: white;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      border-radius: 10px;
+      border: none;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .resultado {
+      margin-top: 20px;
+    }
+
+    .item {
+      background: #1e293b;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .vacio {
+      text-align: center;
+      margin-top: 15px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="card">
+
+    <h2>Bitácora de visitantes</h2>
+
+    <!-- 🔐 AUTENTICACIÓN -->
+    <label>Privada</label>
+    <select id="privada">
+      <option value="">Selecciona</option>
+      <option value="I">Privada I</option>
+      <option value="II">Privada II</option>
+      <option value="III">Privada III</option>
+      <option value="IV">Privada IV</option>
+    </select>
+
+    <label>Casa</label>
+    <input id="casa" type="number">
+
+    <label>Clave</label>
+    <input id="clave" type="password">
+
+    <!-- 📅 FILTRO -->
+    <label>Desde</label>
+    <input id="desde" type="date">
+
+    <label>Hasta</label>
+    <input id="hasta" type="date">
+
+    <button onclick="consultar()">Consultar</button>
+
+    <div id="resultado" class="resultado"></div>
+
+  </div>
+</div>
+
+<script>
+const client = window.supabase.createClient(
+  'https://prjxmfhahnzosdwljode.supabase.co',
+  'TU_ANON_KEY_AQUI'
+);
+
+async function consultar() {
+
+  const privada = document.getElementById("privada").value;
+  const casa = document.getElementById("casa").value;
+  const clave = document.getElementById("clave").value;
+  const desde = document.getElementById("desde").value;
+  const hasta = document.getElementById("hasta").value;
+
+  const contenedor = document.getElementById("resultado");
+  contenedor.innerHTML = "Consultando...";
+
+  // 🔐 VALIDAR RESIDENTE
+  const { data: user } = await client
+    .from('residentes')
+    .select('*')
+    .eq('privada', privada)
+    .eq('casa', casa)
+    .eq('clave', clave)
+    .single();
+
+  if (!user) {
+    contenedor.innerHTML = "<div class='vacio'>Datos incorrectos</div>";
+    return;
+  }
+
+  // 📅 CONVERTIR FECHAS A TIMESTAMP
+  const inicio = desde ? desde + "T00:00:00" : null;
+  const fin = hasta ? hasta + "T23:59:59" : null;
+
+  let query = client
+    .from('visitas_qr')
+    .select('*')
+    .eq('residente_id', user.id)
+    .not('hora_ingreso', 'is', null)
+    .order('hora_ingreso', { ascending: false });
+
+  if (inicio) query = query.gte('hora_ingreso', inicio);
+  if (fin) query = query.lte('hora_ingreso', fin);
+
+  const { data, error } = await query;
+
+  if (error) {
+    contenedor.innerHTML = "<div class='vacio'>Error al consultar</div>";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    contenedor.innerHTML = "<div class='vacio'>Sin registros</div>";
+    return;
+  }
+
+  // 🧾 MOSTRAR RESULTADOS
+  contenedor.innerHTML = "";
+
+  data.forEach(v => {
+    const fecha = new Date(v.hora_ingreso);
+
+    contenedor.innerHTML += `
+      <div class="item">
+        <b>${v.nombre_visitante}</b><br>
+        📅 ${fecha.toLocaleDateString()}<br>
+        🕒 ${fecha.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}<br>
+        🏠 ${v.privada}-${v.casa}
+      </div>
+    `;
+  });
+}
+</script>
+
+</body>
+</html>
