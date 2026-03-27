@@ -28,36 +28,74 @@
       width: 100%;
     }
 
-    h1 { font-size: 28px; }
+    h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    p {
+      font-size: 16px;
+    }
 
     .ok { background: #16a34a; }
     .warn { background: #f59e0b; }
     .error { background: #dc2626; }
 
-    .control { margin-top: 20px; display: none; }
+    /* 🔐 CONTROL */
+    .control {
+      margin-top: 25px;
+      display: none;
+    }
 
     input {
       width: 100%;
-      padding: 12px;
-      border-radius: 8px;
+      padding: 14px;
+      border-radius: 10px;
       border: 1px solid #334155;
-      background: #0f172a;
-      color: white;
+      margin-top: 10px;
+      font-size: 18px;
       text-align: center;
+      background: #020617;
+      color: white;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    input::placeholder {
+      color: #94a3b8;
+      font-weight: normal;
+      letter-spacing: normal;
     }
 
     button {
       width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      border-radius: 8px;
+      padding: 14px;
+      margin-top: 12px;
+      border-radius: 10px;
       border: none;
       font-weight: bold;
+      font-size: 18px;
       cursor: pointer;
+      transition: 0.2s;
     }
 
-    .btn { background: #020617; opacity: 0.4; }
-    .btn.enabled { opacity: 1; }
+    .btn {
+      background: #020617;
+      color: white;
+      opacity: 0.4;
+    }
+
+    .btn.enabled {
+      opacity: 1;
+      background: #020617;
+      transform: scale(1.02);
+    }
+
+    .btn.enabled:hover {
+      transform: scale(1.05);
+    }
+
   </style>
 </head>
 
@@ -69,7 +107,9 @@
 
   <div id="control" class="control">
     <input type="password" id="pin" placeholder="Ingrese PIN">
-    <button id="btnAutorizar" class="btn" disabled>Autorizar acceso</button>
+    <button id="btnAutorizar" class="btn" disabled>
+      Autorizar acceso
+    </button>
   </div>
 </div>
 
