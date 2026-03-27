@@ -8,6 +8,10 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: Arial;
@@ -27,6 +31,17 @@
       padding: 20px;
     }
 
+    h2 {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-size: 13px;
+      margin-top: 10px;
+      display: block;
+    }
+
     input, select {
       width: 100%;
       padding: 10px;
@@ -35,6 +50,11 @@
       border: none;
       background: #1f2937;
       color: white;
+      font-size: 14px;
+    }
+
+    input::placeholder {
+      color: #9ca3af;
     }
 
     button {
@@ -46,16 +66,29 @@
       color: white;
       font-weight: bold;
       cursor: pointer;
+      font-size: 15px;
     }
 
     .btn-primary { background: #2563eb; }
     .btn-back { background: #374151; }
+
+    .resultado {
+      margin-top: 20px;
+    }
 
     .item {
       background: #1e293b;
       padding: 12px;
       border-radius: 10px;
       margin-bottom: 10px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .vacio {
+      text-align: center;
+      margin-top: 15px;
+      color: #9ca3af;
     }
   </style>
 </head>
@@ -67,23 +100,34 @@
 
     <h2>Bitácora de visitantes</h2>
 
+    <!-- 🔐 AUTENTICACIÓN -->
+    <label>Privada</label>
     <select id="privada">
-      <option value="">Privada</option>
-      <option value="I">I</option>
-      <option value="II">II</option>
+      <option value="">Selecciona</option>
+      <option value="I">Privada I</option>
+      <option value="II">Privada II</option>
+      <option value="III">Privada III</option>
+      <option value="IV">Privada IV</option>
     </select>
 
-    <input id="casa" placeholder="Casa">
-    <input id="clave" type="password" placeholder="Clave">
+    <label>Casa</label>
+    <input id="casa" type="number" placeholder="Número de casa">
 
+    <label>Clave</label>
+    <input id="clave" type="password" placeholder="Ingrese su clave">
+
+    <!-- 📅 FILTRO -->
+    <label>Desde</label>
     <input id="desde" type="date">
+
+    <label>Hasta</label>
     <input id="hasta" type="date">
 
     <button class="btn-primary" onclick="consultar()">Consultar</button>
 
-    <div id="resultado"></div>
+    <div id="resultado" class="resultado"></div>
 
-    <button class="btn-back" onclick="volverInicio()">← Volver</button>
+    <button class="btn-back" onclick="volverInicio()">← Volver al inicio</button>
 
   </div>
 </div>
@@ -94,6 +138,7 @@ const client = window.supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
+// 🔐 Convertir fechas a UTC correctamente
 function toUTC(date, end=false) {
   return end
     ? date + "T23:59:59.999Z"
@@ -111,6 +156,7 @@ async function consultar() {
   const contenedor = document.getElementById("resultado");
   contenedor.innerHTML = "Consultando...";
 
+  // 🔐 VALIDAR RESIDENTE
   const { data: user } = await client
     .from('residentes')
     .select('*')
@@ -120,7 +166,7 @@ async function consultar() {
     .single();
 
   if (!user) {
-    contenedor.innerHTML = "Datos incorrectos";
+    contenedor.innerHTML = "<div class='vacio'>Datos incorrectos</div>";
     return;
   }
 
@@ -134,17 +180,37 @@ async function consultar() {
   if (desde) query = query.gte('hora_ingreso_utc', toUTC(desde));
   if (hasta) query = query.lte('hora_ingreso_utc', toUTC(hasta, true));
 
-  const { data } = await query;
+  const { data, error } = await query;
+
+  if (error) {
+    contenedor.innerHTML = "<div class='vacio'>Error al consultar</div>";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    contenedor.innerHTML = "<div class='vacio'>Sin registros</div>";
+    return;
+  }
 
   contenedor.innerHTML = "";
 
   data.forEach(v => {
     const fecha = new Date(v.hora_ingreso_utc);
 
+    const fechaLocal = fecha.toLocaleString('es-MX', {
+      timeZone: 'America/Mexico_City',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
     contenedor.innerHTML += `
       <div class="item">
         <b>${v.nombre_visitante}</b><br>
-        ${fecha.toLocaleString()}
+        📅 ${fechaLocal}<br>
+        🏠 ${v.privada}-${v.casa}
       </div>
     `;
   });
