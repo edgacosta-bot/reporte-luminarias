@@ -4,6 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- 🔥 PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f172a">
+
   <title>Villas de la Concepción</title>
 
   <style>
@@ -181,7 +186,7 @@
   <div class="section-title">Seguridad</div>
   <a href="vigilancia.html" class="button vigilancia">🛡 Vigilancia</a>
 
-  <!-- 🔥 NUEVO MÓDULO -->
+  <!-- VISITANTES -->
   <div class="section-title">Visitantes</div>
   <a href="crear_qr.html" class="button qr">📱 Generar acceso (QR)</a>
   <a href="bitacora_visitantes.html" class="button bitacora">📋 Bitácora de visitantes</a>
@@ -221,6 +226,12 @@ document.querySelectorAll("a").forEach(link => {
     }, 300);
   });
 });
+
+/* 🔥 SERVICE WORKER */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+    .then(() => console.log('SW registrado'));
+}
 </script>
 
 </body>
