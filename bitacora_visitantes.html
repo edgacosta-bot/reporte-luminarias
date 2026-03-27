@@ -54,10 +54,17 @@
       margin-top: 15px;
       border-radius: 10px;
       border: none;
-      background: #2563eb;
       color: white;
       font-weight: bold;
       cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+    }
+
+    .btn-back {
+      background: #374151;
     }
 
     .resultado {
@@ -110,9 +117,14 @@
     <label>Hasta</label>
     <input id="hasta" type="date">
 
-    <button onclick="consultar()">Consultar</button>
+    <button class="btn-primary" onclick="consultar()">Consultar</button>
 
     <div id="resultado" class="resultado"></div>
+
+    <!-- 🔙 BOTÓN VOLVER -->
+    <button class="btn-back" onclick="volverInicio()">
+      ← Volver al inicio
+    </button>
 
   </div>
 </div>
@@ -148,7 +160,7 @@ async function consultar() {
     return;
   }
 
-  // 📅 CONVERTIR FECHAS A TIMESTAMP
+  // 📅 CONVERTIR FECHAS
   const inicio = desde ? desde + "T00:00:00" : null;
   const fin = hasta ? hasta + "T23:59:59" : null;
 
@@ -174,7 +186,6 @@ async function consultar() {
     return;
   }
 
-  // 🧾 MOSTRAR RESULTADOS
   contenedor.innerHTML = "";
 
   data.forEach(v => {
@@ -189,6 +200,10 @@ async function consultar() {
       </div>
     `;
   });
+}
+
+function volverInicio() {
+  window.location.href = "index.html";
 }
 </script>
 
