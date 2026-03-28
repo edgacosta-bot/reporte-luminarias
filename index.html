@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- version 3 -->
+<!-- version 4 -->
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -12,9 +12,9 @@
   <title>Villas de la Concepción</title>
 
   <script>
-    // 🔐 PROTECCIÓN DE ACCESO
+    // 🔐 PROTECCIÓN DE ACCESO (AHORA LOGIN)
     if (!localStorage.getItem("usuario_valido")) {
-      window.location.href = "registro.html";
+      window.location.href = "login.html";
     }
   </script>
 
@@ -109,6 +109,18 @@
     .qr { background: #4338ca; }
     .bitacora { background: #0ea5e9; }
 
+    .logout-btn {
+      margin-top: 25px;
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: #dc2626;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
     /* SPLASH */
     #splash {
       position: fixed;
@@ -198,6 +210,9 @@
   <a href="crear_qr.html" class="button qr">📱 Generar acceso (QR)</a>
   <a href="bitacora_visitantes.html" class="button bitacora">📋 Bitácora de visitantes</a>
 
+  <!-- 🔐 CERRAR SESIÓN -->
+  <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
+
 </div>
 
 <script>
@@ -233,6 +248,12 @@ document.querySelectorAll("a").forEach(link => {
     }, 300);
   });
 });
+
+/* 🔐 LOGOUT */
+function logout() {
+  localStorage.clear();
+  window.location.href = "login.html";
+}
 
 /* 🔥 SERVICE WORKER */
 if ('serviceWorker' in navigator) {
