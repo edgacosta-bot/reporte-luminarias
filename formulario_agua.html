@@ -26,6 +26,9 @@
   </p>
 </div>
 
+<!-- 👤 INFO USUARIO -->
+<div id="infoUsuario" class="text-xs text-gray-500 text-center mb-4"></div>
+
 <!-- MENSAJE DE CONTEXTO -->
 
 <div class="bg-blue-50 border border-blue-200 text-blue-700 text-sm rounded-lg p-3 mb-5">
@@ -65,8 +68,6 @@ class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:
 >
 </div>
 
-<!-- NUEVO CAMPO -->
-
 <div>
 <label class="block text-sm font-medium text-gray-600">
 ¿Cómo realizaste el reporte?
@@ -104,32 +105,6 @@ class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:
 </select>
 </div>
 
-<div>
-<label class="block text-sm font-medium text-gray-600">
-Calle / Privada
-</label>
-
-<select
-id="calle_id"
-required
-class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-> </select>
-
-</div>
-
-<div>
-<label class="block text-sm font-medium text-gray-600">
-Número exterior (opcional)
-</label>
-
-<input
-type="text"
-id="numero_exterior"
-placeholder="Ej. 12"
-class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
->
-</div>
-
 <button
 type="submit"
 class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
@@ -151,29 +126,22 @@ La información será utilizada como respaldo para documentar incidencias y gest
 <script>
 
 const SUPABASE_URL = "https://prjxmfhahnzosdwljode.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"; // (mantén tu key original)
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs";
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyKWLCyjXmziMIFu_2bQoaawhzE4IUAbRnf71fvNsCjuea5DmH150w93FgLC9WqMIw/exec";
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Cargar calles
-async function cargarCalles() {
-  const { data } = await supabaseClient
-    .from("ubicaciones")
-    .select("id, calle")
-    .order("calle", { ascending: true });
+// 🔐 SESIÓN
+const privada = localStorage.getItem("privada");
+const casa = localStorage.getItem("casa");
 
-  const select = document.getElementById("calle_id");
-
-  data.forEach(item => {
-    const option = document.createElement("option");
-    option.value = item.id;
-    option.textContent = item.calle;
-    select.appendChild(option);
-  });
+if (!privada || !casa) {
+  window.location.href = "login.html";
 }
 
-cargarCalles();
+// 👤 MOSTRAR INFO
+document.getElementById("infoUsuario").innerText =
+  `Privada ${privada} - Casa ${casa}`;
 
 // Enviar formulario
 document.getElementById("formAgua").addEventListener("submit", async (e) => {
@@ -181,7 +149,6 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const mensaje = document.getElementById("mensaje");
-  const select = document.getElementById("calle_id");
 
   try {
 
@@ -190,8 +157,8 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
       numero_reporte: document.getElementById("numero_reporte").value.trim(),
       medio_reporte: document.getElementById("medio_reporte").value,
       tipo_falla: document.getElementById("tipo_falla").value,
-      calle_id: parseInt(select.value),
-      numero_exterior: document.getElementById("numero_exterior").value.trim()
+      privada: privada,
+      casa: casa
     };
 
     const { error } = await supabaseClient
