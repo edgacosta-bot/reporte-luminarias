@@ -99,7 +99,9 @@
 
   <input type="number" id="casa" placeholder="Número de casa">
   <input type="text" id="nombre" placeholder="Tu nombre">
-  <input type="password" id="clave" placeholder="Clave (4 dígitos)" maxlength="4">
+
+  <input type="password" id="clave" placeholder="Contraseña (4 dígitos)" maxlength="4">
+  <input type="password" id="confirmar_clave" placeholder="Confirmar contraseña" maxlength="4">
 
   <button onclick="registrar()">Registrarme</button>
 
@@ -118,24 +120,29 @@
   );
 
   async function registrar() {
-    console.log("CLICK OK");
-
     const privada = document.getElementById("privada").value;
     const casa = document.getElementById("casa").value;
     const nombre = document.getElementById("nombre").value;
     const clave = document.getElementById("clave").value;
+    const confirmar = document.getElementById("confirmar_clave").value;
     const mensaje = document.getElementById("mensaje");
 
     mensaje.className = "mensaje";
 
-    if (!privada || !casa || !nombre || !clave) {
+    if (!privada || !casa || !nombre || !clave || !confirmar) {
       mensaje.innerText = "Completa todos los campos";
       mensaje.classList.add("error");
       return;
     }
 
     if (clave.length !== 4) {
-      mensaje.innerText = "La clave debe ser de 4 dígitos";
+      mensaje.innerText = "La contraseña debe ser de 4 dígitos";
+      mensaje.classList.add("error");
+      return;
+    }
+
+    if (clave !== confirmar) {
+      mensaje.innerText = "Las contraseñas no coinciden";
       mensaje.classList.add("error");
       return;
     }
