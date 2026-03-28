@@ -163,7 +163,13 @@
 
     // 🔒 Validar registro
     if (data.registrado === true || (data.nombre && data.nombre.trim() !== "")) {
-      mensaje.innerText = "Este lote ya está registrado";
+      mensaje.innerHTML = `
+        Esta vivienda ya cuenta con registro.<br><br>
+        Si necesitas acceso, solicita la contraseña a un residente o<br>
+        <a href="login.html" style="color:#60a5fa; text-decoration:underline;">
+          inicia sesión aquí
+        </a>
+      `;
       mensaje.classList.add("error");
       return;
     }
