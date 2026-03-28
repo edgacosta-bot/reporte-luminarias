@@ -8,9 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -42,7 +40,7 @@
       display: block;
     }
 
-    input, select {
+    input {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
@@ -90,6 +88,13 @@
       margin-top: 15px;
       color: #9ca3af;
     }
+
+    .info-user {
+      font-size: 13px;
+      margin-bottom: 10px;
+      color: #9ca3af;
+      text-align: center;
+    }
   </style>
 </head>
 
@@ -100,21 +105,8 @@
 
     <h2>Bitácora de visitantes</h2>
 
-    <!-- 🔐 AUTENTICACIÓN -->
-    <label>Privada</label>
-    <select id="privada">
-      <option value="">Selecciona</option>
-      <option value="I">Privada I</option>
-      <option value="II">Privada II</option>
-      <option value="III">Privada III</option>
-      <option value="IV">Privada IV</option>
-    </select>
-
-    <label>Casa</label>
-    <input id="casa" type="number" placeholder="Número de casa">
-
-    <label>Clave</label>
-    <input id="clave" type="password" placeholder="Ingrese su clave">
+    <!-- 👤 INFO USUARIO -->
+    <div id="infoUsuario" class="info-user"></div>
 
     <!-- 📅 FILTRO -->
     <label>Desde</label>
@@ -138,7 +130,19 @@ const client = window.supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
-// ✅ FUNCIÓN CORRECTA (LOCAL → UTC)
+// 🔐 SESIÓN
+const privada = localStorage.getItem("privada");
+const casa = localStorage.getItem("casa");
+
+if (!privada || !casa) {
+  window.location.href = "login.html";
+}
+
+// 👤 MOSTRAR INFO
+document.getElementById("infoUsuario").innerText =
+  `Privada ${privada} - Casa ${casa}`;
+
+// ✅ FUNCIÓN UTC (NO SE TOCA)
 function toUTC(date, end=false) {
   const d = new Date(date + "T00:00:00");
 
@@ -153,26 +157,22 @@ function toUTC(date, end=false) {
 
 async function consultar() {
 
-  const privada = document.getElementById("privada").value;
-  const casa = document.getElementById("casa").value;
-  const clave = document.getElementById("clave").value;
   const desde = document.getElementById("desde").value;
   const hasta = document.getElementById("hasta").value;
 
   const contenedor = document.getElementById("resultado");
   contenedor.innerHTML = "Consultando...";
 
-  // 🔐 VALIDAR RESIDENTE
+  // 🔎 USUARIO DESDE SESIÓN
   const { data: user } = await client
     .from('residentes')
     .select('*')
     .eq('privada', privada)
     .eq('casa', casa)
-    .eq('clave', clave)
     .single();
 
   if (!user) {
-    contenedor.innerHTML = "<div class='vacio'>Datos incorrectos</div>";
+    contenedor.innerHTML = "<div class='vacio'>Error de sesión</div>";
     return;
   }
 
