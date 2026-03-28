@@ -49,7 +49,7 @@
       display: block;
     }
 
-    input, select {
+    input {
       width: 100%;
       padding: 12px;
       margin-top: 6px;
@@ -67,10 +67,7 @@
       border-radius: 12px;
       font-weight: bold;
       cursor: pointer;
-      transition: 0.2s;
     }
-
-    button:active { transform: scale(0.98); }
 
     .btn-primary { background: #2563eb; color: white; }
     .btn-back { background: #374151; color: white; }
@@ -78,71 +75,11 @@
 
     #qrcode { margin-top: 20px; text-align: center; }
 
-    /* MODAL */
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      z-index: 999;
-      align-items: center;
-      justify-content: center;
-      animation: fadeIn 0.2s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    .modal-content {
-      background: white;
-      border-radius: 18px;
-      padding: 24px;
-      width: 90%;
-      max-width: 360px;
-      text-align: center;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.35);
-      animation: scaleIn 0.2s ease;
-      color: #1f2937;
-    }
-
-    @keyframes scaleIn {
-      from { transform: scale(0.9); }
-      to { transform: scale(1); }
-    }
-
-    .modal-icon { font-size: 40px; margin-bottom: 10px; }
-
-    .modal-title {
-      font-size: 18px;
-      font-weight: bold;
+    .info-user {
+      font-size: 13px;
       margin-bottom: 10px;
-    }
-
-    .modal-text {
-      font-size: 14px;
       color: #374151;
-      line-height: 1.5;
-      margin-bottom: 15px;
     }
-
-    .modal-question {
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
-    .modal-buttons {
-      display: flex;
-      gap: 10px;
-    }
-
-    .btn-gray { background: #6b7280; color: white; }
-    .btn-blue { background: #2563eb; color: white; }
-    .btn-red { background: #b91c1c; color: white; }
-
-    .warning .modal-title { color: #b45309; }
-    .danger .modal-title { color: #b91c1c; }
   </style>
 </head>
 
@@ -156,30 +93,8 @@
       Acceso de visitantes
     </div>
 
-    <label>Tipo de acceso</label>
-    <select id="tipo">
-      <option value="residente">Residente</option>
-      <option value="administracion">Administración</option>
-    </select>
-
-    <div id="datosCasa">
-      <label>Privada</label>
-      <select id="privada">
-        <option value="">Selecciona privada</option>
-        <option value="I">Privada I</option>
-        <option value="II">Privada II</option>
-        <option value="III">Privada III</option>
-        <option value="IV">Privada IV</option>
-      </select>
-
-      <label>Número de casa</label>
-      <input id="casa" type="number" placeholder="Ej. 76">
-    </div>
-
-    <label>Clave</label>
-    <input id="clave" placeholder="Clave de acceso">
-
-    <hr>
+    <!-- 👤 INFO USUARIO -->
+    <div id="infoUsuario" class="info-user"></div>
 
     <label>Nombre del visitante</label>
     <input id="visitante" placeholder="Ej. Juan Pérez">
@@ -210,107 +125,58 @@
   </div>
 </div>
 
-<!-- 🟡 MODAL ATRASO -->
-<div id="modalAviso" class="modal">
-  <div class="modal-content warning">
-    <div class="modal-icon">⚠️</div>
-    <div class="modal-title">Aviso importante</div>
-    <div class="modal-text">
-      Se detecta un atraso en tus aportaciones.<br><br>
-      Puedes generar el acceso en esta ocasión, pero te invitamos a regularizar tu pago para evitar futuras restricciones.
-    </div>
-    <div class="modal-question">¿Deseas continuar?</div>
-    <div class="modal-buttons">
-      <button class="btn-gray" onclick="cerrarModal(false)">Cancelar</button>
-      <button class="btn-blue" onclick="cerrarModal(true)">Continuar</button>
-    </div>
-  </div>
-</div>
-
-<!-- 🔴 MODAL MOROSO -->
-<div id="modalBloqueo" class="modal">
-  <div class="modal-content danger">
-    <div class="modal-icon">⛔</div>
-    <div class="modal-title">Acceso restringido</div>
-    <div class="modal-text">
-      Actualmente presentas adeudos en tus aportaciones.<br><br>
-      Por esta razón, la generación de accesos QR se encuentra temporalmente deshabilitada.
-    </div>
-    <div class="modal-buttons">
-      <button class="btn-red" onclick="cerrarBloqueo()">Entendido</button>
-    </div>
-  </div>
-</div>
-
 <script>
 const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
-document.getElementById('tipo').addEventListener('change', function() {
-  document.getElementById('datosCasa').style.display =
-    this.value === 'residente' ? 'block' : 'none';
-});
+// 🔐 VALIDAR SESIÓN
+const privada = localStorage.getItem("privada");
+const casa = localStorage.getItem("casa");
 
-let resolverModal;
-
-function mostrarModal() {
-  return new Promise((resolve) => {
-    resolverModal = resolve;
-    document.getElementById("modalAviso").style.display = "flex";
-  });
+if (!privada || !casa) {
+  window.location.href = "login.html";
 }
 
-function cerrarModal(respuesta) {
-  document.getElementById("modalAviso").style.display = "none";
-  resolverModal(respuesta);
-}
-
-function mostrarBloqueo() {
-  document.getElementById("modalBloqueo").style.display = "flex";
-}
-
-function cerrarBloqueo() {
-  window.location.href = "index.html";
-}
+// 👤 MOSTRAR INFO
+document.getElementById("infoUsuario").innerText =
+  `Privada ${privada} - Casa ${casa}`;
 
 async function generarQR() {
 
-  const tipo = document.getElementById('tipo').value;
-  const privada = document.getElementById('privada').value;
-  const casa = document.getElementById('casa').value;
-  const clave = document.getElementById('clave').value;
   const visitante = document.getElementById('visitante').value;
   const fecha = document.getElementById('fecha').value;
   const hora_inicio = document.getElementById('hora_inicio').value;
   const hora_fin = document.getElementById('hora_fin').value;
 
-  let query = client.from('residentes').select('*');
-
-  if (tipo === 'residente') {
-    query = query.eq('privada', privada).eq('casa', casa).eq('clave', clave);
-  } else {
-    query = query.eq('tipo', 'administracion').eq('clave', clave);
+  if (!visitante || !fecha || !hora_inicio || !hora_fin) {
+    alert("Completa todos los campos");
+    return;
   }
 
-  const { data: user } = await query.single();
+  // 🔎 BUSCAR USUARIO DESDE SESIÓN
+  const { data: user } = await client
+    .from('residentes')
+    .select('*')
+    .eq('privada', privada)
+    .eq('casa', casa)
+    .single();
 
   if (!user) {
-    alert("Datos incorrectos");
+    alert("Error de sesión");
     return;
   }
 
   const estado = (user.estado_pago || "corriente").toLowerCase().trim();
-  console.log("Estado detectado:", estado);
 
   if (estado === "moroso") {
-    mostrarBloqueo();
+    alert("Acceso restringido por adeudo");
     return;
   }
 
   if (estado === "atraso_1") {
-    const continuar = await mostrarModal();
+    const continuar = confirm("Tienes atraso. ¿Deseas continuar?");
     if (!continuar) return;
   }
 
@@ -318,7 +184,7 @@ async function generarQR() {
 
   await client.from('visitas_qr').insert([{
     residente_id: user.id,
-    tipo_generador: tipo,
+    tipo_generador: user.tipo,
     nombre_visitante: visitante,
     fecha_visita: fecha,
     hora_inicio: hora_inicio,
@@ -341,7 +207,7 @@ async function generarQR() {
     height: 200
   });
 
-  const mensaje = `🏡 Villas de la Concepción\n\nPresenta este código QR en la entrada:\n${link}`;
+  const mensaje = `🏡 Villas de la Concepción\n\nPresenta este código QR:\n${link}`;
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
 
   const btn = document.getElementById("btnWhatsapp");
