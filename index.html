@@ -11,6 +11,13 @@
 
   <title>Villas de la Concepción</title>
 
+  <script>
+    // 🔐 PROTECCIÓN DE ACCESO
+    if (!localStorage.getItem("usuario_valido")) {
+      window.location.href = "registro.html";
+    }
+  </script>
+
   <style>
     body {
       margin: 0;
