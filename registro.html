@@ -108,7 +108,6 @@
   <div id="mensaje" class="mensaje"></div>
 </div>
 
-<!-- 🔥 Supabase v2 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -147,7 +146,6 @@
       return;
     }
 
-    // 🔎 Buscar registro
     const { data, error } = await supabaseClient
       .from("residentes")
       .select("*")
@@ -161,7 +159,13 @@
       return;
     }
 
-    // 🔒 Validar registro
+    // 🔒 NUEVA VALIDACIÓN
+    if (!data.habilitado_registro) {
+      mensaje.innerText = "Este lote aún no está habilitado para registro. Si consideras que es un error, comunícate con la administración.";
+      mensaje.classList.add("error");
+      return;
+    }
+
     if (data.registrado === true || (data.nombre && data.nombre.trim() !== "")) {
       mensaje.innerHTML = `
         Esta vivienda ya cuenta con registro.<br><br>
@@ -174,7 +178,6 @@
       return;
     }
 
-    // 💾 Guardar
     const { error: errorUpdate } = await supabaseClient
       .from("residentes")
       .update({
