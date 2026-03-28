@@ -81,7 +81,7 @@
       color: #374151;
     }
 
-    /* MODALES (SE CONSERVAN) */
+    /* MODALES ORIGINALES */
     .modal {
       display: none;
       position: fixed;
@@ -90,6 +90,12 @@
       z-index: 999;
       align-items: center;
       justify-content: center;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .modal-content {
@@ -99,7 +105,34 @@
       width: 90%;
       max-width: 360px;
       text-align: center;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.35);
+      animation: scaleIn 0.2s ease;
       color: #1f2937;
+    }
+
+    @keyframes scaleIn {
+      from { transform: scale(0.9); }
+      to { transform: scale(1); }
+    }
+
+    .modal-icon { font-size: 40px; margin-bottom: 10px; }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .modal-text {
+      font-size: 14px;
+      color: #374151;
+      line-height: 1.5;
+      margin-bottom: 15px;
+    }
+
+    .modal-question {
+      font-weight: bold;
+      margin-bottom: 10px;
     }
 
     .modal-buttons {
@@ -110,6 +143,9 @@
     .btn-gray { background: #6b7280; color: white; }
     .btn-blue { background: #2563eb; color: white; }
     .btn-red { background: #b91c1c; color: white; }
+
+    .warning .modal-title { color: #b45309; }
+    .danger .modal-title { color: #b91c1c; }
   </style>
 </head>
 
@@ -154,11 +190,16 @@
   </div>
 </div>
 
-<!-- 🟡 MODAL ATRASO -->
+<!-- 🟡 MODAL ATRASO (ORIGINAL) -->
 <div id="modalAviso" class="modal">
-  <div class="modal-content">
-    <h3>⚠️ Aviso</h3>
-    <p>Tienes atraso en tus pagos. ¿Deseas continuar?</p>
+  <div class="modal-content warning">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title">Aviso importante</div>
+    <div class="modal-text">
+      Se detecta un atraso en tus aportaciones.<br><br>
+      Puedes generar el acceso en esta ocasión, pero te invitamos a regularizar tu pago para evitar futuras restricciones.
+    </div>
+    <div class="modal-question">¿Deseas continuar?</div>
     <div class="modal-buttons">
       <button class="btn-gray" onclick="cerrarModal(false)">Cancelar</button>
       <button class="btn-blue" onclick="cerrarModal(true)">Continuar</button>
@@ -166,12 +207,18 @@
   </div>
 </div>
 
-<!-- 🔴 MODAL MOROSO -->
+<!-- 🔴 MODAL MOROSO (ORIGINAL) -->
 <div id="modalBloqueo" class="modal">
-  <div class="modal-content">
-    <h3>⛔ Acceso restringido</h3>
-    <p>No puedes generar accesos por adeudo.</p>
-    <button class="btn-red" onclick="cerrarBloqueo()">Entendido</button>
+  <div class="modal-content danger">
+    <div class="modal-icon">⛔</div>
+    <div class="modal-title">Acceso restringido</div>
+    <div class="modal-text">
+      Actualmente presentas adeudos en tus aportaciones.<br><br>
+      Por esta razón, la generación de accesos QR se encuentra temporalmente deshabilitada.
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-red" onclick="cerrarBloqueo()">Entendido</button>
+    </div>
   </div>
 </div>
 
@@ -181,7 +228,6 @@ const client = window.supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
-// 🔐 SESIÓN
 const privada = localStorage.getItem("privada");
 const casa = localStorage.getItem("casa");
 
@@ -277,7 +323,7 @@ async function generarQR() {
     height: 200
   });
 
-  const mensaje = `🏡 Villas de la Concepción\n\nPresenta este código QR:\n${link}`;
+  const mensaje = `🏡 Villas de la Concepción\n\nPresenta este código QR en la entrada:\n${link}`;
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
 
   const btn = document.getElementById("btnWhatsapp");
