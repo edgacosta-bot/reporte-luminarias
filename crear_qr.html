@@ -80,6 +80,36 @@
       margin-bottom: 10px;
       color: #374151;
     }
+
+    /* MODALES (SE CONSERVAN) */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 18px;
+      padding: 24px;
+      width: 90%;
+      max-width: 360px;
+      text-align: center;
+      color: #1f2937;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-gray { background: #6b7280; color: white; }
+    .btn-blue { background: #2563eb; color: white; }
+    .btn-red { background: #b91c1c; color: white; }
   </style>
 </head>
 
@@ -93,7 +123,6 @@
       Acceso de visitantes
     </div>
 
-    <!-- 👤 INFO USUARIO -->
     <div id="infoUsuario" class="info-user"></div>
 
     <label>Nombre del visitante</label>
@@ -125,13 +154,34 @@
   </div>
 </div>
 
+<!-- 🟡 MODAL ATRASO -->
+<div id="modalAviso" class="modal">
+  <div class="modal-content">
+    <h3>⚠️ Aviso</h3>
+    <p>Tienes atraso en tus pagos. ¿Deseas continuar?</p>
+    <div class="modal-buttons">
+      <button class="btn-gray" onclick="cerrarModal(false)">Cancelar</button>
+      <button class="btn-blue" onclick="cerrarModal(true)">Continuar</button>
+    </div>
+  </div>
+</div>
+
+<!-- 🔴 MODAL MOROSO -->
+<div id="modalBloqueo" class="modal">
+  <div class="modal-content">
+    <h3>⛔ Acceso restringido</h3>
+    <p>No puedes generar accesos por adeudo.</p>
+    <button class="btn-red" onclick="cerrarBloqueo()">Entendido</button>
+  </div>
+</div>
+
 <script>
 const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
-// 🔐 VALIDAR SESIÓN
+// 🔐 SESIÓN
 const privada = localStorage.getItem("privada");
 const casa = localStorage.getItem("casa");
 
@@ -139,9 +189,30 @@ if (!privada || !casa) {
   window.location.href = "login.html";
 }
 
-// 👤 MOSTRAR INFO
 document.getElementById("infoUsuario").innerText =
   `Privada ${privada} - Casa ${casa}`;
+
+let resolverModal;
+
+function mostrarModal() {
+  return new Promise((resolve) => {
+    resolverModal = resolve;
+    document.getElementById("modalAviso").style.display = "flex";
+  });
+}
+
+function cerrarModal(respuesta) {
+  document.getElementById("modalAviso").style.display = "none";
+  resolverModal(respuesta);
+}
+
+function mostrarBloqueo() {
+  document.getElementById("modalBloqueo").style.display = "flex";
+}
+
+function cerrarBloqueo() {
+  window.location.href = "index.html";
+}
 
 async function generarQR() {
 
@@ -155,7 +226,6 @@ async function generarQR() {
     return;
   }
 
-  // 🔎 BUSCAR USUARIO DESDE SESIÓN
   const { data: user } = await client
     .from('residentes')
     .select('*')
@@ -171,12 +241,12 @@ async function generarQR() {
   const estado = (user.estado_pago || "corriente").toLowerCase().trim();
 
   if (estado === "moroso") {
-    alert("Acceso restringido por adeudo");
+    mostrarBloqueo();
     return;
   }
 
   if (estado === "atraso_1") {
-    const continuar = confirm("Tienes atraso. ¿Deseas continuar?");
+    const continuar = await mostrarModal();
     if (!continuar) return;
   }
 
