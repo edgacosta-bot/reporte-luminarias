@@ -60,6 +60,18 @@
 
     .mensaje { margin-top: 15px; font-size: 14px; }
     .error { color: #f87171; }
+
+    .registro-link {
+      margin-top: 15px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    .registro-link a {
+      color: #60a5fa;
+      text-decoration: underline;
+      cursor: pointer;
+    }
   </style>
 </head>
 
@@ -78,11 +90,19 @@
   </select>
 
   <input type="number" id="casa" placeholder="Número de casa">
-  <input type="password" id="clave" placeholder="Clave (4 dígitos)" maxlength="4">
+  <input type="password" id="clave" placeholder="Contraseña (4 dígitos)" maxlength="4">
 
   <button onclick="login()">Entrar</button>
 
   <div id="mensaje" class="mensaje"></div>
+
+  <!-- 🔗 NUEVO ENLACE -->
+  <div class="registro-link">
+    ¿No tienes acceso aún?
+    <br>
+    <a href="registro.html">Registrarse</a>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -123,7 +143,6 @@
       return;
     }
 
-    // Guardar sesión
     localStorage.setItem("usuario_valido", "true");
     localStorage.setItem("privada", privada);
     localStorage.setItem("casa", casa);
