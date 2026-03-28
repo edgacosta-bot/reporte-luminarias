@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro</title>
+</head>
+
+<body style="font-family:sans-serif; text-align:center; padding:20px;">
+
+  <h2>Registro de vecino</h2>
+
+  <select id="privada">
+    <option value="">Selecciona privada</option>
+    <option value="I">Privada I</option>
+    <option value="II">Privada II</option>
+    <option value="III">Privada III</option>
+    <option value="IV">Privada IV</option>
+  </select>
+
+  <br><br>
+
+  <input type="number" id="casa" placeholder="Número de casa">
+
+  <br><br>
+
+  <input type="text" id="nombre" placeholder="Tu nombre">
+
+  <br><br>
+
+  <input type="password" id="clave" placeholder="Clave (4 dígitos)" maxlength="4">
+
+  <br><br>
+
+  <button onclick="registrar()">Registrarme</button>
+
+  <p id="mensaje"></p>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <script>
+    const supabase = supabase.createClient(
+      "https://prjxmfhahnzosdwljode.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+    );
+
+    async function registrar() {
+      const privada = document.getElementById("privada").value;
+      const casa = document.getElementById("casa").value;
+      const nombre = document.getElementById("nombre").value;
+      const clave = document.getElementById("clave").value;
+      const mensaje = document.getElementById("mensaje");
+
+      if (!privada || !casa || !nombre || !clave) {
+        mensaje.innerText = "Completa todos los campos";
+        return;
+      }
+
+      if (clave.length !== 4) {
+        mensaje.innerText = "La clave debe ser de 4 dígitos";
+        return;
+      }
+
+      // Buscar registro existente
+      const { data, error } = await supabase
+        .from("residentes")
+        .select("*")
+        .eq("privada", privada)
+        .eq("casa", casa)
+        .single();
+
+      if (error || !data) {
+        mensaje.innerText = "Lote no válido";
+        return;
+      }
+
+      // Validar si ya está registrado
+      if (data.registrado === true || (data.nombre && data.nombre.trim() !== "")) {
+        mensaje.innerText = "Este lote ya está registrado";
+        return;
+      }
+
+      // Registrar usuario
+      const { error: errorUpdate } = await supabase
+        .from("residentes")
+        .update({
+          nombre: nombre,
+          clave: clave,
+          registrado: true
+        })
+        .eq("privada", privada)
+        .eq("casa", casa);
+
+      if (errorUpdate) {
+        mensaje.innerText = "Error al registrar";
+        return;
+      }
+
+      mensaje.innerText = "Registro exitoso ✅";
+
+      // Guardar sesión
+      localStorage.setItem("usuario_valido", "true");
+      localStorage.setItem("privada", privada);
+      localStorage.setItem("casa", casa);
+
+      // Redirigir
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 1000);
+    }
+  </script>
+
+</body>
+</html>
