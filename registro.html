@@ -4,11 +4,90 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: #111827;
+      padding: 30px 20px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 20px;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    input {
+      background: #1f2937;
+      color: white;
+    }
+
+    select {
+      background: #1f2937;
+      color: white;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .mensaje {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    .error { color: #f87171; }
+    .ok { color: #34d399; }
+  </style>
 </head>
 
-<body style="font-family:sans-serif; text-align:center; padding:20px;">
+<body>
 
+<div class="card">
   <h2>Registro de vecino</h2>
+  <p>Ingresa tus datos para acceder al sistema</p>
 
   <select id="privada">
     <option value="">Selecciona privada</option>
@@ -18,98 +97,99 @@
     <option value="IV">Privada IV</option>
   </select>
 
-  <br><br>
-
   <input type="number" id="casa" placeholder="Número de casa">
-
-  <br><br>
-
   <input type="text" id="nombre" placeholder="Tu nombre">
-
-  <br><br>
-
   <input type="password" id="clave" placeholder="Clave (4 dígitos)" maxlength="4">
-
-  <br><br>
 
   <button onclick="registrar()">Registrarme</button>
 
-  <p id="mensaje"></p>
+  <div id="mensaje" class="mensaje"></div>
+</div>
 
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<!-- 🔥 Supabase v2 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <script>
-    const supabase = supabase.createClient(
-      "https://prjxmfhahnzosdwljode.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-    );
+<script>
+  const { createClient } = supabase;
 
-    async function registrar() {
-      const privada = document.getElementById("privada").value;
-      const casa = document.getElementById("casa").value;
-      const nombre = document.getElementById("nombre").value;
-      const clave = document.getElementById("clave").value;
-      const mensaje = document.getElementById("mensaje");
+  const supabaseClient = createClient(
+    "https://prjxmfhahnzosdwljode.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+  );
 
-      if (!privada || !casa || !nombre || !clave) {
-        mensaje.innerText = "Completa todos los campos";
-        return;
-      }
+  async function registrar() {
+    console.log("CLICK OK");
 
-      if (clave.length !== 4) {
-        mensaje.innerText = "La clave debe ser de 4 dígitos";
-        return;
-      }
+    const privada = document.getElementById("privada").value;
+    const casa = document.getElementById("casa").value;
+    const nombre = document.getElementById("nombre").value;
+    const clave = document.getElementById("clave").value;
+    const mensaje = document.getElementById("mensaje");
 
-      // Buscar registro existente
-      const { data, error } = await supabase
-        .from("residentes")
-        .select("*")
-        .eq("privada", privada)
-        .eq("casa", casa)
-        .single();
+    mensaje.className = "mensaje";
 
-      if (error || !data) {
-        mensaje.innerText = "Lote no válido";
-        return;
-      }
-
-      // Validar si ya está registrado
-      if (data.registrado === true || (data.nombre && data.nombre.trim() !== "")) {
-        mensaje.innerText = "Este lote ya está registrado";
-        return;
-      }
-
-      // Registrar usuario
-      const { error: errorUpdate } = await supabase
-        .from("residentes")
-        .update({
-          nombre: nombre,
-          clave: clave,
-          registrado: true
-        })
-        .eq("privada", privada)
-        .eq("casa", casa);
-
-      if (errorUpdate) {
-        mensaje.innerText = "Error al registrar";
-        return;
-      }
-
-      mensaje.innerText = "Registro exitoso ✅";
-
-      // Guardar sesión
-      localStorage.setItem("usuario_valido", "true");
-      localStorage.setItem("privada", privada);
-      localStorage.setItem("casa", casa);
-
-      // Redirigir
-      setTimeout(() => {
-        window.location.href = "index.html";
-      }, 1000);
+    if (!privada || !casa || !nombre || !clave) {
+      mensaje.innerText = "Completa todos los campos";
+      mensaje.classList.add("error");
+      return;
     }
-  </script>
+
+    if (clave.length !== 4) {
+      mensaje.innerText = "La clave debe ser de 4 dígitos";
+      mensaje.classList.add("error");
+      return;
+    }
+
+    // 🔎 Buscar registro
+    const { data, error } = await supabaseClient
+      .from("residentes")
+      .select("*")
+      .eq("privada", privada)
+      .eq("casa", casa)
+      .single();
+
+    if (error || !data) {
+      mensaje.innerText = "Lote no válido";
+      mensaje.classList.add("error");
+      return;
+    }
+
+    // 🔒 Validar registro
+    if (data.registrado === true || (data.nombre && data.nombre.trim() !== "")) {
+      mensaje.innerText = "Este lote ya está registrado";
+      mensaje.classList.add("error");
+      return;
+    }
+
+    // 💾 Guardar
+    const { error: errorUpdate } = await supabaseClient
+      .from("residentes")
+      .update({
+        nombre: nombre,
+        clave: clave,
+        registrado: true
+      })
+      .eq("privada", privada)
+      .eq("casa", casa);
+
+    if (errorUpdate) {
+      mensaje.innerText = "Error al registrar";
+      mensaje.classList.add("error");
+      return;
+    }
+
+    mensaje.innerText = "Registro exitoso ✅";
+    mensaje.classList.add("ok");
+
+    localStorage.setItem("usuario_valido", "true");
+    localStorage.setItem("privada", privada);
+    localStorage.setItem("casa", casa);
+
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 1000);
+  }
+</script>
 
 </body>
 </html>
