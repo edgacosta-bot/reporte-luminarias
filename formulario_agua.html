@@ -89,7 +89,7 @@ Tipo de falla
 </select>
 </div>
 
-<!-- 🔥 NUEVO CAMPO CALLE -->
+<!-- 🔥 CAMPO CALLE -->
 <div>
 <label class="block text-sm font-medium text-gray-600">
 Calle
@@ -137,12 +137,12 @@ if (!privada || !casa) {
 document.getElementById("infoUsuario").innerText =
   `Privada ${privada} - Casa ${casa}`;
 
-// 🔥 CARGAR CALLES
+// 🔥 CARGAR CALLES (CORREGIDO)
 async function cargarCalles() {
 
   const { data, error } = await supabaseClient
     .from("ubicaciones")
-    .select("calle_id, calle")
+    .select("id, calle")
     .eq("privada", privada);
 
   if (error) {
@@ -154,7 +154,7 @@ async function cargarCalles() {
 
   data.forEach(item => {
     const option = document.createElement("option");
-    option.value = item.calle_id;
+    option.value = item.id;
     option.textContent = item.calle;
     select.appendChild(option);
   });
