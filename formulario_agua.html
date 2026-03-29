@@ -13,7 +13,7 @@
 
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
-<div class="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md border border-gray-200 overflow-visible">
+<div class="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md border border-gray-200">
 
 <div class="text-center mb-6">
   <h1 class="text-xl font-semibold text-gray-800">
@@ -89,16 +89,13 @@ Tipo de falla
 </select>
 </div>
 
-<!-- 🔥 CALLE -->
+<!-- CALLE -->
 <div>
 <label class="block text-sm font-medium text-gray-600">
 Calle
 </label>
 
-<select id="calle"
-required
-class="mt-1 w-full p-3 border rounded-lg"
-style="max-height: 250px; overflow-y: auto;">
+<select id="calle" required class="mt-1 w-full p-3 border rounded-lg">
 <option value="">Selecciona calle</option>
 </select>
 </div>
@@ -140,7 +137,7 @@ if (!privada || !casa) {
 document.getElementById("infoUsuario").innerText =
   `Privada ${privada} - Casa ${casa}`;
 
-// 🔥 CARGAR CALLES (CORREGIDO)
+// 🔥 CARGAR CALLES
 async function cargarCalles() {
 
   const { data, error } = await supabaseClient
@@ -149,11 +146,9 @@ async function cargarCalles() {
     .eq("privada", privada);
 
   if (error) {
-    console.error("ERROR UBICACIONES:", error);
+    console.log(error);
     return;
   }
-
-  console.log("TOTAL CALLES:", data.length); // 🔍 debug
 
   const select = document.getElementById("calle");
 
