@@ -27,9 +27,7 @@
       text-align: center;
     }
 
-    h2 {
-      margin-bottom: 10px;
-    }
+    h2 { margin-bottom: 10px; }
 
     p {
       font-size: 13px;
@@ -47,15 +45,8 @@
       box-sizing: border-box;
     }
 
-    input {
-      background: #1f2937;
-      color: white;
-    }
-
-    select {
-      background: #1f2937;
-      color: white;
-    }
+    input { background: #1f2937; color: white; }
+    select { background: #1f2937; color: white; }
 
     button {
       width: 100%;
@@ -66,18 +57,9 @@
       color: white;
       font-size: 16px;
       cursor: pointer;
-      transition: 0.2s;
     }
 
-    button:hover {
-      background: #1d4ed8;
-    }
-
-    .mensaje {
-      margin-top: 15px;
-      font-size: 14px;
-    }
-
+    .mensaje { margin-top: 15px; font-size: 14px; }
     .error { color: #f87171; }
     .ok { color: #34d399; }
   </style>
@@ -111,100 +93,99 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-  const { createClient } = supabase;
+const { createClient } = supabase;
 
-  const supabaseClient = createClient(
-    "https://prjxmfhahnzosdwljode.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nz20NjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-  );
+const supabaseClient = createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
 
-  async function registrar() {
-    const privada = document.getElementById("privada").value;
-    const casa = document.getElementById("casa").value;
-    const nombre = document.getElementById("nombre").value;
-    const clave = document.getElementById("clave").value;
-    const confirmar = document.getElementById("confirmar_clave").value;
-    const mensaje = document.getElementById("mensaje");
+async function registrar() {
 
-    mensaje.className = "mensaje";
+  const privada = document.getElementById("privada").value.trim();
+  const casa = document.getElementById("casa").value.trim();
+  const nombre = document.getElementById("nombre").value.trim();
+  const clave = document.getElementById("clave").value;
+  const confirmar = document.getElementById("confirmar_clave").value;
+  const mensaje = document.getElementById("mensaje");
 
-    if (!privada || !casa || !nombre || !clave || !confirmar) {
-      mensaje.innerText = "Completa todos los campos";
-      mensaje.classList.add("error");
-      return;
-    }
+  mensaje.className = "mensaje";
 
-    if (clave.length !== 4) {
-      mensaje.innerText = "La contraseña debe ser de 4 dígitos";
-      mensaje.classList.add("error");
-      return;
-    }
-
-    if (clave !== confirmar) {
-      mensaje.innerText = "Las contraseñas no coinciden";
-      mensaje.classList.add("error");
-      return;
-    }
-
-    const { data, error } = await supabaseClient
-      .from("residentes")
-      .select("*")
-      .eq("privada", privada)
-      .eq("casa", casa.toString())
-      .single();
-
-    if (error || !data) {
-      mensaje.innerText = "Lote no válido";
-      mensaje.classList.add("error");
-      return;
-    }
-
-    if (!data.habilitado_registro) {
-      mensaje.innerText = "Este lote aún no está habilitado para registro. Si consideras que es un error, comunícate con la administración.";
-      mensaje.classList.add("error");
-      return;
-    }
-
-    // 🔥 VALIDACIÓN CORREGIDA
-    if (data.registrado === true) {
-      mensaje.innerHTML = `
-        Esta vivienda ya cuenta con registro.<br><br>
-        Si necesitas acceso, solicita la contraseña a un residente o<br>
-        <a href="login.html" style="color:#60a5fa; text-decoration:underline;">
-          inicia sesión aquí
-        </a>
-      `;
-      mensaje.classList.add("error");
-      return;
-    }
-
-    const { error: errorUpdate } = await supabaseClient
-      .from("residentes")
-      .update({
-        nombre: nombre,
-        clave: clave,
-        registrado: true
-      })
-      .eq("privada", privada)
-      .eq("casa", casa);
-
-    if (errorUpdate) {
-      mensaje.innerText = "Error al registrar";
-      mensaje.classList.add("error");
-      return;
-    }
-
-    mensaje.innerText = "Registro exitoso ✅";
-    mensaje.classList.add("ok");
-
-    localStorage.setItem("usuario_valido", "true");
-    localStorage.setItem("privada", privada);
-    localStorage.setItem("casa", casa);
-
-    setTimeout(() => {
-      window.location.href = "index.html";
-    }, 1000);
+  if (!privada || !casa || !nombre || !clave || !confirmar) {
+    mensaje.innerText = "Completa todos los campos";
+    mensaje.classList.add("error");
+    return;
   }
+
+  if (clave.length !== 4) {
+    mensaje.innerText = "La contraseña debe ser de 4 dígitos";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  if (clave !== confirmar) {
+    mensaje.innerText = "Las contraseñas no coinciden";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  // 🔍 CONSULTA SIN .single()
+  const { data, error } = await supabaseClient
+    .from("residentes")
+    .select("*")
+    .eq("privada", privada)
+    .eq("casa", casa);
+
+  if (error || !data || data.length === 0) {
+    mensaje.innerText = "Lote no válido";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  const registro = data[0];
+
+  if (!registro.habilitado_registro) {
+    mensaje.innerText = "Este lote aún no está habilitado para registro.";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  if (registro.registrado === true) {
+    mensaje.innerHTML = `
+      Esta vivienda ya cuenta con registro.<br><br>
+      <a href="login.html" style="color:#60a5fa;">Iniciar sesión</a>
+    `;
+    mensaje.classList.add("error");
+    return;
+  }
+
+  const { error: errorUpdate } = await supabaseClient
+    .from("residentes")
+    .update({
+      nombre: nombre,
+      clave: clave,
+      registrado: true
+    })
+    .eq("privada", privada)
+    .eq("casa", casa);
+
+  if (errorUpdate) {
+    mensaje.innerText = "Error al registrar";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  mensaje.innerText = "Registro exitoso ✅";
+  mensaje.classList.add("ok");
+
+  localStorage.setItem("usuario_valido", "true");
+  localStorage.setItem("privada", privada);
+  localStorage.setItem("casa", casa);
+
+  setTimeout(() => {
+    window.location.href = "index.html";
+  }, 1000);
+}
 </script>
 
 </body>
