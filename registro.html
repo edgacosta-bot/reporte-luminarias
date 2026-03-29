@@ -150,7 +150,7 @@
       .from("residentes")
       .select("*")
       .eq("privada", privada)
-      .eq("casa", casa)
+      .eq("casa", casa.toString())
       .single();
 
     if (error || !data) {
