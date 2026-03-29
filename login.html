@@ -3,6 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- 🔥 PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f172a">
+
   <title>Acceso</title>
 
   <style>
@@ -96,7 +101,6 @@
 
   <div id="mensaje" class="mensaje"></div>
 
-  <!-- 🔗 NUEVO ENLACE -->
   <div class="registro-link">
     ¿No tienes acceso aún?
     <br>
@@ -148,6 +152,12 @@
     localStorage.setItem("casa", casa);
 
     window.location.href = "index.html";
+  }
+
+  // 🔥 SERVICE WORKER
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+      .then(() => console.log('SW registrado'));
   }
 </script>
 
