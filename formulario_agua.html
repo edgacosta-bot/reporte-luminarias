@@ -15,8 +15,6 @@
 
 <div class="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md border border-gray-200">
 
-<!-- ENCABEZADO -->
-
 <div class="text-center mb-6">
   <h1 class="text-xl font-semibold text-gray-800">
     Sistema de Información Vecinal
@@ -26,13 +24,10 @@
   </p>
 </div>
 
-<!-- 👤 INFO USUARIO -->
 <div id="infoUsuario" class="text-xs text-gray-500 text-center mb-4"></div>
 
-<!-- MENSAJE DE CONTEXTO -->
-
 <div class="bg-blue-50 border border-blue-200 text-blue-700 text-sm rounded-lg p-3 mb-5">
-  Si realizaste un reporte a CAASIM, regístralo aquí. Esta información permitirá documentar fallas en el servicio y generar evidencia colectiva para exigir atención oportuna.
+  Si realizaste un reporte a CAASIM, regístralo aquí.
 </div>
 
 <h2 class="text-lg font-semibold text-gray-700 mb-4 text-center">
@@ -50,8 +45,7 @@ Fecha del reporte
 type="date"
 id="fecha_reporte"
 required
-class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
->
+class="mt-1 w-full p-3 border rounded-lg">
 </div>
 
 <div>
@@ -63,9 +57,7 @@ Número de reporte (CAASIM)
 type="text"
 id="numero_reporte"
 required
-placeholder="Ej. 123456"
-class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
->
+class="mt-1 w-full p-3 border rounded-lg">
 </div>
 
 <div>
@@ -73,11 +65,7 @@ class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:
 ¿Cómo realizaste el reporte?
 </label>
 
-<select
-id="medio_reporte"
-required
-class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
->
+<select id="medio_reporte" required class="mt-1 w-full p-3 border rounded-lg">
 <option value="">Seleccione una opción</option>
 <option>Teléfono</option>
 <option>App</option>
@@ -91,11 +79,7 @@ class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:
 Tipo de falla
 </label>
 
-<select
-id="tipo_falla"
-required
-class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
->
+<select id="tipo_falla" required class="mt-1 w-full p-3 border rounded-lg">
 <option value="">Seleccione una opción</option>
 <option>Sin suministro de agua</option>
 <option>Baja presión</option>
@@ -105,8 +89,18 @@ class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:
 </select>
 </div>
 
-<button
-type="submit"
+<!-- 🔥 NUEVO CAMPO CALLE -->
+<div>
+<label class="block text-sm font-medium text-gray-600">
+Calle
+</label>
+
+<select id="calle" required class="mt-1 w-full p-3 border rounded-lg">
+<option value="">Selecciona calle</option>
+</select>
+</div>
+
+<button type="submit"
 class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
 Registrar reporte
 </button>
@@ -116,7 +110,7 @@ Registrar reporte
 </form>
 
 <p class="text-xs text-gray-400 text-center mt-4">
-La información será utilizada como respaldo para documentar incidencias y gestionar atención ante CAASIM.
+La información será utilizada como respaldo para documentar incidencias.
 </p>
 
 </div>
@@ -139,16 +133,48 @@ if (!privada || !casa) {
   window.location.href = "login.html";
 }
 
-// 👤 MOSTRAR INFO
+// 👤 INFO
 document.getElementById("infoUsuario").innerText =
   `Privada ${privada} - Casa ${casa}`;
 
-// Enviar formulario
+// 🔥 CARGAR CALLES
+async function cargarCalles() {
+
+  const { data, error } = await supabaseClient
+    .from("ubicaciones")
+    .select("calle_id, calle")
+    .eq("privada", privada);
+
+  if (error) {
+    console.log(error);
+    return;
+  }
+
+  const select = document.getElementById("calle");
+
+  data.forEach(item => {
+    const option = document.createElement("option");
+    option.value = item.calle_id;
+    option.textContent = item.calle;
+    select.appendChild(option);
+  });
+}
+
+cargarCalles();
+
+// 🚀 SUBMIT
 document.getElementById("formAgua").addEventListener("submit", async (e) => {
 
   e.preventDefault();
 
   const mensaje = document.getElementById("mensaje");
+  const calle_id = document.getElementById("calle").value;
+
+  if (!calle_id) {
+    mensaje.innerText = "Selecciona la calle";
+    mensaje.className = "text-red-600 text-center";
+    return;
+  }
 
   try {
 
@@ -157,8 +183,8 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
       numero_reporte: document.getElementById("numero_reporte").value.trim(),
       medio_reporte: document.getElementById("medio_reporte").value,
       tipo_falla: document.getElementById("tipo_falla").value,
-      privada: privada,
-      casa: casa
+      calle_id: calle_id,
+      numero_exterior: casa
     };
 
     const { error } = await supabaseClient
