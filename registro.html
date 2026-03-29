@@ -115,7 +115,7 @@
 
   const supabaseClient = createClient(
     "https://prjxmfhahnzosdwljode.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nz20NjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
   );
 
   async function registrar() {
@@ -159,14 +159,14 @@
       return;
     }
 
-    // 🔒 NUEVA VALIDACIÓN
     if (!data.habilitado_registro) {
       mensaje.innerText = "Este lote aún no está habilitado para registro. Si consideras que es un error, comunícate con la administración.";
       mensaje.classList.add("error");
       return;
     }
 
-    if (data.registrado === true || (data.nombre && data.nombre.trim() !== "")) {
+    // 🔥 VALIDACIÓN CORREGIDA
+    if (data.registrado === true) {
       mensaje.innerHTML = `
         Esta vivienda ya cuenta con registro.<br><br>
         Si necesitas acceso, solicita la contraseña a un residente o<br>
