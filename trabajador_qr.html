@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Trabajador</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.card {
+  background: #111827;
+  padding: 20px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 350px;
+  text-align: center;
+}
+
+select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  border: none;
+  background: #1f2937;
+  color: white;
+}
+
+#qr {
+  margin-top: 15px;
+}
+
+.nombre {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.obra {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+button {
+  margin-top: 15px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #25D366;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+  font-weight: bold;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>QR Trabajador</h2>
+
+<select id="trabajador">
+  <option value="">Selecciona trabajador</option>
+</select>
+
+<div id="qr"></div>
+
+<div class="nombre" id="nombre"></div>
+<div class="obra" id="obra"></div>
+
+<button id="btnWA" style="display:none;">
+  📲 Enviar por WhatsApp
+</button>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<script>
+
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+let trabajadorSeleccionado = null;
+
+// 🔥 Cargar trabajadores
+async function cargarTrabajadores() {
+
+  const { data } = await supabaseClient
+    .from("trabajadores_obra")
+    .select("*")
+    .eq("activo", true);
+
+  const select = document.getElementById("trabajador");
+
+  data.forEach(t => {
+    const option = document.createElement("option");
+    option.value = t.qr_codigo;
+    option.textContent = t.nombre;
+    option.dataset.privada = t.privada;
+    option.dataset.casa = t.casa;
+    select.appendChild(option);
+  });
+}
+
+cargarTrabajadores();
+
+// 🎯 Generar QR
+document.getElementById("trabajador").addEventListener("change", function() {
+
+  const qrDiv = document.getElementById("qr");
+  const nombreDiv = document.getElementById("nombre");
+  const obraDiv = document.getElementById("obra");
+  const btn = document.getElementById("btnWA");
+
+  qrDiv.innerHTML = "";
+
+  const selected = this.options[this.selectedIndex];
+
+  const codigo = selected.value;
+  const nombre = selected.textContent;
+  const privada = selected.dataset.privada;
+  const casa = selected.dataset.casa;
+
+  if (!codigo) return;
+
+  trabajadorSeleccionado = { codigo, nombre, privada, casa };
+
+  // 🔥 URL CON TU DOMINIO REAL
+  const url = `https://villas-concepcion-app.vercel.app/acceso_trabajador.html?qr=${codigo}`;
+
+  QRCode.toCanvas(url, { width: 200 }, function (err, canvas) {
+    qrDiv.appendChild(canvas);
+  });
+
+  nombreDiv.innerText = nombre;
+  obraDiv.innerText = `Privada ${privada} - Lote ${casa}`;
+
+  btn.style.display = "block";
+});
+
+// 📲 ENVIAR POR WHATSAPP
+document.getElementById("btnWA").addEventListener("click", () => {
+
+  if (!trabajadorSeleccionado) return;
+
+  const { codigo, nombre, privada, casa } = trabajadorSeleccionado;
+
+  const link = `https://villas-concepcion-app.vercel.app/acceso_trabajador.html?qr=${codigo}`;
+
+  const mensaje = `👷 Acceso de trabajador\n\n` +
+                  `Nombre: ${nombre}\n` +
+                  `Ubicación: Privada ${privada} - Lote ${casa}\n\n` +
+                  `Presenta este código en la entrada:\n${link}`;
+
+  const wa = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+
+  window.open(wa, "_blank");
+});
+
+</script>
+
+</body>
+</html>

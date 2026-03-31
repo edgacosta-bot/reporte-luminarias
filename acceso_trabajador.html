@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Acceso Trabajador</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: white;
+      text-align: center;
+      transition: background 0.3s ease;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 320px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    p {
+      font-size: 16px;
+    }
+
+    .ok { background: #16a34a; }
+    .warn { background: #f59e0b; }
+    .error { background: #dc2626; }
+
+    .control {
+      margin-top: 25px;
+      display: none;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid #334155;
+      margin-top: 10px;
+      font-size: 18px;
+      text-align: center;
+      background: #020617;
+      color: white;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 12px;
+      border-radius: 10px;
+      border: none;
+      font-weight: bold;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .btn {
+      background: #020617;
+      color: white;
+      opacity: 0.4;
+    }
+
+    .btn.enabled {
+      opacity: 1;
+      transform: scale(1.02);
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1 id="estado">Validando...</h1>
+  <div id="detalle"></div>
+
+  <div id="control" class="control">
+    <input type="password" id="pin" placeholder="PIN vigilante">
+    <button id="btnConfirmar" class="btn" disabled>
+      Confirmar
+    </button>
+  </div>
+</div>
+
+<script>
+
+const PIN_CORRECTO = "7482";
+
+const client = window.supabase.createClient(
+  'https://prjxmfhahnzosdwljode.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
+);
+
+const params = new URLSearchParams(window.location.search);
+const qr = params.get("qr");
+
+let trabajadorGlobal = null;
+let accesoActual = null;
+let tipoAccion = ""; // entrada o salida
+
+validar();
+
+async function validar() {
+
+  // 🔎 Buscar trabajador
+  const { data: trabajador } = await client
+    .from('trabajadores_obra')
+    .select('*')
+    .eq('qr_codigo', qr)
+    .single();
+
+  if (!trabajador) {
+    pintar("QR inválido", "error");
+    return;
+  }
+
+  trabajadorGlobal = trabajador;
+
+  // 🔎 Buscar acceso abierto
+  const { data: acceso } = await client
+    .from('accesos_trabajadores')
+    .select('*')
+    .eq('trabajador_id', trabajador.id)
+    .is('fecha_hora_salida', null)
+    .maybeSingle();
+
+  accesoActual = acceso;
+
+  // 🎯 Determinar acción
+  if (!acceso) {
+    tipoAccion = "entrada";
+    pintar("Registrar ENTRADA", "ok", trabajador);
+  } else {
+    tipoAccion = "salida";
+    pintar("Registrar SALIDA", "warn", trabajador);
+  }
+
+  document.getElementById("control").style.display = "block";
+}
+
+const pinInput = document.getElementById("pin");
+const btn = document.getElementById("btnConfirmar");
+
+pinInput.addEventListener("input", () => {
+  if (pinInput.value === PIN_CORRECTO) {
+    btn.disabled = false;
+    btn.classList.add("enabled");
+  } else {
+    btn.disabled = true;
+    btn.classList.remove("enabled");
+  }
+});
+
+btn.addEventListener("click", async () => {
+
+  const ahora = new Date().toISOString();
+
+  if (tipoAccion === "entrada") {
+
+    await client
+      .from('accesos_trabajadores')
+      .insert([{
+        trabajador_id: trabajadorGlobal.id,
+        fecha_hora_entrada: ahora,
+        estatus: 'dentro'
+      }]);
+
+    document.getElementById("estado").innerText = "ENTRADA REGISTRADA";
+    document.body.className = "ok";
+
+  } else {
+
+    await client
+      .from('accesos_trabajadores')
+      .update({
+        fecha_hora_salida: ahora,
+        estatus: 'fuera'
+      })
+      .eq('id', accesoActual.id);
+
+    document.getElementById("estado").innerText = "SALIDA REGISTRADA";
+    document.body.className = "warn";
+  }
+
+});
+
+function pintar(mensaje, tipo, trabajador = null) {
+  document.getElementById("estado").innerText = mensaje;
+  document.body.className = tipo;
+
+  if (trabajador) {
+    document.getElementById("detalle").innerHTML = `
+      <p><b>${trabajador.nombre}</b></p>
+    `;
+  }
+}
+
+</script>
+
+</body>
+</html>

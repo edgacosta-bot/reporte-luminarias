@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registrar Obra</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.card {
+  background: #111827;
+  padding: 25px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+label {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+select, input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #1f2937;
+  color: white;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: #2563eb;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+.mensaje {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.error { color: #f87171; }
+.ok { color: #34d399; }
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>Registrar obra</h2>
+
+<label>Privada</label>
+<select id="privada">
+  <option value="">Selecciona privada</option>
+  <option value="I">Privada I</option>
+  <option value="II">Privada II</option>
+  <option value="III">Privada III</option>
+  <option value="IV">Privada IV</option>
+</select>
+
+<label>Número de lote</label>
+<input type="number" id="casa" placeholder="Ej: 12">
+
+<label>Director Responsable de Obra (DRO)</label>
+<input type="text" id="dro" placeholder="Nombre del responsable">
+
+<label>Fecha de inicio de la obra</label>
+<input type="date" id="fecha_inicio">
+
+<button onclick="registrar()">Registrar obra</button>
+
+<div id="mensaje" class="mensaje"></div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+async function registrar() {
+
+  const privada = document.getElementById("privada").value;
+  const casa = document.getElementById("casa").value;
+  const dro = document.getElementById("dro").value;
+  const fecha_inicio = document.getElementById("fecha_inicio").value;
+
+  const mensaje = document.getElementById("mensaje");
+
+  mensaje.className = "mensaje";
+
+  if (!privada || !casa || !dro || !fecha_inicio) {
+    mensaje.innerText = "Completa todos los campos";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("obras")
+    .insert([{
+      privada: privada,
+      casa: casa,
+      dro_nombre: dro,
+      fecha_inicio: fecha_inicio,
+      estatus: "activa",
+      aprobada: false
+    }]);
+
+  if (error) {
+    mensaje.innerText = "Error al registrar obra";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  mensaje.innerText = "Obra registrada correctamente ✅";
+  mensaje.classList.add("ok");
+
+}
+
+</script>
+
+</body>
+</html>

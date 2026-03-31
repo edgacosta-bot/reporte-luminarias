@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Trabajador</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.card {
+  background: #111827;
+  padding: 25px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+select, input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #1f2937;
+  color: white;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: #2563eb;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+.mensaje {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.error { color: #f87171; }
+.ok { color: #34d399; }
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>Registrar trabajador</h2>
+
+<select id="obra">
+  <option value="">Cargando obras...</option>
+</select>
+
+<input type="text" id="nombre" placeholder="Nombre del trabajador">
+
+<button onclick="registrar()">Registrar</button>
+
+<div id="mensaje" class="mensaje"></div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+// 🔐 VALIDAR SESIÓN
+const privada = localStorage.getItem("privada");
+const casa = localStorage.getItem("casa");
+
+if (!privada || !casa) {
+  window.location.href = "login.html";
+}
+
+// 🔥 CARGAR OBRAS (solo activas)
+async function cargarObras() {
+
+  const select = document.getElementById("obra");
+
+  const { data, error } = await supabaseClient
+    .from("obras")
+    .select("*")
+    .eq("estatus", "activa");
+
+  if (error) {
+    select.innerHTML = '<option>Error cargando obras</option>';
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    select.innerHTML = '<option>No hay obras registradas</option>';
+    return;
+  }
+
+  select.innerHTML = '<option value="">Selecciona obra</option>';
+
+  data.forEach(item => {
+    const option = document.createElement("option");
+    option.value = item.id;
+    option.textContent = `Privada ${item.privada} - Lote ${item.casa}`;
+    select.appendChild(option);
+  });
+}
+
+cargarObras();
+
+// 🚀 REGISTRAR
+async function registrar() {
+
+  const obra_id = document.getElementById("obra").value;
+  const nombre = document.getElementById("nombre").value.trim();
+  const mensaje = document.getElementById("mensaje");
+
+  mensaje.className = "mensaje";
+
+  if (!obra_id || !nombre) {
+    mensaje.innerText = "Completa todos los campos";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  // 🔎 Obtener obra
+  const { data: obra, error: errorObra } = await supabaseClient
+    .from("obras")
+    .select("*")
+    .eq("id", obra_id)
+    .single();
+
+  if (errorObra || !obra) {
+    mensaje.innerText = "Error al obtener la obra";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  // 🔒 VALIDACIÓN IMPORTANTE
+  if (!obra.aprobada) {
+    mensaje.innerText = "La obra no está autorizada";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  const qr_codigo = crypto.randomUUID();
+
+  const { error } = await supabaseClient
+    .from("trabajadores_obra")
+    .insert([{
+      nombre: nombre,
+      privada: obra.privada,
+      casa: obra.casa,
+      obra_id: obra_id,
+      qr_codigo: qr_codigo,
+      activo: true
+    }]);
+
+  if (error) {
+    mensaje.innerText = "Error al registrar trabajador";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  mensaje.innerText = "Trabajador registrado correctamente ✅";
+  mensaje.classList.add("ok");
+
+  document.getElementById("nombre").value = "";
+  document.getElementById("obra").value = "";
+}
+
+</script>
+
+</body>
+</html>
