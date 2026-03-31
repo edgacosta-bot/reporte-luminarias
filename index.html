@@ -12,7 +12,6 @@
   <title>Villas de la Concepción</title>
 
   <script>
-    // 🔐 PROTECCIÓN DE ACCESO (AHORA LOGIN)
     if (!localStorage.getItem("usuario_valido")) {
       window.location.href = "login.html";
     }
@@ -121,7 +120,6 @@
       cursor: pointer;
     }
 
-    /* SPLASH */
     #splash {
       position: fixed;
       inset: 0;
@@ -210,6 +208,25 @@
   <a href="crear_qr.html" class="button qr">📱 Generar acceso (QR)</a>
   <a href="bitacora_visitantes.html" class="button bitacora">📋 Bitácora de visitantes</a>
 
+  <!-- ADMINISTRADOR -->
+  <div class="section-title">Administrador</div>
+
+  <a href="obras_registro.html" class="button cerco">
+    🏗 Alta de obras
+  </a>
+
+  <a href="trabajadores_registro.html" class="button camaras">
+    👷 Alta de trabajadores
+  </a>
+
+  <a href="trabajador_qr.html" class="button qr">
+    📲 Generar QR trabajador
+  </a>
+
+  <a href="acceso_trabajador.html?qr=PRUEBA123" class="button vigilancia">
+    🚪 Probar acceso trabajador
+  </a>
+
   <!-- 🔐 CERRAR SESIÓN -->
   <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
 
@@ -249,13 +266,11 @@ document.querySelectorAll("a").forEach(link => {
   });
 });
 
-/* 🔐 LOGOUT */
 function logout() {
   localStorage.clear();
   window.location.href = "login.html";
 }
 
-/* 🔥 SERVICE WORKER */
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js')
     .then(() => console.log('SW registrado'));
