@@ -1,297 +1,143 @@
 <!DOCTYPE html>
-<!-- version 6 -->
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel principal</title>
 
-  <!-- 🔥 PWA -->
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0f172a">
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+}
 
-  <title>Villas de la Concepción</title>
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
 
-  <script>
-    if (!localStorage.getItem("usuario_valido")) {
-      window.location.href = "login.html";
-    }
-  </script>
+h1 {
+  text-align: center;
+}
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #161a1d;
-      color: white;
-      position: relative;
-      overflow-x: hidden;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
+.section-title {
+  margin-top: 30px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #9ca3af;
+}
 
-    body.loaded { opacity: 1; }
+.button {
+  display: block;
+  text-decoration: none;
+  padding: 18px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  color: white;
+  font-size: 18px;
+}
 
-    .fade-out {
-      opacity: 0;
-      transform: scale(0.98);
-      transition: all 0.35s ease;
-    }
+.luminarias { background: #9f1239; }
+.camaras { background: #065f46; }
+.cerco { background: #6b7280; }
+.agua { background: #2563eb; }
+.seguridad { background: #a16207; }
+.qr { background: #4338ca; }
+.bitacora { background: #0ea5e9; }
+.admin { background: #7c3aed; }
 
-    body::before {
-      content: "";
-      position: fixed;
-      top: 45%;
-      left: 50%;
-      width: 900px;
-      height: 900px;
-      background: url('logo.png') no-repeat center;
-      background-size: contain;
-      transform: translate(-50%, -50%);
-      opacity: 0.04;
-      z-index: 0;
-    }
-
-    .container {
-      max-width: 500px;
-      margin: auto;
-      padding: 20px;
-      position: relative;
-      z-index: 1;
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 22px;
-      margin-bottom: 5px;
-    }
-
-    p {
-      text-align: center;
-      font-size: 14px;
-      color: #9ca3af;
-      margin-bottom: 25px;
-    }
-
-    .section-title {
-      margin-top: 25px;
-      margin-bottom: 10px;
-      font-size: 13px;
-      color: #9ca3af;
-      font-weight: bold;
-      text-transform: uppercase;
-    }
-
-    .button {
-      display: block;
-      width: 100%;
-      padding: 18px;
-      margin-bottom: 12px;
-      border-radius: 12px;
-      font-size: 16px;
-      text-decoration: none;
-      color: white;
-      box-sizing: border-box;
-      transition: 0.2s;
-    }
-
-    .button:hover {
-      opacity: 0.9;
-      transform: scale(1.02);
-    }
-
-    .luminarias { background: #9b2247; }
-    .camaras { background: #1e5b4f; }
-    .cerco { background: #98989A; color: black; }
-    .vigilancia { background: #a57f2c; }
-    .agua { background: #2563eb; }
-
-    .qr { background: #4338ca; }
-    .bitacora { background: #0ea5e9; }
-
-    .logout-btn {
-      margin-top: 25px;
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      background: #dc2626;
-      color: white;
-      font-size: 15px;
-      cursor: pointer;
-    }
-
-    #splash {
-      position: fixed;
-      inset: 0;
-      background: #0f172a;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      flex-direction: column;
-    }
-
-    #splash.hidden {
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.8s ease;
-    }
-
-    .splash-title {
-      font-size: 24px;
-      margin-bottom: 8px;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeUp 1.2s ease forwards;
-    }
-
-    .splash-subtitle {
-      font-size: 14px;
-      color: #9ca3af;
-      opacity: 0;
-      animation: fadeUp 1.8s ease forwards;
-    }
-
-    @keyframes fadeUp {
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .loader-line {
-      position: absolute;
-      bottom: 60px;
-      width: 60%;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #38bdf8, transparent);
-      animation: slideLine 2s ease infinite;
-    }
-
-    @keyframes slideLine {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-  </style>
+.logout {
+  background: #dc2626;
+  text-align: center;
+}
+</style>
 </head>
 
 <body>
 
-<div id="splash">
-  <div class="splash-title">Villas de la Concepción</div>
-  <div class="splash-subtitle">Sistema de Información Vecinal</div>
-  <div class="loader-line"></div>
-</div>
-
 <div class="container">
 
-  <h1>Villas de la Concepción</h1>
-  <p>Sistema de Información Vecinal</p>
-  <p style="font-size:12px; color:#9ca3af;">
-    Consulta información y reporta incidencias del fraccionamiento
-  </p>
+<h1>Villas de la Concepción</h1>
 
-  <!-- INFRAESTRUCTURA -->
-  <div class="section-title">Infraestructura</div>
+<!-- 🔹 INFRAESTRUCTURA -->
+<div id="infraestructura-section">
+  <div class="section-title">INFRAESTRUCTURA</div>
   <a href="luminarias.html" class="button luminarias">💡 Luminarias</a>
   <a href="videocamaras.html" class="button camaras">📹 Videovigilancia</a>
   <a href="cerco_electrico.html" class="button cerco">⚡ Cerco eléctrico</a>
+</div>
 
-  <!-- SERVICIOS -->
-  <div class="section-title">Servicios</div>
+<!-- 🔹 SERVICIOS -->
+<div id="servicios-section">
+  <div class="section-title">SERVICIOS</div>
   <a href="agua.html" class="button agua">💧 Suministro de agua</a>
+</div>
 
-  <!-- VIGILANTE -->
-  <div id="vigilante-section">
-    <div class="section-title">Seguridad</div>
-    <a href="vigilancia.html" class="button vigilancia">🛡 Vigilancia</a>
-  </div>
+<!-- 🔹 SEGURIDAD -->
+<div id="vigilante-section">
+  <div class="section-title">SEGURIDAD</div>
+  <a href="acceso_trabajador.html" class="button seguridad">🛡 Control de acceso</a>
+</div>
 
-  <!-- COLONO -->
-  <div id="colono-section">
-    <div class="section-title">Visitantes</div>
-    <a href="crear_qr.html" class="button qr">📱 Generar acceso (QR)</a>
-    <a href="bitacora_visitantes.html" class="button bitacora">📋 Bitácora de visitantes</a>
-  </div>
+<!-- 🔹 VISITANTES -->
+<div id="colono-section">
+  <div class="section-title">VISITANTES</div>
+  <a href="qr.html" class="button qr">📱 Generar acceso (QR)</a>
+  <a href="bitacora.html" class="button bitacora">📋 Bitácora de visitantes</a>
+</div>
 
-  <!-- ADMIN -->
-  <div id="admin-section">
-    <div class="section-title">Administrador</div>
+<!-- 🔹 ADMIN -->
+<div id="admin-section">
+  <div class="section-title">ADMINISTRADOR</div>
+  <a href="obras_registro.html" class="button admin">🏗 Alta de obras</a>
+  <a href="trabajadores_registro.html" class="button admin">👷 Alta de trabajadores</a>
+  <a href="trabajador_qr.html" class="button admin">📱 Generar QR trabajador</a>
+</div>
 
-    <a href="obras_registro.html" class="button cerco">🏗 Alta de obras</a>
-    <a href="trabajadores_registro.html" class="button camaras">👷 Alta de trabajadores</a>
-    <a href="trabajador_qr.html" class="button qr">📲 Generar QR trabajador</a>
-    <a href="acceso_trabajador.html?qr=PRUEBA123" class="button vigilancia">🚪 Probar acceso trabajador</a>
-  </div>
-
-  <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
+<a href="login.html" class="button logout">Cerrar sesión</a>
 
 </div>
 
 <script>
-window.addEventListener("load", () => {
 
-  document.body.classList.add("loaded");
-
-  const yaVioSplash = sessionStorage.getItem("splash_mostrado");
-
-  if (yaVioSplash) {
-    document.getElementById("splash").style.display = "none";
-    return;
-  }
-
-  sessionStorage.setItem("splash_mostrado", "true");
-
-  setTimeout(() => {
-    document.getElementById("splash").classList.add("hidden");
-  }, 2600);
-
-});
-
-// navegación suave
-document.querySelectorAll("a").forEach(link => {
-  link.addEventListener("click", function(e) {
-    const href = this.getAttribute("href");
-    if (!href || href.startsWith("#")) return;
-
-    e.preventDefault();
-    document.body.classList.add("fade-out");
-
-    setTimeout(() => {
-      window.location.href = href;
-    }, 300);
-  });
-});
-
-function logout() {
-  localStorage.clear();
+// 🔐 PROTECCIÓN BÁSICA
+if (!localStorage.getItem("usuario_valido")) {
   window.location.href = "login.html";
 }
 
-// 🔐 CONTROL SEGURO DE ROLES
+// 🎯 ROLES
 const rol = localStorage.getItem("rol");
 
 const adminSection = document.getElementById("admin-section");
 const vigilanteSection = document.getElementById("vigilante-section");
 const colonoSection = document.getElementById("colono-section");
+const infraestructuraSection = document.getElementById("infraestructura-section");
+const serviciosSection = document.getElementById("servicios-section");
 
-if (adminSection && rol !== "admin") {
-  adminSection.style.display = "none";
+// 🔒 ADMIN → VE TODO
+if (rol === "admin") {
+  // no ocultar nada
 }
 
-if (vigilanteSection && rol !== "vigilante") {
-  vigilanteSection.style.display = "none";
+// 🛡 VIGILANTE → SOLO SEGURIDAD
+if (rol === "vigilante") {
+
+  if (adminSection) adminSection.style.display = "none";
+  if (colonoSection) colonoSection.style.display = "none";
+  if (infraestructuraSection) infraestructuraSection.style.display = "none";
+  if (serviciosSection) serviciosSection.style.display = "none";
 }
 
-if (colonoSection && rol !== "colono") {
-  colonoSection.style.display = "none";
+// 👤 COLONO → SIN ADMIN NI SEGURIDAD
+if (rol === "colono") {
+
+  if (adminSection) adminSection.style.display = "none";
+  if (vigilanteSection) vigilanteSection.style.display = "none";
 }
 
-// 🔥 fallback anti pantalla negra
-document.body.classList.add("loaded");
-
-// 🔥 SERVICE WORKER
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
-    .then(() => console.log('SW registrado'));
-}
 </script>
 
 </body>
