@@ -113,12 +113,10 @@ let trabajadorGlobal = null;
 let accesoActual = null;
 let tipoAccion = "";
 
-// 🚀 VALIDAR
 validar();
 
 async function validar() {
 
-  // 🔎 Buscar trabajador
   const { data: trabajador } = await supabaseClient
     .from("trabajadores_obra")
     .select("*")
@@ -130,15 +128,26 @@ async function validar() {
     return;
   }
 
-  // 🚫 NUEVO: VALIDAR ACTIVO
+  // 🔥 VALIDACIÓN DE VIGENCIA
+  const hoy = new Date().toISOString().split('T')[0];
+
   if (!trabajador.activo) {
-    pintar("TRABAJADOR NO AUTORIZADO", "error", trabajador);
+    pintar("ACCESO DENEGADO", "error", trabajador);
+    return;
+  }
+
+  if (trabajador.fecha_inicio && hoy < trabajador.fecha_inicio) {
+    pintar("AÚN NO AUTORIZADO", "warn", trabajador);
+    return;
+  }
+
+  if (trabajador.fecha_fin && hoy > trabajador.fecha_fin) {
+    pintar("ACCESO VENCIDO", "error", trabajador);
     return;
   }
 
   trabajadorGlobal = trabajador;
 
-  // 🔎 Obtener obra
   const { data: obra } = await supabaseClient
     .from("obras")
     .select("*")
@@ -150,7 +159,6 @@ async function validar() {
     return;
   }
 
-  // 🔎 Buscar acceso abierto
   const { data: acceso } = await supabaseClient
     .from("accesos_trabajadores")
     .select("*")
@@ -188,6 +196,9 @@ pinInput.addEventListener("input", () => {
 // 🎯 CONFIRMAR
 btn.addEventListener("click", async () => {
 
+  btn.disabled = true;
+  btn.innerText = "Procesando...";
+
   const ahora = new Date().toISOString();
 
   if (tipoAccion === "entrada") {
@@ -216,6 +227,16 @@ btn.addEventListener("click", async () => {
   }
 
   document.getElementById("control").style.display = "none";
+
+  // 🚪 BOTÓN FINALIZAR
+  const finalizarBtn = document.createElement("button");
+  finalizarBtn.innerText = "Finalizar";
+
+  finalizarBtn.onclick = () => {
+    window.location.href = "index.html";
+  };
+
+  document.querySelector(".container").appendChild(finalizarBtn);
 });
 
 // 🎨 UI
