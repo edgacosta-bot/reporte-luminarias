@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- version 5 -->
+<!-- version 6 -->
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -12,9 +12,7 @@
   <title>Villas de la Concepción</title>
 
   <script>
-    const rol = localStorage.getItem("rol");
-
-    if (!rol) {
+    if (!localStorage.getItem("usuario_valido")) {
       window.location.href = "login.html";
     }
   </script>
@@ -200,20 +198,20 @@
   <div class="section-title">Servicios</div>
   <a href="agua.html" class="button agua">💧 Suministro de agua</a>
 
-  <!-- 🛡 VIGILANTE -->
+  <!-- VIGILANTE -->
   <div id="vigilante-section">
     <div class="section-title">Seguridad</div>
     <a href="vigilancia.html" class="button vigilancia">🛡 Vigilancia</a>
   </div>
 
-  <!-- 👤 COLONO -->
+  <!-- COLONO -->
   <div id="colono-section">
     <div class="section-title">Visitantes</div>
     <a href="crear_qr.html" class="button qr">📱 Generar acceso (QR)</a>
     <a href="bitacora_visitantes.html" class="button bitacora">📋 Bitácora de visitantes</a>
   </div>
 
-  <!-- ⚙️ ADMIN -->
+  <!-- ADMIN -->
   <div id="admin-section">
     <div class="section-title">Administrador</div>
 
@@ -229,6 +227,7 @@
 
 <script>
 window.addEventListener("load", () => {
+
   document.body.classList.add("loaded");
 
   const yaVioSplash = sessionStorage.getItem("splash_mostrado");
@@ -243,8 +242,10 @@ window.addEventListener("load", () => {
   setTimeout(() => {
     document.getElementById("splash").classList.add("hidden");
   }, 2600);
+
 });
 
+// navegación suave
 document.querySelectorAll("a").forEach(link => {
   link.addEventListener("click", function(e) {
     const href = this.getAttribute("href");
@@ -264,20 +265,27 @@ function logout() {
   window.location.href = "login.html";
 }
 
-// 🔐 CONTROL DE ROLES
+// 🔐 CONTROL SEGURO DE ROLES
 const rol = localStorage.getItem("rol");
 
-if (rol !== "admin") {
-  document.getElementById("admin-section").style.display = "none";
+const adminSection = document.getElementById("admin-section");
+const vigilanteSection = document.getElementById("vigilante-section");
+const colonoSection = document.getElementById("colono-section");
+
+if (adminSection && rol !== "admin") {
+  adminSection.style.display = "none";
 }
 
-if (rol !== "vigilante") {
-  document.getElementById("vigilante-section").style.display = "none";
+if (vigilanteSection && rol !== "vigilante") {
+  vigilanteSection.style.display = "none";
 }
 
-if (rol !== "colono") {
-  document.getElementById("colono-section").style.display = "none";
+if (colonoSection && rol !== "colono") {
+  colonoSection.style.display = "none";
 }
+
+// 🔥 fallback anti pantalla negra
+document.body.classList.add("loaded");
 
 // 🔥 SERVICE WORKER
 if ('serviceWorker' in navigator) {
