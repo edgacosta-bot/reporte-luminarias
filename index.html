@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- version 4 -->
+<!-- version 5 -->
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -12,7 +12,9 @@
   <title>Villas de la Concepción</title>
 
   <script>
-    if (!localStorage.getItem("usuario_valido")) {
+    const rol = localStorage.getItem("rol");
+
+    if (!rol) {
       window.location.href = "login.html";
     }
   </script>
@@ -169,7 +171,6 @@
       0% { transform: translateX(-100%); }
       100% { transform: translateX(100%); }
     }
-
   </style>
 </head>
 
@@ -199,42 +200,35 @@
   <div class="section-title">Servicios</div>
   <a href="agua.html" class="button agua">💧 Suministro de agua</a>
 
-  <!-- SEGURIDAD -->
-  <div class="section-title">Seguridad</div>
-  <a href="vigilancia.html" class="button vigilancia">🛡 Vigilancia</a>
+  <!-- 🛡 VIGILANTE -->
+  <div id="vigilante-section">
+    <div class="section-title">Seguridad</div>
+    <a href="vigilancia.html" class="button vigilancia">🛡 Vigilancia</a>
+  </div>
 
-  <!-- VISITANTES -->
-  <div class="section-title">Visitantes</div>
-  <a href="crear_qr.html" class="button qr">📱 Generar acceso (QR)</a>
-  <a href="bitacora_visitantes.html" class="button bitacora">📋 Bitácora de visitantes</a>
+  <!-- 👤 COLONO -->
+  <div id="colono-section">
+    <div class="section-title">Visitantes</div>
+    <a href="crear_qr.html" class="button qr">📱 Generar acceso (QR)</a>
+    <a href="bitacora_visitantes.html" class="button bitacora">📋 Bitácora de visitantes</a>
+  </div>
 
-  <!-- ADMINISTRADOR -->
-  <div class="section-title">Administrador</div>
+  <!-- ⚙️ ADMIN -->
+  <div id="admin-section">
+    <div class="section-title">Administrador</div>
 
-  <a href="obras_registro.html" class="button cerco">
-    🏗 Alta de obras
-  </a>
+    <a href="obras_registro.html" class="button cerco">🏗 Alta de obras</a>
+    <a href="trabajadores_registro.html" class="button camaras">👷 Alta de trabajadores</a>
+    <a href="trabajador_qr.html" class="button qr">📲 Generar QR trabajador</a>
+    <a href="acceso_trabajador.html?qr=PRUEBA123" class="button vigilancia">🚪 Probar acceso trabajador</a>
+  </div>
 
-  <a href="trabajadores_registro.html" class="button camaras">
-    👷 Alta de trabajadores
-  </a>
-
-  <a href="trabajador_qr.html" class="button qr">
-    📲 Generar QR trabajador
-  </a>
-
-  <a href="acceso_trabajador.html?qr=PRUEBA123" class="button vigilancia">
-    🚪 Probar acceso trabajador
-  </a>
-
-  <!-- 🔐 CERRAR SESIÓN -->
   <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
 
 </div>
 
 <script>
 window.addEventListener("load", () => {
-
   document.body.classList.add("loaded");
 
   const yaVioSplash = sessionStorage.getItem("splash_mostrado");
@@ -249,7 +243,6 @@ window.addEventListener("load", () => {
   setTimeout(() => {
     document.getElementById("splash").classList.add("hidden");
   }, 2600);
-
 });
 
 document.querySelectorAll("a").forEach(link => {
@@ -271,6 +264,22 @@ function logout() {
   window.location.href = "login.html";
 }
 
+// 🔐 CONTROL DE ROLES
+const rol = localStorage.getItem("rol");
+
+if (rol !== "admin") {
+  document.getElementById("admin-section").style.display = "none";
+}
+
+if (rol !== "vigilante") {
+  document.getElementById("vigilante-section").style.display = "none";
+}
+
+if (rol !== "colono") {
+  document.getElementById("colono-section").style.display = "none";
+}
+
+// 🔥 SERVICE WORKER
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js')
     .then(() => console.log('SW registrado'));
