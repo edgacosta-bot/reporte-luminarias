@@ -120,41 +120,55 @@
   );
 
   async function login() {
-    const privada = document.getElementById("privada").value;
-    const casa = document.getElementById("casa").value;
-    const clave = document.getElementById("clave").value;
-    const mensaje = document.getElementById("mensaje");
+    try {
+      const privada = document.getElementById("privada").value;
+      const casa = document.getElementById("casa").value;
+      const clave = document.getElementById("clave").value;
+      const mensaje = document.getElementById("mensaje");
 
-    mensaje.className = "mensaje";
+      mensaje.className = "mensaje";
 
-    if (!privada || !casa || !clave) {
-      mensaje.innerText = "Completa todos los campos";
-      mensaje.classList.add("error");
-      return;
+      if (!privada || !casa || !clave) {
+        mensaje.innerText = "Completa todos los campos";
+        mensaje.classList.add("error");
+        return;
+      }
+
+      const { data, error } = await supabaseClient
+        .from("residentes")
+        .select("*")
+        .eq("privada", privada)
+        .eq("casa", casa)
+        .eq("clave", clave)
+        .maybeSingle();
+
+      if (error || !data) {
+        console.log("ERROR LOGIN:", error);
+        mensaje.innerText = "Datos incorrectos";
+        mensaje.classList.add("error");
+        return;
+      }
+
+      console.log("LOGIN OK:", data);
+
+      localStorage.setItem("usuario_valido", "true");
+      localStorage.setItem("privada", privada);
+      localStorage.setItem("casa", casa);
+
+      // 🔥 NUEVO: ROLES
+      localStorage.setItem("rol", data.tipo || "colono");
+      localStorage.setItem("mesa_directiva", data.es_mesa_directiva || false);
+      localStorage.setItem("soporte", data.es_soporte || false);
+
+      window.location.href = "index.html";
+
+    } catch (err) {
+      console.log("ERROR GENERAL:", err);
+      document.getElementById("mensaje").innerText = "Error inesperado";
     }
-
-    const { data, error } = await supabaseClient
-      .from("residentes")
-      .select("*")
-      .eq("privada", privada)
-      .eq("casa", casa)
-      .eq("clave", clave)
-      .single();
-
-    if (error || !data) {
-      mensaje.innerText = "Datos incorrectos";
-      mensaje.classList.add("error");
-      return;
-    }
-
-    localStorage.setItem("usuario_valido", "true");
-    localStorage.setItem("privada", privada);
-    localStorage.setItem("casa", casa);
-
-    window.location.href = "index.html";
   }
 
-  // 🔥 SERVICE WORKER
+  // 🔥 SERVICE WORKER (NO TOCADO)
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js')
       .then(() => console.log('SW registrado'));
