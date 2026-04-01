@@ -85,6 +85,10 @@ button:hover {
 
 <input type="text" id="nombre" placeholder="Nombre del trabajador">
 
+<!-- 🔥 NUEVO -->
+<input type="date" id="fecha_inicio">
+<input type="date" id="fecha_fin">
+
 <button onclick="registrar()">Registrar</button>
 
 <div id="mensaje" class="mensaje"></div>
@@ -147,6 +151,9 @@ async function registrar() {
 
   const obra_id = document.getElementById("obra").value;
   const nombre = document.getElementById("nombre").value.trim();
+  const fecha_inicio = document.getElementById("fecha_inicio").value;
+  const fecha_fin = document.getElementById("fecha_fin").value;
+
   const mensaje = document.getElementById("mensaje");
 
   mensaje.className = "mensaje";
@@ -187,7 +194,9 @@ async function registrar() {
       casa: obra.casa,
       obra_id: obra_id,
       qr_codigo: qr_codigo,
-      activo: true
+      activo: true,
+      fecha_inicio: fecha_inicio || null,
+      fecha_fin: fecha_fin || null
     }]);
 
   if (error) {
@@ -201,6 +210,8 @@ async function registrar() {
 
   document.getElementById("nombre").value = "";
   document.getElementById("obra").value = "";
+  document.getElementById("fecha_inicio").value = "";
+  document.getElementById("fecha_fin").value = "";
 }
 
 </script>
