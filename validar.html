@@ -42,7 +42,6 @@
     .warn { background: #f59e0b; }
     .error { background: #dc2626; }
 
-    /* 🔐 CONTROL */
     .control {
       margin-top: 25px;
       display: none;
@@ -167,6 +166,9 @@ pinInput.addEventListener("input", () => {
 
 btn.addEventListener("click", async () => {
 
+  btn.disabled = true;
+  btn.innerText = "Procesando...";
+
   const { error } = await client
     .from('visitas_qr')
     .update({
@@ -177,10 +179,31 @@ btn.addEventListener("click", async () => {
 
   if (error) {
     alert("Error al registrar acceso");
+    btn.disabled = false;
+    btn.innerText = "Autorizar acceso";
     return;
   }
 
+  // ✅ MENSAJE CLARO
   document.getElementById("estado").innerText = "ACCESO REGISTRADO";
+  document.body.className = "ok";
+
+  document.getElementById("detalle").innerHTML += `
+    <p style="margin-top:10px;">Registro exitoso</p>
+  `;
+
+  // 🔒 ocultar control
+  document.getElementById("control").style.display = "none";
+
+  // 🚪 botón finalizar
+  const finalizarBtn = document.createElement("button");
+  finalizarBtn.innerText = "Finalizar";
+
+  finalizarBtn.onclick = () => {
+    window.location.href = "index.html";
+  };
+
+  document.querySelector(".container").appendChild(finalizarBtn);
 });
 
 function pintar(mensaje, tipo, data = null) {
