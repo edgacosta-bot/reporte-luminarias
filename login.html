@@ -151,12 +151,15 @@
 
       console.log("LOGIN OK:", data);
 
+      // 🔹 MAPEO DE ROL
+      let rol = data.tipo;
+      if (rol === "residente") rol = "colono";
+
       localStorage.setItem("usuario_valido", "true");
       localStorage.setItem("privada", privada);
       localStorage.setItem("casa", casa);
 
-      // 🔥 NUEVO: ROLES
-      localStorage.setItem("rol", data.tipo || "colono");
+      localStorage.setItem("rol", rol);
       localStorage.setItem("mesa_directiva", data.es_mesa_directiva || false);
       localStorage.setItem("soporte", data.es_soporte || false);
 
@@ -168,7 +171,7 @@
     }
   }
 
-  // 🔥 SERVICE WORKER (NO TOCADO)
+  // 🔥 SERVICE WORKER (intacto)
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js')
       .then(() => console.log('SW registrado'));
