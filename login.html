@@ -151,9 +151,12 @@
 
       console.log("LOGIN OK:", data);
 
-      // 🔹 MAPEO DE ROL
+      // 🔥 MAPEO DE ROLES (ALINEADO A TU BD)
       let rol = data.tipo;
+
       if (rol === "residente") rol = "colono";
+      if (rol === "administracion") rol = "admin";
+      if (rol === "vigilante") rol = "vigilante";
 
       localStorage.setItem("usuario_valido", "true");
       localStorage.setItem("privada", privada);
