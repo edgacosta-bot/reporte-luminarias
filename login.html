@@ -37,10 +37,17 @@
     p {
       font-size: 13px;
       color: #9ca3af;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
 
-    select, input {
+    .ayuda {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    input {
       width: 100%;
       padding: 14px;
       margin-bottom: 12px;
@@ -86,15 +93,14 @@
   <h2>Acceso al sistema</h2>
   <p>Ingresa tus datos</p>
 
-  <select id="privada">
-    <option value="">Selecciona privada</option>
-    <option value="I">Privada I</option>
-    <option value="II">Privada II</option>
-    <option value="III">Privada III</option>
-    <option value="IV">Privada IV</option>
-  </select>
+  <div class="ayuda">
+    Colonos: I, II, III, IV<br>
+    Administrador: ADMIN<br>
+    Vigilancia: SEG
+  </div>
 
-  <input type="text" id="casa" placeholder="Número de casa" inputmode="numeric">
+  <input type="text" id="privada" placeholder="Privada o tipo de acceso">
+  <input type="text" id="casa" placeholder="Número de casa">
   <input type="password" id="clave" placeholder="Contraseña (4 dígitos)" maxlength="4">
 
   <button onclick="login()">Entrar</button>
@@ -121,8 +127,8 @@
 
   async function login() {
     try {
-      const privada = document.getElementById("privada").value;
-      const casa = document.getElementById("casa").value;
+      const privada = document.getElementById("privada").value.trim();
+      const casa = document.getElementById("casa").value.trim();
       const clave = document.getElementById("clave").value;
       const mensaje = document.getElementById("mensaje");
 
@@ -151,7 +157,7 @@
 
       console.log("LOGIN OK:", data);
 
-      // 🔥 MAPEO DE ROLES (ALINEADO A TU BD)
+      // 🔥 MAPEO DE ROLES
       let rol = data.tipo;
 
       if (rol === "residente") rol = "colono";
@@ -174,7 +180,7 @@
     }
   }
 
-  // 🔥 SERVICE WORKER (intacto)
+  // 🔥 SERVICE WORKER
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js')
       .then(() => console.log('SW registrado'));
