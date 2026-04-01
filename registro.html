@@ -129,7 +129,7 @@ async function registrar() {
     return;
   }
 
-  // 🔍 CONSULTA SIN .single()
+  // 🔍 Buscar lote
   const { data, error } = await supabaseClient
     .from("residentes")
     .select("*")
@@ -159,12 +159,14 @@ async function registrar() {
     return;
   }
 
+  // 🔒 ACTUALIZACIÓN SEGURA
   const { error: errorUpdate } = await supabaseClient
     .from("residentes")
     .update({
       nombre: nombre,
       clave: clave,
-      registrado: true
+      registrado: true,
+      tipo: "residente" // 🔥 SIEMPRE residente
     })
     .eq("privada", privada)
     .eq("casa", casa);
