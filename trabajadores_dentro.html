@@ -28,7 +28,13 @@ body {
 
 h1 {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+}
+
+.alerta-global {
+  text-align: center;
+  margin-bottom: 15px;
+  font-weight: bold;
 }
 
 .card {
@@ -60,6 +66,10 @@ h1 {
 
 <div class="container">
   <h1>👷 Trabajadores dentro</h1>
+
+  <!-- 🚨 ALERTA GLOBAL -->
+  <div id="alerta" class="alerta-global"></div>
+
   <div id="lista"></div>
 </div>
 
@@ -72,6 +82,9 @@ const supabaseClient = window.supabase.createClient(
 
 cargar();
 
+// 🔄 AUTO REFRESH
+setInterval(cargar, 10000);
+
 async function cargar() {
 
   const { data: accesos, error } = await supabaseClient
@@ -80,6 +93,7 @@ async function cargar() {
     .is("fecha_hora_salida", null);
 
   const lista = document.getElementById("lista");
+  const alertaDiv = document.getElementById("alerta");
 
   if (error) {
     lista.innerHTML = "<p>Error al cargar</p>";
@@ -88,10 +102,14 @@ async function cargar() {
 
   if (!accesos || accesos.length === 0) {
     lista.innerHTML = "<p class='vacio'>No hay trabajadores dentro</p>";
+    alertaDiv.innerHTML = "Todo en orden";
+    alertaDiv.style.color = "#34d399";
     return;
   }
 
   lista.innerHTML = "";
+
+  let totalAlertas = 0;
 
   for (const item of accesos) {
 
@@ -101,18 +119,44 @@ async function cargar() {
       .eq("id", item.trabajador_id)
       .single();
 
+    const entrada = new Date(item.fecha_hora_entrada);
+    const ahora = new Date();
+
+    const horas = (ahora - entrada) / (1000 * 60 * 60);
+
+    let alerta = "";
+    let estilo = "";
+
+    if (horas >= 8) {
+      alerta = "⚠️ Exceso de tiempo";
+      estilo = "border: 2px solid #dc2626;";
+      totalAlertas++;
+    }
+
     const div = document.createElement("div");
     div.className = "card";
+    div.style = estilo;
 
     div.innerHTML = `
       <div class="nombre">${trabajador?.nombre || "Sin nombre"}</div>
       <div class="detalle">
         Privada ${trabajador?.privada || "-"} - Lote ${trabajador?.casa || "-"}<br>
-        Entrada: ${new Date(item.fecha_hora_entrada).toLocaleString()}
+        Entrada: ${entrada.toLocaleString()}<br>
+        Tiempo dentro: ${horas.toFixed(1)} hrs<br>
+        ${alerta}
       </div>
     `;
 
     lista.appendChild(div);
+  }
+
+  // 🚨 ALERTA GLOBAL
+  if (totalAlertas > 0) {
+    alertaDiv.innerHTML = `🚨 ${totalAlertas} trabajador(es) con exceso de tiempo`;
+    alertaDiv.style.color = "#f87171";
+  } else {
+    alertaDiv.innerHTML = "Todo en orden";
+    alertaDiv.style.color = "#34d399";
   }
 }
 
