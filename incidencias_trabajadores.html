@@ -31,7 +31,6 @@ h1 {
   text-align: center;
 }
 
-/* 🔥 FIX DESBORDE */
 input {
   width: 100%;
   padding: 12px;
@@ -122,15 +121,10 @@ async function cargar() {
 
   const fecha = document.getElementById("fecha").value;
 
-  // 🔥 CORRECCIÓN AQUÍ (SIN "T")
-  const inicio = fecha + " 00:00:00";
-  const fin = fecha + " 23:59:59.999";
-
   const { data, error } = await supabaseClient
     .from("incidencias_trabajadores")
     .select("*")
-    .gte("fecha", inicio)
-    .lte("fecha", fin)
+    .like("fecha", fecha + "%") // 🔥 CLAVE
     .order("fecha", { ascending: false });
 
   const lista = document.getElementById("lista");
@@ -192,8 +186,8 @@ async function cargar() {
           ${fechaInc.toLocaleString()}
         </div>
 
-        <div class="tipo ${item.incidencia.origen}">
-          ${item.incidencia.origen.toUpperCase()} - ${item.incidencia.tipo}
+        <div class="tipo ${item.incidencia.origen || 'automatico'}">
+          ${(item.incidencia.origen || "automatico").toUpperCase()} - ${item.incidencia.tipo}
         </div>
       `;
 
