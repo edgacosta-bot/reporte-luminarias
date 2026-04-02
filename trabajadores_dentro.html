@@ -74,16 +74,9 @@ cargar();
 
 async function cargar() {
 
-  const { data, error } = await supabaseClient
+  const { data: accesos, error } = await supabaseClient
     .from("accesos_trabajadores")
-    .select(`
-      *,
-      trabajadores_obra (
-        nombre,
-        privada,
-        casa
-      )
-    `)
+    .select("*")
     .is("fecha_hora_salida", null);
 
   const lista = document.getElementById("lista");
@@ -93,30 +86,34 @@ async function cargar() {
     return;
   }
 
-  if (!data || data.length === 0) {
+  if (!accesos || accesos.length === 0) {
     lista.innerHTML = "<p class='vacio'>No hay trabajadores dentro</p>";
     return;
   }
 
   lista.innerHTML = "";
 
-  data.forEach(item => {
+  for (const item of accesos) {
 
-    const trabajador = item.trabajadores_obra;
+    const { data: trabajador } = await supabaseClient
+      .from("trabajadores_obra")
+      .select("nombre, privada, casa")
+      .eq("id", item.trabajador_id)
+      .single();
 
     const div = document.createElement("div");
     div.className = "card";
 
     div.innerHTML = `
-      <div class="nombre">${trabajador.nombre}</div>
+      <div class="nombre">${trabajador?.nombre || "Sin nombre"}</div>
       <div class="detalle">
-        Privada ${trabajador.privada} - Lote ${trabajador.casa}<br>
+        Privada ${trabajador?.privada || "-"} - Lote ${trabajador?.casa || "-"}<br>
         Entrada: ${new Date(item.fecha_hora_entrada).toLocaleString()}
       </div>
     `;
 
     lista.appendChild(div);
-  });
+  }
 }
 
 </script>
