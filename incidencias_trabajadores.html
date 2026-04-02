@@ -124,7 +124,8 @@ async function cargar() {
   const { data, error } = await supabaseClient
     .from("incidencias_trabajadores")
     .select("*")
-    .like("fecha", fecha + "%") // 🔥 CLAVE
+    .gte("fecha", fecha + " 00:00:00")
+    .lt("fecha", fecha + " 23:59:59")
     .order("fecha", { ascending: false });
 
   const lista = document.getElementById("lista");
