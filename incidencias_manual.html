@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<script src="auth.js"></script>
+<script>
+protegerPagina(["vigilante", "admin"]);
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registrar incidencia</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+}
+
+.container {
+  max-width: 400px;
+  margin: auto;
+  padding: 20px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+select, textarea, button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+}
+
+button {
+  background: #dc2626;
+  color: white;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="card">
+    <h2>🚨 Reportar incidencia</h2>
+
+    <select id="trabajador"></select>
+
+    <select id="tipo">
+      <option value="">Tipo de incidente</option>
+      <option value="fuera_area">Fuera de área</option>
+      <option value="alcohol">Consumo de alcohol</option>
+      <option value="sustancias">Uso de sustancias</option>
+      <option value="conducta">Conducta inapropiada</option>
+    </select>
+
+    <textarea id="descripcion" placeholder="Describe lo ocurrido..."></textarea>
+
+    <button onclick="guardar()">Registrar incidencia</button>
+
+    <p id="msg"></p>
+  </div>
+</div>
+
+<script>
+
+const supabaseClient = window.supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+// 🔥 Cargar trabajadores activos
+async function cargarTrabajadores() {
+
+  const { data } = await supabaseClient
+    .from("trabajadores_obra")
+    .select("id, nombre")
+    .eq("activo", true);
+
+  const select = document.getElementById("trabajador");
+
+  select.innerHTML = "<option value=''>Selecciona trabajador</option>";
+
+  data.forEach(t => {
+    const op = document.createElement("option");
+    op.value = t.id;
+    op.textContent = t.nombre;
+    select.appendChild(op);
+  });
+}
+
+cargarTrabajadores();
+
+// 💾 Guardar
+async function guardar() {
+
+  const trabajador_id = document.getElementById("trabajador").value;
+  const tipo = document.getElementById("tipo").value;
+  const descripcion = document.getElementById("descripcion").value;
+
+  if (!trabajador_id || !tipo) {
+    document.getElementById("msg").innerText = "Completa los campos";
+    return;
+  }
+
+  await supabaseClient
+    .from("incidencias_trabajadores")
+    .insert([{
+      trabajador_id,
+      tipo,
+      descripcion,
+      origen: "manual",
+      registrado_por: "vigilante"
+    }]);
+
+  document.getElementById("msg").innerText = "Incidencia registrada";
+}
+
+</script>
+
+</body>
+</html>
