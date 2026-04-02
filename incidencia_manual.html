@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
 <script src="auth.js"></script>
 <script>
 protegerPagina(["vigilante", "admin"]);
@@ -29,23 +30,46 @@ body {
 .card {
   background: #1e293b;
   padding: 20px;
-  border-radius: 12px;
+  border-radius: 16px;
 }
 
+/* 🔥 INPUTS MEJORADOS */
 select, textarea, button {
   width: 100%;
-  margin-top: 10px;
-  padding: 12px;
-  border-radius: 10px;
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 12px;
   border: none;
+  font-size: 16px;
+  background: #1f2937;
+  color: white;
+}
+
+/* 🔥 NORMALIZAR SELECT */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+textarea {
+  resize: none;
+  min-height: 80px;
 }
 
 button {
   background: #dc2626;
-  color: white;
   font-weight: bold;
+  cursor: pointer;
+}
+
+#msg {
+  margin-top: 12px;
+  text-align: center;
+  color: #34d399;
 }
 </style>
+
 </head>
 
 <body>
@@ -79,37 +103,57 @@ const supabaseClient = window.supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-// 🔥 Cargar trabajadores activos
+// 🔥 CARGAR TRABAJADORES AGRUPADOS POR OBRA
 async function cargarTrabajadores() {
 
   const { data } = await supabaseClient
     .from("trabajadores_obra")
-    .select("id, nombre")
-    .eq("activo", true);
+    .select("id, nombre, privada, casa")
+    .eq("activo", true)
+    .order("privada")
+    .order("casa");
 
   const select = document.getElementById("trabajador");
 
   select.innerHTML = "<option value=''>Selecciona trabajador</option>";
 
+  let grupoActual = "";
+  let optgroup = null;
+
   data.forEach(t => {
-    const op = document.createElement("option");
-    op.value = t.id;
-    op.textContent = t.nombre;
-    select.appendChild(op);
+
+    const grupo = `Privada ${t.privada} - Lote ${t.casa}`;
+
+    if (grupo !== grupoActual) {
+      optgroup = document.createElement("optgroup");
+      optgroup.label = grupo;
+      select.appendChild(optgroup);
+      grupoActual = grupo;
+    }
+
+    const option = document.createElement("option");
+    option.value = t.id;
+    option.textContent = t.nombre;
+
+    optgroup.appendChild(option);
   });
 }
 
 cargarTrabajadores();
 
-// 💾 Guardar
+
+// 💾 GUARDAR INCIDENCIA
 async function guardar() {
 
   const trabajador_id = document.getElementById("trabajador").value;
   const tipo = document.getElementById("tipo").value;
   const descripcion = document.getElementById("descripcion").value;
 
+  const msg = document.getElementById("msg");
+
   if (!trabajador_id || !tipo) {
-    document.getElementById("msg").innerText = "Completa los campos";
+    msg.innerText = "Completa los campos obligatorios";
+    msg.style.color = "#f87171";
     return;
   }
 
@@ -123,7 +167,13 @@ async function guardar() {
       registrado_por: "vigilante"
     }]);
 
-  document.getElementById("msg").innerText = "Incidencia registrada";
+  msg.innerText = "Incidencia registrada";
+  msg.style.color = "#34d399";
+
+  // limpiar campos
+  document.getElementById("trabajador").value = "";
+  document.getElementById("tipo").value = "";
+  document.getElementById("descripcion").value = "";
 }
 
 </script>
