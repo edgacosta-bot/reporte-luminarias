@@ -174,7 +174,17 @@ async function cargar() {
 
     grupos[grupo].forEach(item => {
 
-      const fechaInc = new Date(item.incidencia.fecha);
+      // 🔥 CORRECCIÓN DE HORA (SIN DESFASE)
+      const partes = item.incidencia.fecha.split(/[- :]/);
+
+      const fechaInc = new Date(
+        partes[0],       // año
+        partes[1] - 1,   // mes
+        partes[2],       // día
+        partes[3],       // hora
+        partes[4],       // minuto
+        partes[5]        // segundo
+      );
 
       const div = document.createElement("div");
       div.className = "card";
