@@ -146,6 +146,35 @@ async function validar() {
     return;
   }
 
+  // 🔥 VALIDACIÓN DE HORARIO
+  const ahora = new Date();
+  const dia = ahora.getDay(); // 0=domingo
+  const hora = ahora.getHours();
+  const minutos = ahora.getMinutes();
+  const horaActual = hora + (minutos / 60);
+
+  // 🚫 DOMINGO
+  if (dia === 0) {
+    pintar("ACCESO NO PERMITIDO (DOMINGO)", "error", trabajador);
+    return;
+  }
+
+  // 🟡 SÁBADO
+  if (dia === 6) {
+    if (horaActual < 9 || horaActual > 14) {
+      pintar("FUERA DE HORARIO (SÁBADO)", "error", trabajador);
+      return;
+    }
+  }
+
+  // 🟢 L-V
+  if (dia >= 1 && dia <= 5) {
+    if (horaActual < 8 || horaActual > 18) {
+      pintar("FUERA DE HORARIO", "error", trabajador);
+      return;
+    }
+  }
+
   trabajadorGlobal = trabajador;
 
   const { data: obra } = await supabaseClient
@@ -228,7 +257,6 @@ btn.addEventListener("click", async () => {
 
   document.getElementById("control").style.display = "none";
 
-  // 🚪 BOTÓN FINALIZAR
   const finalizarBtn = document.createElement("button");
   finalizarBtn.innerText = "Finalizar";
 
