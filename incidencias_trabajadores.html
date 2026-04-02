@@ -42,8 +42,14 @@ input {
   box-sizing: border-box;
 }
 
+.titulo-seccion {
+  margin-top: 30px;
+  font-weight: bold;
+  color: #9ca3af;
+}
+
 .grupo {
-  margin-top: 20px;
+  margin-top: 15px;
 }
 
 .titulo-grupo {
@@ -73,17 +79,12 @@ input {
   margin-top: 5px;
 }
 
-.manual {
-  color: #fbbf24;
-}
-
-.automatico {
-  color: #60a5fa;
-}
+.manual { color: #fbbf24; }
+.automatico { color: #60a5fa; }
 
 .vacio {
   text-align: center;
-  margin-top: 40px;
+  margin-top: 20px;
   color: #9ca3af;
 }
 </style>
@@ -94,11 +95,17 @@ input {
 
 <div class="container">
 
-<h1>📋 Incidencias</h1>
+<h1>📊 Panel de incidencias</h1>
 
 <input type="date" id="fecha">
 
+<!-- 🔴 INCIDENCIAS -->
+<div class="titulo-seccion">🚨 Incidencias trabajadores</div>
 <div id="lista"></div>
+
+<!-- 💡 LUMINARIAS -->
+<div class="titulo-seccion">💡 Reportes de luminarias</div>
+<div id="luminarias"></div>
 
 </div>
 
@@ -109,7 +116,7 @@ const supabaseClient = window.supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-// 🔥 Fecha actual
+// fecha actual
 const hoy = new Date().toISOString().split("T")[0];
 document.getElementById("fecha").value = hoy;
 
@@ -121,7 +128,16 @@ async function cargar() {
 
   const fecha = document.getElementById("fecha").value;
 
-  const { data, error } = await supabaseClient
+  cargarIncidencias(fecha);
+  cargarLuminarias(fecha);
+}
+
+// =========================
+// 🔴 INCIDENCIAS
+// =========================
+async function cargarIncidencias(fecha) {
+
+  const { data } = await supabaseClient
     .from("incidencias_trabajadores")
     .select("*")
     .gte("fecha", fecha + " 00:00:00")
@@ -130,18 +146,12 @@ async function cargar() {
 
   const lista = document.getElementById("lista");
 
-  if (error) {
-    lista.innerHTML = "<p>Error al cargar incidencias</p>";
-    console.error(error);
-    return;
-  }
-
   if (!data || data.length === 0) {
-    lista.innerHTML = "<p class='vacio'>No hay incidencias</p>";
+    lista.innerHTML = "<p class='vacio'>Sin incidencias</p>";
     return;
   }
 
-  const grupos = {};
+  lista.innerHTML = "";
 
   for (const item of data) {
 
@@ -151,61 +161,76 @@ async function cargar() {
       .eq("id", item.trabajador_id)
       .single();
 
-    const grupo = `Privada ${trabajador?.privada || "-"} - Lote ${trabajador?.casa || "-"}`;
+    let fechaTexto = item.fecha_local || item.fecha;
 
-    if (!grupos[grupo]) {
-      grupos[grupo] = [];
+    if (fechaTexto) {
+      fechaTexto = fechaTexto.split(".")[0].replace(" ", "T");
     }
 
-    grupos[grupo].push({
-      trabajador,
-      incidencia: item
-    });
+    const fechaInc = new Date(fechaTexto);
+
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      <div class="nombre">${trabajador?.nombre || "Sin nombre"}</div>
+      <div class="detalle">
+        ${item.descripcion}<br>
+        ${fechaInc.toLocaleString("es-MX")}
+      </div>
+      <div class="tipo ${item.origen || 'automatico'}">
+        ${(item.origen || "automatico").toUpperCase()} - ${item.tipo}
+      </div>
+    `;
+
+    lista.appendChild(div);
+  }
+}
+
+// =========================
+// 💡 LUMINARIAS
+// =========================
+async function cargarLuminarias(fecha) {
+
+  const inicio = fecha + "T00:00:00Z";
+  const fin = fecha + "T23:59:59Z";
+
+  const { data } = await supabaseClient
+    .from("reportes_vecinales")
+    .select("*")
+    .gte("fecha_reporte", inicio)
+    .lte("fecha_reporte", fin)
+    .order("fecha_reporte", { ascending: false });
+
+  const contenedor = document.getElementById("luminarias");
+
+  if (!data || data.length === 0) {
+    contenedor.innerHTML = "<p class='vacio'>Sin reportes</p>";
+    return;
   }
 
-  lista.innerHTML = "";
+  contenedor.innerHTML = "";
 
-  for (const grupo in grupos) {
+  data.forEach(item => {
 
-    const divGrupo = document.createElement("div");
-    divGrupo.className = "grupo";
+    const fecha = new Date(item.fecha_reporte);
 
-    divGrupo.innerHTML = `<div class="titulo-grupo">${grupo}</div>`;
+    const div = document.createElement("div");
+    div.className = "card";
 
-    grupos[grupo].forEach(item => {
+    div.innerHTML = `
+      <div class="nombre">Luminaria #${item.no_luminaria}</div>
+      <div class="detalle">
+        ${item.descripcion}<br>
+        ${fecha.toLocaleString("es-MX")}
+      </div>
+      <div class="tipo">
+        ${item.estatus}
+      </div>
+    `;
 
-      // 🔥 USAR fecha_local (SOLUCIÓN DEFINITIVA)
-      let fechaTexto = item.incidencia.fecha_local || item.incidencia.fecha;
-
-      if (fechaTexto) {
-        fechaTexto = fechaTexto.split(".")[0];
-        fechaTexto = fechaTexto.replace(" ", "T");
-      }
-
-      const fechaInc = fechaTexto ? new Date(fechaTexto) : null;
-
-      const div = document.createElement("div");
-      div.className = "card";
-
-      div.innerHTML = `
-        <div class="nombre">${item.trabajador?.nombre || "Sin nombre"}</div>
-
-        <div class="detalle">
-          ${item.incidencia.descripcion || "Sin descripción"}<br>
-          ${fechaInc ? fechaInc.toLocaleString("es-MX") : ""}
-        </div>
-
-        <div class="tipo ${item.incidencia.origen || 'automatico'}">
-          ${(item.incidencia.origen || "automatico").toUpperCase()} - ${item.incidencia.tipo}
-        </div>
-      `;
-
-      divGrupo.appendChild(div);
-    });
-
-    lista.appendChild(divGrupo);
-  }
-
+    contenedor.appendChild(div);
+  });
 }
 
 </script>
