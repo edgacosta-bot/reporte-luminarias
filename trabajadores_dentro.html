@@ -59,6 +59,26 @@ h1 {
   margin-top: 40px;
   color: #9ca3af;
 }
+
+.acciones button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-reporte {
+  background: #dc2626;
+  color: white;
+}
+
+.btn-salida {
+  background: #2563eb;
+  color: white;
+}
 </style>
 </head>
 
@@ -118,17 +138,18 @@ async function cargar() {
 
     const entrada = new Date(item.fecha_hora_entrada);
     const ahora = new Date();
-
     const horas = (ahora - entrada) / (1000 * 60 * 60);
 
     let alerta = "";
     let estilo = "";
+    let esAlerta = false;
 
     // 🔥 REGLA 1: exceso de tiempo
     if (horas >= 8) {
       alerta = "⚠️ Exceso de tiempo";
       estilo = "border: 2px solid #dc2626;";
       totalAlertas++;
+      esAlerta = true;
     }
 
     // 🔥 REGLA 2: fuera de horario
@@ -139,9 +160,7 @@ async function cargar() {
 
     let fueraDeHorario = false;
 
-    if (dia === 0) {
-      fueraDeHorario = true;
-    }
+    if (dia === 0) fueraDeHorario = true;
 
     if (dia === 6 && (horaActual < 9 || horaActual > 14)) {
       fueraDeHorario = true;
@@ -155,6 +174,7 @@ async function cargar() {
       alerta = "🚨 Fuera de horario";
       estilo = "border: 2px solid #dc2626;";
       totalAlertas++;
+      esAlerta = true;
     }
 
     const div = document.createElement("div");
@@ -169,6 +189,18 @@ async function cargar() {
         Tiempo dentro: ${horas.toFixed(1)} hrs<br>
         ${alerta}
       </div>
+
+      ${esAlerta ? `
+        <div class="acciones">
+          <button class="btn-reporte" onclick="reportar('${item.trabajador_id}')">
+            🚨 Reportar incidencia
+          </button>
+
+          <button class="btn-salida" onclick="forzarSalida('${item.id}')">
+            🚪 Forzar salida
+          </button>
+        </div>
+      ` : ""}
     `;
 
     lista.appendChild(div);
@@ -182,6 +214,39 @@ async function cargar() {
     alertaDiv.innerHTML = "Todo en orden";
     alertaDiv.style.color = "#34d399";
   }
+}
+
+// 🚨 REPORTAR
+async function reportar(trabajador_id) {
+
+  await supabaseClient
+    .from("incidencias_trabajadores")
+    .insert([{
+      trabajador_id: trabajador_id,
+      tipo: "irregularidad",
+      descripcion: "Detectado por sistema",
+      registrado_por: "vigilante"
+    }]);
+
+  alert("Incidencia registrada");
+}
+
+// 🚪 FORZAR SALIDA
+async function forzarSalida(acceso_id) {
+
+  const ahora = new Date().toISOString();
+
+  await supabaseClient
+    .from("accesos_trabajadores")
+    .update({
+      fecha_hora_salida: ahora,
+      estatus: "forzado"
+    })
+    .eq("id", acceso_id);
+
+  alert("Salida registrada");
+
+  cargar();
 }
 
 </script>
