@@ -31,6 +31,7 @@ h1 {
   text-align: center;
 }
 
+/* 🔥 FIX DESBORDE */
 input {
   width: 100%;
   padding: 12px;
@@ -39,6 +40,7 @@ input {
   margin-bottom: 20px;
   background: #1f2937;
   color: white;
+  box-sizing: border-box;
 }
 
 .grupo {
@@ -108,7 +110,7 @@ const supabaseClient = window.supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-// 🔥 Fecha actual por defecto
+// 🔥 Fecha actual
 const hoy = new Date().toISOString().split("T")[0];
 document.getElementById("fecha").value = hoy;
 
@@ -120,8 +122,9 @@ async function cargar() {
 
   const fecha = document.getElementById("fecha").value;
 
-  const inicio = fecha + "T00:00:00";
-  const fin = fecha + "T23:59:59";
+  // 🔥 CORRECCIÓN AQUÍ (SIN "T")
+  const inicio = fecha + " 00:00:00";
+  const fin = fecha + " 23:59:59.999";
 
   const { data, error } = await supabaseClient
     .from("incidencias_trabajadores")
@@ -133,7 +136,8 @@ async function cargar() {
   const lista = document.getElementById("lista");
 
   if (error) {
-    lista.innerHTML = "<p>Error al cargar</p>";
+    lista.innerHTML = "<p>Error al cargar incidencias</p>";
+    console.error(error);
     return;
   }
 
@@ -142,7 +146,6 @@ async function cargar() {
     return;
   }
 
-  // 🔥 Agrupar por obra
   const grupos = {};
 
   for (const item of data) {
@@ -172,13 +175,11 @@ async function cargar() {
     const divGrupo = document.createElement("div");
     divGrupo.className = "grupo";
 
-    divGrupo.innerHTML = `
-      <div class="titulo-grupo">${grupo}</div>
-    `;
+    divGrupo.innerHTML = `<div class="titulo-grupo">${grupo}</div>`;
 
     grupos[grupo].forEach(item => {
 
-      const fecha = new Date(item.incidencia.fecha);
+      const fechaInc = new Date(item.incidencia.fecha);
 
       const div = document.createElement("div");
       div.className = "card";
@@ -188,7 +189,7 @@ async function cargar() {
 
         <div class="detalle">
           ${item.incidencia.descripcion || "Sin descripción"}<br>
-          ${fecha.toLocaleString()}
+          ${fechaInc.toLocaleString()}
         </div>
 
         <div class="tipo ${item.incidencia.origen}">
