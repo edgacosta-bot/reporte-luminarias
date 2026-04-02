@@ -174,11 +174,15 @@ async function cargar() {
 
     grupos[grupo].forEach(item => {
 
-      // 🔥 SOLUCIÓN DEFINITIVA FECHA
-      let fechaTexto = item.incidencia.fecha.split(".")[0]; // quitar microsegundos
-      fechaTexto = fechaTexto.replace(" ", "T"); // formato ISO
+      // 🔥 USAR fecha_local (SOLUCIÓN DEFINITIVA)
+      let fechaTexto = item.incidencia.fecha_local || item.incidencia.fecha;
 
-      const fechaInc = new Date(fechaTexto);
+      if (fechaTexto) {
+        fechaTexto = fechaTexto.split(".")[0];
+        fechaTexto = fechaTexto.replace(" ", "T");
+      }
+
+      const fechaInc = fechaTexto ? new Date(fechaTexto) : null;
 
       const div = document.createElement("div");
       div.className = "card";
@@ -188,7 +192,7 @@ async function cargar() {
 
         <div class="detalle">
           ${item.incidencia.descripcion || "Sin descripción"}<br>
-          ${fechaInc.toLocaleString("es-MX")}
+          ${fechaInc ? fechaInc.toLocaleString("es-MX") : ""}
         </div>
 
         <div class="tipo ${item.incidencia.origen || 'automatico'}">
