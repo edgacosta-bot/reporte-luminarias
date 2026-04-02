@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<script src="auth.js"></script>
+<script>
+protegerPagina(["admin"]);
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Incidencias</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  margin-bottom: 20px;
+  background: #1f2937;
+  color: white;
+}
+
+.grupo {
+  margin-top: 20px;
+}
+
+.titulo-grupo {
+  font-weight: bold;
+  color: #9ca3af;
+  margin-bottom: 10px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.nombre {
+  font-weight: bold;
+}
+
+.detalle {
+  font-size: 13px;
+  color: #cbd5f5;
+}
+
+.tipo {
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.manual {
+  color: #fbbf24;
+}
+
+.automatico {
+  color: #60a5fa;
+}
+
+.vacio {
+  text-align: center;
+  margin-top: 40px;
+  color: #9ca3af;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>📋 Incidencias</h1>
+
+<input type="date" id="fecha">
+
+<div id="lista"></div>
+
+</div>
+
+<script>
+
+const supabaseClient = window.supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+// 🔥 Fecha actual por defecto
+const hoy = new Date().toISOString().split("T")[0];
+document.getElementById("fecha").value = hoy;
+
+document.getElementById("fecha").addEventListener("change", cargar);
+
+cargar();
+
+async function cargar() {
+
+  const fecha = document.getElementById("fecha").value;
+
+  const inicio = fecha + "T00:00:00";
+  const fin = fecha + "T23:59:59";
+
+  const { data, error } = await supabaseClient
+    .from("incidencias_trabajadores")
+    .select("*")
+    .gte("fecha", inicio)
+    .lte("fecha", fin)
+    .order("fecha", { ascending: false });
+
+  const lista = document.getElementById("lista");
+
+  if (error) {
+    lista.innerHTML = "<p>Error al cargar</p>";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    lista.innerHTML = "<p class='vacio'>No hay incidencias</p>";
+    return;
+  }
+
+  // 🔥 Agrupar por obra
+  const grupos = {};
+
+  for (const item of data) {
+
+    const { data: trabajador } = await supabaseClient
+      .from("trabajadores_obra")
+      .select("nombre, privada, casa")
+      .eq("id", item.trabajador_id)
+      .single();
+
+    const grupo = `Privada ${trabajador?.privada || "-"} - Lote ${trabajador?.casa || "-"}`;
+
+    if (!grupos[grupo]) {
+      grupos[grupo] = [];
+    }
+
+    grupos[grupo].push({
+      trabajador,
+      incidencia: item
+    });
+  }
+
+  lista.innerHTML = "";
+
+  for (const grupo in grupos) {
+
+    const divGrupo = document.createElement("div");
+    divGrupo.className = "grupo";
+
+    divGrupo.innerHTML = `
+      <div class="titulo-grupo">${grupo}</div>
+    `;
+
+    grupos[grupo].forEach(item => {
+
+      const fecha = new Date(item.incidencia.fecha);
+
+      const div = document.createElement("div");
+      div.className = "card";
+
+      div.innerHTML = `
+        <div class="nombre">${item.trabajador?.nombre || "Sin nombre"}</div>
+
+        <div class="detalle">
+          ${item.incidencia.descripcion || "Sin descripción"}<br>
+          ${fecha.toLocaleString()}
+        </div>
+
+        <div class="tipo ${item.incidencia.origen}">
+          ${item.incidencia.origen.toUpperCase()} - ${item.incidencia.tipo}
+        </div>
+      `;
+
+      divGrupo.appendChild(div);
+    });
+
+    lista.appendChild(divGrupo);
+  }
+
+}
+
+</script>
+
+</body>
+</html>
