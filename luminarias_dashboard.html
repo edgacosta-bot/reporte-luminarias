@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="auth.js"></script>
+<script>
+protegerPagina(["colono","residente","admin"]);
+</script>
+
+<title>Dashboard Luminarias</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #161a1d;
+  color: white;
+}
+
+.header {
+  padding: 15px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+iframe {
+  width: 100%;
+  height: calc(100vh - 120px);
+  border: none;
+  border-radius: 12px;
+}
+
+.container {
+  padding: 10px;
+}
+
+.back {
+  display: block;
+  text-align: center;
+  padding: 14px;
+  margin: 10px;
+  background: #374151;
+  border-radius: 10px;
+  text-decoration: none;
+  color: white;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+💡 Dashboard de Luminarias
+</div>
+
+<div class="container">
+
+<iframe 
+  src="https://lookerstudio.google.com/embed/reporting/https://lookerstudio.google.com/embed/reporting/d16fb6ac-e2b8-484f-b9cd-18aebbb0e4f1"
+  allowfullscreen>
+</iframe>
+
+<a href="luminarias.html" class="back">
+← Volver
+</a>
+
+</div>
+
+</body>
+</html>
