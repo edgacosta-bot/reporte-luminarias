@@ -67,7 +67,6 @@ h1 {
 <div class="container">
   <h1>👷 Trabajadores dentro</h1>
 
-  <!-- 🚨 ALERTA GLOBAL -->
   <div id="alerta" class="alerta-global"></div>
 
   <div id="lista"></div>
@@ -81,10 +80,9 @@ const supabaseClient = window.supabase.createClient(
 );
 
 cargar();
-
-// 🔄 AUTO REFRESH
 setInterval(cargar, 10000);
 
+// 🔥 FUNCIÓN PRINCIPAL
 async function cargar() {
 
   const { data: accesos, error } = await supabaseClient
@@ -108,7 +106,6 @@ async function cargar() {
   }
 
   lista.innerHTML = "";
-
   let totalAlertas = 0;
 
   for (const item of accesos) {
@@ -127,8 +124,35 @@ async function cargar() {
     let alerta = "";
     let estilo = "";
 
+    // 🔥 REGLA 1: exceso de tiempo
     if (horas >= 8) {
       alerta = "⚠️ Exceso de tiempo";
+      estilo = "border: 2px solid #dc2626;";
+      totalAlertas++;
+    }
+
+    // 🔥 REGLA 2: fuera de horario
+    const dia = ahora.getDay();
+    const hora = ahora.getHours();
+    const minutos = ahora.getMinutes();
+    const horaActual = hora + (minutos / 60);
+
+    let fueraDeHorario = false;
+
+    if (dia === 0) {
+      fueraDeHorario = true;
+    }
+
+    if (dia === 6 && (horaActual < 9 || horaActual > 14)) {
+      fueraDeHorario = true;
+    }
+
+    if (dia >= 1 && dia <= 5 && (horaActual < 8 || horaActual > 18)) {
+      fueraDeHorario = true;
+    }
+
+    if (fueraDeHorario) {
+      alerta = "🚨 Fuera de horario";
       estilo = "border: 2px solid #dc2626;";
       totalAlertas++;
     }
@@ -152,7 +176,7 @@ async function cargar() {
 
   // 🚨 ALERTA GLOBAL
   if (totalAlertas > 0) {
-    alertaDiv.innerHTML = `🚨 ${totalAlertas} trabajador(es) con exceso de tiempo`;
+    alertaDiv.innerHTML = `🚨 ${totalAlertas} trabajador(es) con irregularidades`;
     alertaDiv.style.color = "#f87171";
   } else {
     alertaDiv.innerHTML = "Todo en orden";
