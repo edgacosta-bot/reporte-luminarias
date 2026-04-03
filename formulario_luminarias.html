@@ -93,7 +93,6 @@ Registrar reporte
 
 </form>
 
-<!-- BOTÓN REGRESAR -->
 <a href="luminarias.html" class="block text-center mt-4 text-sm text-blue-600">
 ← Volver a Luminarias
 </a>
@@ -109,7 +108,7 @@ La información proporcionada será utilizada únicamente para fines de atenció
 <script>
 
 const supabaseUrl = 'https://prjxmfhahnzosdwljode.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'; // ← deja tu key real aquí
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwaH8lMepC5iFCLTOXVsMroOeKCT1i3opN7O19Ha02vRyB6C2QvesO-eT_nU9fKaYhA/exec";
@@ -197,14 +196,6 @@ boton.className =
 
 });
 
-/* REFRESH LOOKER */
-
-function refrescarLooker() {
-  const iframe = document.getElementById("lookerPing");
-  const url = "https://lookerstudio.google.com/embed/reporting/d16fb6ac-e2b8-484f-b9cd-18aebbb0e4f1/page/p_81p916em1d?t=" + new Date().getTime();
-  iframe.src = url;
-}
-
 /* ENVIAR REPORTE */
 
 document.getElementById('formReporte').addEventListener('submit', async (e) => {
@@ -221,6 +212,10 @@ const no_luminaria = Number(document.getElementById('no_luminaria').value);
 const descripcion = document.getElementById('descripcion').value;
 const comentario = document.getElementById('comentario').value;
 
+// 🔥 NUEVO: DATOS DEL USUARIO
+const privada = localStorage.getItem("privada");
+const casa = localStorage.getItem("casa");
+
 if (!luminariaActual) {
 throw new Error("Luminaria no válida");
 }
@@ -234,35 +229,18 @@ const { data: insertedData, error: errorInsert } = await supabaseClient
   no_luminaria: no_luminaria,
   descripcion: descripcion,
   estatus: 'NUEVO',
-  observaciones: comentario
+  observaciones: comentario,
+  privada: privada,
+  casa: casa
 }])
 .select();
 
 if (errorInsert) throw errorInsert;
 
-const reporte_id = insertedData[0].id;
-
-const formData = new URLSearchParams();
-formData.append("data", JSON.stringify({
-  id: reporte_id,
-  no_luminaria: no_luminaria,
-  descripcion: descripcion,
-  observaciones: comentario,
-  estatus: "NUEVO",
-  luminaria_id: luminaria_id
-}));
-
-await fetch(GAS_URL, {
-  method: "POST",
-  body: formData
-});
-
 mensaje.innerText =
 "Reporte registrado correctamente. Gracias por tu apoyo para el mantenimiento del fraccionamiento.";
 
 mensaje.className = "text-center text-green-600";
-
-setTimeout(refrescarLooker, 1500);
 
 document.getElementById('formReporte').reset();
 document.getElementById('info_luminaria').innerHTML = "";
@@ -282,8 +260,6 @@ console.error(error);
 });
 
 </script>
-
-<iframe id="lookerPing" style="display:none;"></iframe>
 
 </body>
 </html>
