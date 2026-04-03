@@ -125,12 +125,10 @@ async function reportar() {
   const privada = localStorage.getItem("privada");
   const casa = localStorage.getItem("casa");
 
-  // 🕒 FECHA LOCAL MÉXICO
-  const ahora = new Date();
-
-  const fechaLocal = new Date(
-    ahora.toLocaleString("en-US", { timeZone: "America/Mexico_City" })
-  );
+  // 🔥 HORA CORRECTA MÉXICO (UTC -6)
+  const ahoraUTC = new Date();
+  const fechaMexico = new Date(ahoraUTC.getTime() - (6 * 60 * 60 * 1000));
+  const fechaLocal = fechaMexico.toISOString().slice(0, 19);
 
   const { error } = await supabaseClient
     .from("incidencias_vecinales")
@@ -139,8 +137,8 @@ async function reportar() {
       descripcion: descripcion,
       privada: privada,
       casa: casa,
-      fecha: new Date().toISOString(), // UTC
-      fecha_local: fechaLocal.toISOString(), // México
+      fecha: ahoraUTC.toISOString(), // UTC
+      fecha_local: fechaLocal,       // México correcta
       estatus: "nuevo",
       atendido: false
     }]);
