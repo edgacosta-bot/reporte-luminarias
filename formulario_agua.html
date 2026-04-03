@@ -27,7 +27,7 @@
 <div id="infoUsuario" class="text-xs text-gray-500 text-center mb-4"></div>
 
 <div class="bg-blue-50 border border-blue-200 text-blue-700 text-sm rounded-lg p-3 mb-5">
-  Si realizaste un reporte a CAASIM, regístralo aquí, esta información permitirá documentar fallas en el servicio y generar evidencia colectiva para exigir atención oportuna.
+  Si realizaste un reporte a CAASIM, regístralo aquí. Esta información permitirá documentar fallas en el servicio y generar evidencia colectiva.
 </div>
 
 <h2 class="text-lg font-semibold text-gray-700 mb-4 text-center">
@@ -120,6 +120,7 @@ La información será utilizada como respaldo para documentar incidencias.
 
 const SUPABASE_URL = "https://prjxmfhahnzosdwljode.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs";
+
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyKWLCyjXmziMIFu_2bQoaawhzE4IUAbRnf71fvNsCjuea5DmH150w93FgLC9WqMIw/exec";
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -184,7 +185,7 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
       tipo_falla: document.getElementById("tipo_falla").value,
       calle_id: calle_id,
       numero_exterior: casa,
-      privada: privada // 🔥 CAMBIO CLAVE
+      privada: privada
     };
 
     const { error } = await supabaseClient
@@ -199,13 +200,19 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
       body: "data=" + encodeURIComponent(JSON.stringify(dataSupabase))
     });
 
-    mensaje.innerText = "Reporte registrado correctamente.";
+    mensaje.innerText = "✅ Reporte registrado correctamente.";
     mensaje.className = "text-green-600 text-center";
 
     e.target.reset();
 
   } catch (error) {
-    mensaje.innerText = "Error: " + error.message;
+
+    if (error.message.includes("unique_reporte_por_casa")) {
+      mensaje.innerText = "⚠️ Ya registraste este número de reporte.";
+    } else {
+      mensaje.innerText = "Error: " + error.message;
+    }
+
     mensaje.className = "text-red-600 text-center";
   }
 
