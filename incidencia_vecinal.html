@@ -64,6 +64,13 @@ button {
 .ok { color: #34d399; }
 .error { color: #f87171; }
 
+.back {
+  margin-top: 10px;
+  display: block;
+  text-align: center;
+  color: #9ca3af;
+  text-decoration: none;
+}
 </style>
 </head>
 
@@ -87,6 +94,8 @@ button {
 <button onclick="reportar()">Enviar reporte</button>
 
 <div id="mensaje" class="mensaje"></div>
+
+<a href="index.html" class="back">← Volver</a>
 
 </div>
 
@@ -116,16 +125,24 @@ async function reportar() {
   const privada = localStorage.getItem("privada");
   const casa = localStorage.getItem("casa");
 
+  // 🕒 FECHA LOCAL MÉXICO
+  const ahora = new Date();
+
+  const fechaLocal = new Date(
+    ahora.toLocaleString("en-US", { timeZone: "America/Mexico_City" })
+  );
+
   const { error } = await supabaseClient
-    .from("incidencias_trabajadores")
+    .from("incidencias_vecinales")
     .insert([{
       tipo: tipo,
       descripcion: descripcion,
-      fecha: new Date().toISOString(),
-      registrado_por: "colono",
-      origen: "vecinal",
       privada: privada,
-      casa: casa
+      casa: casa,
+      fecha: new Date().toISOString(), // UTC
+      fecha_local: fechaLocal.toISOString(), // México
+      estatus: "nuevo",
+      atendido: false
     }]);
 
   if (error) {
