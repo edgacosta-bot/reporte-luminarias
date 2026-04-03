@@ -94,7 +94,6 @@ const supabaseClient = supabase.createClient(
 const privada = localStorage.getItem("privada");
 const casa = localStorage.getItem("casa");
 
-// 🔥 FECHA SEGURA (SIN DESFASE)
 function formatearFechaLocal(fechaISO) {
   if (!fechaISO) return "";
 
@@ -120,12 +119,19 @@ async function cargarReportes() {
   let html = "";
 
   // 🔴 INCIDENCIAS
-  const { data: incidencias } = await supabaseClient
+  let queryInc = supabaseClient
     .from("incidencias_vecinales")
     .select("*")
     .eq("privada", privada)
-    .eq("casa", casa)
-    .order("fecha_local", { ascending: false });
+    .eq("casa", casa);
+
+  if (fecha) {
+    queryInc = queryInc
+      .gte("fecha_local", fecha + "T00:00:00")
+      .lte("fecha_local", fecha + "T23:59:59");
+  }
+
+  const { data: incidencias } = await queryInc.order("fecha_local", { ascending: false });
 
   incidencias?.forEach(item => {
     html += `
@@ -138,12 +144,19 @@ async function cargarReportes() {
   });
 
   // 🔵 LUMINARIAS
-  const { data: luminarias } = await supabaseClient
+  let queryLum = supabaseClient
     .from("reportes_vecinales")
     .select("*")
     .eq("privada", privada)
-    .eq("casa", casa)
-    .order("fecha_reporte", { ascending: false });
+    .eq("casa", casa);
+
+  if (fecha) {
+    queryLum = queryLum
+      .gte("fecha_reporte", fecha + "T00:00:00")
+      .lte("fecha_reporte", fecha + "T23:59:59");
+  }
+
+  const { data: luminarias } = await queryLum.order("fecha_reporte", { ascending: false });
 
   luminarias?.forEach(item => {
     html += `
@@ -155,13 +168,20 @@ async function cargarReportes() {
     `;
   });
 
-  // 💧 AGUA (🔥 AQUÍ ESTABA EL ERROR)
-  const { data: agua } = await supabaseClient
+  // 💧 AGUA
+  let queryAgua = supabaseClient
     .from("reportes_agua_caasim")
     .select("*")
     .eq("privada", privada)
-    .eq("numero_exterior", casa) // 🔥 IMPORTANTE
-    .order("fecha_registro", { ascending: false });
+    .eq("numero_exterior", casa);
+
+  if (fecha) {
+    queryAgua = queryAgua
+      .gte("fecha_registro", fecha + "T00:00:00")
+      .lte("fecha_registro", fecha + "T23:59:59");
+  }
+
+  const { data: agua } = await queryAgua.order("fecha_registro", { ascending: false });
 
   agua?.forEach(item => {
     html += `
