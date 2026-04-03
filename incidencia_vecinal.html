@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte de incidente</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.card {
+  background: #111827;
+  padding: 25px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+select, textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #1f2937;
+  color: white;
+}
+
+textarea {
+  min-height: 100px;
+  resize: none;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #dc2626;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.mensaje {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.ok { color: #34d399; }
+.error { color: #f87171; }
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>🚨 Reportar incidente</h2>
+
+<select id="tipo">
+  <option value="">Tipo de incidente</option>
+  <option value="seguridad">Vigilantes omisos</option>
+  <option value="ruido">Ruido excesivo</option>
+  <option value="seguridad">Situación sospechosa</option>
+  <option value="obra">Problema con obra</option>
+  <option value="otro">Otro</option>
+</select>
+
+<textarea id="descripcion" placeholder="Describe el incidente..."></textarea>
+
+<button onclick="reportar()">Enviar reporte</button>
+
+<div id="mensaje" class="mensaje"></div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const supabaseClient = supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+async function reportar() {
+
+  const tipo = document.getElementById("tipo").value;
+  const descripcion = document.getElementById("descripcion").value.trim();
+  const mensaje = document.getElementById("mensaje");
+
+  mensaje.className = "mensaje";
+
+  if (!tipo || !descripcion) {
+    mensaje.innerText = "Completa todos los campos";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  const privada = localStorage.getItem("privada");
+  const casa = localStorage.getItem("casa");
+
+  const { error } = await supabaseClient
+    .from("incidencias_trabajadores")
+    .insert([{
+      tipo: tipo,
+      descripcion: descripcion,
+      fecha: new Date().toISOString(),
+      registrado_por: "colono",
+      origen: "vecinal",
+      privada: privada,
+      casa: casa
+    }]);
+
+  if (error) {
+    mensaje.innerText = "Error al enviar reporte";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  mensaje.innerText = "Reporte enviado correctamente ✅";
+  mensaje.classList.add("ok");
+
+  document.getElementById("descripcion").value = "";
+  document.getElementById("tipo").value = "";
+}
+
+</script>
+
+</body>
+</html>
