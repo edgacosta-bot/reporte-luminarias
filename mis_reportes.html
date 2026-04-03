@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mis reportes</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
+
+h2 {
+  text-align: center;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 15px 0;
+  border-radius: 10px;
+  border: none;
+}
+
+.card {
+  background: #111827;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.tipo {
+  font-weight: bold;
+}
+
+.fecha {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.luminaria { border-left: 5px solid #9f1239; }
+.agua { border-left: 5px solid #2563eb; }
+.incidencia { border-left: 5px solid #dc2626; }
+
+.back {
+  display: block;
+  margin-top: 15px;
+  text-align: center;
+  color: #9ca3af;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>📋 Mis reportes</h2>
+
+<input type="date" id="fecha" onchange="cargarReportes()">
+
+<div id="lista"></div>
+
+<a href="reportes.html" class="back">← Volver</a>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const supabaseClient = supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+const privada = localStorage.getItem("privada");
+const casa = localStorage.getItem("casa");
+
+async function cargarReportes() {
+
+  const fecha = document.getElementById("fecha").value;
+  const lista = document.getElementById("lista");
+
+  lista.innerHTML = "Cargando...";
+
+  let html = "";
+
+  // 🔴 INCIDENCIAS VECINALES
+  let query1 = supabaseClient
+    .from("incidencias_vecinales")
+    .select("*")
+    .eq("privada", privada)
+    .eq("casa", casa)
+    .order("fecha", { ascending: false });
+
+  if (fecha) {
+    query1 = query1.gte("fecha_local", fecha + "T00:00:00")
+                   .lte("fecha_local", fecha + "T23:59:59");
+  }
+
+  const { data: incidencias } = await query1;
+
+  incidencias?.forEach(item => {
+    html += `
+      <div class="card incidencia">
+        <div class="tipo">⚠️ ${item.tipo}</div>
+        <div>${item.descripcion}</div>
+        <div class="fecha">${item.fecha_local}</div>
+      </div>
+    `;
+  });
+
+  // 🔵 LUMINARIAS
+  const { data: luminarias } = await supabaseClient
+    .from("reportes_vecinales")
+    .select("*")
+    .eq("privada", privada)
+    .eq("casa", casa);
+
+  luminarias?.forEach(item => {
+    html += `
+      <div class="card luminaria">
+        <div class="tipo">💡 Luminaria #${item.no_luminaria}</div>
+        <div>${item.descripcion}</div>
+        <div class="fecha">${item.fecha_reporte}</div>
+      </div>
+    `;
+  });
+
+  // 🔵 AGUA (ajusta si tienes otra tabla)
+  // Aquí puedes integrar cuando lo tengas definido
+
+  lista.innerHTML = html || "No hay reportes";
+}
+
+cargarReportes();
+
+</script>
+
+</body>
+</html>
