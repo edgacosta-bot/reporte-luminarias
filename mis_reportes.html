@@ -23,7 +23,6 @@ h2 {
   text-align: center;
 }
 
-/* 🔥 INPUT MEJORADO */
 .input-fecha {
   width: 100%;
   padding: 12px;
@@ -95,13 +94,14 @@ const supabaseClient = supabase.createClient(
 const privada = localStorage.getItem("privada");
 const casa = localStorage.getItem("casa");
 
-// 🔥 FORMATEAR FECHA BONITA
-function formatearFecha(fechaISO) {
+// 🔥 FECHA SEGURA (SIN DESFASE)
+function formatearFechaLocal(fechaISO) {
   if (!fechaISO) return "";
 
   const fecha = new Date(fechaISO);
 
   return fecha.toLocaleString("es-MX", {
+    timeZone: "America/Mexico_City",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -120,26 +120,19 @@ async function cargarReportes() {
   let html = "";
 
   // 🔴 INCIDENCIAS
-  let query1 = supabaseClient
+  const { data: incidencias } = await supabaseClient
     .from("incidencias_vecinales")
     .select("*")
     .eq("privada", privada)
     .eq("casa", casa)
-    .order("fecha", { ascending: false });
-
-  if (fecha) {
-    query1 = query1.gte("fecha_local", fecha + "T00:00:00")
-                   .lte("fecha_local", fecha + "T23:59:59");
-  }
-
-  const { data: incidencias } = await query1;
+    .order("fecha_local", { ascending: false });
 
   incidencias?.forEach(item => {
     html += `
       <div class="card incidencia">
         <div class="tipo">⚠️ ${item.tipo}</div>
         <div>${item.descripcion}</div>
-        <div class="fecha">${formatearFecha(item.fecha_local)}</div>
+        <div class="fecha">${formatearFechaLocal(item.fecha_local)}</div>
       </div>
     `;
   });
@@ -149,14 +142,33 @@ async function cargarReportes() {
     .from("reportes_vecinales")
     .select("*")
     .eq("privada", privada)
-    .eq("casa", casa);
+    .eq("casa", casa)
+    .order("fecha_reporte", { ascending: false });
 
   luminarias?.forEach(item => {
     html += `
       <div class="card luminaria">
         <div class="tipo">💡 Luminaria #${item.no_luminaria}</div>
         <div>${item.descripcion}</div>
-        <div class="fecha">${formatearFecha(item.fecha_reporte)}</div>
+        <div class="fecha">${formatearFechaLocal(item.fecha_reporte)}</div>
+      </div>
+    `;
+  });
+
+  // 💧 AGUA (🔥 AQUÍ ESTABA EL ERROR)
+  const { data: agua } = await supabaseClient
+    .from("reportes_agua_caasim")
+    .select("*")
+    .eq("privada", privada)
+    .eq("numero_exterior", casa) // 🔥 IMPORTANTE
+    .order("fecha_registro", { ascending: false });
+
+  agua?.forEach(item => {
+    html += `
+      <div class="card agua">
+        <div class="tipo">💧 ${item.tipo_falla}</div>
+        <div>Folio: ${item.numero_reporte}</div>
+        <div class="fecha">${formatearFechaLocal(item.fecha_registro)}</div>
       </div>
     `;
   });
