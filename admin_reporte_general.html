@@ -120,6 +120,11 @@ async function cargar() {
   const inicio = document.getElementById("inicio").value;
   const fin = document.getElementById("fin").value;
 
+  if (!inicio || !fin) {
+    alert("Selecciona fechas");
+    return;
+  }
+
   let registros = [];
 
   // 🔴 INCIDENCIAS
@@ -159,65 +164,51 @@ async function cargar() {
     });
   });
 
-  // 💡 LUMINARIAS + CALLE (JOIN REAL)
-  // 1. Obtener reportes
-const { data: luminarias } = await supabaseClient
-  .from("reportes_vecinales")
-  .select("*")
-  .gte("fecha_reporte", inicio + "T00:00:00")
-  .lte("fecha_reporte", fin + "T23:59:59");
+  // 💡 LUMINARIAS (JOIN MANUAL SEGURO)
 
-// 2. IDs de luminarias
-const ids = [...new Set(luminarias.map(i => i.luminaria_id).filter(Boolean))];
-
-// 3. Traer control_luminarias
-const { data: control } = await supabaseClient
-  .from("control_luminarias")
-  .select("id, ubicacion_id")
-  .in("id", ids);
-
-// 4. IDs de ubicaciones
-const ubicIds = [...new Set(control.map(c => c.ubicacion_id).filter(Boolean))];
-
-// 5. Traer calles
-const { data: ubicaciones } = await supabaseClient
-  .from("ubicaciones")
-  .select("id, calle")
-  .in("id", ubicIds);
-
-// 6. Mapas
-const mapaControl = {};
-control.forEach(c => mapaControl[c.id] = c);
-
-const mapaUbic = {};
-ubicaciones.forEach(u => mapaUbic[u.id] = u);
-
-// 7. Construir registros
-luminarias.forEach(i => {
-
-  const controlData = mapaControl[i.luminaria_id];
-  const ubic = mapaUbic[controlData?.ubicacion_id];
-
-  registros.push({
-    tipo: "luminaria",
-    titulo: `Luminaria #${i.no_luminaria}`,
-    descripcion: i.descripcion,
-    hora: i.fecha_reporte,
-    calle: ubic?.calle || "-"
-  });
-
-});
+  const { data: luminarias } = await supabaseClient
+    .from("reportes_vecinales")
+    .select("*")
     .gte("fecha_reporte", inicio + "T00:00:00")
     .lte("fecha_reporte", fin + "T23:59:59");
 
-  luminarias?.forEach(i => {
+  const ids = [...new Set(
+    luminarias.map(i => i.luminaria_id).filter(Boolean)
+  )];
+
+  const { data: control } = await supabaseClient
+    .from("control_luminarias")
+    .select("id, ubicacion_id")
+    .in("id", ids);
+
+  const ubicIds = [...new Set(
+    control.map(c => c.ubicacion_id).filter(Boolean)
+  )];
+
+  const { data: ubicaciones } = await supabaseClient
+    .from("ubicaciones")
+    .select("id, calle")
+    .in("id", ubicIds);
+
+  const mapaControl = {};
+  control.forEach(c => mapaControl[c.id] = c);
+
+  const mapaUbic = {};
+  ubicaciones.forEach(u => mapaUbic[u.id] = u);
+
+  luminarias.forEach(i => {
+
+    const controlData = mapaControl[i.luminaria_id];
+    const ubic = mapaUbic[controlData?.ubicacion_id];
+
     registros.push({
       tipo: "luminaria",
       titulo: `Luminaria #${i.no_luminaria}`,
       descripcion: i.descripcion,
       hora: i.fecha_reporte,
-      calle: i.control_luminarias?.ubicaciones?.calle || "-"
+      calle: ubic?.calle || "-"
     });
+
   });
 
   // 🔢 KPIs
@@ -266,7 +257,7 @@ luminarias.forEach(i => {
   render("agua","💧 Agua");
   render("luminaria","💡 Luminarias");
 
-  document.getElementById("lista").innerHTML = html;
+  document.getElementById("lista").innerHTML = html || "Sin resultados";
 }
 
 </script>
