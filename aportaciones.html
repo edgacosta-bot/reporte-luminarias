@@ -103,9 +103,14 @@ let cambios = {};
 
 function obtenerColor(estado) {
   if (estado === 'corriente') return '#16a34a';
-  if (estado === 'atraso') return '#f59e0b';
+  if (estado === 'atraso_1') return '#f59e0b';
   if (estado === 'moroso') return '#dc2626';
   return '#6b7280';
+}
+
+function mapEstadoFrontend(estado) {
+  if (estado === 'atraso_1') return 'atraso';
+  return estado;
 }
 
 async function cargar() {
@@ -128,7 +133,6 @@ function render(data) {
   const contenedor = document.getElementById("contenedor");
   contenedor.innerHTML = "";
 
-  // ordenar correctamente
   data.sort((a, b) => {
     if (a.privada !== b.privada) {
       return a.privada.localeCompare(b.privada);
@@ -152,6 +156,8 @@ function render(data) {
 
     grupos[privada].forEach(r => {
 
+      const estadoUI = mapEstadoFrontend(r.estado_pago);
+
       const div = document.createElement("div");
       div.className = "lote";
       div.style.borderLeft = "6px solid " + obtenerColor(r.estado_pago);
@@ -160,9 +166,9 @@ function render(data) {
         <span>Lote ${r.casa}</span>
 
         <select onchange="cambiar('${r.id}', this.value)">
-          <option value="corriente" ${r.estado_pago === 'corriente' ? 'selected' : ''}>Corriente</option>
-          <option value="atraso" ${r.estado_pago === 'atraso' ? 'selected' : ''}>Atraso</option>
-          <option value="moroso" ${r.estado_pago === 'moroso' ? 'selected' : ''}>Moroso</option>
+          <option value="corriente" ${estadoUI === 'corriente' ? 'selected' : ''}>Corriente</option>
+          <option value="atraso" ${estadoUI === 'atraso' ? 'selected' : ''}>Atraso</option>
+          <option value="moroso" ${estadoUI === 'moroso' ? 'selected' : ''}>Moroso</option>
         </select>
       `;
 
