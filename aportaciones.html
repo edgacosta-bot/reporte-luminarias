@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Situación de aportaciones</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.lote {
+  background: #1e293b;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+select {
+  padding: 6px;
+  border-radius: 6px;
+  border: none;
+}
+
+.button {
+  display: block;
+  text-decoration: none;
+  padding: 16px;
+  border-radius: 14px;
+  margin-top: 15px;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  background: #2563eb;
+  text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+  <h2>💰 Situación de aportaciones</h2>
+</div>
+
+<div id="contenedor"></div>
+
+<a href="#" onclick="guardarCambios()" class="button">Guardar cambios</a>
+
+<a href="index.html" class="button" style="background:#6b7280;">Regresar</a>
+
+</div>
+
+<script>
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+// 🔒 PROTECCIÓN
+if (!localStorage.getItem("usuario_valido")) {
+  window.location.href = "login.html";
+}
+
+const rol = localStorage.getItem("rol");
+
+if (rol !== "admin") {
+  window.location.href = "index.html";
+}
+
+let cambios = {};
+
+function obtenerColor(estado) {
+  if (estado === 'corriente') return '#16a34a';
+  if (estado === 'atraso') return '#f59e0b';
+  if (estado === 'moroso') return '#dc2626';
+  return '#6b7280';
+}
+
+async function cargar() {
+  const { data, error } = await supabaseClient
+    .from('residentes')
+    .select('id, privada, casa, estado_pago')
+    .eq('tipo', 'residente')
+    .order('privada')
+    .order('casa');
+
+  if (error) {
+    alert('Error al cargar');
+    console.log(error);
+    return;
+  }
+
+  render(data);
+}
+
+function render(data) {
+  const contenedor = document.getElementById("contenedor");
+  contenedor.innerHTML = "";
+
+  const grupos = {};
+
+  data.forEach(r => {
+    if (!grupos[r.privada]) grupos[r.privada] = [];
+    grupos[r.privada].push(r);
+  });
+
+  for (const privada in grupos) {
+
+    const titulo = document.createElement("div");
+    titulo.className = "section-title";
+    titulo.innerText = "Privada " + privada;
+    contenedor.appendChild(titulo);
+
+    grupos[privada].forEach(r => {
+
+      const div = document.createElement("div");
+      div.className = "lote";
+      div.style.borderLeft = "6px solid " + obtenerColor(r.estado_pago);
+
+      div.innerHTML = `
+        <span>Casa ${r.casa}</span>
+
+        <select onchange="cambiar('${r.id}', this.value)">
+          <option value="corriente" ${r.estado_pago === 'corriente' ? 'selected' : ''}>Corriente</option>
+          <option value="atraso" ${r.estado_pago === 'atraso' ? 'selected' : ''}>Atraso</option>
+          <option value="moroso" ${r.estado_pago === 'moroso' ? 'selected' : ''}>Moroso</option>
+        </select>
+      `;
+
+      contenedor.appendChild(div);
+    });
+  }
+}
+
+function cambiar(id, estado) {
+  cambios[id] = estado;
+}
+
+async function guardarCambios() {
+  const lista = Object.keys(cambios).map(id => ({
+    id,
+    estado: cambios[id]
+  }));
+
+  if (lista.length === 0) {
+    alert("Sin cambios");
+    return;
+  }
+
+  const { error } = await supabaseClient.rpc(
+    'actualizar_estado_pago_masivo',
+    { cambios: lista }
+  );
+
+  if (error) {
+    alert("Error al guardar");
+    console.log(error);
+    return;
+  }
+
+  alert("Actualizado correctamente");
+  cambios = {};
+  cargar();
+}
+
+cargar();
+</script>
+
+</body>
+</html>
