@@ -1,83 +1,124 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reporte General</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte General</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 15px;
-      background: #f4f6f8;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f1f5f9;
+  color: #111827;
+}
 
-    h2 {
-      text-align: center;
-    }
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 15px;
+}
 
-    .filtros {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
+/* HEADER */
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
 
-    input, button {
-      padding: 8px;
-      font-size: 14px;
-    }
+.header h2 {
+  margin: 0;
+}
 
-    button {
-      background: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
+.header span {
+  font-size: 13px;
+  color: #6b7280;
+}
 
-    .kpis {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 15px;
-      gap: 10px;
-    }
+/* FILTROS */
+.filtros {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
 
-    .kpi {
-      flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      color: white;
-      text-align: center;
-      font-weight: bold;
-    }
+.filtros input {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+}
 
-    .incidencia { background: #dc3545; }
-    .agua { background: #ffc107; color: black; }
-    .luminaria { background: #0d6efd; }
-    .total { background: #6c757d; }
+.filtros button {
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  font-weight: bold;
+}
 
-    .item {
-      background: white;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      border-left: 6px solid;
-    }
+/* KPIs */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
 
-    .item.incidencia { border-color: #dc3545; }
-    .item.agua { border-color: #ffc107; }
-    .item.luminaria { border-color: #0d6efd; }
+.kpi {
+  padding: 15px;
+  border-radius: 14px;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+}
 
-    .hora {
-      font-size: 12px;
-      color: gray;
-    }
-  </style>
+.kpi span {
+  display: block;
+  font-size: 22px;
+}
+
+.incidencia { background: #dc2626; }
+.agua { background: #f59e0b; color: black; }
+.luminaria { background: #2563eb; }
+.total { background: #374151; }
+
+/* LISTA */
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item {
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  border-left: 5px solid;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.item.incidencia { border-color: #dc2626; }
+.item.agua { border-color: #f59e0b; }
+.item.luminaria { border-color: #2563eb; }
+
+.hora {
+  font-size: 12px;
+  color: gray;
+}
+</style>
 </head>
+
 <body>
 
-<h2>📊 Reporte General</h2>
+<div class="container">
+
+<div class="header">
+  <h2>📊 Reporte General</h2>
+  <span id="tituloFecha"></span>
+</div>
 
 <div class="filtros">
   <input type="date" id="fecha">
@@ -85,145 +126,156 @@
 </div>
 
 <div class="kpis">
-  <div class="kpi incidencia" id="kpiIncidencias">0 Incidencias</div>
-  <div class="kpi agua" id="kpiAgua">0 Agua</div>
-  <div class="kpi luminaria" id="kpiLuminarias">0 Luminarias</div>
-  <div class="kpi total" id="kpiTotal">0 Total</div>
+  <div class="kpi incidencia"><span id="kpiInc">0</span>Incidencias</div>
+  <div class="kpi agua"><span id="kpiAgua">0</span>Agua</div>
+  <div class="kpi luminaria"><span id="kpiLum">0</span>Luminarias</div>
+  <div class="kpi total"><span id="kpiTotal">0</span>Total</div>
 </div>
 
-<div id="resultado"></div>
+<div id="resultado" class="lista"></div>
+
+</div>
 
 <script>
-  // 🔐 CONFIGURA ESTO
-  const SUPABASE_URL = "https://prjxmfhahnzosdwljode.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs";
+const supabase = window.supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
 
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// 🔐 PROTECCIÓN
+if (localStorage.getItem("rol") !== "admin") {
+  window.location.href = "index.html";
+}
 
-  function protegerPagina(rolesPermitidos) {
-    const rol = localStorage.getItem("rol");
-    if (!rolesPermitidos.includes(rol)) {
-      alert("Acceso denegado");
-      window.location.href = "index.html";
-    }
+async function cargarReporte() {
+  const fecha = document.getElementById("fecha").value;
+
+  if (!fecha) {
+    alert("Selecciona fecha");
+    return;
   }
 
-  protegerPagina(["admin"]);
+  document.getElementById("tituloFecha").innerText = "Eventos del " + fecha;
 
-  async function cargarReporte() {
-    const fecha = document.getElementById("fecha").value;
+  const inicio = fecha + " 00:00:00";
+  const fin = fecha + " 23:59:59";
 
-    if (!fecha) {
-      alert("Selecciona una fecha");
-      return;
+  document.getElementById("resultado").innerHTML = "Cargando...";
+
+  try {
+    const [
+      { data: incTrab },
+      { data: incVec },
+      { data: luminarias },
+      { data: agua }
+    ] = await Promise.all([
+
+      supabase.from("incidencias_trabajadores")
+        .select("*")
+        .gte("fecha_local", inicio)
+        .lte("fecha_local", fin),
+
+      supabase.from("incidencias_vecinales")
+        .select("*")
+        .gte("fecha_local", inicio)
+        .lte("fecha_local", fin),
+
+      supabase.from("reportes_vecinales")
+        .select("*")
+        .gte("fecha_reporte", inicio)
+        .lte("fecha_reporte", fin),
+
+      supabase.from("reportes_agua_caasim")
+        .select("*")
+        .eq("fecha_reporte", fecha)
+
+    ]);
+
+    let registros = [];
+
+    incTrab.forEach(i => {
+      registros.push({
+        tipo: "incidencia",
+        titulo: "Incidencia trabajador",
+        descripcion: i.descripcion,
+        privada: "-",
+        casa: "-",
+        hora: i.fecha_local?.split(" ")[1] || "--"
+      });
+    });
+
+    incVec.forEach(i => {
+      registros.push({
+        tipo: "incidencia",
+        titulo: "Incidencia vecinal",
+        descripcion: i.descripcion,
+        privada: i.privada,
+        casa: i.casa,
+        hora: i.fecha_local?.split(" ")[1] || "--"
+      });
+    });
+
+    luminarias.forEach(r => {
+      registros.push({
+        tipo: "luminaria",
+        titulo: "Luminaria",
+        descripcion: r.descripcion,
+        privada: r.privada,
+        casa: r.casa,
+        hora: r.fecha_reporte?.split("T")[1]?.substring(0,5) || "--"
+      });
+    });
+
+    agua.forEach(r => {
+      registros.push({
+        tipo: "agua",
+        titulo: "Reporte agua",
+        descripcion: r.tipo_falla,
+        privada: r.privada || "N/A",
+        casa: r.numero_exterior || "-",
+        hora: "--"
+      });
+    });
+
+    registros.sort((a,b)=> b.hora.localeCompare(a.hora));
+
+    // KPIs
+    document.getElementById("kpiInc").innerText =
+      registros.filter(r=>r.tipo==="incidencia").length;
+
+    document.getElementById("kpiAgua").innerText =
+      registros.filter(r=>r.tipo==="agua").length;
+
+    document.getElementById("kpiLum").innerText =
+      registros.filter(r=>r.tipo==="luminaria").length;
+
+    document.getElementById("kpiTotal").innerText = registros.length;
+
+    // Render
+    let html = "";
+
+    registros.forEach(r => {
+      html += `
+        <div class="item ${r.tipo}">
+          <strong>${r.titulo}</strong><br>
+          <div class="hora">${r.hora}</div>
+          ${r.privada} - Casa ${r.casa}<br>
+          ${r.descripcion}
+        </div>
+      `;
+    });
+
+    if (registros.length === 0) {
+      html = "<p>No hay registros para esta fecha</p>";
     }
 
-    document.getElementById("resultado").innerHTML = "Cargando...";
+    document.getElementById("resultado").innerHTML = html;
 
-    try {
-      const [
-        { data: incTrab },
-        { data: incVec },
-        { data: luminarias },
-        { data: agua }
-      ] = await Promise.all([
-        supabase.from("incidencias_trabajadores").select("*").eq("fecha_local", fecha),
-        supabase.from("incidencias_vecinales").select("*").eq("fecha_local", fecha),
-        supabase.from("reportes_vecinales").select("*").eq("fecha_local", fecha),
-        supabase.from("reportes_agua_caasim").select("*").eq("fecha_local", fecha)
-      ]);
-
-      let registros = [];
-
-      // 🔴 Incidencias trabajadores
-      incTrab.forEach(i => {
-        registros.push({
-          tipo: "incidencia",
-          titulo: "Incidencia trabajador",
-          descripcion: i.descripcion,
-          privada: i.privada || "-",
-          casa: i.casa || "-",
-          hora: i.hora || "00:00"
-        });
-      });
-
-      // 🔴 Incidencias vecinales
-      incVec.forEach(i => {
-        registros.push({
-          tipo: "incidencia",
-          titulo: "Incidencia vecinal",
-          descripcion: i.descripcion,
-          privada: i.privada,
-          casa: i.casa,
-          hora: i.hora || "00:00"
-        });
-      });
-
-      // 🔵 Luminarias
-      luminarias.forEach(r => {
-        registros.push({
-          tipo: "luminaria",
-          titulo: "Luminaria",
-          descripcion: r.descripcion,
-          privada: r.privada,
-          casa: r.casa,
-          hora: r.hora || "00:00"
-        });
-      });
-
-      // 🟡 Agua
-      agua.forEach(r => {
-        registros.push({
-          tipo: "agua",
-          titulo: "Reporte agua",
-          descripcion: r.descripcion,
-          privada: r.privada,
-          casa: r.numero_exterior || "-",
-          hora: r.hora || "00:00"
-        });
-      });
-
-      // 🔄 Ordenar por hora DESC
-      registros.sort((a, b) => b.hora.localeCompare(a.hora));
-
-      // 📊 KPIs
-      document.getElementById("kpiIncidencias").innerText =
-        registros.filter(r => r.tipo === "incidencia").length + " Incidencias";
-
-      document.getElementById("kpiAgua").innerText =
-        registros.filter(r => r.tipo === "agua").length + " Agua";
-
-      document.getElementById("kpiLuminarias").innerText =
-        registros.filter(r => r.tipo === "luminaria").length + " Luminarias";
-
-      document.getElementById("kpiTotal").innerText =
-        registros.length + " Total";
-
-      // 🖥 Render
-      let html = "";
-
-      registros.forEach(r => {
-        html += `
-          <div class="item ${r.tipo}">
-            <strong>${r.titulo}</strong><br>
-            <div class="hora">${r.hora}</div>
-            ${r.privada} - Casa ${r.casa}<br>
-            ${r.descripcion}
-          </div>
-        `;
-      });
-
-      if (registros.length === 0) {
-        html = "<p>No hay registros para esta fecha</p>";
-      }
-
-      document.getElementById("resultado").innerHTML = html;
-
-    } catch (error) {
-      console.error(error);
-      alert("Error al cargar datos");
-    }
+  } catch (err) {
+    console.error(err);
+    alert("Error al cargar datos");
   }
+}
 </script>
 
 </body>
