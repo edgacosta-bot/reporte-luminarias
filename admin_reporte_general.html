@@ -39,7 +39,7 @@ body {
 /* FILTROS */
 .filtros {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 20px;
 }
 
@@ -51,7 +51,7 @@ body {
 }
 
 .filtros button {
-  padding: 12px 16px;
+  padding: 12px;
   border-radius: 10px;
   border: none;
   background: #2563eb;
@@ -121,7 +121,8 @@ body {
 </div>
 
 <div class="filtros">
-  <input type="date" id="fecha">
+  <input type="date" id="fechaInicio">
+  <input type="date" id="fechaFin">
   <button onclick="cargarReporte()">Consultar</button>
 </div>
 
@@ -148,21 +149,25 @@ if (localStorage.getItem("rol") !== "admin") {
 }
 
 async function cargarReporte() {
-  const fecha = document.getElementById("fecha").value;
 
-  if (!fecha) {
-    alert("Selecciona fecha");
+  const fechaInicio = document.getElementById("fechaInicio").value;
+  const fechaFin = document.getElementById("fechaFin").value;
+
+  if (!fechaInicio || !fechaFin) {
+    alert("Selecciona rango de fechas");
     return;
   }
 
-  document.getElementById("tituloFecha").innerText = "Eventos del " + fecha;
+  document.getElementById("tituloFecha").innerText =
+    `Del ${fechaInicio} al ${fechaFin}`;
 
-  const inicio = fecha + " 00:00:00";
-  const fin = fecha + " 23:59:59";
+  const inicio = fechaInicio + " 00:00:00";
+  const fin = fechaFin + " 23:59:59";
 
   document.getElementById("resultado").innerHTML = "Cargando...";
 
   try {
+
     const [
       { data: incTrab },
       { data: incVec },
@@ -187,12 +192,14 @@ async function cargarReporte() {
 
       supabase.from("reportes_agua_caasim")
         .select("*")
-        .eq("fecha_reporte", fecha)
+        .gte("fecha_reporte", fechaInicio)
+        .lte("fecha_reporte", fechaFin)
 
     ]);
 
     let registros = [];
 
+    // 🔴 Incidencias trabajadores
     incTrab.forEach(i => {
       registros.push({
         tipo: "incidencia",
@@ -200,32 +207,35 @@ async function cargarReporte() {
         descripcion: i.descripcion,
         privada: "-",
         casa: "-",
-        hora: i.fecha_local?.split(" ")[1] || "--"
+        hora: i.fecha_local?.split(" ")[1]?.substring(0,5) || "--"
       });
     });
 
+    // 🔴 Incidencias vecinales
     incVec.forEach(i => {
       registros.push({
         tipo: "incidencia",
         titulo: "Incidencia vecinal",
         descripcion: i.descripcion,
-        privada: i.privada,
-        casa: i.casa,
-        hora: i.fecha_local?.split(" ")[1] || "--"
+        privada: i.privada || "-",
+        casa: i.casa || "-",
+        hora: i.fecha_local?.split(" ")[1]?.substring(0,5) || "--"
       });
     });
 
+    // 🔵 Luminarias
     luminarias.forEach(r => {
       registros.push({
         tipo: "luminaria",
         titulo: "Luminaria",
         descripcion: r.descripcion,
-        privada: r.privada,
-        casa: r.casa,
+        privada: r.privada || "-",
+        casa: r.casa || "-",
         hora: r.fecha_reporte?.split("T")[1]?.substring(0,5) || "--"
       });
     });
 
+    // 🟡 Agua
     agua.forEach(r => {
       registros.push({
         tipo: "agua",
@@ -237,21 +247,22 @@ async function cargarReporte() {
       });
     });
 
-    registros.sort((a,b)=> b.hora.localeCompare(a.hora));
+    // 🔄 ORDEN
+    registros.sort((a, b) => b.hora.localeCompare(a.hora));
 
     // KPIs
     document.getElementById("kpiInc").innerText =
-      registros.filter(r=>r.tipo==="incidencia").length;
+      registros.filter(r => r.tipo === "incidencia").length;
 
     document.getElementById("kpiAgua").innerText =
-      registros.filter(r=>r.tipo==="agua").length;
+      registros.filter(r => r.tipo === "agua").length;
 
     document.getElementById("kpiLum").innerText =
-      registros.filter(r=>r.tipo==="luminaria").length;
+      registros.filter(r => r.tipo === "luminaria").length;
 
     document.getElementById("kpiTotal").innerText = registros.length;
 
-    // Render
+    // RENDER
     let html = "";
 
     registros.forEach(r => {
@@ -266,13 +277,13 @@ async function cargarReporte() {
     });
 
     if (registros.length === 0) {
-      html = "<p>No hay registros para esta fecha</p>";
+      html = "<p>No hay registros en este rango</p>";
     }
 
     document.getElementById("resultado").innerHTML = html;
 
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error(error);
     alert("Error al cargar datos");
   }
 }
