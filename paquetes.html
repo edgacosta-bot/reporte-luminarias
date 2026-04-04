@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recepción de paquetes</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.item {
+  background: #1e293b;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background: #22c55e;
+  color: white;
+  cursor: pointer;
+}
+
+.button-sec {
+  display: block;
+  text-decoration: none;
+  padding: 16px;
+  border-radius: 14px;
+  margin-top: 15px;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  background: #6b7280;
+  text-align: center;
+}
+
+/* MODAL */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: #1e293b;
+  padding: 25px;
+  border-radius: 16px;
+  text-align: center;
+  width: 80%;
+  max-width: 300px;
+}
+
+.modal-content button {
+  margin-top: 15px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background: #22c55e;
+  color: white;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+  <h2>📦 Recepción de paquetes</h2>
+</div>
+
+<div id="contenedor"></div>
+
+<a href="index.html" class="button-sec">Regresar</a>
+
+</div>
+
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitulo"></h3>
+    <p id="modalTexto"></p>
+    <button onclick="cerrarModal()">Aceptar</button>
+  </div>
+</div>
+
+<script>
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+// PROTECCIÓN
+if (!localStorage.getItem("usuario_valido")) {
+  window.location.href = "login.html";
+}
+
+const rol = localStorage.getItem("rol");
+
+if (rol !== "vigilante") {
+  window.location.href = "index.html";
+}
+
+function mostrarModal(titulo, texto) {
+  document.getElementById("modalTitulo").innerText = titulo;
+  document.getElementById("modalTexto").innerText = texto;
+  document.getElementById("modal").style.display = "flex";
+}
+
+function cerrarModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+async function cargar() {
+  const { data, error } = await supabaseClient
+    .from('residentes')
+    .select('id, nombre, privada, casa, telefono')
+    .eq('tipo', 'residente')
+    .eq('recibe_paquetes', true)
+    .in('estado_pago', ['corriente','atraso_1'])
+    .order('privada');
+
+  if (error) {
+    mostrarModal("Error", "No se pudo cargar");
+    console.log(error);
+    return;
+  }
+
+  render(data);
+}
+
+function render(data) {
+  const contenedor = document.getElementById("contenedor");
+  contenedor.innerHTML = "";
+
+  data.sort((a, b) => {
+    if (a.privada !== b.privada) {
+      return a.privada.localeCompare(b.privada);
+    }
+    return parseInt(a.casa) - parseInt(b.casa);
+  });
+
+  data.forEach(r => {
+    const div = document.createElement("div");
+    div.className = "item";
+
+    div.innerHTML = `
+      <span>Privada ${r.privada} - Lote ${r.casa}</span>
+      <button class="button" onclick="registrar('${r.id}', '${r.privada}', '${r.casa}', '${r.telefono}')">
+        Registrar
+      </button>
+    `;
+
+    contenedor.appendChild(div);
+  });
+}
+
+async function registrar(id, privada, casa, telefono) {
+
+  const { error } = await supabaseClient.from('paquetes').insert({
+    residente_id: id,
+    privada: privada,
+    casa: casa
+  });
+
+  if (error) {
+    mostrarModal("Error", "No se pudo registrar");
+    console.log(error);
+    return;
+  }
+
+  if (telefono) {
+    const mensaje = encodeURIComponent(
+      "Tienes un paquete en caseta. Recógelo hoy o mañana será entregado a administración."
+    );
+
+    window.open(`https://wa.me/52${telefono}?text=${mensaje}`, '_blank');
+  }
+
+  mostrarModal("Listo", "Paquete registrado");
+}
+
+cargar();
+</script>
+
+</body>
+</html>
