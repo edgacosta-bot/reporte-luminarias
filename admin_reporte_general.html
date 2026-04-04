@@ -127,7 +127,6 @@ const supabaseClient = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-// 🔐 Protección
 if (localStorage.getItem("rol") !== "admin") {
   window.location.href = "index.html";
 }
@@ -144,7 +143,7 @@ async function cargarReporte() {
 
   let registros = [];
 
-  // 🔴 INCIDENCIAS VECINALES
+  // 🔴 INCIDENCIAS
   const { data: incVec } = await supabaseClient
     .from("incidencias_vecinales")
     .select("*")
@@ -162,32 +161,29 @@ async function cargarReporte() {
     });
   });
 
-  // 🔵 LUMINARIAS (JOIN MANUAL CORRECTO)
+  // 🔵 LUMINARIAS (igual que tienes ahora)
   const { data: luminarias } = await supabaseClient
-  .from("vista_reportes_luminarias")
-  .select("*")
-  .gte("fecha_reporte", fechaInicio + "T00:00:00")
-  .lte("fecha_reporte", fechaFin + "T23:59:59");
+    .from("reportes_vecinales")
+    .select("*")
+    .gte("fecha_reporte", fechaInicio + "T00:00:00")
+    .lte("fecha_reporte", fechaFin + "T23:59:59");
 
-luminarias.forEach(i => {
-  registros.push({
-    tipo: "luminaria",
-    titulo: `Luminaria #${i.no_luminaria}`,
-    descripcion: i.descripcion,
-    hora: i.fecha_reporte,
-    privada: i.privada || i.privada_ubicacion || "-",
-    casa: i.casa || "-",
-    extra: "Calle: " + (i.calle || "-")
+  luminarias.forEach(i => {
+    registros.push({
+      tipo: "luminaria",
+      titulo: `Luminaria #${i.no_luminaria}`,
+      descripcion: i.descripcion,
+      hora: i.fecha_reporte,
+      privada: i.privada || "-",
+      casa: i.casa || "-",
+      extra: "" // lo que ya tengas para calle
+    });
   });
-});
 
   // 💧 AGUA
   const { data: agua } = await supabaseClient
     .from("reportes_agua_caasim")
-    .select(`
-      *,
-      ubicaciones (calle)
-    `)
+    .select("*")
     .gte("fecha_registro", fechaInicio + "T00:00:00")
     .lte("fecha_registro", fechaFin + "T23:59:59");
 
@@ -198,15 +194,12 @@ luminarias.forEach(i => {
       descripcion: i.tipo_falla,
       hora: i.fecha_registro,
       privada: i.privada || "N/A",
-      casa: i.numero_exterior || "-",
-      extra: "Calle: " + (i.ubicaciones?.calle || "-")
+      casa: i.numero_exterior || "-"
     });
   });
 
-  // 🔄 ORDEN
   registros.sort((a,b)=> new Date(b.hora) - new Date(a.hora));
 
-  // KPIs
   document.getElementById("kpiInc").innerText =
     registros.filter(r=>r.tipo==="incidencia").length + " Incidencias";
 
@@ -232,7 +225,11 @@ luminarias.forEach(i => {
         <div class="item ${tipo}">
           <strong>${r.titulo}</strong><br>
           <div class="hora">${new Date(r.hora).toLocaleString("es-MX")}</div>
-          <div><b>Origen: ${r.privada}-${r.casa}</b></div>
+
+          ${tipo !== "luminaria" 
+            ? `<div><b>Origen: ${r.privada}-${r.casa}</b></div>` 
+            : ""}
+
           ${r.extra ? `<div>${r.extra}</div>` : ""}
           ${r.descripcion}
         </div>
