@@ -81,6 +81,7 @@ h3 {
   color: #374151;
 }
 
+/* LISTA */
 .item {
   background: white;
   padding: 14px;
@@ -107,10 +108,10 @@ h3 {
 <h2>📊 Reporte General</h2>
 
 <div class="filtros">
-  <div class="label">Fecha inicio</div>
+  <div class="label">Selecciona fecha inicio</div>
   <input type="date" id="fechaInicio">
 
-  <div class="label">Fecha fin</div>
+  <div class="label">Selecciona fecha fin</div>
   <input type="date" id="fechaFin">
 
   <button onclick="cargarReporte()">Consultar</button>
@@ -133,6 +134,7 @@ const supabaseClient = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
+// 🔐 Protección
 if (localStorage.getItem("rol") !== "admin") {
   window.location.href = "index.html";
 }
@@ -191,10 +193,20 @@ async function cargarReporte() {
     });
   });
 
-  // 🔵 LUMINARIAS
+  // 🔵 LUMINARIAS (JOIN COMPLETO)
   const { data: luminarias } = await supabaseClient
     .from("reportes_vecinales")
-    .select("*")
+    .select(`
+      *,
+      control_luminarias (
+        id,
+        ubicacion_id,
+        ubicaciones (
+          privada,
+          calle
+        )
+      )
+    `)
     .gte("fecha_reporte", fechaInicio + "T00:00:00")
     .lte("fecha_reporte", fechaFin + "T23:59:59");
 
@@ -206,14 +218,22 @@ async function cargarReporte() {
       hora: i.fecha_reporte,
       privada: i.privada || "-",
       casa: i.casa || "-",
-      extra: "Calle: " + (i.luminaria_id || "-")
+      extra: "Calle: " + (
+        i.control_luminarias?.ubicaciones?.calle || "-"
+      )
     });
   });
 
-  // 💧 AGUA
+  // 💧 AGUA (JOIN)
   const { data: agua } = await supabaseClient
     .from("reportes_agua_caasim")
-    .select("*")
+    .select(`
+      *,
+      ubicaciones (
+        privada,
+        calle
+      )
+    `)
     .gte("fecha_registro", fechaInicio + "T00:00:00")
     .lte("fecha_registro", fechaFin + "T23:59:59");
 
@@ -225,10 +245,11 @@ async function cargarReporte() {
       hora: i.fecha_registro,
       privada: i.privada || "N/A",
       casa: i.numero_exterior || "-",
-      extra: "Calle ID: " + (i.calle_id || "-")
+      extra: "Calle: " + (i.ubicaciones?.calle || "-")
     });
   });
 
+  // 🔄 ORDEN
   registros.sort((a,b)=> new Date(b.hora) - new Date(a.hora));
 
   // KPIs
@@ -244,6 +265,7 @@ async function cargarReporte() {
   document.getElementById("kpiTotal").innerText =
     registros.length + " Total";
 
+  // 🧩 RENDER AGRUPADO
   let html = "";
 
   const renderGrupo = (titulo, tipo) => {
