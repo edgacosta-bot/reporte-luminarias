@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reporte General</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 15px;
+      background: #f4f6f8;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    .filtros {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    input, button {
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .kpis {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      gap: 10px;
+    }
+
+    .kpi {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      color: white;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .incidencia { background: #dc3545; }
+    .agua { background: #ffc107; color: black; }
+    .luminaria { background: #0d6efd; }
+    .total { background: #6c757d; }
+
+    .item {
+      background: white;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border-left: 6px solid;
+    }
+
+    .item.incidencia { border-color: #dc3545; }
+    .item.agua { border-color: #ffc107; }
+    .item.luminaria { border-color: #0d6efd; }
+
+    .hora {
+      font-size: 12px;
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+
+<h2>📊 Reporte General</h2>
+
+<div class="filtros">
+  <input type="date" id="fecha">
+  <button onclick="cargarReporte()">Consultar</button>
+</div>
+
+<div class="kpis">
+  <div class="kpi incidencia" id="kpiIncidencias">0 Incidencias</div>
+  <div class="kpi agua" id="kpiAgua">0 Agua</div>
+  <div class="kpi luminaria" id="kpiLuminarias">0 Luminarias</div>
+  <div class="kpi total" id="kpiTotal">0 Total</div>
+</div>
+
+<div id="resultado"></div>
+
+<script>
+  // 🔐 CONFIGURA ESTO
+  const SUPABASE_URL = "https://prjxmfhahnzosdwljode.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs";
+
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  function protegerPagina(rolesPermitidos) {
+    const rol = localStorage.getItem("rol");
+    if (!rolesPermitidos.includes(rol)) {
+      alert("Acceso denegado");
+      window.location.href = "index.html";
+    }
+  }
+
+  protegerPagina(["admin"]);
+
+  async function cargarReporte() {
+    const fecha = document.getElementById("fecha").value;
+
+    if (!fecha) {
+      alert("Selecciona una fecha");
+      return;
+    }
+
+    document.getElementById("resultado").innerHTML = "Cargando...";
+
+    try {
+      const [
+        { data: incTrab },
+        { data: incVec },
+        { data: luminarias },
+        { data: agua }
+      ] = await Promise.all([
+        supabase.from("incidencias_trabajadores").select("*").eq("fecha_local", fecha),
+        supabase.from("incidencias_vecinales").select("*").eq("fecha_local", fecha),
+        supabase.from("reportes_vecinales").select("*").eq("fecha_local", fecha),
+        supabase.from("reportes_agua_caasim").select("*").eq("fecha_local", fecha)
+      ]);
+
+      let registros = [];
+
+      // 🔴 Incidencias trabajadores
+      incTrab.forEach(i => {
+        registros.push({
+          tipo: "incidencia",
+          titulo: "Incidencia trabajador",
+          descripcion: i.descripcion,
+          privada: i.privada || "-",
+          casa: i.casa || "-",
+          hora: i.hora || "00:00"
+        });
+      });
+
+      // 🔴 Incidencias vecinales
+      incVec.forEach(i => {
+        registros.push({
+          tipo: "incidencia",
+          titulo: "Incidencia vecinal",
+          descripcion: i.descripcion,
+          privada: i.privada,
+          casa: i.casa,
+          hora: i.hora || "00:00"
+        });
+      });
+
+      // 🔵 Luminarias
+      luminarias.forEach(r => {
+        registros.push({
+          tipo: "luminaria",
+          titulo: "Luminaria",
+          descripcion: r.descripcion,
+          privada: r.privada,
+          casa: r.casa,
+          hora: r.hora || "00:00"
+        });
+      });
+
+      // 🟡 Agua
+      agua.forEach(r => {
+        registros.push({
+          tipo: "agua",
+          titulo: "Reporte agua",
+          descripcion: r.descripcion,
+          privada: r.privada,
+          casa: r.numero_exterior || "-",
+          hora: r.hora || "00:00"
+        });
+      });
+
+      // 🔄 Ordenar por hora DESC
+      registros.sort((a, b) => b.hora.localeCompare(a.hora));
+
+      // 📊 KPIs
+      document.getElementById("kpiIncidencias").innerText =
+        registros.filter(r => r.tipo === "incidencia").length + " Incidencias";
+
+      document.getElementById("kpiAgua").innerText =
+        registros.filter(r => r.tipo === "agua").length + " Agua";
+
+      document.getElementById("kpiLuminarias").innerText =
+        registros.filter(r => r.tipo === "luminaria").length + " Luminarias";
+
+      document.getElementById("kpiTotal").innerText =
+        registros.length + " Total";
+
+      // 🖥 Render
+      let html = "";
+
+      registros.forEach(r => {
+        html += `
+          <div class="item ${r.tipo}">
+            <strong>${r.titulo}</strong><br>
+            <div class="hora">${r.hora}</div>
+            ${r.privada} - Casa ${r.casa}<br>
+            ${r.descripcion}
+          </div>
+        `;
+      });
+
+      if (registros.length === 0) {
+        html = "<p>No hay registros para esta fecha</p>";
+      }
+
+      document.getElementById("resultado").innerHTML = html;
+
+    } catch (error) {
+      console.error(error);
+      alert("Error al cargar datos");
+    }
+  }
+</script>
+
+</body>
+</html>
