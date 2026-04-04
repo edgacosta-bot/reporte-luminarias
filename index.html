@@ -75,7 +75,9 @@ h1 {
 <div id="reportes-section">
   <div class="section-title">REPORTES</div>
 
-  <a href="reportes.html" class="button seguridad">🚨 Ir a reportes</a>
+  <a href="#" onclick="irAReportes()" id="btnReportes" class="button seguridad">
+    🚨 Ir a reportes
+  </a>
 </div>
 
 <!-- 🔹 SERVICIOS -->
@@ -126,13 +128,15 @@ if (!localStorage.getItem("usuario_valido")) {
 // 🎯 ROLES
 const rol = localStorage.getItem("rol");
 
+// ELEMENTOS
 const adminSection = document.getElementById("admin-section");
 const vigilanteSection = document.getElementById("vigilante-section");
 const colonoSection = document.getElementById("colono-section");
 const infraestructuraSection = document.getElementById("infraestructura-section");
 const serviciosSection = document.getElementById("servicios-section");
+const btnReportes = document.getElementById("btnReportes");
 
-// 🔒 ADMIN → VE TODO
+// 🔒 VISTAS POR ROL
 
 // 🛡 VIGILANTE → SOLO SEGURIDAD
 if (rol === "vigilante") {
@@ -146,6 +150,20 @@ if (rol === "vigilante") {
 if (rol === "colono") {
   if (adminSection) adminSection.style.display = "none";
   if (vigilanteSection) vigilanteSection.style.display = "none";
+}
+
+// 👨‍💼 ADMIN → CAMBIO DE TEXTO EN BOTÓN
+if (rol === "admin") {
+  btnReportes.innerText = "📊 Reporte general";
+}
+
+// 🔀 REDIRECCIÓN INTELIGENTE
+function irAReportes() {
+  if (rol === "admin") {
+    window.location.href = "admin_reporte_general.html";
+  } else {
+    window.location.href = "reportes.html";
+  }
 }
 
 </script>
