@@ -164,51 +164,22 @@ async function cargarReporte() {
 
   // 🔵 LUMINARIAS (JOIN MANUAL CORRECTO)
   const { data: luminarias } = await supabaseClient
-    .from("reportes_vecinales")
-    .select("*")
-    .gte("fecha_reporte", fechaInicio + "T00:00:00")
-    .lte("fecha_reporte", fechaFin + "T23:59:59");
+  .from("vista_reportes_luminarias")
+  .select("*")
+  .gte("fecha_reporte", fechaInicio + "T00:00:00")
+  .lte("fecha_reporte", fechaFin + "T23:59:59");
 
-  const ids = [...new Set(
-    luminarias.map(i => Number(i.luminaria_id)).filter(Boolean)
-  )];
-
-  const { data: control } = await supabaseClient
-    .from("control_luminarias")
-    .select("id, ubicacion_id")
-    .in("id", ids);
-
-  const ubicIds = [...new Set(
-    control.map(c => Number(c.ubicacion_id)).filter(Boolean)
-  )];
-
-  const { data: ubicaciones } = await supabaseClient
-    .from("ubicaciones")
-    .select("id, calle, privada")
-    .in("id", ubicIds);
-
-  const mapaControl = {};
-  control.forEach(c => mapaControl[Number(c.id)] = c);
-
-  const mapaUbicacion = {};
-  ubicaciones.forEach(u => mapaUbicacion[Number(u.id)] = u);
-
-  luminarias.forEach(i => {
-
-    const controlData = mapaControl[Number(i.luminaria_id)];
-    const ubic = mapaUbicacion[Number(controlData?.ubicacion_id)];
-
-    registros.push({
-      tipo: "luminaria",
-      titulo: `Luminaria #${i.no_luminaria}`,
-      descripcion: i.descripcion,
-      hora: i.fecha_reporte,
-      privada: i.privada || ubic?.privada || "-",
-      casa: i.casa || "-",
-      extra: "Calle: " + (ubic?.calle || "-")
-    });
-
+luminarias.forEach(i => {
+  registros.push({
+    tipo: "luminaria",
+    titulo: `Luminaria #${i.no_luminaria}`,
+    descripcion: i.descripcion,
+    hora: i.fecha_reporte,
+    privada: i.privada || i.privada_ubicacion || "-",
+    casa: i.casa || "-",
+    extra: "Calle: " + (i.calle || "-")
   });
+});
 
   // 💧 AGUA
   const { data: agua } = await supabaseClient
