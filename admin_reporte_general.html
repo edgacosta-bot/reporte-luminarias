@@ -165,43 +165,56 @@ async function cargarReporte() {
     });
   });
 
-  // 🔵 LUMINARIAS (JOIN MANUAL)
-  const { data: luminarias } = await supabaseClient
-    .from("reportes_vecinales")
-    .select("*")
-    .gte("fecha_reporte", fechaInicio + "T00:00:00")
-    .lte("fecha_reporte", fechaFin + "T23:59:59");
+  // 🔵 LUMINARIAS (VERSIÓN CORRECTA Y EFICIENTE)
 
-  const { data: control } = await supabaseClient
-    .from("control_luminarias")
-    .select("id, ubicacion_id");
+const { data: luminarias } = await supabaseClient
+  .from("reportes_vecinales")
+  .select("*")
+  .gte("fecha_reporte", fechaInicio + "T00:00:00")
+  .lte("fecha_reporte", fechaFin + "T23:59:59");
 
-  const { data: ubicaciones } = await supabaseClient
-    .from("ubicaciones")
-    .select("id, calle, privada");
+// 1. IDs reales usados
+const ids = [...new Set(luminarias.map(i => i.luminaria_id).filter(Boolean))];
 
-  const mapaControl = {};
-  control.forEach(c => mapaControl[c.id] = c);
+// 2. traer SOLO esas luminarias
+const { data: control } = await supabaseClient
+  .from("control_luminarias")
+  .select("id, ubicacion_id")
+  .in("id", ids);
 
-  const mapaUbicacion = {};
-  ubicaciones.forEach(u => mapaUbicacion[u.id] = u);
+// 3. ids de ubicaciones
+const ubicIds = [...new Set(control.map(c => c.ubicacion_id).filter(Boolean))];
 
-  luminarias.forEach(i => {
+// 4. traer SOLO esas ubicaciones
+const { data: ubicaciones } = await supabaseClient
+  .from("ubicaciones")
+  .select("id, calle, privada")
+  .in("id", ubicIds);
 
-    const controlData = mapaControl[i.luminaria_id];
-    const ubic = mapaUbicacion[controlData?.ubicacion_id];
+// 5. mapas
+const mapaControl = {};
+control.forEach(c => mapaControl[c.id] = c);
 
-    registros.push({
-      tipo: "luminaria",
-      titulo: `Luminaria #${i.no_luminaria}`,
-      descripcion: i.descripcion,
-      hora: i.fecha_reporte,
-      privada: i.privada || ubic?.privada || "-",
-      casa: i.casa || "-",
-      extra: "Calle: " + (ubic?.calle || "-")
-    });
+const mapaUbicacion = {};
+ubicaciones.forEach(u => mapaUbicacion[u.id] = u);
 
+// 6. construir resultado
+luminarias.forEach(i => {
+
+  const controlData = mapaControl[i.luminaria_id];
+  const ubic = mapaUbicacion[controlData?.ubicacion_id];
+
+  registros.push({
+    tipo: "luminaria",
+    titulo: `Luminaria #${i.no_luminaria}`,
+    descripcion: i.descripcion,
+    hora: i.fecha_reporte,
+    privada: i.privada || ubic?.privada || "-",
+    casa: i.casa || "-",
+    extra: "Calle: " + (ubic?.calle || "-")
   });
+
+});
 
   // 💧 AGUA (JOIN SIMPLE)
   const { data: agua } = await supabaseClient
