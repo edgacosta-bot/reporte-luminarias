@@ -201,8 +201,8 @@ ubicaciones.forEach(u => mapaUbicacion[u.id] = u);
 // 6. construir resultado
 luminarias.forEach(i => {
 
-  const controlData = mapaControl[i.luminaria_id];
-  const ubic = mapaUbicacion[controlData?.ubicacion_id];
+  const controlData = mapaControl[Number(i.luminaria_id)];
+  const ubic = mapaUbicacion[Number(controlData?.ubicacion_id)];
 
   registros.push({
     tipo: "luminaria",
