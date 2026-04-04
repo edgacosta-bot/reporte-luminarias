@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recepción de paquetes</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 16px;
+  text-align: center;
+}
+
+.switch {
+  margin-top: 20px;
+}
+
+.switch input {
+  transform: scale(1.5);
+}
+
+.estado {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.ok { color: #22c55e; }
+.warn { color: #f59e0b; }
+.error { color: #ef4444; }
+
+.button {
+  display: block;
+  text-decoration: none;
+  padding: 16px;
+  border-radius: 14px;
+  margin-top: 20px;
+  color: white;
+  font-size: 16px;
+  background: #6b7280;
+  text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+  <h2>📦 Recepción de paquetes</h2>
+</div>
+
+<div class="card">
+
+  <div id="mensaje"></div>
+
+  <div class="switch">
+    <label>
+      <input type="checkbox" id="toggle" onchange="cambiarEstado()">
+      Autorizar recepción en caseta
+    </label>
+  </div>
+
+  <div id="info" class="estado"></div>
+
+</div>
+
+<a href="index.html" class="button">Regresar</a>
+
+</div>
+
+<script>
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+// 🔒 PROTECCIÓN
+if (!localStorage.getItem("usuario_valido")) {
+  window.location.href = "login.html";
+}
+
+const rol = localStorage.getItem("rol");
+
+if (rol !== "colono") {
+  window.location.href = "index.html";
+}
+
+// IDENTIDAD
+const privada = localStorage.getItem("privada");
+const casa = localStorage.getItem("casa");
+
+let residenteId = null;
+let estadoPago = null;
+
+async function cargar() {
+  const { data, error } = await supabaseClient
+    .from('residentes')
+    .select('id, estado_pago, recibe_paquetes')
+    .eq('privada', privada)
+    .eq('casa', casa)
+    .maybeSingle();
+
+  if (error || !data) {
+    document.getElementById("mensaje").innerText = "Error al cargar";
+    return;
+  }
+
+  residenteId = data.id;
+  estadoPago = data.estado_pago;
+
+  const toggle = document.getElementById("toggle");
+  const info = document.getElementById("info");
+  const mensaje = document.getElementById("mensaje");
+
+  // ESTADOS
+  if (estadoPago === 'corriente') {
+    mensaje.innerHTML = "<div class='ok'>✔ Estás al corriente</div>";
+    toggle.disabled = false;
+  } 
+  else if (estadoPago === 'atraso_1') {
+    mensaje.innerHTML = "<div class='warn'>⚠ Tienes un atraso</div>";
+    toggle.disabled = false;
+  } 
+  else {
+    mensaje.innerHTML = "<div class='error'>❌ Servicio no disponible</div>";
+    info.innerHTML = "Para activar este beneficio, es necesario regularizar tu situación.";
+    toggle.disabled = true;
+  }
+
+  toggle.checked = data.recibe_paquetes || false;
+}
+
+async function cambiarEstado() {
+  const toggle = document.getElementById("toggle");
+
+  if (!residenteId) return;
+
+  const { error } = await supabaseClient
+    .from('residentes')
+    .update({ recibe_paquetes: toggle.checked })
+    .eq('id', residenteId);
+
+  if (error) {
+    alert("Error al actualizar");
+    return;
+  }
+}
+
+cargar();
+</script>
+
+</body>
+</html>
