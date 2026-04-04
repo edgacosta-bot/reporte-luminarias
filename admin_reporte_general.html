@@ -8,25 +8,78 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-body { margin:0; font-family:Arial; background:#eef2f7;}
-.container { max-width:500px; margin:auto; padding:15px;}
-h2 { text-align:center;}
-.label { font-size:13px; color:#6b7280;}
-input { width:100%; padding:12px; border-radius:12px; border:1px solid #ccc; margin-bottom:8px;}
-button { width:100%; padding:14px; border-radius:14px; border:none; background:#2563eb; color:white; font-weight:bold;}
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #eef2f7;
+}
 
-.kpis { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:20px 0;}
-.kpi { padding:16px; border-radius:14px; color:white; text-align:center;}
-.incidencia { background:#ef4444;}
-.agua { background:#f59e0b; color:black;}
-.luminaria { background:#3b82f6;}
-.total { background:#374151;}
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 15px;
+}
 
-.item { background:white; padding:14px; border-radius:14px; margin-bottom:10px; border-left:6px solid;}
-.item.incidencia { border-color:#ef4444;}
-.item.agua { border-color:#f59e0b;}
-.item.luminaria { border-color:#3b82f6;}
-.hora { font-size:12px; color:gray;}
+h2 { text-align: center; }
+
+.label {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  margin-bottom: 8px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  font-weight: bold;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.kpi {
+  padding: 16px;
+  border-radius: 14px;
+  color: white;
+  text-align: center;
+}
+
+.incidencia { background: #ef4444; }
+.agua { background: #f59e0b; color: black; }
+.luminaria { background: #3b82f6; }
+.total { background: #374151; }
+
+.item {
+  background: white;
+  padding: 14px;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  border-left: 6px solid;
+}
+
+.item.incidencia { border-color: #ef4444; }
+.item.agua { border-color: #f59e0b; }
+.item.luminaria { border-color: #3b82f6; }
+
+.hora {
+  font-size: 12px;
+  color: gray;
+}
 </style>
 </head>
 
@@ -64,128 +117,125 @@ const supabaseClient = supabase.createClient(
 
 async function cargar() {
 
-  const inicio = document.getElementById("inicio").value;
-  const fin = document.getElementById("fin").value;
+  try {
 
-  let registros = [];
+    const inicio = document.getElementById("inicio").value;
+    const fin = document.getElementById("fin").value;
 
-  // 🔴 INCIDENCIAS
-  const { data: inc } = await supabaseClient
-    .from("incidencias_vecinales")
-    .select("*")
-    .gte("fecha_local", inicio+"T00:00:00")
-    .lte("fecha_local", fin+"T23:59:59");
+    if (!inicio || !fin) {
+      alert("Selecciona fechas");
+      return;
+    }
 
-  inc?.forEach(i=>{
-    registros.push({
-      tipo:"incidencia",
-      titulo:"Incidencia vecinal",
-      descripcion:i.descripcion,
-      hora:i.fecha_local,
-      privada:i.privada,
-      casa:i.casa
+    let registros = [];
+
+    // 🔴 INCIDENCIAS
+    const { data: inc } = await supabaseClient
+      .from("incidencias_vecinales")
+      .select("*")
+      .gte("fecha_local", inicio + "T00:00:00")
+      .lte("fecha_local", fin + "T23:59:59");
+
+    (inc || []).forEach(i => {
+      registros.push({
+        tipo: "incidencia",
+        titulo: "Incidencia vecinal",
+        descripcion: i.descripcion,
+        hora: i.fecha_local,
+        privada: i.privada,
+        casa: i.casa
+      });
     });
-  });
 
-  // 💧 AGUA
-  const { data: agua } = await supabaseClient
-    .from("reportes_agua_caasim")
-    .select("*, ubicaciones(calle)")
-    .gte("fecha_registro", inicio+"T00:00:00")
-    .lte("fecha_registro", fin+"T23:59:59");
+    // 💧 AGUA + CALLE
+    const { data: agua } = await supabaseClient
+      .from("reportes_agua_caasim")
+      .select("*, ubicaciones(calle)")
+      .gte("fecha_registro", inicio + "T00:00:00")
+      .lte("fecha_registro", fin + "T23:59:59");
 
-  agua?.forEach(i=>{
-    registros.push({
-      tipo:"agua",
-      titulo:"Reporte agua",
-      descripcion:i.tipo_falla,
-      hora:i.fecha_registro,
-      privada:i.privada || "N/A",
-      casa:i.numero_exterior,
-      calle:i.ubicaciones?.calle || "-"
+    (agua || []).forEach(i => {
+      registros.push({
+        tipo: "agua",
+        titulo: "Reporte agua",
+        descripcion: i.tipo_falla,
+        hora: i.fecha_registro,
+        privada: i.privada || "N/A",
+        casa: i.numero_exterior,
+        calle: i.ubicaciones?.calle || "-"
+      });
     });
-  });
 
-  // 💡 LUMINARIAS (CORRECCIÓN REAL)
+    // 💡 LUMINARIAS DESDE VISTA (SOLUCIÓN DEFINITIVA)
+    const { data: luminarias } = await supabaseClient
+      .from("vista_reportes_luminarias")
+      .select("*")
+      .gte("fecha_reporte", inicio + "T00:00:00")
+      .lte("fecha_reporte", fin + "T23:59:59");
 
-  const { data: luminarias } = await supabaseClient
-    .from("reportes_vecinales")
-    .select("*")
-    .gte("fecha_reporte", inicio+"T00:00:00")
-    .lte("fecha_reporte", fin+"T23:59:59");
-
-  const numeros = [...new Set(
-    luminarias.map(i => i.no_luminaria).filter(Boolean)
-  )];
-
-  const { data: control } = await supabaseClient
-    .from("control_luminarias")
-    .select('id, ubicacion_id, "No. Luminaria"')
-    .in("No. Luminaria", numeros);
-
-  const ubicIds = [...new Set(
-    control.map(c => c.ubicacion_id).filter(Boolean)
-  )];
-
-  const { data: ubicaciones } = await supabaseClient
-    .from("ubicaciones")
-    .select("id, calle")
-    .in("id", ubicIds);
-
-  const mapaControl = {};
-  control.forEach(c=>{
-    mapaControl[c["No. Luminaria"]] = c;
-  });
-
-  const mapaUbic = {};
-  ubicaciones.forEach(u=>{
-    mapaUbic[u.id] = u;
-  });
-
-  luminarias.forEach(i=>{
-    const controlData = mapaControl[i.no_luminaria];
-    const ubic = mapaUbic[controlData?.ubicacion_id];
-
-    registros.push({
-      tipo:"luminaria",
-      titulo:`Luminaria #${i.no_luminaria}`,
-      descripcion:i.descripcion,
-      hora:i.fecha_reporte,
-      calle:ubic?.calle || "-"
+    (luminarias || []).forEach(i => {
+      registros.push({
+        tipo: "luminaria",
+        titulo: `Luminaria #${i.no_luminaria}`,
+        descripcion: i.descripcion,
+        hora: i.fecha_reporte,
+        calle: i.calle || "-"
+      });
     });
-  });
 
-  // KPIs
-  document.getElementById("inc").innerText = registros.filter(r=>r.tipo==="incidencia").length + " Incidencias";
-  document.getElementById("agua").innerText = registros.filter(r=>r.tipo==="agua").length + " Agua";
-  document.getElementById("lum").innerText = registros.filter(r=>r.tipo==="luminaria").length + " Luminarias";
-  document.getElementById("total").innerText = registros.length + " Total";
+    // KPIs
+    document.getElementById("inc").innerText =
+      registros.filter(r=>r.tipo==="incidencia").length + " Incidencias";
 
-  // RENDER
-  let html="";
+    document.getElementById("agua").innerText =
+      registros.filter(r=>r.tipo==="agua").length + " Agua";
 
-  const render=(tipo,titulo)=>{
-    const grupo=registros.filter(r=>r.tipo===tipo);
-    if(!grupo.length)return;
+    document.getElementById("lum").innerText =
+      registros.filter(r=>r.tipo==="luminaria").length + " Luminarias";
 
-    html+=`<h3>${titulo}</h3>`;
+    document.getElementById("total").innerText =
+      registros.length + " Total";
 
-    grupo.forEach(r=>{
-      html+=`<div class="item ${tipo}">
-        <b>${r.titulo}</b><br>
-        <div class="hora">${new Date(r.hora).toLocaleString("es-MX")}</div>
-        ${tipo!=="luminaria"?`<div><b>Origen: ${r.privada}-${r.casa}</b></div>`:""}
-        ${r.calle?`<div>Calle: ${r.calle}</div>`:""}
-        <div>${r.descripcion}</div>
-      </div>`;
-    });
-  };
+    // RENDER
+    let html = "";
 
-  render("incidencia","🚨 Incidencias");
-  render("agua","💧 Agua");
-  render("luminaria","💡 Luminarias");
+    const render = (tipo, titulo) => {
 
-  document.getElementById("lista").innerHTML = html || "Sin resultados";
+      const grupo = registros.filter(r => r.tipo === tipo);
+      if (!grupo.length) return;
+
+      html += `<h3>${titulo}</h3>`;
+
+      grupo.forEach(r => {
+
+        html += `<div class="item ${tipo}">
+          <b>${r.titulo}</b><br>
+          <div class="hora">${new Date(r.hora).toLocaleString("es-MX")}</div>
+        `;
+
+        if (tipo !== "luminaria") {
+          html += `<div><b>Origen: ${r.privada}-${r.casa}</b></div>`;
+        }
+
+        if (r.calle) {
+          html += `<div>Calle: ${r.calle}</div>`;
+        }
+
+        html += `<div>${r.descripcion}</div></div>`;
+      });
+    };
+
+    render("incidencia","🚨 Incidencias");
+    render("agua","💧 Agua");
+    render("luminaria","💡 Luminarias");
+
+    document.getElementById("lista").innerHTML =
+      html || "Sin resultados";
+
+  } catch (err) {
+    console.error(err);
+    alert("Error al consultar datos");
+  }
 }
 
 </script>
