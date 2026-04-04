@@ -113,8 +113,7 @@ async function cargar() {
     .from('residentes')
     .select('id, privada, casa, estado_pago')
     .eq('tipo', 'residente')
-    .order('privada')
-    .order('casa');
+    .order('privada');
 
   if (error) {
     alert('Error al cargar');
@@ -128,6 +127,14 @@ async function cargar() {
 function render(data) {
   const contenedor = document.getElementById("contenedor");
   contenedor.innerHTML = "";
+
+  // ordenar correctamente
+  data.sort((a, b) => {
+    if (a.privada !== b.privada) {
+      return a.privada.localeCompare(b.privada);
+    }
+    return parseInt(a.casa) - parseInt(b.casa);
+  });
 
   const grupos = {};
 
@@ -150,7 +157,7 @@ function render(data) {
       div.style.borderLeft = "6px solid " + obtenerColor(r.estado_pago);
 
       div.innerHTML = `
-        <span>Casa ${r.casa}</span>
+        <span>Lote ${r.casa}</span>
 
         <select onchange="cambiar('${r.id}', this.value)">
           <option value="corriente" ${r.estado_pago === 'corriente' ? 'selected' : ''}>Corriente</option>
