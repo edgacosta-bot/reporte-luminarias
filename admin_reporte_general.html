@@ -184,7 +184,7 @@ async function cargar(){
     });
   });
 
-  // 🔴 INCIDENCIAS TRABAJADORES (CON JOIN REAL)
+  // 🔴 INCIDENCIAS TRABAJADORES
   const {data:trab} = await supabaseClient
     .from("incidencias_trabajadores")
     .select("*")
@@ -211,9 +211,8 @@ async function cargar(){
       titulo:`Incidencia trabajador (${i.tipo})`,
       descripcion:i.descripcion,
       hora:i.fecha_local,
-      origen: t
-        ? `${t.nombre} | Obra ${t.privada}-${t.casa}`
-        : "Trabajador desconocido"
+      trabajador:t?.nombre,
+      obra:t ? `${t.privada}-${t.casa}` : null
     });
   });
 
@@ -280,8 +279,12 @@ async function cargar(){
       html+=`<div class="item ${tipo}">
         <b>${r.titulo}</b>
         <div class="hora">${new Date(r.hora).toLocaleString("es-MX")}</div>
-        ${r.origen ? `<div class="extra"><b>Origen:</b> ${r.origen}</div>`:""}
+        
+        ${r.trabajador ? `<div class="extra">👷 ${r.trabajador}</div>`:""}
+        ${r.obra ? `<div class="extra">📍 Obra: ${r.obra}</div>`:""}
+        ${r.origen && !r.trabajador ? `<div class="extra"><b>Origen:</b> ${r.origen}</div>`:""}
         ${r.calle ? `<div class="extra">📍 ${r.calle}</div>`:""}
+        
         <div class="extra">${r.descripcion}</div>
       </div>`;
     });
