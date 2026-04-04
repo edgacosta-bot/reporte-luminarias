@@ -24,11 +24,13 @@ h2 {
   text-align: center;
 }
 
+/* LABELS */
 .label {
   font-size: 13px;
   color: #6b7280;
 }
 
+/* FILTROS */
 .filtros {
   display: flex;
   flex-direction: column;
@@ -52,6 +54,7 @@ button {
   font-weight: bold;
 }
 
+/* KPIs */
 .kpis {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -75,6 +78,7 @@ h3 {
   margin-top: 20px;
 }
 
+/* LISTA */
 .item {
   background: white;
   padding: 14px;
@@ -168,38 +172,35 @@ async function cargarReporte() {
     .gte("fecha_reporte", fechaInicio + "T00:00:00")
     .lte("fecha_reporte", fechaFin + "T23:59:59");
 
-  const ids = [...new Set(luminarias.map(i => i.luminaria_id).filter(Boolean))];
-
-  const { data: luminariasData } = await supabaseClient
+  const { data: control } = await supabaseClient
     .from("control_luminarias")
-    .select("id, ubicacion_id")
-    .in("id", ids);
-
-  const ubicIds = [...new Set(luminariasData.map(i => i.ubicacion_id))];
+    .select("id, ubicacion_id");
 
   const { data: ubicaciones } = await supabaseClient
     .from("ubicaciones")
-    .select("id, calle, privada")
-    .in("id", ubicIds);
+    .select("id, calle, privada");
 
-  const mapa = {};
-  luminariasData.forEach(l => {
-    const u = ubicaciones.find(x => x.id === l.ubicacion_id);
-    mapa[l.id] = u;
-  });
+  const mapaControl = {};
+  control.forEach(c => mapaControl[c.id] = c);
+
+  const mapaUbicacion = {};
+  ubicaciones.forEach(u => mapaUbicacion[u.id] = u);
 
   luminarias.forEach(i => {
-    const u = mapa[i.luminaria_id];
+
+    const controlData = mapaControl[i.luminaria_id];
+    const ubic = mapaUbicacion[controlData?.ubicacion_id];
 
     registros.push({
       tipo: "luminaria",
       titulo: `Luminaria #${i.no_luminaria}`,
       descripcion: i.descripcion,
       hora: i.fecha_reporte,
-      privada: i.privada || u?.privada || "-",
+      privada: i.privada || ubic?.privada || "-",
       casa: i.casa || "-",
-      extra: "Calle: " + (u?.calle || "-")
+      extra: "Calle: " + (ubic?.calle || "-")
     });
+
   });
 
   // 💧 AGUA (JOIN SIMPLE)
