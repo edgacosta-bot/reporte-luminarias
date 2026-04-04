@@ -36,15 +36,17 @@ input {
   padding: 12px;
   border-radius: 12px;
   border: 1px solid #ccc;
+  background: white;
 }
 
 button {
   padding: 14px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: none;
-  background: #2563eb;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: white;
   font-weight: bold;
+  font-size: 15px;
 }
 
 /* KPIs */
@@ -67,13 +69,20 @@ button {
 .luminaria { background: #3b82f6; }
 .total { background: #374151; }
 
+/* TITULOS */
+h3 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #374151;
+}
+
 /* LISTA */
 .item {
   background: white;
-  padding: 12px;
-  border-radius: 12px;
+  padding: 14px;
+  border-radius: 14px;
   margin-bottom: 10px;
-  border-left: 5px solid;
+  border-left: 6px solid;
 }
 
 .item.incidencia { border-color: #ef4444; }
@@ -116,6 +125,7 @@ const supabaseClient = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
+// 🔐 Protección
 if (localStorage.getItem("rol") !== "admin") {
   window.location.href = "index.html";
 }
@@ -126,7 +136,7 @@ async function cargarReporte() {
   const fechaFin = document.getElementById("fechaFin").value;
 
   if (!fechaInicio || !fechaFin) {
-    alert("Selecciona rango");
+    alert("Selecciona rango de fechas");
     return;
   }
 
@@ -144,7 +154,9 @@ async function cargarReporte() {
       tipo: "incidencia",
       titulo: "Incidencia trabajador",
       descripcion: i.descripcion,
-      hora: i.fecha_local
+      hora: i.fecha_local,
+      privada: "Obra",
+      casa: "-"
     });
   });
 
@@ -160,7 +172,9 @@ async function cargarReporte() {
       tipo: "incidencia",
       titulo: "Incidencia vecinal",
       descripcion: i.descripcion,
-      hora: i.fecha_local
+      hora: i.fecha_local,
+      privada: i.privada || "-",
+      casa: i.casa || "-"
     });
   });
 
@@ -176,11 +190,13 @@ async function cargarReporte() {
       tipo: "luminaria",
       titulo: "Luminaria",
       descripcion: i.descripcion,
-      hora: i.fecha_reporte
+      hora: i.fecha_reporte,
+      privada: i.privada || "-",
+      casa: i.casa || "-"
     });
   });
 
-  // 🟡 AGUA (CLAVE: usar fecha_registro)
+  // 💧 AGUA
   const { data: agua } = await supabaseClient
     .from("reportes_agua_caasim")
     .select("*")
@@ -192,38 +208,52 @@ async function cargarReporte() {
       tipo: "agua",
       titulo: "Reporte agua",
       descripcion: i.tipo_falla,
-      hora: i.fecha_registro
+      hora: i.fecha_registro,
+      privada: i.privada || "N/A",
+      casa: i.numero_exterior || "-"
     });
   });
 
-  // ORDEN
-  registros.sort((a,b)=> new Date(b.hora) - new Date(a.hora));
+  // ORDEN GLOBAL
+  registros.sort((a, b) => new Date(b.hora) - new Date(a.hora));
 
   // KPIs
   document.getElementById("kpiInc").innerText =
-    registros.filter(r=>r.tipo==="incidencia").length + " Incidencias";
+    registros.filter(r => r.tipo === "incidencia").length + " Incidencias";
 
   document.getElementById("kpiAgua").innerText =
-    registros.filter(r=>r.tipo==="agua").length + " Agua";
+    registros.filter(r => r.tipo === "agua").length + " Agua";
 
   document.getElementById("kpiLum").innerText =
-    registros.filter(r=>r.tipo==="luminaria").length + " Luminarias";
+    registros.filter(r => r.tipo === "luminaria").length + " Luminarias";
 
   document.getElementById("kpiTotal").innerText =
     registros.length + " Total";
 
-  // RENDER
+  // 🔥 AGRUPACIÓN
   let html = "";
 
-  registros.forEach(r => {
-    html += `
-      <div class="item ${r.tipo}">
-        <strong>${r.titulo}</strong><br>
-        <div class="hora">${new Date(r.hora).toLocaleString("es-MX")}</div>
-        ${r.descripcion}
-      </div>
-    `;
-  });
+  const renderGrupo = (titulo, tipo, icono) => {
+    const grupo = registros.filter(r => r.tipo === tipo);
+    if (!grupo.length) return;
+
+    html += `<h3>${icono} ${titulo}</h3>`;
+
+    grupo.forEach(r => {
+      html += `
+        <div class="item ${tipo}">
+          <strong>${r.titulo}</strong><br>
+          <div class="hora">${new Date(r.hora).toLocaleString("es-MX")}</div>
+          <div><b>${r.privada} - ${r.casa}</b></div>
+          ${r.descripcion}
+        </div>
+      `;
+    });
+  };
+
+  renderGrupo("Incidencias", "incidencia", "🚨");
+  renderGrupo("Agua", "agua", "💧");
+  renderGrupo("Luminarias", "luminaria", "💡");
 
   document.getElementById("resultado").innerHTML =
     html || "No hay registros";
