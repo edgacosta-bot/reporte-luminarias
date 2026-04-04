@@ -9,7 +9,7 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
+  background: #0f172a;
   color: white;
 }
 
@@ -19,25 +19,44 @@ body {
   padding: 20px;
 }
 
-h1 {
+/* HEADER */
+.header {
   text-align: center;
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.header span {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* SECCIONES */
+.section {
+  margin-top: 25px;
 }
 
 .section-title {
-  margin-top: 30px;
   margin-bottom: 10px;
   font-weight: bold;
   color: #9ca3af;
+  font-size: 13px;
 }
 
+/* BOTONES */
 .button {
   display: block;
   text-decoration: none;
-  padding: 18px;
+  padding: 16px;
   border-radius: 14px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   color: white;
-  font-size: 18px;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 /* colores */
@@ -53,6 +72,7 @@ h1 {
 .logout {
   background: #dc2626;
   text-align: center;
+  margin-top: 25px;
 }
 </style>
 </head>
@@ -61,18 +81,22 @@ h1 {
 
 <div class="container">
 
-<h1>Villas de la Concepción</h1>
+<!-- HEADER -->
+<div class="header">
+  <h1>🏡 Villas de la Concepción</h1>
+  <span id="rolTexto"></span>
+</div>
 
-<!-- 🔹 VISITANTES -->
-<div id="colono-section">
+<!-- VISITANTES -->
+<div id="colono-section" class="section">
   <div class="section-title">VISITANTES</div>
 
   <a href="crear_qr.html" class="button qr">📱 Generar acceso (QR)</a>
   <a href="bitacora_visitantes.html" class="button bitacora">📋 Bitácora de visitantes</a>
 </div>
 
-<!-- 🔴 REPORTES -->
-<div id="reportes-section">
+<!-- REPORTES -->
+<div id="reportes-section" class="section">
   <div class="section-title">REPORTES</div>
 
   <a href="#" onclick="irAReportes()" id="btnReportes" class="button seguridad">
@@ -80,15 +104,15 @@ h1 {
   </a>
 </div>
 
-<!-- 🔹 SERVICIOS -->
-<div id="servicios-section">
+<!-- SERVICIOS -->
+<div id="servicios-section" class="section">
   <div class="section-title">SERVICIOS</div>
 
   <a href="agua.html" class="button agua">💧 Suministro de agua</a>
 </div>
 
-<!-- 🔹 INFRAESTRUCTURA -->
-<div id="infraestructura-section">
+<!-- INFRAESTRUCTURA -->
+<div id="infraestructura-section" class="section">
   <div class="section-title">INFRAESTRUCTURA</div>
 
   <a href="luminarias.html" class="button luminarias">💡 Luminarias</a>
@@ -96,8 +120,8 @@ h1 {
   <a href="cerco_electrico.html" class="button cerco">⚡ Cerco eléctrico</a>
 </div>
 
-<!-- 🔹 SEGURIDAD -->
-<div id="vigilante-section">
+<!-- SEGURIDAD -->
+<div id="vigilante-section" class="section">
   <div class="section-title">SEGURIDAD</div>
 
   <a href="acceso_trabajador.html" class="button seguridad">🛡 Control de acceso</a>
@@ -105,8 +129,8 @@ h1 {
   <a href="incidencia_manual.html" class="button seguridad">🚨 Reportar incidencia</a>
 </div>
 
-<!-- 🔹 ADMIN -->
-<div id="admin-section">
+<!-- ADMIN -->
+<div id="admin-section" class="section">
   <div class="section-title">ADMINISTRADOR</div>
 
   <a href="obras_registro.html" class="button admin">🏗 Alta de obras</a>
@@ -125,8 +149,15 @@ if (!localStorage.getItem("usuario_valido")) {
   window.location.href = "login.html";
 }
 
-// 🎯 ROLES
+// 🎯 ROL
 const rol = localStorage.getItem("rol");
+
+// TEXTO SUPERIOR
+const rolTexto = document.getElementById("rolTexto");
+
+if (rol === "admin") rolTexto.innerText = "Panel de administración";
+if (rol === "vigilante") rolTexto.innerText = "Panel de vigilancia";
+if (rol === "colono") rolTexto.innerText = "Panel de colono";
 
 // ELEMENTOS
 const adminSection = document.getElementById("admin-section");
@@ -136,28 +167,26 @@ const infraestructuraSection = document.getElementById("infraestructura-section"
 const serviciosSection = document.getElementById("servicios-section");
 const btnReportes = document.getElementById("btnReportes");
 
-// 🔒 VISTAS POR ROL
-
-// 🛡 VIGILANTE → SOLO SEGURIDAD
+// 🛡 VIGILANTE
 if (rol === "vigilante") {
-  if (adminSection) adminSection.style.display = "none";
-  if (colonoSection) colonoSection.style.display = "none";
-  if (infraestructuraSection) infraestructuraSection.style.display = "none";
-  if (serviciosSection) serviciosSection.style.display = "none";
+  adminSection.style.display = "none";
+  colonoSection.style.display = "none";
+  infraestructuraSection.style.display = "none";
+  serviciosSection.style.display = "none";
 }
 
-// 👤 COLONO → SIN ADMIN NI SEGURIDAD
+// 👤 COLONO
 if (rol === "colono") {
-  if (adminSection) adminSection.style.display = "none";
-  if (vigilanteSection) vigilanteSection.style.display = "none";
+  adminSection.style.display = "none";
+  vigilanteSection.style.display = "none";
 }
 
-// 👨‍💼 ADMIN → CAMBIO DE TEXTO EN BOTÓN
+// 👨‍💼 ADMIN → CAMBIO BOTÓN
 if (rol === "admin") {
   btnReportes.innerText = "📊 Reporte general";
 }
 
-// 🔀 REDIRECCIÓN INTELIGENTE
+// 🔀 REDIRECCIÓN
 function irAReportes() {
   if (rol === "admin") {
     window.location.href = "admin_reporte_general.html";
