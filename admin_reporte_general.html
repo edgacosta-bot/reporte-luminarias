@@ -10,65 +10,82 @@
 <style>
 body {
   margin: 0;
-  font-family: Arial;
-  background: #eef2f7;
+  font-family: 'Segoe UI', Arial;
+  background: #f1f5f9;
+  color: #1e293b;
 }
 
 .container {
-  max-width: 500px;
+  max-width: 520px;
   margin: auto;
-  padding: 15px;
+  padding: 20px;
 }
 
-h2 { text-align: center; }
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
 
+/* Inputs */
 .label {
   font-size: 13px;
-  color: #6b7280;
+  color: #64748b;
+}
+
+.input-group {
+  margin-bottom: 12px;
 }
 
 input {
   width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid #ccc;
-  margin-bottom: 8px;
-}
-
-button {
-  width: 100%;
   padding: 14px;
   border-radius: 14px;
-  border: none;
-  background: #2563eb;
-  color: white;
-  font-weight: bold;
+  border: 1px solid #cbd5e1;
+  background: white;
 }
 
+/* Botón */
+button {
+  width: 100%;
+  padding: 15px;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  margin-top: 10px;
+  box-shadow: 0 6px 15px rgba(37,99,235,0.3);
+}
+
+/* KPIs */
 .kpis {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin: 20px 0;
+  gap: 12px;
+  margin: 25px 0;
 }
 
 .kpi {
-  padding: 16px;
-  border-radius: 14px;
+  padding: 18px;
+  border-radius: 18px;
   color: white;
   text-align: center;
+  font-weight: bold;
 }
 
 .incidencia { background: #ef4444; }
-.agua { background: #f59e0b; color: black; }
+.agua { background: #f59e0b; color: #111; }
 .luminaria { background: #3b82f6; }
-.total { background: #374151; }
+.total { background: #334155; }
 
+/* Cards */
 .item {
   background: white;
-  padding: 14px;
-  border-radius: 14px;
-  margin-bottom: 10px;
+  padding: 16px;
+  border-radius: 18px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   border-left: 6px solid;
 }
 
@@ -78,7 +95,52 @@ button {
 
 .hora {
   font-size: 12px;
-  color: gray;
+  color: #64748b;
+}
+
+/* 🔥 MODAL */
+.modal-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15,23,42,0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  width: 85%;
+  max-width: 320px;
+  text-align: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal h3 {
+  margin-top: 0;
+}
+
+.modal p {
+  color: #475569;
+  margin-bottom: 20px;
+}
+
+.modal button {
+  background: #2563eb;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+@keyframes fadeIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 </style>
 </head>
@@ -89,23 +151,36 @@ button {
 
 <h2>📊 Reporte General</h2>
 
-<div class="label">Fecha inicio</div>
-<input type="date" id="inicio">
+<div class="input-group">
+  <div class="label">Fecha inicio</div>
+  <input type="date" id="inicio">
+</div>
 
-<div class="label">Fecha fin</div>
-<input type="date" id="fin">
+<div class="input-group">
+  <div class="label">Fecha fin</div>
+  <input type="date" id="fin">
+</div>
 
 <button onclick="cargar()">Consultar</button>
 
 <div class="kpis">
-  <div class="kpi incidencia" id="inc">0</div>
-  <div class="kpi agua" id="agua">0</div>
-  <div class="kpi luminaria" id="lum">0</div>
-  <div class="kpi total" id="total">0</div>
+  <div class="kpi incidencia" id="inc">0 Incidencias</div>
+  <div class="kpi agua" id="agua">0 Agua</div>
+  <div class="kpi luminaria" id="lum">0 Luminarias</div>
+  <div class="kpi total" id="total">0 Total</div>
 </div>
 
 <div id="lista"></div>
 
+</div>
+
+<!-- 🔥 MODAL -->
+<div id="modal" class="modal-bg">
+  <div class="modal">
+    <h3>📅 Selecciona fechas</h3>
+    <p>Debes elegir una fecha de inicio y una fecha final para consultar el reporte.</p>
+    <button onclick="cerrarModal()">Entendido</button>
+  </div>
 </div>
 
 <script>
@@ -115,6 +190,14 @@ const supabaseClient = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
+function mostrarModal() {
+  document.getElementById("modal").style.display = "flex";
+}
+
+function cerrarModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
 async function cargar() {
 
   try {
@@ -123,63 +206,63 @@ async function cargar() {
     const fin = document.getElementById("fin").value;
 
     if (!inicio || !fin) {
-      alert("Selecciona fechas");
+      mostrarModal();
       return;
     }
 
     let registros = [];
 
-    // 🔴 INCIDENCIAS
+    // INCIDENCIAS
     const { data: inc } = await supabaseClient
       .from("incidencias_vecinales")
       .select("*")
-      .gte("fecha_local", inicio + "T00:00:00")
-      .lte("fecha_local", fin + "T23:59:59");
+      .gte("fecha_local", inicio+"T00:00:00")
+      .lte("fecha_local", fin+"T23:59:59");
 
-    (inc || []).forEach(i => {
+    (inc || []).forEach(i=>{
       registros.push({
-        tipo: "incidencia",
-        titulo: "Incidencia vecinal",
-        descripcion: i.descripcion,
-        hora: i.fecha_local,
-        privada: i.privada,
-        casa: i.casa
+        tipo:"incidencia",
+        titulo:"Incidencia vecinal",
+        descripcion:i.descripcion,
+        hora:i.fecha_local,
+        privada:i.privada,
+        casa:i.casa
       });
     });
 
-    // 💧 AGUA + CALLE
+    // AGUA
     const { data: agua } = await supabaseClient
       .from("reportes_agua_caasim")
       .select("*, ubicaciones(calle)")
-      .gte("fecha_registro", inicio + "T00:00:00")
-      .lte("fecha_registro", fin + "T23:59:59");
+      .gte("fecha_registro", inicio+"T00:00:00")
+      .lte("fecha_registro", fin+"T23:59:59");
 
-    (agua || []).forEach(i => {
+    (agua || []).forEach(i=>{
       registros.push({
-        tipo: "agua",
-        titulo: "Reporte agua",
-        descripcion: i.tipo_falla,
-        hora: i.fecha_registro,
-        privada: i.privada || "N/A",
-        casa: i.numero_exterior,
-        calle: i.ubicaciones?.calle || "-"
+        tipo:"agua",
+        titulo:"Reporte agua",
+        descripcion:i.tipo_falla,
+        hora:i.fecha_registro,
+        privada:i.privada || "N/A",
+        casa:i.numero_exterior,
+        calle:i.ubicaciones?.calle || "-"
       });
     });
 
-    // 💡 LUMINARIAS DESDE VISTA (SOLUCIÓN DEFINITIVA)
+    // LUMINARIAS (vista)
     const { data: luminarias } = await supabaseClient
       .from("vista_reportes_luminarias")
       .select("*")
-      .gte("fecha_reporte", inicio + "T00:00:00")
-      .lte("fecha_reporte", fin + "T23:59:59");
+      .gte("fecha_reporte", inicio+"T00:00:00")
+      .lte("fecha_reporte", fin+"T23:59:59");
 
-    (luminarias || []).forEach(i => {
+    (luminarias || []).forEach(i=>{
       registros.push({
-        tipo: "luminaria",
-        titulo: `Luminaria #${i.no_luminaria}`,
-        descripcion: i.descripcion,
-        hora: i.fecha_reporte,
-        calle: i.calle || "-"
+        tipo:"luminaria",
+        titulo:`Luminaria #${i.no_luminaria}`,
+        descripcion:i.descripcion,
+        hora:i.fecha_reporte,
+        calle:i.calle || "-"
       });
     });
 
@@ -196,7 +279,7 @@ async function cargar() {
     document.getElementById("total").innerText =
       registros.length + " Total";
 
-    // RENDER
+    // Render
     let html = "";
 
     const render = (tipo, titulo) => {
@@ -209,16 +292,16 @@ async function cargar() {
       grupo.forEach(r => {
 
         html += `<div class="item ${tipo}">
-          <b>${r.titulo}</b><br>
+          <b>${r.titulo}</b>
           <div class="hora">${new Date(r.hora).toLocaleString("es-MX")}</div>
         `;
 
         if (tipo !== "luminaria") {
-          html += `<div><b>Origen: ${r.privada}-${r.casa}</b></div>`;
+          html += `<div><b>Origen:</b> ${r.privada}-${r.casa}</div>`;
         }
 
         if (r.calle) {
-          html += `<div>Calle: ${r.calle}</div>`;
+          html += `<div>📍 ${r.calle}</div>`;
         }
 
         html += `<div>${r.descripcion}</div></div>`;
@@ -234,7 +317,7 @@ async function cargar() {
 
   } catch (err) {
     console.error(err);
-    alert("Error al consultar datos");
+    mostrarModal();
   }
 }
 
