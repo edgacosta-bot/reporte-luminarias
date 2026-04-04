@@ -24,13 +24,11 @@ h2 {
   text-align: center;
 }
 
-/* LABELS */
 .label {
   font-size: 13px;
   color: #6b7280;
 }
 
-/* FILTROS */
 .filtros {
   display: flex;
   flex-direction: column;
@@ -54,7 +52,6 @@ button {
   font-weight: bold;
 }
 
-/* KPIs */
 .kpis {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -78,7 +75,6 @@ h3 {
   margin-top: 20px;
 }
 
-/* LISTA */
 .item {
   background: white;
   padding: 14px;
@@ -131,6 +127,7 @@ const supabaseClient = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
+// 🔐 Protección
 if (localStorage.getItem("rol") !== "admin") {
   window.location.href = "index.html";
 }
@@ -165,58 +162,55 @@ async function cargarReporte() {
     });
   });
 
-  // 🔵 LUMINARIAS (VERSIÓN CORRECTA Y EFICIENTE)
+  // 🔵 LUMINARIAS (JOIN MANUAL CORRECTO)
+  const { data: luminarias } = await supabaseClient
+    .from("reportes_vecinales")
+    .select("*")
+    .gte("fecha_reporte", fechaInicio + "T00:00:00")
+    .lte("fecha_reporte", fechaFin + "T23:59:59");
 
-const { data: luminarias } = await supabaseClient
-  .from("reportes_vecinales")
-  .select("*")
-  .gte("fecha_reporte", fechaInicio + "T00:00:00")
-  .lte("fecha_reporte", fechaFin + "T23:59:59");
+  const ids = [...new Set(
+    luminarias.map(i => Number(i.luminaria_id)).filter(Boolean)
+  )];
 
-// 1. IDs reales usados
-const ids = [...new Set(luminarias.map(i => i.luminaria_id).filter(Boolean))];
+  const { data: control } = await supabaseClient
+    .from("control_luminarias")
+    .select("id, ubicacion_id")
+    .in("id", ids);
 
-// 2. traer SOLO esas luminarias
-const { data: control } = await supabaseClient
-  .from("control_luminarias")
-  .select("id, ubicacion_id")
-  .in("id", ids);
+  const ubicIds = [...new Set(
+    control.map(c => Number(c.ubicacion_id)).filter(Boolean)
+  )];
 
-// 3. ids de ubicaciones
-const ubicIds = [...new Set(control.map(c => c.ubicacion_id).filter(Boolean))];
+  const { data: ubicaciones } = await supabaseClient
+    .from("ubicaciones")
+    .select("id, calle, privada")
+    .in("id", ubicIds);
 
-// 4. traer SOLO esas ubicaciones
-const { data: ubicaciones } = await supabaseClient
-  .from("ubicaciones")
-  .select("id, calle, privada")
-  .in("id", ubicIds);
+  const mapaControl = {};
+  control.forEach(c => mapaControl[Number(c.id)] = c);
 
-// 5. mapas
-const mapaControl = {};
-control.forEach(c => mapaControl[c.id] = c);
+  const mapaUbicacion = {};
+  ubicaciones.forEach(u => mapaUbicacion[Number(u.id)] = u);
 
-const mapaUbicacion = {};
-ubicaciones.forEach(u => mapaUbicacion[u.id] = u);
+  luminarias.forEach(i => {
 
-// 6. construir resultado
-luminarias.forEach(i => {
+    const controlData = mapaControl[Number(i.luminaria_id)];
+    const ubic = mapaUbicacion[Number(controlData?.ubicacion_id)];
 
-  const controlData = mapaControl[Number(i.luminaria_id)];
-  const ubic = mapaUbicacion[Number(controlData?.ubicacion_id)];
+    registros.push({
+      tipo: "luminaria",
+      titulo: `Luminaria #${i.no_luminaria}`,
+      descripcion: i.descripcion,
+      hora: i.fecha_reporte,
+      privada: i.privada || ubic?.privada || "-",
+      casa: i.casa || "-",
+      extra: "Calle: " + (ubic?.calle || "-")
+    });
 
-  registros.push({
-    tipo: "luminaria",
-    titulo: `Luminaria #${i.no_luminaria}`,
-    descripcion: i.descripcion,
-    hora: i.fecha_reporte,
-    privada: i.privada || ubic?.privada || "-",
-    casa: i.casa || "-",
-    extra: "Calle: " + (ubic?.calle || "-")
   });
 
-});
-
-  // 💧 AGUA (JOIN SIMPLE)
+  // 💧 AGUA
   const { data: agua } = await supabaseClient
     .from("reportes_agua_caasim")
     .select(`
