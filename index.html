@@ -9,7 +9,7 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #0f172a;
+  background: #161a1d;
   color: white;
 }
 
@@ -31,7 +31,7 @@ body {
 
 .header span {
   font-size: 13px;
-  color: #94a3b8;
+  color: #98989A;
 }
 
 .section {
@@ -41,7 +41,7 @@ body {
 .section-title {
   margin-bottom: 10px;
   font-weight: bold;
-  color: #9ca3af;
+  color: #98989A;
   font-size: 13px;
 }
 
@@ -56,35 +56,35 @@ body {
   font-weight: 500;
 }
 
-/* 🎨 PALETA ELEGANTE */
+/* 🎨 PALETA PROPORCIONADA */
 
 /* VISITANTES */
 .btn-visitas {
-  background: #3b82f6;
+  background: #1e5b4f;
 }
 
 /* REPORTES */
 .btn-reportes {
-  background: #0ea5e9;
+  background: #9b2247;
 }
 
 /* SERVICIOS */
 .btn-servicios {
-  background: #22c55e;
+  background: #a57f2c;
 }
 
 /* INFRAESTRUCTURA */
 .btn-infra {
-  background: #6366f1;
+  background: #611232;
 }
 
 /* ADMIN */
 .btn-admin {
-  background: #8b5cf6;
+  background: #002f2a;
 }
 
 .logout {
-  background: #dc2626;
+  background: #9b2247;
   text-align: center;
   margin-top: 25px;
 }
@@ -133,7 +133,7 @@ body {
   <a href="cerco_electrico.html" class="button btn-infra">⚡ Cerco eléctrico</a>
 </div>
 
-<!-- SEGURIDAD (solo vigilante) -->
+<!-- SEGURIDAD -->
 <div id="vigilante-section" class="section">
   <div class="section-title">SEGURIDAD</div>
 
@@ -193,7 +193,7 @@ if (rol === "colono") {
   vigilanteSection.style.display = "none";
 }
 
-// ADMIN → eliminar seguridad
+// ADMIN
 if (rol === "admin") {
   btnReportes.innerText = "📊 Reporte general";
   vigilanteSection.style.display = "none";
