@@ -137,18 +137,20 @@ async function cargar() {
   const info = document.getElementById("info");
   const mensaje = document.getElementById("mensaje");
 
-  // ESTADOS
   if (estadoPago === 'corriente') {
     mensaje.innerHTML = "<div class='ok'>✔ Estás al corriente</div>";
+    info.innerHTML = "Puedes activar la recepción de paquetes.";
     toggle.disabled = false;
   } 
   else if (estadoPago === 'atraso_1') {
     mensaje.innerHTML = "<div class='warn'>⚠ Tienes un atraso</div>";
+    info.innerHTML = "Puedes usar este servicio, pero se recomienda ponerte al corriente.";
     toggle.disabled = false;
   } 
   else {
     mensaje.innerHTML = "<div class='error'>❌ Servicio no disponible</div>";
-    info.innerHTML = "Para activar este beneficio, es necesario regularizar tu situación.";
+    info.innerHTML = "Para activar este beneficio, ponte al corriente en tus aportaciones.";
+    toggle.checked = false;
     toggle.disabled = true;
   }
 
@@ -166,10 +168,14 @@ async function cambiarEstado() {
     .eq('id', residenteId);
 
   if (error) {
-    alert("Error al actualizar");
+    alert("No autorizado por estado de pago");
+    cargar();
     return;
   }
 }
+
+// 🔄 refresco automático
+setInterval(cargar, 10000);
 
 cargar();
 </script>
