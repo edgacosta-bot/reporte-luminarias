@@ -19,7 +19,6 @@ body {
   padding: 20px;
 }
 
-/* HEADER */
 .header {
   text-align: center;
   margin-bottom: 20px;
@@ -35,7 +34,6 @@ body {
   color: #94a3b8;
 }
 
-/* SECCIONES */
 .section {
   margin-top: 25px;
 }
@@ -47,7 +45,6 @@ body {
   font-size: 13px;
 }
 
-/* BOTONES */
 .button {
   display: block;
   text-decoration: none;
@@ -59,7 +56,6 @@ body {
   font-weight: 500;
 }
 
-/* colores */
 .luminarias { background: #9f1239; }
 .camaras { background: #065f46; }
 .cerco { background: #6b7280; }
@@ -81,13 +77,11 @@ body {
 
 <div class="container">
 
-<!-- HEADER -->
 <div class="header">
   <h1>🏡 Villas de la Concepción</h1>
   <span id="rolTexto"></span>
 </div>
 
-<!-- VISITANTES -->
 <div id="colono-section" class="section">
   <div class="section-title">VISITANTES</div>
 
@@ -95,7 +89,6 @@ body {
   <a href="bitacora_visitantes.html" class="button bitacora">📋 Bitácora de visitantes</a>
 </div>
 
-<!-- REPORTES -->
 <div id="reportes-section" class="section">
   <div class="section-title">REPORTES</div>
 
@@ -104,16 +97,14 @@ body {
   </a>
 </div>
 
-<!-- SERVICIOS -->
 <div id="servicios-section" class="section">
   <div class="section-title">SERVICIOS</div>
 
   <a href="agua.html" class="button agua">💧 Suministro de agua</a>
-  <a href="residente_paquetes.html" class="button agua">📦 Recepción de paquetes</a>
+  <a id="btnPaquetes" href="residente_paquetes.html" class="button agua">📦 Recepción de paquetes</a>
   <a href="mis_paquetes.html" class="button agua">📦 Mis paquetes</a>
 </div>
 
-<!-- INFRAESTRUCTURA -->
 <div id="infraestructura-section" class="section">
   <div class="section-title">INFRAESTRUCTURA</div>
 
@@ -122,7 +113,6 @@ body {
   <a href="cerco_electrico.html" class="button cerco">⚡ Cerco eléctrico</a>
 </div>
 
-<!-- SEGURIDAD -->
 <div id="vigilante-section" class="section">
   <div class="section-title">SEGURIDAD</div>
 
@@ -133,7 +123,6 @@ body {
   <a href="entrega_paquetes.html" class="button seguridad">📦 Entrega de paquetes</a>
 </div>
 
-<!-- ADMIN -->
 <div id="admin-section" class="section">
   <div class="section-title">ADMINISTRADOR</div>
 
@@ -149,30 +138,27 @@ body {
 
 <script>
 
-// 🔐 PROTECCIÓN
 if (!localStorage.getItem("usuario_valido")) {
   window.location.href = "login.html";
 }
 
-// 🎯 ROL
 const rol = localStorage.getItem("rol");
 
-// TEXTO SUPERIOR
 const rolTexto = document.getElementById("rolTexto");
 
 if (rol === "admin") rolTexto.innerText = "Panel de administración";
 if (rol === "vigilante") rolTexto.innerText = "Panel de vigilancia";
 if (rol === "colono") rolTexto.innerText = "Panel de colono";
 
-// ELEMENTOS
 const adminSection = document.getElementById("admin-section");
 const vigilanteSection = document.getElementById("vigilante-section");
 const colonoSection = document.getElementById("colono-section");
 const infraestructuraSection = document.getElementById("infraestructura-section");
 const serviciosSection = document.getElementById("servicios-section");
 const btnReportes = document.getElementById("btnReportes");
+const btnPaquetes = document.getElementById("btnPaquetes");
 
-// 🛡 VIGILANTE
+// VIGILANTE
 if (rol === "vigilante") {
   adminSection.style.display = "none";
   colonoSection.style.display = "none";
@@ -180,18 +166,20 @@ if (rol === "vigilante") {
   serviciosSection.style.display = "none";
 }
 
-// 👤 COLONO
+// COLONO
 if (rol === "colono") {
   adminSection.style.display = "none";
   vigilanteSection.style.display = "none";
 }
 
-// 👨‍💼 ADMIN → CAMBIO BOTÓN
+// ADMIN
 if (rol === "admin") {
   btnReportes.innerText = "📊 Reporte general";
+
+  // 🔥 ajuste clave
+  btnPaquetes.href = "paquetes.html";
 }
 
-// 🔀 REDIRECCIÓN
 function irAReportes() {
   if (rol === "admin") {
     window.location.href = "admin_reporte_general.html";
