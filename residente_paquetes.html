@@ -106,7 +106,8 @@ if (!localStorage.getItem("usuario_valido")) {
 
 const rol = localStorage.getItem("rol");
 
-if (rol !== "colono") {
+// 🔥 CORRECCIÓN AQUÍ
+if (rol !== "colono" && rol !== "admin") {
   window.location.href = "index.html";
 }
 
@@ -144,41 +145,9 @@ async function cargar() {
   } 
   else if (estadoPago === 'atraso_1') {
     mensaje.innerHTML = "<div class='warn'>⚠ Tienes un atraso</div>";
-    info.innerHTML = "Puedes usar este servicio, pero se recomienda ponerte al corriente.";
+    info.innerHTML = "Puedes usar este servicio.";
     toggle.disabled = false;
   } 
   else {
     mensaje.innerHTML = "<div class='error'>❌ Servicio no disponible</div>";
-    info.innerHTML = "Para activar este beneficio, ponte al corriente en tus aportaciones.";
-    toggle.checked = false;
-    toggle.disabled = true;
-  }
-
-  toggle.checked = data.recibe_paquetes || false;
-}
-
-async function cambiarEstado() {
-  const toggle = document.getElementById("toggle");
-
-  if (!residenteId) return;
-
-  const { error } = await supabaseClient
-    .from('residentes')
-    .update({ recibe_paquetes: toggle.checked })
-    .eq('id', residenteId);
-
-  if (error) {
-    alert("No autorizado por estado de pago");
-    cargar();
-    return;
-  }
-}
-
-// 🔄 refresco automático
-setInterval(cargar, 10000);
-
-cargar();
-</script>
-
-</body>
-</html>
+    info.innerHTML = "Ponte al
