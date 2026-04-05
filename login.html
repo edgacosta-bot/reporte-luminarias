@@ -6,7 +6,9 @@
 
   <!-- 🔥 PWA -->
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#4B2E83">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="preload" href="/icon-512.png" as="image">
 
   <title>Acceso</title>
 
@@ -14,12 +16,40 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #0f172a, #1e293b);
+      background: linear-gradient(135deg, #161a1d, #1e293b);
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100vh;
+    }
+
+    /* SPLASH */
+    body.splash {
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      background:#161a1d;
+    }
+
+    .splash-logo {
+      width:120px;
+      height:120px;
+      border-radius:50%;
+      background:#4B2E83;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      animation:fadeIn 1s ease;
+    }
+
+    .splash-logo img {
+      width:70%;
+    }
+
+    @keyframes fadeIn {
+      from {opacity:0; transform:scale(0.9);}
+      to {opacity:1; transform:scale(1);}
     }
 
     .card {
@@ -30,6 +60,7 @@
       max-width: 400px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.4);
       text-align: center;
+      display: none;
     }
 
     h2 { margin-bottom: 10px; }
@@ -64,10 +95,15 @@
       padding: 14px;
       border: none;
       border-radius: 12px;
-      background: #2563eb;
+      background: #4B2E83;
       color: white;
       font-size: 16px;
       cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    button:active {
+      transform: scale(0.97);
     }
 
     .mensaje { margin-top: 15px; font-size: 14px; }
@@ -80,16 +116,35 @@
     }
 
     .registro-link a {
-      color: #60a5fa;
+      color: #a57f2c;
       text-decoration: underline;
       cursor: pointer;
+    }
+
+    /* TOAST */
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #4B2E83;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 10px;
+      display: none;
+      z-index: 999;
     }
   </style>
 </head>
 
-<body>
+<body class="splash">
 
-<div class="card">
+<!-- SPLASH -->
+<div id="splash" class="splash-logo">
+  <img src="/icon-512.png">
+</div>
+
+<div class="card" id="cardLogin">
   <h2>Acceso al sistema</h2>
   <p>Ingresa tus datos</p>
 
@@ -100,7 +155,7 @@
   </div>
 
   <input type="text" id="privada" placeholder="Privada o tipo de acceso">
-  <input type="text" id="casa" placeholder="Número de casa">
+  <input type="text" id="casa" placeholder="Número de lote">
   <input type="password" id="clave" placeholder="Contraseña (4 dígitos)" maxlength="4">
 
   <button onclick="login()">Entrar</button>
@@ -112,79 +167,94 @@
     <br>
     <a href="registro.html">Registrarse</a>
   </div>
-
 </div>
+
+<div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-  const { createClient } = supabase;
+const { createClient } = supabase;
 
-  const supabaseClient = createClient(
-    "https://prjxmfhahnzosdwljode.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-  );
+const supabaseClient = createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
 
-  async function login() {
-    try {
-      const privada = document.getElementById("privada").value.trim();
-      const casa = document.getElementById("casa").value.trim();
-      const clave = document.getElementById("clave").value;
-      const mensaje = document.getElementById("mensaje");
+// SPLASH
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    document.getElementById("splash").style.display = "none";
+    document.body.classList.remove("splash");
+    document.getElementById("cardLogin").style.display = "block";
+  }, 1200);
+});
 
-      mensaje.className = "mensaje";
+// TOAST
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.innerText = msg;
+  t.style.display = "block";
+  setTimeout(() => t.style.display = "none", 2500);
+}
 
-      if (!privada || !casa || !clave) {
-        mensaje.innerText = "Completa todos los campos";
-        mensaje.classList.add("error");
-        return;
-      }
+async function login() {
+  try {
+    const privada = document.getElementById("privada").value.trim();
+    const casa = document.getElementById("casa").value.trim();
+    const clave = document.getElementById("clave").value;
 
-      const { data, error } = await supabaseClient
-        .from("residentes")
-        .select("*")
-        .eq("privada", privada)
-        .eq("casa", casa)
-        .eq("clave", clave)
-        .maybeSingle();
-
-      if (error || !data) {
-        console.log("ERROR LOGIN:", error);
-        mensaje.innerText = "Datos incorrectos";
-        mensaje.classList.add("error");
-        return;
-      }
-
-      console.log("LOGIN OK:", data);
-
-      // 🔥 MAPEO DE ROLES
-      let rol = data.tipo;
-
-      if (rol === "residente") rol = "colono";
-      if (rol === "administracion") rol = "admin";
-      if (rol === "vigilante") rol = "vigilante";
-
-      localStorage.setItem("usuario_valido", "true");
-      localStorage.setItem("privada", privada);
-      localStorage.setItem("casa", casa);
-
-      localStorage.setItem("rol", rol);
-      localStorage.setItem("mesa_directiva", data.es_mesa_directiva || false);
-      localStorage.setItem("soporte", data.es_soporte || false);
-
-      window.location.href = "index.html";
-
-    } catch (err) {
-      console.log("ERROR GENERAL:", err);
-      document.getElementById("mensaje").innerText = "Error inesperado";
+    if (!privada || !casa || !clave) {
+      toast("Completa todos los campos");
+      return;
     }
-  }
 
-  // 🔥 SERVICE WORKER
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-      .then(() => console.log('SW registrado'));
+    const { data, error } = await supabaseClient
+      .from("residentes")
+      .select("*")
+      .eq("privada", privada)
+      .eq("casa", casa)
+      .eq("clave", clave)
+      .maybeSingle();
+
+    if (error || !data) {
+      toast("Datos incorrectos");
+      return;
+    }
+
+    let rol = data.tipo;
+
+    if (rol === "residente") rol = "colono";
+    if (rol === "administracion") rol = "admin";
+    if (rol === "vigilante") rol = "vigilante";
+
+    localStorage.setItem("usuario_valido", "true");
+    localStorage.setItem("privada", privada);
+    localStorage.setItem("casa", casa);
+    localStorage.setItem("rol", rol);
+    localStorage.setItem("mesa_directiva", data.es_mesa_directiva || false);
+    localStorage.setItem("soporte", data.es_soporte || false);
+
+    toast("Acceso correcto");
+
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 800);
+
+  } catch (err) {
+    toast("Error inesperado");
   }
+}
+
+// OFFLINE
+window.addEventListener("offline", () => toast("Sin conexión"));
+window.addEventListener("online", () => toast("Conexión restaurada"));
+
+// SERVICE WORKER
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+    .then(() => console.log('SW registrado'));
+}
 </script>
 
 </body>
