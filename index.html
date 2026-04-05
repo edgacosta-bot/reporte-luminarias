@@ -56,14 +56,32 @@ body {
   font-weight: 500;
 }
 
-.luminarias { background: #9f1239; }
-.camaras { background: #065f46; }
-.cerco { background: #6b7280; }
-.agua { background: #2563eb; }
-.seguridad { background: #a16207; }
-.qr { background: #4338ca; }
-.bitacora { background: #0ea5e9; }
-.admin { background: #7c3aed; }
+/* 🎨 PALETA ELEGANTE */
+
+/* VISITANTES */
+.btn-visitas {
+  background: #3b82f6;
+}
+
+/* REPORTES */
+.btn-reportes {
+  background: #0ea5e9;
+}
+
+/* SERVICIOS */
+.btn-servicios {
+  background: #22c55e;
+}
+
+/* INFRAESTRUCTURA */
+.btn-infra {
+  background: #6366f1;
+}
+
+/* ADMIN */
+.btn-admin {
+  background: #8b5cf6;
+}
 
 .logout {
   background: #dc2626;
@@ -82,60 +100,58 @@ body {
   <span id="rolTexto"></span>
 </div>
 
+<!-- VISITANTES -->
 <div id="colono-section" class="section">
   <div class="section-title">VISITANTES</div>
 
-  <a href="crear_qr.html" class="button qr">📱 Generar acceso (QR)</a>
-  <a href="bitacora_visitantes.html" class="button bitacora">📋 Bitácora de visitantes</a>
+  <a href="crear_qr.html" class="button btn-visitas">📱 Generar acceso (QR)</a>
+  <a href="bitacora_visitantes.html" class="button btn-visitas">📋 Bitácora de visitantes</a>
 </div>
 
+<!-- REPORTES -->
 <div id="reportes-section" class="section">
   <div class="section-title">REPORTES</div>
 
-  <a href="#" onclick="irAReportes()" id="btnReportes" class="button seguridad">
+  <a href="#" onclick="irAReportes()" id="btnReportes" class="button btn-reportes">
     🚨 Ir a reportes
   </a>
 </div>
 
+<!-- SERVICIOS -->
 <div id="servicios-section" class="section">
   <div class="section-title">SERVICIOS</div>
 
-  <a href="agua.html" class="button agua">💧 Suministro de agua</a>
-
-  <a id="btnRecepcionPaquetes" href="residente_paquetes.html" class="button agua">
-    📦 Recepción de paquetes
-  </a>
-
-  <a id="btnMisPaquetes" href="mis_paquetes.html" class="button agua">
-    📦 Mis paquetes
-  </a>
+  <a href="agua.html" class="button btn-servicios">💧 Suministro de agua</a>
 </div>
 
+<!-- INFRAESTRUCTURA -->
 <div id="infraestructura-section" class="section">
   <div class="section-title">INFRAESTRUCTURA</div>
 
-  <a href="luminarias.html" class="button luminarias">💡 Luminarias</a>
-  <a href="videocamaras.html" class="button camaras">📹 Videovigilancia</a>
-  <a href="cerco_electrico.html" class="button cerco">⚡ Cerco eléctrico</a>
+  <a href="luminarias.html" class="button btn-infra">💡 Luminarias</a>
+  <a href="videocamaras.html" class="button btn-infra">📹 Videovigilancia</a>
+  <a href="cerco_electrico.html" class="button btn-infra">⚡ Cerco eléctrico</a>
 </div>
 
+<!-- SEGURIDAD (solo vigilante) -->
 <div id="vigilante-section" class="section">
   <div class="section-title">SEGURIDAD</div>
 
-  <a href="acceso_trabajador.html" class="button seguridad">🛡 Control de acceso</a>
-  <a href="trabajadores_dentro.html" class="button seguridad">👷 Trabajadores dentro</a>
-  <a href="incidencia_manual.html" class="button seguridad">🚨 Reportar incidencia</a>
-  <a href="paquetes.html" class="button seguridad">📦 Recepción de paquetes</a>
-  <a href="entrega_paquetes.html" class="button seguridad">📦 Entrega de paquetes</a>
+  <a href="acceso_trabajador.html" class="button btn-reportes">🛡 Control de acceso</a>
+  <a href="trabajadores_dentro.html" class="button btn-reportes">👷 Trabajadores dentro</a>
+  <a href="incidencia_manual.html" class="button btn-reportes">🚨 Reportar incidencia</a>
+  <a href="paquetes.html" class="button btn-reportes">📦 Recepción de paquetes</a>
+  <a href="entrega_paquetes.html" class="button btn-reportes">📦 Entrega de paquetes</a>
 </div>
 
+<!-- ADMIN -->
 <div id="admin-section" class="section">
   <div class="section-title">ADMINISTRADOR</div>
 
-  <a href="obras_registro.html" class="button admin">🏗 Alta de obras</a>
-  <a href="trabajadores_registro.html" class="button admin">👷 Alta de trabajadores</a>
-  <a href="trabajador_qr.html" class="button admin">📱 Generar QR trabajador</a>
-  <a href="aportaciones.html" class="button admin">💰 Situación aportaciones</a>
+  <a href="obras_registro.html" class="button btn-admin">🏗 Alta de obras</a>
+  <a href="trabajadores_registro.html" class="button btn-admin">👷 Alta de trabajadores</a>
+  <a href="trabajador_qr.html" class="button btn-admin">📱 Generar QR trabajador</a>
+  <a href="aportaciones.html" class="button btn-admin">💰 Situación aportaciones</a>
 </div>
 
 <a href="login.html" class="button logout">Cerrar sesión</a>
@@ -163,9 +179,6 @@ const infraestructuraSection = document.getElementById("infraestructura-section"
 const serviciosSection = document.getElementById("servicios-section");
 const btnReportes = document.getElementById("btnReportes");
 
-const btnRecepcionPaquetes = document.getElementById("btnRecepcionPaquetes");
-const btnMisPaquetes = document.getElementById("btnMisPaquetes");
-
 // VIGILANTE
 if (rol === "vigilante") {
   adminSection.style.display = "none";
@@ -180,13 +193,10 @@ if (rol === "colono") {
   vigilanteSection.style.display = "none";
 }
 
-// ADMIN
+// ADMIN → eliminar seguridad
 if (rol === "admin") {
   btnReportes.innerText = "📊 Reporte general";
-
-  // 🔥 eliminar paquetes del admin
-  btnRecepcionPaquetes.style.display = "none";
-  btnMisPaquetes.style.display = "none";
+  vigilanteSection.style.display = "none";
 }
 
 function irAReportes() {
