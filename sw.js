@@ -1,8 +1,6 @@
-const CACHE_NAME = "villas-v3";
+const CACHE_NAME = "villas-v5";
 
 self.addEventListener('install', e => {
-  console.log('Service Worker instalado');
-
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return cache.addAll([
@@ -10,13 +8,11 @@ self.addEventListener('install', e => {
         '/index.html',
         '/login.html',
         '/manifest.json',
-        '/icon-192.png',
-        '/icon-512.png',
-        '/icon-maskable.png'
+        '/icono-192.png',
+        '/icono-512.png'
       ]);
     })
   );
-
   self.skipWaiting();
 });
 
@@ -32,14 +28,11 @@ self.addEventListener('activate', e => {
       )
     )
   );
-
   self.clients.claim();
 });
 
 self.addEventListener('fetch', e => {
   e.respondWith(
-    caches.match(e.request).then(response => {
-      return response || fetch(e.request);
-    })
+    caches.match(e.request).then(res => res || fetch(e.request))
   );
 });
