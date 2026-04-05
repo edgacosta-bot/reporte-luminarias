@@ -101,7 +101,7 @@ body {
   <div class="section-title">SERVICIOS</div>
 
   <a href="agua.html" class="button agua">💧 Suministro de agua</a>
-  <a id="btnPaquetes" href="residente_paquetes.html" class="button agua">📦 Recepción de paquetes</a>
+  <a href="residente_paquetes.html" class="button agua">📦 Recepción de paquetes</a>
   <a href="mis_paquetes.html" class="button agua">📦 Mis paquetes</a>
 </div>
 
@@ -156,7 +156,6 @@ const colonoSection = document.getElementById("colono-section");
 const infraestructuraSection = document.getElementById("infraestructura-section");
 const serviciosSection = document.getElementById("servicios-section");
 const btnReportes = document.getElementById("btnReportes");
-const btnPaquetes = document.getElementById("btnPaquetes");
 
 // VIGILANTE
 if (rol === "vigilante") {
@@ -175,9 +174,7 @@ if (rol === "colono") {
 // ADMIN
 if (rol === "admin") {
   btnReportes.innerText = "📊 Reporte general";
-
-  // 🔥 CORRECCIÓN FINAL
-  btnPaquetes.setAttribute("href", "residente_paquetes.html");
+  // 🔥 NO SE MODIFICA NADA → MISMO COMPORTAMIENTO QUE COLONO
 }
 
 function irAReportes() {
