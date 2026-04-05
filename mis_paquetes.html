@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mis paquetes</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+  background:#0f172a;
+  color:white;
+  font-family:Arial;
+  padding:20px;
+}
+
+.item {
+  background:#1e293b;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:8px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>📦 Paquetes en caseta</h2>
+
+<div id="lista"></div>
+
+<a href="index.html" style="display:block;margin-top:20px;color:white;">Regresar</a>
+
+<script>
+const { createClient } = supabase;
+
+const supabaseClient = createClient("TU_URL","TU_KEY");
+
+if (!localStorage.getItem("usuario_valido")) {
+  window.location.href = "login.html";
+}
+
+const privada = localStorage.getItem("privada");
+const casa = localStorage.getItem("casa");
+
+async function cargar() {
+
+  const { data } = await supabaseClient
+    .from('paquetes')
+    .select('*')
+    .eq('privada', privada)
+    .eq('casa', casa)
+    .eq('entregado', false)
+    .order('fecha_recepcion', { ascending: false });
+
+  const lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  data.forEach(p => {
+    lista.innerHTML += `
+      <div class="item">
+        📦 Recibido: ${new Date(p.fecha_recepcion).toLocaleString()}
+      </div>
+    `;
+  });
+}
+
+cargar();
+</script>
+
+</body>
+</html>
