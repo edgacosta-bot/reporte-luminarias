@@ -27,6 +27,7 @@ body {
 }
 
 .section-title {
+  margin-top: 20px;
   margin-bottom: 10px;
   font-weight: bold;
   color: #9ca3af;
@@ -42,6 +43,10 @@ body {
   justify-content: space-between;
   align-items: center;
 }
+
+.ok { border-left: 6px solid #22c55e; }
+.warn { border-left: 6px solid #f59e0b; }
+.error { border-left: 6px solid #ef4444; }
 
 .button {
   padding: 8px 12px;
@@ -106,7 +111,8 @@ body {
   <h2>📦 Recepción de paquetes</h2>
 </div>
 
-<div id="contenedor"></div>
+<div id="autorizados"></div>
+<div id="no_autorizados"></div>
 
 <a href="index.html" class="button-sec">Regresar</a>
 
@@ -150,46 +156,79 @@ function cerrarModal() {
 }
 
 async function cargar() {
-  const { data, error } = await supabaseClient
+
+  // AUTORIZADOS
+  const { data: autorizados, error: e1 } = await supabaseClient
     .from('residentes')
-    .select('id, nombre, privada, casa, telefono')
+    .select('id, privada, casa, telefono')
     .eq('tipo', 'residente')
     .eq('recibe_paquetes', true)
-    .in('estado_pago', ['corriente','atraso_1'])
-    .order('privada');
+    .in('estado_pago', ['corriente','atraso_1']);
 
-  if (error) {
+  // NO AUTORIZADOS
+  const { data: noAutorizados, error: e2 } = await supabaseClient
+    .from('residentes')
+    .select('privada, casa, estado_pago, recibe_paquetes')
+    .eq('tipo', 'residente');
+
+  if (e1 || e2) {
     mostrarModal("Error", "No se pudo cargar");
-    console.log(error);
     return;
   }
 
-  render(data);
+  render(autorizados, noAutorizados);
 }
 
-function render(data) {
-  const contenedor = document.getElementById("contenedor");
-  contenedor.innerHTML = "";
+function render(autorizados, noAutorizados) {
 
-  data.sort((a, b) => {
-    if (a.privada !== b.privada) {
-      return a.privada.localeCompare(b.privada);
-    }
-    return parseInt(a.casa) - parseInt(b.casa);
-  });
+  // ordenar
+  autorizados.sort((a,b)=> a.privada.localeCompare(b.privada) || a.casa - b.casa);
+  noAutorizados.sort((a,b)=> a.privada.localeCompare(b.privada) || a.casa - b.casa);
 
-  data.forEach(r => {
+  const contA = document.getElementById("autorizados");
+  const contN = document.getElementById("no_autorizados");
+
+  contA.innerHTML = "<div class='section-title'>AUTORIZADOS</div>";
+  contN.innerHTML = "<div class='section-title'>NO DISPONIBLES</div>";
+
+  autorizados.forEach(r => {
     const div = document.createElement("div");
-    div.className = "item";
+    div.className = "item ok";
 
     div.innerHTML = `
       <span>Privada ${r.privada} - Lote ${r.casa}</span>
-      <button class="button" onclick="registrar('${r.id}', '${r.privada}', '${r.casa}', '${r.telefono}')">
+      <button class="button" onclick="registrar('${r.id}','${r.privada}','${r.casa}','${r.telefono}')">
         Registrar
       </button>
     `;
 
-    contenedor.appendChild(div);
+    contA.appendChild(div);
+  });
+
+  noAutorizados.forEach(r => {
+
+    const esValido = r.recibe_paquetes && ['corriente','atraso_1'].includes(r.estado_pago);
+    if (esValido) return;
+
+    const div = document.createElement("div");
+    div.className = "item";
+
+    let texto = "";
+
+    if (!r.recibe_paquetes) {
+      div.classList.add("warn");
+      texto = "⚠ No autorizó recepción";
+    } else {
+      div.classList.add("error");
+      texto = "❌ No disponible por adeudo";
+    }
+
+    div.innerHTML = `
+      <span>Privada ${r.privada} - Lote ${r.casa}</span>
+      <span style="font-size:12px">${texto}</span>
+    `;
+
+    contN.appendChild(div);
   });
 }
 
@@ -197,13 +236,12 @@ async function registrar(id, privada, casa, telefono) {
 
   const { error } = await supabaseClient.from('paquetes').insert({
     residente_id: id,
-    privada: privada,
-    casa: casa
+    privada,
+    casa
   });
 
   if (error) {
     mostrarModal("Error", "No se pudo registrar");
-    console.log(error);
     return;
   }
 
@@ -211,7 +249,6 @@ async function registrar(id, privada, casa, telefono) {
     const mensaje = encodeURIComponent(
       "Tienes un paquete en caseta. Recógelo hoy o mañana será entregado a administración."
     );
-
     window.open(`https://wa.me/52${telefono}?text=${mensaje}`, '_blank');
   }
 
