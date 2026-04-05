@@ -156,6 +156,7 @@ const colonoSection = document.getElementById("colono-section");
 const infraestructuraSection = document.getElementById("infraestructura-section");
 const serviciosSection = document.getElementById("servicios-section");
 const btnReportes = document.getElementById("btnReportes");
+const btnPaquetes = document.getElementById("btnPaquetes");
 
 // VIGILANTE
 if (rol === "vigilante") {
@@ -174,6 +175,9 @@ if (rol === "colono") {
 // ADMIN
 if (rol === "admin") {
   btnReportes.innerText = "📊 Reporte general";
+
+  // 🔥 CORRECCIÓN FINAL
+  btnPaquetes.setAttribute("href", "residente_paquetes.html");
 }
 
 function irAReportes() {
