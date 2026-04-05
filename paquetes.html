@@ -78,7 +78,6 @@ input {
   border: none;
 }
 
-/* MODAL */
 .modal {
   position: fixed;
   top: 0;
@@ -142,7 +141,6 @@ const supabaseClient = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-// PROTECCIÓN
 if (!localStorage.getItem("usuario_valido")) {
   window.location.href = "login.html";
 }
@@ -153,12 +151,9 @@ if (rol !== "vigilante") {
   window.location.href = "index.html";
 }
 
-let paqueteActual = null;
 let telefonoActual = null;
 
 function mostrarModal(titulo, texto, tipo = "") {
-
-  const modal = document.getElementById("modal");
 
   let botones = `<button onclick="cerrarModal()">Cerrar</button>`;
 
@@ -175,7 +170,7 @@ function mostrarModal(titulo, texto, tipo = "") {
     ${botones}
   `;
 
-  modal.style.display = "flex";
+  document.getElementById("modal").style.display = "flex";
 }
 
 function cerrarModal() {
@@ -219,7 +214,7 @@ function render(data) {
 
       div.innerHTML = `
         <span>Privada ${r.privada} - Lote ${r.casa}</span>
-        <button class="button" onclick="registrar('${r.id}','${r.privada}','${r.casa}','${r.telefono}')">
+        <button class="button" onclick="registrar('${r.id}','${r.privada}','${r.casa}')">
           Registrar
         </button>
       `;
@@ -259,39 +254,35 @@ function filtrar() {
   });
 }
 
-async function registrar(id, privada, casa, telefono) {
+async function registrar(id, privada, casa) {
 
-  const { data, error } = await supabaseClient
+  const { error } = await supabaseClient
     .from('paquetes')
     .insert({
       residente_id: id,
       privada,
       casa
-    })
-    .select()
-    .single();
+    });
 
   if (error) {
     mostrarModal("Error", "No se pudo registrar");
     return;
   }
 
-  paqueteActual = data.id;
-  telefonoActual = telefono;
-
   mostrarModal(
     "Notificación",
-    "Notifica al residente vía WhatsApp que su paquete está en caseta.",
+    "Selecciona al residente en WhatsApp y envía el mensaje.",
     "notificar"
   );
 }
 
 function abrirWhats() {
+
   const mensaje = encodeURIComponent(
     "Tienes un paquete en caseta. Recógelo hoy o mañana será entregado a administración."
   );
 
-  window.open(`https://wa.me/52${telefonoActual}?text=${mensaje}`, '_blank');
+  window.open(`https://wa.me/?text=${mensaje}`, '_blank');
 }
 
 function confirmarNotificacion() {
