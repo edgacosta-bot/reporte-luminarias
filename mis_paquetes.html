@@ -21,6 +21,12 @@ body {
   border-radius:10px;
   margin-bottom:8px;
 }
+
+.vacio {
+  text-align:center;
+  color:#94a3b8;
+  margin-top:20px;
+}
 </style>
 </head>
 
@@ -35,18 +41,23 @@ body {
 <script>
 const { createClient } = supabase;
 
-const supabaseClient = createClient("TU_URL","TU_KEY");
+const supabaseClient = createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
 
+// 🔒 PROTECCIÓN
 if (!localStorage.getItem("usuario_valido")) {
   window.location.href = "login.html";
 }
 
-const privada = localStorage.getItem("privada");
-const casa = localStorage.getItem("casa");
+// 🔍 DATOS USUARIO
+const privada = (localStorage.getItem("privada") || "").trim();
+const casa = (localStorage.getItem("casa") || "").trim();
 
 async function cargar() {
 
-  const { data } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from('paquetes')
     .select('*')
     .eq('privada', privada)
@@ -54,17 +65,36 @@ async function cargar() {
     .eq('entregado', false)
     .order('fecha_recepcion', { ascending: false });
 
+  console.log("PAQUETES:", data);
+
   const lista = document.getElementById("lista");
   lista.innerHTML = "";
 
+  if (error) {
+    lista.innerHTML = "<div class='vacio'>Error al cargar</div>";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    lista.innerHTML = "<div class='vacio'>No tienes paquetes pendientes</div>";
+    return;
+  }
+
   data.forEach(p => {
+
+    const fecha = new Date(p.fecha_recepcion);
+
     lista.innerHTML += `
       <div class="item">
-        📦 Recibido: ${new Date(p.fecha_recepcion).toLocaleString()}
+        📦 Recibido:<br>
+        ${fecha.toLocaleString('es-MX')}
       </div>
     `;
   });
 }
+
+// 🔄 refresco automático
+setInterval(cargar, 10000);
 
 cargar();
 </script>
