@@ -101,8 +101,14 @@ body {
   <div class="section-title">SERVICIOS</div>
 
   <a href="agua.html" class="button agua">💧 Suministro de agua</a>
-  <a href="residente_paquetes.html" class="button agua">📦 Recepción de paquetes</a>
-  <a href="mis_paquetes.html" class="button agua">📦 Mis paquetes</a>
+
+  <a id="btnRecepcionPaquetes" href="residente_paquetes.html" class="button agua">
+    📦 Recepción de paquetes
+  </a>
+
+  <a id="btnMisPaquetes" href="mis_paquetes.html" class="button agua">
+    📦 Mis paquetes
+  </a>
 </div>
 
 <div id="infraestructura-section" class="section">
@@ -157,6 +163,9 @@ const infraestructuraSection = document.getElementById("infraestructura-section"
 const serviciosSection = document.getElementById("servicios-section");
 const btnReportes = document.getElementById("btnReportes");
 
+const btnRecepcionPaquetes = document.getElementById("btnRecepcionPaquetes");
+const btnMisPaquetes = document.getElementById("btnMisPaquetes");
+
 // VIGILANTE
 if (rol === "vigilante") {
   adminSection.style.display = "none";
@@ -174,7 +183,10 @@ if (rol === "colono") {
 // ADMIN
 if (rol === "admin") {
   btnReportes.innerText = "📊 Reporte general";
-  // 🔥 NO SE MODIFICA NADA → MISMO COMPORTAMIENTO QUE COLONO
+
+  // 🔥 eliminar paquetes del admin
+  btnRecepcionPaquetes.style.display = "none";
+  btnMisPaquetes.style.display = "none";
 }
 
 function irAReportes() {
