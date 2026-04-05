@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrega de paquetes</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.item {
+  background: #1e293b;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background: #22c55e;
+  color: white;
+  cursor: pointer;
+}
+
+.button-sec {
+  display: block;
+  text-decoration: none;
+  padding: 16px;
+  border-radius: 14px;
+  margin-top: 15px;
+  color: white;
+  font-size: 16px;
+  background: #6b7280;
+  text-align: center;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  border: none;
+}
+
+.modal {
+  position: fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.6);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+
+.modal-content {
+  background:#1e293b;
+  padding:20px;
+  border-radius:16px;
+  text-align:center;
+  width:80%;
+}
+
+.modal-content button {
+  margin-top:10px;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:#22c55e;
+  color:white;
+  width:100%;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+  <h2>📦 Entrega de paquetes</h2>
+</div>
+
+<input type="text" id="buscador" placeholder="Buscar lote..." oninput="filtrar()">
+
+<div id="lista"></div>
+
+<a href="index.html" class="button-sec">Regresar</a>
+
+</div>
+
+<div id="modal" class="modal">
+  <div class="modal-content" id="modalContenido"></div>
+</div>
+
+<script>
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+if (!localStorage.getItem("usuario_valido")) {
+  window.location.href = "login.html";
+}
+
+if (localStorage.getItem("rol") !== "vigilante") {
+  window.location.href = "index.html";
+}
+
+let paqueteId = null;
+
+function mostrarModal(titulo, texto, tipo="") {
+
+  let botones = `<button onclick="cerrarModal()">Cerrar</button>`;
+
+  if (tipo === "confirmar") {
+    botones = `
+      <button onclick="confirmarEntrega()">Confirmar entrega</button>
+      <button onclick="cerrarModal()">Cancelar</button>
+    `;
+  }
+
+  document.getElementById("modalContenido").innerHTML = `
+    <h3>${titulo}</h3>
+    <p>${texto}</p>
+    ${botones}
+  `;
+
+  document.getElementById("modal").style.display = "flex";
+}
+
+function cerrarModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+async function cargar() {
+
+  const { data, error } = await supabaseClient
+    .from('paquetes')
+    .select('*')
+    .eq('entregado', false)
+    .order('fecha_recepcion', { ascending: false });
+
+  if (error) {
+    mostrarModal("Error", "No se pudo cargar");
+    return;
+  }
+
+  render(data);
+}
+
+function render(data) {
+
+  const lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    lista.innerHTML = "<p>No hay paquetes pendientes</p>";
+    return;
+  }
+
+  data.forEach(p => {
+
+    const fecha = new Date(p.fecha_recepcion);
+
+    const div = document.createElement("div");
+    div.className = "item";
+
+    div.innerHTML = `
+      <span>
+        Privada ${p.privada} - Lote ${p.casa}<br>
+        <small>${fecha.toLocaleString('es-MX')}</small>
+      </span>
+      <button class="button" onclick="prepararEntrega('${p.id}')">
+        Entregar
+      </button>
+    `;
+
+    lista.appendChild(div);
+  });
+}
+
+function prepararEntrega(id) {
+  paqueteId = id;
+
+  mostrarModal(
+    "Confirmar entrega",
+    "Confirma que el residente recibió el paquete.",
+    "confirmar"
+  );
+}
+
+async function confirmarEntrega() {
+
+  const { error } = await supabaseClient
+    .from('paquetes')
+    .update({
+      entregado: true,
+      fecha_entrega: new Date().toISOString()
+    })
+    .eq('id', paqueteId);
+
+  if (error) {
+    mostrarModal("Error", "No se pudo actualizar");
+    return;
+  }
+
+  mostrarModal("Listo", "Entrega registrada correctamente");
+  cargar();
+}
+
+function filtrar() {
+  const valor = document.getElementById("buscador").value.toLowerCase();
+  const items = document.querySelectorAll(".item");
+
+  items.forEach(i => {
+    const texto = i.innerText.toLowerCase();
+    i.style.display = texto.includes(valor) ? "flex" : "none";
+  });
+}
+
+setInterval(cargar, 10000);
+
+cargar();
+</script>
+
+</body>
+</html>
