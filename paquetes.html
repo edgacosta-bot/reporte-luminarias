@@ -147,11 +147,9 @@ if (!localStorage.getItem("usuario_valido")) {
 
 const rol = localStorage.getItem("rol");
 
-if (rol !== "vigilante") {
+if (rol !== "vigilante" && rol !== "admin") {
   window.location.href = "index.html";
 }
-
-let telefonoActual = null;
 
 function mostrarModal(titulo, texto, tipo = "") {
 
@@ -279,7 +277,7 @@ async function registrar(id, privada, casa) {
 function abrirWhats() {
 
   const mensaje = encodeURIComponent(
-    "Tienes un paquete en caseta. Favor de recogelo hoy o mañana será entregado a administración."
+    "Tienes un paquete en caseta. Favor de recogerlo hoy o mañana será entregado a administración."
   );
 
   window.open(`https://wa.me/?text=${mensaje}`, '_blank');
