@@ -24,7 +24,6 @@ body {
   margin-bottom: 20px;
 }
 
-/* LOGO */
 .logo {
   width: 70px;
   margin: 0 auto 10px;
@@ -74,8 +73,8 @@ body {
 .btn-infra { background: #611232; }
 .btn-admin { background: #002f2a; }
 
-/* 🔥 NUEVO COLOR PARA HOGAR */
-.btn-hogar { background: #235B4E; }
+/* 🔥 NUEVO COLOR REALMENTE DISTINTO */
+.btn-hogar { background: #9F2241; }
 
 .logout {
   background: #9b2247;
@@ -90,7 +89,6 @@ body {
 <div class="container">
 
 <div class="header">
-
   <div class="logo">
     <img src="/icono-512.png" alt="Logo">
   </div>
@@ -107,22 +105,18 @@ body {
   <a href="bitacora_visitantes.html" class="button btn-visitas">📋 Bitácora de visitantes</a>
 </div>
 
-<!-- 🔥 TRABAJADORES DEL HOGAR -->
+<!-- ✅ TRABAJADORES DEL HOGAR (CORREGIDO) -->
 <div id="hogar-section" class="section">
   <div class="section-title">TRABAJADORES DEL HOGAR</div>
 
   <a href="trabajador_hogar_registro.html" class="button btn-hogar">
-    👷 Generar QR para empleados
+    📱 Generar QR para empleados
   </a>
 
-  <!-- 🔥 CORREGIDO -->
   <a href="trabajadores_hogar_gestion.html" class="button btn-hogar">
     👷 Gestión de trabajadores
   </a>
 
-  <a href="#" class="button btn-hogar">
-    🛠 Gestión de accesos
-  </a>
 </div>
 
 <!-- REPORTES -->
@@ -143,7 +137,6 @@ body {
   <a id="btnPaquetesColono" href="residente_paquetes.html" class="button btn-servicios">
     📦 Recepción de paquetes
   </a>
-
 </div>
 
 <!-- INFRAESTRUCTURA -->
@@ -185,7 +178,6 @@ body {
 
 <script>
 
-// 🔐 SESIÓN
 if (!localStorage.getItem("usuario_valido")) {
   window.location.href = "login.html";
 }
@@ -246,22 +238,7 @@ function irAReportes() {
 
 // SERVICE WORKER
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').then(reg => {
-
-    reg.addEventListener('updatefound', () => {
-      const newWorker = reg.installing;
-
-      newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'installed') {
-          if (navigator.serviceWorker.controller) {
-            window.location.reload();
-          }
-        }
-      });
-
-    });
-
-  });
+  navigator.serviceWorker.register('/sw.js');
 }
 
 </script>
