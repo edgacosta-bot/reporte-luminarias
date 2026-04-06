@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<script src="auth.js"></script>
+<script>
+protegerPagina(["admin"]);
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Permisos trabajadores</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.nombre {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.estado {
+  font-size: 13px;
+  margin: 6px 0;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 8px;
+  border: none;
+  background: #020617;
+  color: white;
+}
+
+button {
+  margin-top: 8px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-renovar { background: #2563eb; }
+.btn-cancelar { background: #dc2626; }
+.btn-reactivar { background: #16a34a; }
+
+.estado-verde { color: #34d399; }
+.estado-rojo { color: #f87171; }
+.estado-amarillo { color: #fbbf24; }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>🪪 Permisos de trabajadores</h2>
+  <div id="lista"></div>
+</div>
+
+<script>
+
+const supabaseClient = supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+cargar();
+
+async function cargar() {
+
+  const { data } = await supabaseClient
+    .from("trabajadores_obra")
+    .select("*")
+    .order("nombre");
+
+  const lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  const hoy = new Date().toISOString().split("T")[0];
+
+  data.forEach(t => {
+
+    let estado = "";
+    let clase = "";
+
+    if (!t.activo) {
+      estado = "⛔ Cancelado";
+      clase = "estado-rojo";
+    }
+    else if (t.fecha_inicio && hoy < t.fecha_inicio) {
+      estado = "🟡 Aún no inicia";
+      clase = "estado-amarillo";
+    }
+    else if (t.fecha_fin && hoy > t.fecha_fin) {
+      estado = "🔴 Vencido";
+      clase = "estado-rojo";
+    }
+    else {
+      estado = "🟢 Vigente";
+      clase = "estado-verde";
+    }
+
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      <div class="nombre">${t.nombre}</div>
+      <div class="estado ${clase}">${estado}</div>
+
+      <input type="date" id="inicio_${t.id}" value="${t.fecha_inicio || ""}">
+      <input type="date" id="fin_${t.id}" value="${t.fecha_fin || ""}">
+
+      <button class="btn-renovar" onclick="renovar('${t.id}')">
+        🔄 Guardar / Renovar
+      </button>
+
+      ${
+        t.activo
+        ? `<button class="btn-cancelar" onclick="cancelar('${t.id}')">⛔ Cancelar permiso</button>`
+        : `<button class="btn-reactivar" onclick="reactivar('${t.id}')">🟢 Reactivar</button>`
+      }
+    `;
+
+    lista.appendChild(div);
+  });
+}
+
+// 🔄 RENOVAR
+async function renovar(id) {
+
+  const inicio = document.getElementById(`inicio_${id}`).value;
+  const fin = document.getElementById(`fin_${id}`).value;
+
+  if (inicio && fin && inicio > fin) {
+    alert("La fecha inicio no puede ser mayor que fin");
+    return;
+  }
+
+  await supabaseClient
+    .from("trabajadores_obra")
+    .update({
+      fecha_inicio: inicio || null,
+      fecha_fin: fin || null,
+      activo: true
+    })
+    .eq("id", id);
+
+  alert("Permiso actualizado");
+  cargar();
+}
+
+// ⛔ CANCELAR
+async function cancelar(id) {
+
+  if (!confirm("¿Cancelar permiso del trabajador?")) return;
+
+  await supabaseClient
+    .from("trabajadores_obra")
+    .update({ activo: false })
+    .eq("id", id);
+
+  cargar();
+}
+
+// 🟢 REACTIVAR
+async function reactivar(id) {
+
+  await supabaseClient
+    .from("trabajadores_obra")
+    .update({ activo: true })
+    .eq("id", id);
+
+  cargar();
+}
+
+</script>
+
+</body>
+</html>
