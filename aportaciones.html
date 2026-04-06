@@ -10,7 +10,7 @@
 <style>
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   background: #0f172a;
   color: white;
 }
@@ -23,14 +23,28 @@ body {
 
 .header {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
+/* 🔥 FILTROS */
+.filtros {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.filtros input, .filtros select {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+}
+
+/* LOTES */
 .section-title {
-  margin-bottom: 10px;
-  font-weight: bold;
-  color: #9ca3af;
+  margin: 10px 0;
   font-size: 13px;
+  color: #9ca3af;
 }
 
 .lote {
@@ -39,9 +53,11 @@ body {
   border-radius: 12px;
   margin-bottom: 8px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 10px;
 }
+
+.lote span { flex: 1; }
 
 select {
   padding: 6px;
@@ -49,26 +65,31 @@ select {
   border: none;
 }
 
-.button {
-  display: block;
-  text-decoration: none;
-  padding: 16px;
-  border-radius: 14px;
-  margin-top: 15px;
+.btn-save {
+  background: #22c55e;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
   color: white;
-  font-size: 16px;
-  font-weight: 500;
-  background: #2563eb;
-  text-align: center;
+  cursor: pointer;
 }
 
-/* 🔥 MODAL */
+/* BOTONES */
+.button {
+  display: block;
+  padding: 14px;
+  border-radius: 12px;
+  margin-top: 10px;
+  color: white;
+  text-align: center;
+  background: #2563eb;
+  text-decoration: none;
+}
+
+/* MODAL */
 .modal {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: rgba(0,0,0,0.6);
   display: none;
   align-items: center;
@@ -77,25 +98,9 @@ select {
 
 .modal-content {
   background: #1e293b;
-  padding: 25px;
-  border-radius: 16px;
+  padding: 20px;
+  border-radius: 12px;
   text-align: center;
-  width: 80%;
-  max-width: 300px;
-}
-
-.modal-content h3 {
-  margin-top: 0;
-}
-
-.modal-content button {
-  margin-top: 15px;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
-  background: #22c55e;
-  color: white;
-  font-size: 14px;
 }
 </style>
 </head>
@@ -108,47 +113,49 @@ select {
   <h2>💰 Situación de aportaciones</h2>
 </div>
 
+<!-- 🔥 FILTROS -->
+<div class="filtros">
+  <input id="busqueda" placeholder="Buscar lote..." oninput="aplicarFiltros()">
+  
+  <select id="filtroEstado" onchange="aplicarFiltros()">
+    <option value="">Todos</option>
+    <option value="corriente">Corriente</option>
+    <option value="atraso_1">Atraso</option>
+    <option value="moroso">Moroso</option>
+  </select>
+</div>
+
 <div id="contenedor"></div>
 
 <a href="#" onclick="guardarCambios()" class="button">Guardar cambios</a>
-
 <a href="index.html" class="button" style="background:#6b7280;">Regresar</a>
 
 </div>
 
-<!-- 🔥 MODAL -->
 <div id="modal" class="modal">
   <div class="modal-content">
-    <h3 id="modalTitulo">Listo</h3>
-    <p id="modalTexto">Actualizado correctamente</p>
+    <h3 id="modalTitulo"></h3>
+    <p id="modalTexto"></p>
     <button onclick="cerrarModal()">Aceptar</button>
   </div>
 </div>
 
 <script>
-const { createClient } = supabase;
-
-const supabaseClient = createClient(
+const supabaseClient = supabase.createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-// 🔒 PROTECCIÓN
-if (!localStorage.getItem("usuario_valido")) {
-  window.location.href = "login.html";
-}
+let dataGlobal = [];
+let cambios = {};
 
-const rol = localStorage.getItem("rol");
-
-if (rol !== "admin") {
+if (localStorage.getItem("rol") !== "admin") {
   window.location.href = "index.html";
 }
 
-let cambios = {};
-
-function mostrarModal(titulo, texto) {
-  document.getElementById("modalTitulo").innerText = titulo;
-  document.getElementById("modalTexto").innerText = texto;
+function mostrarModal(t, m) {
+  document.getElementById("modalTitulo").innerText = t;
+  document.getElementById("modalTexto").innerText = m;
   document.getElementById("modal").style.display = "flex";
 }
 
@@ -156,35 +163,47 @@ function cerrarModal() {
   document.getElementById("modal").style.display = "none";
 }
 
-function obtenerColor(estado) {
-  if (estado === 'corriente') return '#16a34a';
-  if (estado === 'atraso_1') return '#f59e0b';
-  if (estado === 'moroso') return '#dc2626';
-  return '#6b7280';
+function obtenerColor(e) {
+  if (e === 'corriente') return '#16a34a';
+  if (e === 'atraso_1') return '#f59e0b';
+  if (e === 'moroso') return '#dc2626';
 }
 
-function mapEstadoFrontend(estado) {
-  if (estado === 'atraso_1') return 'atraso';
-  return estado;
+function mapEstadoFrontend(e) {
+  return e === 'atraso_1' ? 'atraso' : e;
 }
 
 async function cargar() {
-  const { data, error } = await supabaseClient
+  const { data } = await supabaseClient
     .from('residentes')
     .select('id, privada, casa, estado_pago')
-    .eq('tipo', 'residente')
-    .order('privada');
+    .eq('tipo', 'residente');
 
-  if (error) {
-    mostrarModal("Error", "No se pudieron cargar los datos");
-    console.log(error);
-    return;
-  }
+  dataGlobal = data;
+  aplicarFiltros();
+}
 
-  render(data);
+function aplicarFiltros() {
+  const texto = document.getElementById("busqueda").value.toLowerCase();
+  const estado = document.getElementById("filtroEstado").value;
+
+  let filtrado = dataGlobal.filter(r => {
+
+    const matchTexto =
+      r.casa.toString().includes(texto) ||
+      r.privada.toLowerCase().includes(texto);
+
+    const matchEstado =
+      !estado || r.estado_pago === estado;
+
+    return matchTexto && matchEstado;
+  });
+
+  render(filtrado);
 }
 
 function render(data) {
+
   const contenedor = document.getElementById("contenedor");
   contenedor.innerHTML = "";
 
@@ -220,11 +239,13 @@ function render(data) {
       div.innerHTML = `
         <span>Lote ${r.casa}</span>
 
-        <select onchange="cambiar('${r.id}', this.value)">
+        <select id="sel_${r.id}">
           <option value="corriente" ${estadoUI === 'corriente' ? 'selected' : ''}>Corriente</option>
           <option value="atraso" ${estadoUI === 'atraso' ? 'selected' : ''}>Atraso</option>
           <option value="moroso" ${estadoUI === 'moroso' ? 'selected' : ''}>Moroso</option>
         </select>
+
+        <button class="btn-save" onclick="guardarUno('${r.id}')">💾</button>
       `;
 
       contenedor.appendChild(div);
@@ -232,8 +253,23 @@ function render(data) {
   }
 }
 
-function cambiar(id, estado) {
-  cambios[id] = estado;
+async function guardarUno(id) {
+  const estado = document.getElementById(`sel_${id}`).value;
+
+  const { error } = await supabaseClient
+    .from('residentes')
+    .update({
+      estado_pago: estado === 'atraso' ? 'atraso_1' : estado
+    })
+    .eq('id', id);
+
+  if (error) {
+    mostrarModal("Error", "No se pudo actualizar");
+    return;
+  }
+
+  mostrarModal("Listo", "Actualizado");
+  cargar();
 }
 
 async function guardarCambios() {
@@ -247,16 +283,10 @@ async function guardarCambios() {
     return;
   }
 
-  const { error } = await supabaseClient.rpc(
+  await supabaseClient.rpc(
     'actualizar_estado_pago_masivo',
     { cambios: lista }
   );
-
-  if (error) {
-    mostrarModal("Error", "No se pudo guardar");
-    console.log(error);
-    return;
-  }
 
   mostrarModal("Listo", "Actualizado correctamente");
   cambios = {};
