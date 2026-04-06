@@ -1,196 +1,131 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- 🔥 PWA -->
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#4B2E83">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#4B2E83">
 
-  <title>Acceso</title>
+<title>Acceso</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #161a1d, #1e293b);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #161a1d, #1e293b);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
 
-    .card {
-      background: #111827;
-      padding: 30px 20px;
-      border-radius: 20px;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-      text-align: center;
-    }
+.card {
+  background: #111827;
+  padding: 30px 20px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+}
 
-    h2 { margin-bottom: 10px; }
+input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #1f2937;
+  color: white;
+}
 
-    p {
-      font-size: 13px;
-      color: #9ca3af;
-      margin-bottom: 15px;
-    }
+button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #4B2E83;
+  color: white;
+}
 
-    .ayuda {
-      font-size: 12px;
-      color: #94a3b8;
-      margin-bottom: 20px;
-      line-height: 1.4;
-    }
-
-    input {
-      width: 100%;
-      padding: 14px;
-      margin-bottom: 12px;
-      border-radius: 10px;
-      border: none;
-      font-size: 14px;
-      box-sizing: border-box;
-      background: #1f2937;
-      color: white;
-    }
-
-    button {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      background: #4B2E83;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .mensaje { margin-top: 15px; font-size: 14px; }
-    .error { color: #f87171; }
-
-    .registro-link {
-      margin-top: 15px;
-      font-size: 13px;
-      color: #9ca3af;
-    }
-
-    .registro-link a {
-      color: #a57f2c;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-  </style>
+.mensaje { margin-top: 10px; }
+.error { color: #f87171; }
+</style>
 </head>
 
 <body>
 
 <div class="card">
-  <h2>Acceso al sistema</h2>
-  <p>Ingresa tus datos</p>
+  <h2>Acceso</h2>
 
-  <div class="ayuda">
-    Colonos: I, II, III, IV<br>
-    Administrador: ADMIN<br>
-    Vigilancia: SEG
-  </div>
-
-  <input type="text" id="privada" placeholder="Privada o tipo de acceso">
-  <input type="text" id="casa" placeholder="Número de casa">
-  <input type="password" id="clave" placeholder="Contraseña (4 dígitos)" maxlength="4">
+  <input id="privada" placeholder="Privada">
+  <input id="casa" placeholder="Casa">
+  <input id="clave" type="password" placeholder="Clave">
 
   <button onclick="login()">Entrar</button>
 
   <div id="mensaje" class="mensaje"></div>
-
-  <div class="registro-link">
-    ¿No tienes acceso aún?
-    <br>
-    <a href="registro.html">Registrarse</a>
-  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-const { createClient } = supabase;
-
-const supabaseClient = createClient(
+const supabaseClient = supabase.createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-function limpiarTexto(valor) {
-  return valor.replace(/\s+/g, "").trim();
+function limpiar(v) {
+  return v.replace(/\s+/g, "").trim();
 }
 
 async function login() {
-  try {
-    const privada = limpiarTexto(document.getElementById("privada").value);
-    const casa = limpiarTexto(document.getElementById("casa").value);
-    const clave = limpiarTexto(document.getElementById("clave").value);
 
-    const mensaje = document.getElementById("mensaje");
-    mensaje.className = "mensaje";
+  const privada = limpiar(document.getElementById("privada").value);
+  const casa = limpiar(document.getElementById("casa").value);
+  const clave = limpiar(document.getElementById("clave").value);
 
-    if (!privada || !casa || !clave) {
-      mensaje.innerText = "Completa todos los campos";
-      mensaje.classList.add("error");
-      return;
-    }
+  const msg = document.getElementById("mensaje");
 
-    console.log("LOGIN DEBUG →", {
-      privada: privada + "_",
-      casa: casa + "_",
-      clave: clave + "_"
-    });
-
-    const { data, error } = await supabaseClient
-      .from("residentes")
-      .select("*")
-      .eq("privada", privada)
-      .eq("casa", casa)
-      .eq("clave", clave)
-      .maybeSingle();
-
-    if (error || !data) {
-      console.log("ERROR LOGIN:", error);
-      mensaje.innerText = "Datos incorrectos";
-      mensaje.classList.add("error");
-      return;
-    }
-
-    console.log("LOGIN OK:", data);
-
-    let rol = data.tipo;
-
-    if (rol === "residente") rol = "colono";
-    if (rol === "administracion") rol = "admin";
-    if (rol === "vigilante") rol = "vigilante";
-
-    localStorage.setItem("usuario_valido", "true");
-    localStorage.setItem("privada", privada);
-    localStorage.setItem("casa", casa);
-    localStorage.setItem("rol", rol);
-    localStorage.setItem("mesa_directiva", data.es_mesa_directiva || false);
-    localStorage.setItem("soporte", data.es_soporte || false);
-
-    window.location.href = "index.html";
-
-  } catch (err) {
-    console.log("ERROR GENERAL:", err);
-    document.getElementById("mensaje").innerText = "Error inesperado";
+  if (!privada || !casa || !clave) {
+    msg.innerText = "Completa todos los campos";
+    msg.className = "mensaje error";
+    return;
   }
+
+  const { data } = await supabaseClient
+    .from("residentes")
+    .select("*")
+    .eq("privada", privada)
+    .eq("casa", casa)
+    .eq("clave", clave)
+    .maybeSingle();
+
+  if (!data) {
+    msg.innerText = "Datos incorrectos";
+    msg.className = "mensaje error";
+    return;
+  }
+
+  localStorage.setItem("usuario_valido", "true");
+  localStorage.setItem("rol", data.tipo);
+
+  window.location.href = "index.html";
 }
 
-// SERVICE WORKER
+// 🔥 SW INTELIGENTE
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
-    .then(() => console.log('SW registrado'));
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    reg.addEventListener('updatefound', () => {
+      const nw = reg.installing;
+      nw.addEventListener('statechange', () => {
+        if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+          window.location.reload();
+        }
+      });
+    });
+  });
 }
 </script>
 
