@@ -85,8 +85,8 @@ button {
 <script>
 
 const client = window.supabase.createClient(
-  'https://prjxmfhahnzosdwljode.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
 async function registrar() {
@@ -100,7 +100,6 @@ async function registrar() {
     return;
   }
 
-  // 🔥 NUEVA LÓGICA SEGURA
   const identificador = localStorage.getItem("identificador");
 
   const { data: residente, error } = await client
@@ -116,13 +115,12 @@ async function registrar() {
 
   const codigo = crypto.randomUUID();
 
+  // 🔥 INSERT CORREGIDO (SIN privada/casa)
   const { error: insertError } = await client
     .from("trabajadores_hogar")
     .insert([{
       residente_id: residente.id,
       nombre: nombre,
-      privada: residente.privada,
-      casa: residente.casa,
       qr_codigo: codigo,
       activo: true,
       fecha_inicio: inicio || null,
@@ -131,9 +129,11 @@ async function registrar() {
 
   if (insertError) {
     alert("Error al registrar");
+    console.log(insertError);
     return;
   }
 
+  // 🔥 AQUÍ SÍ PASAMOS privada/casa (PARA MOSTRAR)
   window.location.href =
     `credencial_trabajador_hogar.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${residente.privada}&casa=${residente.casa}`;
 }
