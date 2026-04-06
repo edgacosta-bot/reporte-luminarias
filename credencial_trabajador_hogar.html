@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Credencial Trabajador Hogar</title>
+<title>Credencial</title>
 
 <style>
 body {
@@ -11,25 +11,44 @@ body {
   font-family: Arial;
   background: #0f172a;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   height: 100vh;
 }
 
 .card {
-  width: 320px;
   background: #111827;
-  border-radius: 20px;
   padding: 20px;
+  border-radius: 20px;
+  width: 320px;
   text-align: center;
   color: white;
 }
 
-#qr { margin: 20px 0; }
+.header {
+  font-size: 14px;
+  color: #9ca3af;
+}
 
-.nombre {
+.titulo {
   font-size: 18px;
   font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.nombre {
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.datos {
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+#qr {
+  margin: 15px 0;
 }
 </style>
 </head>
@@ -38,12 +57,13 @@ body {
 
 <div class="card">
 
-  <div>Villas de la Concepción</div>
-  <div><b>Acceso Trabajador Hogar</b></div>
-
-  <div id="qr"></div>
+  <div class="header">Villas de la Concepción</div>
+  <div class="titulo">Acceso trabajador hogar</div>
 
   <div class="nombre" id="nombre"></div>
+  <div class="datos" id="datos"></div>
+
+  <div id="qr"></div>
 
 </div>
 
@@ -51,12 +71,16 @@ body {
 
 <script>
 
-// 🔥 LIMPIAR CONTEXTO
-localStorage.clear();
-sessionStorage.clear();
-
 const params = new URLSearchParams(window.location.search);
+
 const qr = params.get("qr");
+const nombre = params.get("nombre");
+const privada = params.get("privada");
+const casa = params.get("casa");
+
+document.getElementById("nombre").innerText = nombre;
+document.getElementById("datos").innerText =
+  `Privada ${privada} - Lote ${casa}`;
 
 const url = `${window.location.origin}/acceso_trabajador_hogar.html?qr=${qr}`;
 
