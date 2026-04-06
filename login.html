@@ -7,8 +7,7 @@
   <!-- 🔥 PWA -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#4B2E83">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="icon" href="/icono-192.png">
+  <link rel="apple-touch-icon" href="/icono-512.png">
 
   <title>Acceso</title>
 
@@ -16,7 +15,7 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #0f172a, #1e293b);
+      background: linear-gradient(135deg, #161a1d, #1e293b);
       color: white;
       display: flex;
       align-items: center;
@@ -34,41 +33,37 @@
       text-align: center;
     }
 
-    /* 🔥 ICONO */
+    /* LOGO (sin círculo extra) */
     .logo {
-      width: 90px;
-      height: 90px;
       margin: 0 auto 10px;
-      border-radius: 50%;
-      background: #4B2E83;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       animation: fadeScale 0.6s ease;
     }
 
     .logo img {
-      width: 80%;
+      width: 90px;
+      display: block;
     }
 
     @keyframes fadeScale {
-      from { opacity: 0; transform: scale(0.8); }
+      from { opacity: 0; transform: scale(0.9); }
       to { opacity: 1; transform: scale(1); }
     }
 
-    /* 🔥 TEXTO */
-    .brand {
+    .titulo-app {
       font-size: 16px;
+      color: #cbd5f5;
       margin-bottom: 10px;
-      color: #e5e7eb;
     }
 
-    /* 🔥 LÍNEA ANIMADA */
+    /* LINEA ANIMADA */
     .linea {
-      height: 3px;
       width: 100%;
-      background: #1f2937;
-      border-radius: 2px;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
       overflow: hidden;
       margin-bottom: 20px;
       position: relative;
@@ -77,15 +72,15 @@
     .linea::after {
       content: "";
       position: absolute;
+      width: 40%;
       height: 100%;
-      width: 35%;
       background: #4B2E83;
-      animation: mover 2s linear infinite;
-      border-radius: 2px;
+      animation: mover 2s infinite;
+      border-radius: 10px;
     }
 
     @keyframes mover {
-      0% { left: -35%; }
+      0% { left: -40%; }
       100% { left: 100%; }
     }
 
@@ -121,14 +116,16 @@
       padding: 14px;
       border: none;
       border-radius: 12px;
-      background: #2563eb;
+      background: #4B2E83;
       color: white;
       font-size: 16px;
       cursor: pointer;
+      transition: transform 0.1s ease;
     }
 
-    .mensaje { margin-top: 15px; font-size: 14px; }
-    .error { color: #f87171; }
+    button:active {
+      transform: scale(0.97);
+    }
 
     .registro-link {
       margin-top: 15px;
@@ -137,9 +134,22 @@
     }
 
     .registro-link a {
-      color: #60a5fa;
+      color: #a57f2c;
       text-decoration: underline;
       cursor: pointer;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #4B2E83;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 10px;
+      display: none;
+      z-index: 999;
     }
   </style>
 </head>
@@ -148,13 +158,12 @@
 
 <div class="card">
 
-  <!-- 🔥 ICONO + TEXTO DESDE EL INICIO -->
+  <!-- LOGO -->
   <div class="logo">
     <img src="/icono-512.png">
   </div>
 
-  <div class="brand">Villas de la Concepción</div>
-
+  <div class="titulo-app">Villas de la Concepción</div>
   <div class="linea"></div>
 
   <h2>Acceso al sistema</h2>
@@ -167,20 +176,19 @@
   </div>
 
   <input type="text" id="privada" placeholder="Privada o tipo de acceso">
-  <input type="text" id="casa" placeholder="Número de casa">
+  <input type="text" id="casa" placeholder="Número de lote">
   <input type="password" id="clave" placeholder="Contraseña (4 dígitos)" maxlength="4">
 
   <button onclick="login()">Entrar</button>
 
-  <div id="mensaje" class="mensaje"></div>
-
   <div class="registro-link">
-    ¿No tienes acceso aún?
-    <br>
+    ¿No tienes acceso aún?<br>
     <a href="registro.html">Registrarse</a>
   </div>
 
 </div>
+
+<div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -189,21 +197,24 @@ const { createClient } = supabase;
 
 const supabaseClient = createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA476375765.XXXX"
 );
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.innerText = msg;
+  t.style.display = "block";
+  setTimeout(() => t.style.display = "none", 2500);
+}
 
 async function login() {
   try {
     const privada = document.getElementById("privada").value.trim();
     const casa = document.getElementById("casa").value.trim();
     const clave = document.getElementById("clave").value;
-    const mensaje = document.getElementById("mensaje");
-
-    mensaje.className = "mensaje";
 
     if (!privada || !casa || !clave) {
-      mensaje.innerText = "Completa todos los campos";
-      mensaje.classList.add("error");
+      toast("Completa todos los campos");
       return;
     }
 
@@ -216,8 +227,7 @@ async function login() {
       .maybeSingle();
 
     if (error || !data) {
-      mensaje.innerText = "Datos incorrectos";
-      mensaje.classList.add("error");
+      toast("Datos incorrectos");
       return;
     }
 
@@ -228,12 +238,18 @@ async function login() {
     if (rol === "vigilante") rol = "vigilante";
 
     localStorage.setItem("usuario_valido", "true");
+    localStorage.setItem("privada", privada);
+    localStorage.setItem("casa", casa);
     localStorage.setItem("rol", rol);
 
-    window.location.href = "index.html";
+    toast("Acceso correcto");
 
-  } catch {
-    document.getElementById("mensaje").innerText = "Error inesperado";
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 800);
+
+  } catch (err) {
+    toast("Error inesperado");
   }
 }
 
