@@ -104,6 +104,19 @@ body {
   <a href="bitacora_visitantes.html" class="button btn-visitas">📋 Bitácora de visitantes</a>
 </div>
 
+<!-- 🔥 NUEVA SECCIÓN -->
+<div id="hogar-section" class="section">
+  <div class="section-title">TRABAJADORES DEL HOGAR</div>
+
+  <a href="trabajador_hogar_registro.html" class="button btn-visitas">
+    👷 Generar QR para empleados
+  </a>
+
+  <a href="#" class="button btn-visitas">
+    🛠 Gestión de accesos
+  </a>
+</div>
+
 <!-- REPORTES -->
 <div id="reportes-section" class="section">
   <div class="section-title">REPORTES</div>
@@ -119,7 +132,6 @@ body {
 
   <a href="agua.html" class="button btn-servicios">💧 Suministro de agua</a>
 
-  <!-- 🔥 NUEVO: SOLO COLONO -->
   <a id="btnPaquetesColono" href="residente_paquetes.html" class="button btn-servicios">
     📦 Recepción de paquetes
   </a>
@@ -182,6 +194,7 @@ const vigilanteSection = document.getElementById("vigilante-section");
 const colonoSection = document.getElementById("colono-section");
 const infraestructuraSection = document.getElementById("infraestructura-section");
 const serviciosSection = document.getElementById("servicios-section");
+const hogarSection = document.getElementById("hogar-section"); // 🔥 NUEVO
 const btnReportes = document.getElementById("btnReportes");
 const btnPaquetesColono = document.getElementById("btnPaquetesColono");
 
@@ -191,6 +204,7 @@ if (rol === "vigilante") {
   colonoSection.style.display = "none";
   infraestructuraSection.style.display = "none";
   serviciosSection.style.display = "none";
+  if (hogarSection) hogarSection.style.display = "none"; // 🔥
 }
 
 // COLONO
@@ -203,8 +217,8 @@ if (rol === "colono") {
 if (rol === "admin") {
   btnReportes.innerText = "📊 Reporte general";
   vigilanteSection.style.display = "none";
+  if (hogarSection) hogarSection.style.display = "none"; // 🔥
 
-  // 🔥 OCULTAR BOTÓN DE PAQUETES PARA ADMIN
   if (btnPaquetesColono) btnPaquetesColono.style.display = "none";
 }
 
