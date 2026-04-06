@@ -74,6 +74,9 @@ body {
 .btn-infra { background: #611232; }
 .btn-admin { background: #002f2a; }
 
+/* 🔥 NUEVO COLOR PARA HOGAR */
+.btn-hogar { background: #235B4E; }
+
 .logout {
   background: #9b2247;
   text-align: center;
@@ -104,18 +107,20 @@ body {
   <a href="bitacora_visitantes.html" class="button btn-visitas">📋 Bitácora de visitantes</a>
 </div>
 
-<!-- 🔥 NUEVA SECCIÓN -->
+<!-- 🔥 TRABAJADORES DEL HOGAR -->
 <div id="hogar-section" class="section">
   <div class="section-title">TRABAJADORES DEL HOGAR</div>
 
-  <a href="trabajador_hogar_registro.html" class="button btn-visitas">
+  <a href="trabajador_hogar_registro.html" class="button btn-hogar">
     👷 Generar QR para empleados
   </a>
-  <a href="trabajadores_hogar_gestion.html">
-  <button>👷 Gestión de trabajadores</button>
-</a>
 
-  <a href="#" class="button btn-visitas">
+  <!-- 🔥 CORREGIDO -->
+  <a href="trabajadores_hogar_gestion.html" class="button btn-hogar">
+    👷 Gestión de trabajadores
+  </a>
+
+  <a href="#" class="button btn-hogar">
     🛠 Gestión de accesos
   </a>
 </div>
@@ -180,6 +185,7 @@ body {
 
 <script>
 
+// 🔐 SESIÓN
 if (!localStorage.getItem("usuario_valido")) {
   window.location.href = "login.html";
 }
@@ -197,7 +203,7 @@ const vigilanteSection = document.getElementById("vigilante-section");
 const colonoSection = document.getElementById("colono-section");
 const infraestructuraSection = document.getElementById("infraestructura-section");
 const serviciosSection = document.getElementById("servicios-section");
-const hogarSection = document.getElementById("hogar-section"); // 🔥 NUEVO
+const hogarSection = document.getElementById("hogar-section");
 const btnReportes = document.getElementById("btnReportes");
 const btnPaquetesColono = document.getElementById("btnPaquetesColono");
 
@@ -207,7 +213,7 @@ if (rol === "vigilante") {
   colonoSection.style.display = "none";
   infraestructuraSection.style.display = "none";
   serviciosSection.style.display = "none";
-  if (hogarSection) hogarSection.style.display = "none"; // 🔥
+  if (hogarSection) hogarSection.style.display = "none";
 }
 
 // COLONO
@@ -220,7 +226,7 @@ if (rol === "colono") {
 if (rol === "admin") {
   btnReportes.innerText = "📊 Reporte general";
   vigilanteSection.style.display = "none";
-  if (hogarSection) hogarSection.style.display = "none"; // 🔥
+  if (hogarSection) hogarSection.style.display = "none";
 
   if (btnPaquetesColono) btnPaquetesColono.style.display = "none";
 }
@@ -238,7 +244,7 @@ function irAReportes() {
   }
 }
 
-// SERVICE WORKER AUTO-UPDATE
+// SERVICE WORKER
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
 
