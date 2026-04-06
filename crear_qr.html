@@ -73,7 +73,6 @@
     .btn-back { background: #374151; color: white; }
     .btn-wa { background: #25D366; color: white; }
 
-    /* 🔥 QR ESTILO MEJORADO */
     #qrcode {
       margin-top: 20px;
       text-align: center;
@@ -92,7 +91,6 @@
     .qr-logo {
       width: 50px;
       margin-bottom: -10px;
-      z-index: 2;
     }
 
     .qr-title {
@@ -107,7 +105,7 @@
       color: #374151;
     }
 
-    /* MODALES (sin cambios) */
+    /* MODALES */
     .modal {
       display: none;
       position: fixed;
@@ -116,12 +114,6 @@
       z-index: 999;
       align-items: center;
       justify-content: center;
-      animation: fadeIn 0.2s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
     }
 
     .modal-content {
@@ -131,27 +123,17 @@
       width: 90%;
       max-width: 360px;
       text-align: center;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.35);
-      animation: scaleIn 0.2s ease;
       color: #1f2937;
     }
 
-    @keyframes scaleIn {
-      from { transform: scale(0.9); }
-      to { transform: scale(1); }
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
     }
-
-    .modal-icon { font-size: 40px; margin-bottom: 10px; }
-    .modal-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
-    .modal-text { font-size: 14px; color: #374151; margin-bottom: 15px; }
-    .modal-buttons { display: flex; gap: 10px; }
 
     .btn-gray { background: #6b7280; color: white; }
     .btn-blue { background: #2563eb; color: white; }
     .btn-red { background: #b91c1c; color: white; }
-
-    .warning .modal-title { color: #b45309; }
-    .danger .modal-title { color: #b91c1c; }
   </style>
 </head>
 
@@ -168,7 +150,7 @@
     <div id="infoUsuario" class="info-user"></div>
 
     <label>Nombre del visitante</label>
-    <input id="visitante" placeholder="Ej. Juan Pérez">
+    <input id="visitante">
 
     <label>Fecha de visita</label>
     <input id="fecha" type="date">
@@ -183,7 +165,6 @@
       Generar código QR
     </button>
 
-    <!-- 🔥 NUEVO DISEÑO QR -->
     <div id="qrcode"></div>
 
     <button id="btnWhatsapp" class="btn-wa" style="display:none;">
@@ -197,6 +178,27 @@
   </div>
 </div>
 
+<!-- MODAL ATRASO -->
+<div id="modalAviso" class="modal">
+  <div class="modal-content">
+    <p><b>⚠️ Tienes atraso en tus aportaciones</b></p>
+    <p>Puedes generar acceso, pero regulariza tu pago.</p>
+    <div class="modal-buttons">
+      <button class="btn-gray" onclick="cerrarModal(false)">Cancelar</button>
+      <button class="btn-blue" onclick="cerrarModal(true)">Continuar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MOROSO -->
+<div id="modalBloqueo" class="modal">
+  <div class="modal-content">
+    <p><b>⛔ Acceso bloqueado</b></p>
+    <p>Debes regularizar tus pagos.</p>
+    <button class="btn-red" onclick="location.href='index.html'">Entendido</button>
+  </div>
+</div>
+
 <script>
 const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
@@ -206,12 +208,26 @@ const client = window.supabase.createClient(
 const privada = localStorage.getItem("privada");
 const casa = localStorage.getItem("casa");
 
-if (!privada || !casa) {
-  window.location.href = "login.html";
-}
-
 document.getElementById("infoUsuario").innerText =
   `Privada ${privada} - Casa ${casa}`;
+
+let resolverModal;
+
+function mostrarModal() {
+  return new Promise(resolve => {
+    resolverModal = resolve;
+    document.getElementById("modalAviso").style.display = "flex";
+  });
+}
+
+function cerrarModal(respuesta) {
+  document.getElementById("modalAviso").style.display = "none";
+  resolverModal(respuesta);
+}
+
+function mostrarBloqueo() {
+  document.getElementById("modalBloqueo").style.display = "flex";
+}
 
 async function generarQR() {
 
@@ -232,9 +248,16 @@ async function generarQR() {
     .eq('casa', casa)
     .single();
 
-  if (!user) {
-    alert("Error de sesión");
+  const estado = (user.estado_pago || "corriente").toLowerCase().trim();
+
+  if (estado === "moroso") {
+    mostrarBloqueo();
     return;
+  }
+
+  if (estado === "atraso_1") {
+    const continuar = await mostrarModal();
+    if (!continuar) return;
   }
 
   const codigo = crypto.randomUUID();
@@ -253,8 +276,7 @@ async function generarQR() {
 
   const link = `${window.location.origin}/mostrar_qr.html?qr=${codigo}`;
 
-  const qrContainer = document.getElementById("qrcode");
-  qrContainer.innerHTML = `
+  document.getElementById("qrcode").innerHTML = `
     <div class="qr-wrapper">
       <img src="/icono-512.png" class="qr-logo">
       <div id="qrCanvas"></div>
@@ -268,12 +290,9 @@ async function generarQR() {
     height: 200
   });
 
-  const mensaje = `🏡 Villas de la Concepción\n\nPresenta este código QR:\n${link}`;
-  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
-
   const btn = document.getElementById("btnWhatsapp");
   btn.style.display = "block";
-  btn.onclick = () => window.open(whatsappUrl, "_blank");
+  btn.onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(link)}`);
 }
 </script>
 
