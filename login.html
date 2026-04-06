@@ -17,37 +17,95 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #161a1d, #1e293b);
+      background: #161a1d;
       color: white;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* 🔥 INTRO */
+    .intro {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #161a1d;
+      z-index: 10;
+    }
+
+    .logo {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: #4B2E83;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      animation: pop 0.8s ease;
     }
 
+    .logo img {
+      width: 70%;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.7); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .titulo {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #e5e7eb;
+      letter-spacing: 1px;
+      opacity: 0;
+      animation: fadeIn 1s ease forwards;
+      animation-delay: 0.5s;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    /* 🔥 CINTILLO */
+    .cinta {
+      position: absolute;
+      bottom: 40px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .cinta span {
+      display: inline-block;
+      white-space: nowrap;
+      padding-left: 100%;
+      animation: scroll 6s linear infinite;
+      color: #a57f2c;
+      font-size: 13px;
+    }
+
+    @keyframes scroll {
+      from { transform: translateX(0); }
+      to { transform: translateX(-100%); }
+    }
+
+    /* LOGIN */
     .card {
+      position: relative;
+      z-index: 1;
+      display: none;
       background: #111827;
       padding: 30px 20px;
       border-radius: 20px;
       width: 90%;
       max-width: 400px;
+      margin: auto;
+      top: 50%;
+      transform: translateY(-50%);
       box-shadow: 0 10px 30px rgba(0,0,0,0.4);
       text-align: center;
-    }
-
-    h2 { margin-bottom: 10px; }
-
-    p {
-      font-size: 13px;
-      color: #9ca3af;
-      margin-bottom: 15px;
-    }
-
-    .ayuda {
-      font-size: 12px;
-      color: #94a3b8;
-      margin-bottom: 20px;
-      line-height: 1.4;
     }
 
     input {
@@ -56,8 +114,6 @@
       margin-bottom: 12px;
       border-radius: 10px;
       border: none;
-      font-size: 14px;
-      box-sizing: border-box;
       background: #1f2937;
       color: white;
     }
@@ -71,26 +127,6 @@
       color: white;
       font-size: 16px;
       cursor: pointer;
-      transition: transform 0.1s ease;
-    }
-
-    button:active {
-      transform: scale(0.97);
-    }
-
-    .mensaje { margin-top: 15px; font-size: 14px; }
-    .error { color: #f87171; }
-
-    .registro-link {
-      margin-top: 15px;
-      font-size: 13px;
-      color: #9ca3af;
-    }
-
-    .registro-link a {
-      color: #a57f2c;
-      text-decoration: underline;
-      cursor: pointer;
     }
 
     #toast {
@@ -99,40 +135,37 @@
       left: 50%;
       transform: translateX(-50%);
       background: #4B2E83;
-      color: white;
-      padding: 12px 18px;
-      border-radius: 10px;
+      padding: 10px 15px;
+      border-radius: 8px;
       display: none;
-      z-index: 999;
     }
   </style>
 </head>
 
 <body>
 
-<div class="card">
-  <h2>Acceso al sistema</h2>
-  <p>Ingresa tus datos</p>
-
-  <div class="ayuda">
-    Colonos: I, II, III, IV<br>
-    Administrador: ADMIN<br>
-    Vigilancia: SEG
+<!-- 🔥 INTRO -->
+<div class="intro" id="intro">
+  <div class="logo">
+    <img src="/icono-512.png">
   </div>
 
-  <input type="text" id="privada" placeholder="Privada o tipo de acceso">
-  <input type="text" id="casa" placeholder="Número de lote">
-  <input type="password" id="clave" placeholder="Contraseña (4 dígitos)" maxlength="4">
+  <div class="titulo">Villas de la Concepción</div>
+
+  <div class="cinta">
+    <span>Bienvenido • Seguridad • Comunidad • Control vecinal • Villas de la Concepción •</span>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="card" id="loginCard">
+  <h2>Acceso</h2>
+
+  <input type="text" id="privada" placeholder="Privada">
+  <input type="text" id="casa" placeholder="Lote">
+  <input type="password" id="clave" placeholder="Clave">
 
   <button onclick="login()">Entrar</button>
-
-  <div id="mensaje" class="mensaje"></div>
-
-  <div class="registro-link">
-    ¿No tienes acceso aún?
-    <br>
-    <a href="registro.html">Registrarse</a>
-  </div>
 </div>
 
 <div id="toast"></div>
@@ -147,59 +180,55 @@ const supabaseClient = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
+// INTRO → LOGIN
+setTimeout(() => {
+  document.getElementById("intro").style.display = "none";
+  document.getElementById("loginCard").style.display = "block";
+}, 2200);
+
+// TOAST
 function toast(msg) {
   const t = document.getElementById("toast");
   t.innerText = msg;
   t.style.display = "block";
-  setTimeout(() => t.style.display = "none", 2500);
+  setTimeout(() => t.style.display = "none", 2000);
 }
 
 async function login() {
-  try {
-    const privada = document.getElementById("privada").value.trim();
-    const casa = document.getElementById("casa").value.trim();
-    const clave = document.getElementById("clave").value;
+  const privada = document.getElementById("privada").value.trim();
+  const casa = document.getElementById("casa").value.trim();
+  const clave = document.getElementById("clave").value;
 
-    if (!privada || !casa || !clave) {
-      toast("Completa todos los campos");
-      return;
-    }
-
-    const { data, error } = await supabaseClient
-      .from("residentes")
-      .select("*")
-      .eq("privada", privada)
-      .eq("casa", casa)
-      .eq("clave", clave)
-      .maybeSingle();
-
-    if (error || !data) {
-      toast("Datos incorrectos");
-      return;
-    }
-
-    let rol = data.tipo;
-
-    if (rol === "residente") rol = "colono";
-    if (rol === "administracion") rol = "admin";
-    if (rol === "vigilante") rol = "vigilante";
-
-    localStorage.setItem("usuario_valido", "true");
-    localStorage.setItem("privada", privada);
-    localStorage.setItem("casa", casa);
-    localStorage.setItem("rol", rol);
-
-    toast("Acceso correcto");
-
-    setTimeout(() => {
-      window.location.href = "index.html";
-    }, 800);
-
-  } catch {
-    toast("Error inesperado");
+  if (!privada || !casa || !clave) {
+    toast("Completa datos");
+    return;
   }
+
+  const { data } = await supabaseClient
+    .from("residentes")
+    .select("*")
+    .eq("privada", privada)
+    .eq("casa", casa)
+    .eq("clave", clave)
+    .maybeSingle();
+
+  if (!data) {
+    toast("Datos incorrectos");
+    return;
+  }
+
+  let rol = data.tipo;
+  if (rol === "residente") rol = "colono";
+  if (rol === "administracion") rol = "admin";
+  if (rol === "vigilante") rol = "vigilante";
+
+  localStorage.setItem("usuario_valido", "true");
+  localStorage.setItem("rol", rol);
+
+  window.location.href = "index.html";
 }
 
+// SW
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js');
 }
