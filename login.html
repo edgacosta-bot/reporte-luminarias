@@ -4,8 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- 🔥 PWA -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#4B2E83">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="preload" href="/icono-512.png" as="image">
 
   <title>Acceso</title>
 
@@ -21,13 +24,58 @@
       height: 100vh;
     }
 
+    /* SPLASH */
+    body.splash {
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      background:#161a1d;
+    }
+
+    .splash-logo {
+      width:120px;
+      height:120px;
+      border-radius:50%;
+      background:#4B2E83;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      animation:fadeIn 0.8s ease;
+    }
+
+    .splash-logo img {
+      width:70%;
+    }
+
+    @keyframes fadeIn {
+      from {opacity:0; transform:scale(0.9);}
+      to {opacity:1; transform:scale(1);}
+    }
+
     .card {
       background: #111827;
       padding: 30px 20px;
       border-radius: 20px;
       width: 90%;
       max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
       text-align: center;
+      display: none;
+    }
+
+    h2 { margin-bottom: 10px; }
+
+    p {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 15px;
+    }
+
+    .ayuda {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 20px;
+      line-height: 1.4;
     }
 
     input {
@@ -36,6 +84,8 @@
       margin-bottom: 12px;
       border-radius: 10px;
       border: none;
+      font-size: 14px;
+      box-sizing: border-box;
       background: #1f2937;
       color: white;
     }
@@ -43,30 +93,82 @@
     button {
       width: 100%;
       padding: 14px;
-      border-radius: 12px;
       border: none;
+      border-radius: 12px;
       background: #4B2E83;
       color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.1s ease;
     }
 
-    .mensaje { margin-top: 10px; }
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .mensaje { margin-top: 15px; font-size: 14px; }
     .error { color: #f87171; }
+
+    .registro-link {
+      margin-top: 15px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    .registro-link a {
+      color: #a57f2c;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    /* TOAST */
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #4B2E83;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 10px;
+      display: none;
+      z-index: 999;
+    }
   </style>
 </head>
 
-<body>
+<body class="splash">
 
-<div class="card">
+<!-- SPLASH -->
+<div id="splash" class="splash-logo">
+  <img src="/icono-512.png">
+</div>
+
+<div class="card" id="cardLogin">
   <h2>Acceso al sistema</h2>
+  <p>Ingresa tus datos</p>
 
-  <input id="privada" placeholder="Privada o tipo de acceso">
-  <input id="casa" placeholder="Número de casa">
-  <input id="clave" type="password" placeholder="Contraseña">
+  <div class="ayuda">
+    Colonos: I, II, III, IV<br>
+    Administrador: ADMIN<br>
+    Vigilancia: SEG
+  </div>
+
+  <input type="text" id="privada" placeholder="Privada o tipo de acceso">
+  <input type="text" id="casa" placeholder="Número de lote">
+  <input type="password" id="clave" placeholder="Contraseña (4 dígitos)" maxlength="4">
 
   <button onclick="login()">Entrar</button>
 
   <div id="mensaje" class="mensaje"></div>
+
+  <div class="registro-link">
+    ¿No tienes acceso aún?<br>
+    <a href="registro.html">Registrarse</a>
+  </div>
 </div>
+
+<div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -78,6 +180,24 @@ const supabaseClient = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
+// SPLASH
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    document.getElementById("splash").style.display = "none";
+    document.body.classList.remove("splash");
+    document.getElementById("cardLogin").style.display = "block";
+  }, 800);
+});
+
+// TOAST
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.innerText = msg;
+  t.style.display = "block";
+  setTimeout(() => t.style.display = "none", 2500);
+}
+
+// LIMPIEZA
 function limpiar(v) {
   return v.replace(/\s+/g, "").trim();
 }
@@ -88,12 +208,8 @@ async function login() {
     const casa = limpiar(document.getElementById("casa").value);
     const clave = limpiar(document.getElementById("clave").value);
 
-    const mensaje = document.getElementById("mensaje");
-    mensaje.className = "mensaje";
-
     if (!privada || !casa || !clave) {
-      mensaje.innerText = "Completa todos los campos";
-      mensaje.classList.add("error");
+      toast("Completa todos los campos");
       return;
     }
 
@@ -106,8 +222,7 @@ async function login() {
       .maybeSingle();
 
     if (error || !data) {
-      mensaje.innerText = "Datos incorrectos";
-      mensaje.classList.add("error");
+      toast("Datos incorrectos");
       return;
     }
 
@@ -118,26 +233,45 @@ async function login() {
     if (rol === "vigilante") rol = "vigilante";
 
     localStorage.setItem("usuario_valido", "true");
+    localStorage.setItem("privada", privada);
+    localStorage.setItem("casa", casa);
     localStorage.setItem("rol", rol);
+    localStorage.setItem("mesa_directiva", data.es_mesa_directiva || false);
+    localStorage.setItem("soporte", data.es_soporte || false);
 
-    window.location.href = "index.html";
+    toast("Acceso correcto");
+
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 800);
 
   } catch (err) {
-    document.getElementById("mensaje").innerText = "Error inesperado";
+    toast("Error inesperado");
   }
 }
+
+// OFFLINE
+window.addEventListener("offline", () => toast("Sin conexión"));
+window.addEventListener("online", () => toast("Conexión restaurada"));
 
 // 🔥 SERVICE WORKER AUTO-UPDATE
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
+
     reg.addEventListener('updatefound', () => {
-      const nw = reg.installing;
-      nw.addEventListener('statechange', () => {
-        if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-          window.location.reload();
+      const newWorker = reg.installing;
+
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed') {
+          if (navigator.serviceWorker.controller) {
+            console.log("Nueva versión detectada");
+            window.location.reload();
+          }
         }
       });
+
     });
+
   });
 }
 </script>
