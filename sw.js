@@ -1,4 +1,4 @@
-const CACHE_NAME = "v1.0.0"; // 🔥 cambia esto cada vez que hagas cambios
+const CACHE_NAME = "v1.0.1"; // 🔥 cambia versión para forzar actualización
 
 const FILES_TO_CACHE = [
   "/",
@@ -9,9 +9,9 @@ const FILES_TO_CACHE = [
   "/icono-512.png"
 ];
 
-// INSTALACIÓN
+// 🔹 INSTALACIÓN
 self.addEventListener("install", event => {
-  self.skipWaiting(); // 🔥 fuerza actualización inmediata
+  self.skipWaiting();
 
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
@@ -20,7 +20,7 @@ self.addEventListener("install", event => {
   );
 });
 
-// ACTIVACIÓN (borra versiones viejas)
+// 🔹 ACTIVACIÓN (limpia versiones viejas)
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys => {
@@ -34,18 +34,29 @@ self.addEventListener("activate", event => {
     })
   );
 
-  self.clients.claim(); // 🔥 toma control inmediato
+  self.clients.claim();
 });
 
-// FETCH (estrategia inteligente)
+// 🔹 FETCH (AJUSTE CLAVE AQUÍ)
 self.addEventListener("fetch", event => {
+
+  const url = new URL(event.request.url);
+
+  // 🚫 NO CACHEAR PÁGINAS DINÁMICAS (CRÍTICO)
+  if (
+    url.pathname.includes("mostrar_qr.html") ||
+    url.pathname.includes("validar.html") ||
+    url.pathname.includes("credencial_trabajador.html") ||
+    url.pathname.includes("acceso_trabajador.html")
+  ) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // 🔥 comportamiento actual (network-first con fallback)
   event.respondWith(
     fetch(event.request)
-      .then(response => {
-        return response;
-      })
-      .catch(() => {
-        return caches.match(event.request);
-      })
+      .then(response => response)
+      .catch(() => caches.match(event.request))
   );
 });
