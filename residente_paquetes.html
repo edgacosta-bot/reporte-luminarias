@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Recepción de paquetes</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
 body {
   margin: 0;
@@ -21,46 +19,64 @@ body {
   padding: 20px;
 }
 
-.header {
+h2 {
   text-align: center;
   margin-bottom: 20px;
 }
 
 .card {
-  background: #1e293b;
+  background: #111827;
   padding: 20px;
   border-radius: 16px;
-  text-align: center;
 }
 
+/* SWITCH */
 .switch {
-  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.switch input {
-  transform: scale(1.5);
+.toggle {
+  width: 55px;
+  height: 30px;
+  background: #374151;
+  border-radius: 20px;
+  position: relative;
+  cursor: pointer;
 }
 
-.estado {
+.toggle::after {
+  content: "";
+  width: 24px;
+  height: 24px;
+  background: white;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.toggle.active {
+  background: #22c55e;
+}
+
+.toggle.active::after {
+  left: 28px;
+}
+
+/* MENSAJE */
+.mensaje {
   margin-top: 15px;
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
-.ok { color: #22c55e; }
-.warn { color: #f59e0b; }
-.error { color: #ef4444; }
+.warning { color: #facc15; }
+.error { color: #f87171; }
+.ok { color: #34d399; }
 
-.button {
-  display: block;
-  text-decoration: none;
-  padding: 16px;
-  border-radius: 14px;
-  margin-top: 20px;
-  color: white;
-  font-size: 16px;
-  background: #6b7280;
-  text-align: center;
-}
 </style>
 </head>
 
@@ -68,28 +84,22 @@ body {
 
 <div class="container">
 
-<div class="header">
   <h2>📦 Recepción de paquetes</h2>
-</div>
 
-<div class="card">
+  <div class="card">
 
-  <div id="mensaje"></div>
+    <div class="switch">
+      <span>Autorizar recepción en caseta</span>
+      <div id="toggle" class="toggle"></div>
+    </div>
 
-  <div class="switch">
-    <label>
-      <input type="checkbox" id="toggle" onchange="cambiarEstado()">
-      Autorizar recepción en caseta
-    </label>
+    <div id="mensaje" class="mensaje"></div>
+
   </div>
 
-  <div id="info" class="estado"></div>
-
 </div>
 
-<a href="index.html" class="button">Regresar</a>
-
-</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 const { createClient } = supabase;
@@ -99,55 +109,83 @@ const supabaseClient = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-// 🔒 PROTECCIÓN
-if (!localStorage.getItem("usuario_valido")) {
-  window.location.href = "login.html";
-}
-
-const rol = localStorage.getItem("rol");
-
-// 🔥 CORRECCIÓN AQUÍ
-if (rol !== "colono" && rol !== "admin") {
-  window.location.href = "index.html";
-}
-
-// IDENTIDAD
 const privada = localStorage.getItem("privada");
 const casa = localStorage.getItem("casa");
 
+const toggle = document.getElementById("toggle");
+const mensaje = document.getElementById("mensaje");
+
 let residenteId = null;
 let estadoPago = null;
+let autorizado = false;
 
+// 🔽 CARGAR DATOS
 async function cargar() {
-  const { data, error } = await supabaseClient
-    .from('residentes')
-    .select('id, estado_pago, recibe_paquetes')
-    .eq('privada', privada)
-    .eq('casa', casa)
+
+  const { data } = await supabaseClient
+    .from("residentes")
+    .select("*")
+    .eq("privada", privada)
+    .eq("casa", casa)
     .maybeSingle();
 
-  if (error || !data) {
-    document.getElementById("mensaje").innerText = "Error al cargar";
-    return;
-  }
+  if (!data) return;
 
   residenteId = data.id;
   estadoPago = data.estado_pago;
+  autorizado = data.autoriza_paquetes || false;
 
-  const toggle = document.getElementById("toggle");
-  const info = document.getElementById("info");
-  const mensaje = document.getElementById("mensaje");
+  render();
+}
 
-  if (estadoPago === 'corriente') {
-    mensaje.innerHTML = "<div class='ok'>✔ Estás al corriente</div>";
-    info.innerHTML = "Puedes activar la recepción de paquetes.";
-    toggle.disabled = false;
-  } 
-  else if (estadoPago === 'atraso_1') {
-    mensaje.innerHTML = "<div class='warn'>⚠ Tienes un atraso</div>";
-    info.innerHTML = "Puedes usar este servicio.";
-    toggle.disabled = false;
-  } 
-  else {
-    mensaje.innerHTML = "<div class='error'>❌ Servicio no disponible</div>";
-    info.innerHTML = "Ponte al
+// 🎨 UI
+function render() {
+
+  toggle.classList.toggle("active", autorizado);
+
+  // MOROSO → BLOQUEADO
+  if (estadoPago === "moroso") {
+    toggle.style.opacity = "0.5";
+    toggle.style.pointerEvents = "none";
+
+    mensaje.className = "mensaje error";
+    mensaje.innerText =
+      "⚠️ Este beneficio no está disponible por adeudo.\nRegulariza tu situación para activarlo.";
+    return;
+  }
+
+  // ATRASO → PERMITIDO CON ADVERTENCIA
+  if (estadoPago === "atraso_1") {
+    mensaje.className = "mensaje warning";
+    mensaje.innerText =
+      "⚠️ Tienes adeudo. Puedes usar este beneficio, pero se recomienda regularizar tu situación.";
+    return;
+  }
+
+  // CORRIENTE
+  mensaje.className = "mensaje ok";
+  mensaje.innerText =
+    "✔ Puedes autorizar la recepción de paquetes en caseta.";
+}
+
+// 🔁 TOGGLE
+toggle.addEventListener("click", async () => {
+
+  if (estadoPago === "moroso") return;
+
+  autorizado = !autorizado;
+
+  await supabaseClient
+    .from("residentes")
+    .update({ autoriza_paquetes: autorizado })
+    .eq("id", residenteId);
+
+  render();
+});
+
+// INIT
+cargar();
+</script>
+
+</body>
+</html>
