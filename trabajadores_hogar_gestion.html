@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión de trabajadores</title>
+
+<script src="auth.js"></script>
+<script>
+protegerPagina(["colono"]);
+</script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: #1f2937;
+  border-radius: 14px;
+  padding: 15px;
+  margin-bottom: 12px;
+}
+
+.nombre {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.info {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 10px;
+}
+
+.botones {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-on { background: #16a34a; color: white; }
+.btn-off { background: #6b7280; color: white; }
+.btn-del { background: #dc2626; color: white; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>👷 Trabajadores del hogar</h2>
+
+<div id="lista"></div>
+
+</div>
+
+<script>
+
+const client = window.supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+const identificador = localStorage.getItem("identificador");
+
+let residente = null;
+
+cargar();
+
+async function cargar() {
+
+  // 🔎 obtener residente
+  const { data } = await client
+    .from("residentes")
+    .select("*")
+    .eq("identificador", identificador)
+    .single();
+
+  residente = data;
+
+  // 🔎 obtener trabajadores
+  const { data: trabajadores } = await client
+    .from("trabajadores_hogar")
+    .select("*")
+    .eq("residente_id", residente.id)
+    .order("created_at", { ascending: false });
+
+  const contenedor = document.getElementById("lista");
+  contenedor.innerHTML = "";
+
+  trabajadores.forEach(t => {
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+      <div class="nombre">${t.nombre}</div>
+
+      <div class="info">
+        Inicio: ${t.fecha_inicio || "Sin definir"}<br>
+        Fin: ${t.fecha_fin || "Sin límite"}
+      </div>
+
+      <div class="botones">
+        <button class="${t.activo ? 'btn-off' : 'btn-on'}"
+          onclick="toggle('${t.id}', ${t.activo})">
+          ${t.activo ? 'Desactivar' : 'Activar'}
+        </button>
+
+        <button class="btn-del" onclick="eliminar('${t.id}')">
+          Eliminar
+        </button>
+      </div>
+    `;
+
+    contenedor.appendChild(card);
+  });
+}
+
+
+// 🔥 ACTIVAR / DESACTIVAR
+async function toggle(id, estadoActual) {
+
+  await client
+    .from("trabajadores_hogar")
+    .update({ activo: !estadoActual })
+    .eq("id", id);
+
+  cargar();
+}
+
+
+// 🔥 ELIMINAR
+async function eliminar(id) {
+
+  if (!confirm("¿Eliminar trabajador?")) return;
+
+  await client
+    .from("trabajadores_hogar")
+    .delete()
+    .eq("id", id);
+
+  cargar();
+}
+
+</script>
+
+</body>
+</html>
