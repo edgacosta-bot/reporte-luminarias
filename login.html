@@ -9,7 +9,6 @@
   <meta name="theme-color" content="#4B2E83">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="icon" href="/icono-192.png">
-  <link rel="preload" href="/icono-512.png" as="image">
 
   <title>Acceso</title>
 
@@ -17,7 +16,7 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #161a1d, #1e293b);
+      background: linear-gradient(135deg, #0f172a, #1e293b);
       color: white;
       display: flex;
       align-items: center;
@@ -35,25 +34,43 @@
       text-align: center;
     }
 
-    /* 🔥 BRAND */
+    /* 🔥 ICONO */
+    .logo {
+      width: 90px;
+      height: 90px;
+      margin: 0 auto 10px;
+      border-radius: 50%;
+      background: #4B2E83;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeScale 0.6s ease;
+    }
+
+    .logo img {
+      width: 65%;
+    }
+
+    @keyframes fadeScale {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* 🔥 TEXTO */
     .brand {
-      margin-bottom: 20px;
-    }
-
-    .brand h1 {
-      margin: 0;
-      font-size: 18px;
+      font-size: 16px;
+      margin-bottom: 10px;
       color: #e5e7eb;
-      font-weight: 500;
     }
 
+    /* 🔥 LÍNEA ANIMADA */
     .linea {
-      margin-top: 6px;
       height: 3px;
       width: 100%;
-      overflow: hidden;
-      border-radius: 2px;
       background: #1f2937;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 20px;
       position: relative;
     }
 
@@ -61,14 +78,14 @@
       content: "";
       position: absolute;
       height: 100%;
-      width: 40%;
+      width: 35%;
       background: #4B2E83;
-      animation: mover 2.5s linear infinite;
+      animation: mover 2s linear infinite;
       border-radius: 2px;
     }
 
     @keyframes mover {
-      0% { left: -40%; }
+      0% { left: -35%; }
       100% { left: 100%; }
     }
 
@@ -104,15 +121,10 @@
       padding: 14px;
       border: none;
       border-radius: 12px;
-      background: #4B2E83;
+      background: #2563eb;
       color: white;
       font-size: 16px;
       cursor: pointer;
-      transition: transform 0.1s ease;
-    }
-
-    button:active {
-      transform: scale(0.97);
     }
 
     .mensaje { margin-top: 15px; font-size: 14px; }
@@ -125,22 +137,9 @@
     }
 
     .registro-link a {
-      color: #a57f2c;
+      color: #60a5fa;
       text-decoration: underline;
       cursor: pointer;
-    }
-
-    #toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #4B2E83;
-      color: white;
-      padding: 12px 18px;
-      border-radius: 10px;
-      display: none;
-      z-index: 999;
     }
   </style>
 </head>
@@ -149,11 +148,14 @@
 
 <div class="card">
 
-  <!-- 🔥 BRANDING -->
-  <div class="brand">
-    <h1>🏡 Villas de la Concepción</h1>
-    <div class="linea"></div>
+  <!-- 🔥 ICONO + TEXTO DESDE EL INICIO -->
+  <div class="logo">
+    <img src="/icono-512.png">
   </div>
+
+  <div class="brand">🏡 Villas de la Concepción</div>
+
+  <div class="linea"></div>
 
   <h2>Acceso al sistema</h2>
   <p>Ingresa tus datos</p>
@@ -165,7 +167,7 @@
   </div>
 
   <input type="text" id="privada" placeholder="Privada o tipo de acceso">
-  <input type="text" id="casa" placeholder="Número de lote">
+  <input type="text" id="casa" placeholder="Número de casa">
   <input type="password" id="clave" placeholder="Contraseña (4 dígitos)" maxlength="4">
 
   <button onclick="login()">Entrar</button>
@@ -180,8 +182,6 @@
 
 </div>
 
-<div id="toast"></div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -192,21 +192,18 @@ const supabaseClient = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-function toast(msg) {
-  const t = document.getElementById("toast");
-  t.innerText = msg;
-  t.style.display = "block";
-  setTimeout(() => t.style.display = "none", 2500);
-}
-
 async function login() {
   try {
     const privada = document.getElementById("privada").value.trim();
     const casa = document.getElementById("casa").value.trim();
     const clave = document.getElementById("clave").value;
+    const mensaje = document.getElementById("mensaje");
+
+    mensaje.className = "mensaje";
 
     if (!privada || !casa || !clave) {
-      toast("Completa todos los campos");
+      mensaje.innerText = "Completa todos los campos";
+      mensaje.classList.add("error");
       return;
     }
 
@@ -219,7 +216,8 @@ async function login() {
       .maybeSingle();
 
     if (error || !data) {
-      toast("Datos incorrectos");
+      mensaje.innerText = "Datos incorrectos";
+      mensaje.classList.add("error");
       return;
     }
 
@@ -230,18 +228,12 @@ async function login() {
     if (rol === "vigilante") rol = "vigilante";
 
     localStorage.setItem("usuario_valido", "true");
-    localStorage.setItem("privada", privada);
-    localStorage.setItem("casa", casa);
     localStorage.setItem("rol", rol);
 
-    toast("Acceso correcto");
-
-    setTimeout(() => {
-      window.location.href = "index.html";
-    }, 800);
+    window.location.href = "index.html";
 
   } catch {
-    toast("Error inesperado");
+    document.getElementById("mensaje").innerText = "Error inesperado";
   }
 }
 
