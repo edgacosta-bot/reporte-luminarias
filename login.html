@@ -1,67 +1,67 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#4B2E83">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#4B2E83">
 
-<title>Acceso</title>
+  <title>Acceso</title>
 
-<style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #161a1d, #1e293b);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-}
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #161a1d, #1e293b);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
 
-.card {
-  background: #111827;
-  padding: 30px 20px;
-  border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-}
+    .card {
+      background: #111827;
+      padding: 30px 20px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
 
-input {
-  width: 100%;
-  padding: 14px;
-  margin-bottom: 12px;
-  border-radius: 10px;
-  border: none;
-  background: #1f2937;
-  color: white;
-}
+    input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      border: none;
+      background: #1f2937;
+      color: white;
+    }
 
-button {
-  width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  border: none;
-  background: #4B2E83;
-  color: white;
-}
+    button {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: #4B2E83;
+      color: white;
+    }
 
-.mensaje { margin-top: 10px; }
-.error { color: #f87171; }
-</style>
+    .mensaje { margin-top: 10px; }
+    .error { color: #f87171; }
+  </style>
 </head>
 
 <body>
 
 <div class="card">
-  <h2>Acceso</h2>
+  <h2>Acceso al sistema</h2>
 
-  <input id="privada" placeholder="Privada">
-  <input id="casa" placeholder="Casa">
-  <input id="clave" type="password" placeholder="Clave">
+  <input id="privada" placeholder="Privada o tipo de acceso">
+  <input id="casa" placeholder="Número de casa">
+  <input id="clave" type="password" placeholder="Contraseña">
 
   <button onclick="login()">Entrar</button>
 
@@ -71,7 +71,9 @@ button {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-const supabaseClient = supabase.createClient(
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
@@ -81,40 +83,51 @@ function limpiar(v) {
 }
 
 async function login() {
+  try {
+    const privada = limpiar(document.getElementById("privada").value);
+    const casa = limpiar(document.getElementById("casa").value);
+    const clave = limpiar(document.getElementById("clave").value);
 
-  const privada = limpiar(document.getElementById("privada").value);
-  const casa = limpiar(document.getElementById("casa").value);
-  const clave = limpiar(document.getElementById("clave").value);
+    const mensaje = document.getElementById("mensaje");
+    mensaje.className = "mensaje";
 
-  const msg = document.getElementById("mensaje");
+    if (!privada || !casa || !clave) {
+      mensaje.innerText = "Completa todos los campos";
+      mensaje.classList.add("error");
+      return;
+    }
 
-  if (!privada || !casa || !clave) {
-    msg.innerText = "Completa todos los campos";
-    msg.className = "mensaje error";
-    return;
+    const { data, error } = await supabaseClient
+      .from("residentes")
+      .select("*")
+      .eq("privada", privada)
+      .eq("casa", casa)
+      .eq("clave", clave)
+      .maybeSingle();
+
+    if (error || !data) {
+      mensaje.innerText = "Datos incorrectos";
+      mensaje.classList.add("error");
+      return;
+    }
+
+    let rol = data.tipo;
+
+    if (rol === "residente") rol = "colono";
+    if (rol === "administracion") rol = "admin";
+    if (rol === "vigilante") rol = "vigilante";
+
+    localStorage.setItem("usuario_valido", "true");
+    localStorage.setItem("rol", rol);
+
+    window.location.href = "index.html";
+
+  } catch (err) {
+    document.getElementById("mensaje").innerText = "Error inesperado";
   }
-
-  const { data } = await supabaseClient
-    .from("residentes")
-    .select("*")
-    .eq("privada", privada)
-    .eq("casa", casa)
-    .eq("clave", clave)
-    .maybeSingle();
-
-  if (!data) {
-    msg.innerText = "Datos incorrectos";
-    msg.className = "mensaje error";
-    return;
-  }
-
-  localStorage.setItem("usuario_valido", "true");
-  localStorage.setItem("rol", data.tipo);
-
-  window.location.href = "index.html";
 }
 
-// 🔥 SW INTELIGENTE
+// 🔥 SERVICE WORKER AUTO-UPDATE
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
     reg.addEventListener('updatefound', () => {
