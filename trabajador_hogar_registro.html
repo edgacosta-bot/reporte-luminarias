@@ -14,6 +14,8 @@ protegerPagina(["colono"]);
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
+* { box-sizing: border-box; }
+
 body {
   margin: 0;
   font-family: Arial;
@@ -21,14 +23,12 @@ body {
   color: white;
 }
 
-/* CONTENEDOR */
 .container {
   max-width: 420px;
   margin: auto;
   padding: 20px;
 }
 
-/* CARD */
 .card {
   background: #f1f5f9;
   color: #1e293b;
@@ -36,7 +36,6 @@ body {
   padding: 20px;
 }
 
-/* HEADER */
 .header {
   background: #1e293b;
   color: white;
@@ -45,42 +44,41 @@ body {
   text-align: center;
   margin-bottom: 20px;
   font-weight: bold;
-  font-size: 16px;
 }
 
-/* LABELS */
 label {
   font-size: 13px;
   font-weight: bold;
-  margin-top: 10px;
   display: block;
+  margin-top: 10px;
 }
 
-/* INPUTS */
 input {
   width: 100%;
   padding: 14px;
   margin-top: 6px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   border-radius: 12px;
   border: 1px solid #cbd5e1;
-  font-size: 14px;
 }
 
-/* BOTÓN PRINCIPAL */
+.helper {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 10px;
+}
+
 .btn-primary {
   width: 100%;
   padding: 16px;
   border-radius: 14px;
   border: none;
   font-weight: bold;
-  font-size: 16px;
   background: #2563eb;
   color: white;
   cursor: pointer;
 }
 
-/* BOTÓN WHATSAPP */
 .btn-wa {
   width: 100%;
   padding: 14px;
@@ -93,17 +91,9 @@ input {
   display: none;
 }
 
-/* QR */
 #qr {
   margin-top: 20px;
   text-align: center;
-}
-
-/* TEXTO AYUDA */
-.helper {
-  font-size: 12px;
-  color: #64748b;
-  margin-bottom: 10px;
 }
 </style>
 </head>
@@ -117,31 +107,25 @@ input {
       👷 Registro de trabajador del hogar
     </div>
 
-    <!-- NOMBRE -->
     <label>Nombre del trabajador</label>
     <input id="nombre" placeholder="Ej. María López">
 
-    <!-- FECHA INICIO -->
     <label>Inicio de acceso</label>
     <input id="fecha_inicio" type="date">
-    <div class="helper">Opcional (puede iniciar hoy)</div>
+    <div class="helper">Opcional</div>
 
-    <!-- FECHA FIN -->
     <label>Fin de acceso</label>
     <input id="fecha_fin" type="date">
-    <div class="helper">Opcional (déjalo vacío si no tiene vencimiento)</div>
+    <div class="helper">Opcional</div>
 
-    <!-- BOTÓN -->
     <button class="btn-primary" onclick="generar()">
-      📱 Generar código QR de acceso
+      📱 Generar código QR
     </button>
 
-    <!-- QR -->
     <div id="qr"></div>
 
-    <!-- WHATSAPP -->
     <button id="btnWA" class="btn-wa">
-      📲 Enviar acceso por WhatsApp
+      📲 Enviar por WhatsApp
     </button>
 
   </div>
@@ -160,24 +144,12 @@ const casa = localStorage.getItem("casa");
 async function generar() {
 
   const nombre = document.getElementById("nombre").value.trim();
-  const inicio = document.getElementById("fecha_inicio").value;
-  const fin = document.getElementById("fecha_fin").value;
 
   if (!nombre) {
-    alert("Ingresa el nombre del trabajador");
+    alert("Ingresa el nombre");
     return;
   }
 
-  // 🔥 CONFIG GLOBAL
-  const { data: config } = await client
-    .from("configuracion_sistema")
-    .select("*")
-    .eq("clave", "trabajadores_hogar_activo")
-    .single();
-
-  const activoGlobal = config.valor;
-
-  // 🔥 RESIDENTE
   const { data: residente } = await client
     .from("residentes")
     .select("*")
@@ -185,35 +157,21 @@ async function generar() {
     .eq("casa", casa)
     .single();
 
-  const estado = (residente.estado_pago || "").toLowerCase().trim();
-
-  if (!activoGlobal) {
-
-    if (estado === "moroso") {
-      alert("Acceso bloqueado por adeudo");
-      return;
-    }
-
-    if (estado === "atraso_1") {
-      const continuar = confirm("Tiene atraso. ¿Desea continuar?");
-      if (!continuar) return;
-    }
-  }
-
   const codigo = crypto.randomUUID();
 
   await client.from("trabajadores_hogar").insert([{
     residente_id: residente.id,
     nombre,
+    privada: residente.privada,
+    casa: residente.casa,
     qr_codigo: codigo,
-    fecha_inicio: inicio || null,
-    fecha_fin: fin || null,
     activo: true
   }]);
 
-  const link = `${window.location.origin}/credencial_trabajador_hogar.html?qr=${codigo}`;
+  const link = `${window.location.origin}/credencial_trabajador_hogar.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
 
   document.getElementById("qr").innerHTML = "";
+
   new QRCode(document.getElementById("qr"), {
     text: link,
     width: 200,
@@ -224,8 +182,7 @@ async function generar() {
   btn.style.display = "block";
 
   btn.onclick = () => {
-    const mensaje = `👷 Acceso trabajador\n\nNombre: ${nombre}\n\nPresenta este código:\n${link}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
+    window.open(`https://wa.me/?text=${encodeURIComponent(link)}`);
   };
 }
 
