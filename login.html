@@ -91,7 +91,6 @@
 
 <div class="card">
 
-  <!-- 🔥 LOGO RESTAURADO -->
   <div style="text-align:center; margin-bottom:15px;">
     <img src="/icono-512.png" style="width:80px;">
   </div>
@@ -170,6 +169,9 @@ async function login() {
     localStorage.setItem("privada", privada);
     localStorage.setItem("casa", casa);
     localStorage.setItem("rol", rol);
+
+    // 🔥 ESTA ES LA ÚNICA LÍNEA NUEVA (CRÍTICA)
+    localStorage.setItem("identificador", data.identificador);
 
     window.location.href = "index.html";
 
