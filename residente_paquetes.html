@@ -133,7 +133,9 @@ async function cargar() {
 
   residenteId = data.id;
   estadoPago = data.estado_pago;
-  autorizado = data.autoriza_paquetes || false;
+
+  // ✅ CORRECTO (antes estaba mal)
+  autorizado = data.recibe_paquetes || false;
 
   render();
 }
@@ -175,9 +177,10 @@ toggle.addEventListener("click", async () => {
 
   autorizado = !autorizado;
 
+  // ✅ CORRECTO (antes estaba mal)
   await supabaseClient
     .from("residentes")
-    .update({ autoriza_paquetes: autorizado })
+    .update({ recibe_paquetes: autorizado })
     .eq("id", residenteId);
 
   render();
