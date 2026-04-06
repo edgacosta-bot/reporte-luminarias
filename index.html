@@ -24,7 +24,7 @@ body {
   margin-bottom: 20px;
 }
 
-/* 🔥 NUEVO LOGO */
+/* LOGO */
 .logo {
   width: 70px;
   margin: 0 auto 10px;
@@ -67,7 +67,7 @@ body {
   font-weight: 500;
 }
 
-/* 🎨 COLORES */
+/* COLORES */
 .btn-visitas { background: #1e5b4f; }
 .btn-reportes { background: #9b2247; }
 .btn-servicios { background: #a57f2c; }
@@ -88,7 +88,6 @@ body {
 
 <div class="header">
 
-  <!-- 🔥 LOGO PNG -->
   <div class="logo">
     <img src="/icono-512.png" alt="Logo">
   </div>
@@ -119,6 +118,12 @@ body {
   <div class="section-title">SERVICIOS</div>
 
   <a href="agua.html" class="button btn-servicios">💧 Suministro de agua</a>
+
+  <!-- 🔥 NUEVO: SOLO COLONO -->
+  <a id="btnPaquetesColono" href="residente_paquetes.html" class="button btn-servicios">
+    📦 Recepción de paquetes
+  </a>
+
 </div>
 
 <!-- INFRAESTRUCTURA -->
@@ -177,6 +182,7 @@ const colonoSection = document.getElementById("colono-section");
 const infraestructuraSection = document.getElementById("infraestructura-section");
 const serviciosSection = document.getElementById("servicios-section");
 const btnReportes = document.getElementById("btnReportes");
+const btnPaquetesColono = document.getElementById("btnPaquetesColono");
 
 // VIGILANTE
 if (rol === "vigilante") {
@@ -196,6 +202,14 @@ if (rol === "colono") {
 if (rol === "admin") {
   btnReportes.innerText = "📊 Reporte general";
   vigilanteSection.style.display = "none";
+
+  // 🔥 OCULTAR BOTÓN DE PAQUETES PARA ADMIN
+  if (btnPaquetesColono) btnPaquetesColono.style.display = "none";
+}
+
+// SEGURIDAD EXTRA
+if (rol !== "colono") {
+  if (btnPaquetesColono) btnPaquetesColono.style.display = "none";
 }
 
 function irAReportes() {
@@ -206,7 +220,7 @@ function irAReportes() {
   }
 }
 
-// 🔥 SERVICE WORKER AUTO-UPDATE
+// SERVICE WORKER AUTO-UPDATE
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
 
@@ -216,7 +230,6 @@ if ('serviceWorker' in navigator) {
       newWorker.addEventListener('statechange', () => {
         if (newWorker.state === 'installed') {
           if (navigator.serviceWorker.controller) {
-            console.log("Nueva versión detectada");
             window.location.reload();
           }
         }
