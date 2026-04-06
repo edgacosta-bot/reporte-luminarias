@@ -8,6 +8,7 @@
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#4B2E83">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="icon" href="/icono-192.png">
   <link rel="preload" href="/icono-512.png" as="image">
 
   <title>Acceso</title>
@@ -92,7 +93,6 @@
       cursor: pointer;
     }
 
-    /* TOAST */
     #toast {
       position: fixed;
       bottom: 20px;
@@ -147,7 +147,6 @@ const supabaseClient = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-// TOAST
 function toast(msg) {
   const t = document.getElementById("toast");
   t.innerText = msg;
@@ -189,8 +188,6 @@ async function login() {
     localStorage.setItem("privada", privada);
     localStorage.setItem("casa", casa);
     localStorage.setItem("rol", rol);
-    localStorage.setItem("mesa_directiva", data.es_mesa_directiva || false);
-    localStorage.setItem("soporte", data.es_soporte || false);
 
     toast("Acceso correcto");
 
@@ -198,19 +195,13 @@ async function login() {
       window.location.href = "index.html";
     }, 800);
 
-  } catch (err) {
+  } catch {
     toast("Error inesperado");
   }
 }
 
-// OFFLINE
-window.addEventListener("offline", () => toast("Sin conexión"));
-window.addEventListener("online", () => toast("Conexión restaurada"));
-
-// SERVICE WORKER
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
-    .then(() => console.log('SW registrado'));
+  navigator.serviceWorker.register('/sw.js');
 }
 </script>
 
