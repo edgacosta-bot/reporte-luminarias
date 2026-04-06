@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<script src="auth.js"></script>
-<script>
-protegerPagina(["vigilante", "admin"]);
-</script>  
+
+<!-- 🔥 ELIMINADO auth.js (CLAVE) -->
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Acceso Trabajador</title>
@@ -128,7 +127,6 @@ async function validar() {
     return;
   }
 
-  // 🔥 VALIDACIÓN DE VIGENCIA
   const hoy = new Date().toISOString().split('T')[0];
 
   if (!trabajador.activo) {
@@ -146,20 +144,17 @@ async function validar() {
     return;
   }
 
-  // 🔥 VALIDACIÓN DE HORARIO
   const ahora = new Date();
-  const dia = ahora.getDay(); // 0=domingo
+  const dia = ahora.getDay();
   const hora = ahora.getHours();
   const minutos = ahora.getMinutes();
   const horaActual = hora + (minutos / 60);
 
-  // 🚫 DOMINGO
   if (dia === 0) {
     pintar("ACCESO NO PERMITIDO (DOMINGO)", "error", trabajador);
     return;
   }
 
-  // 🟡 SÁBADO
   if (dia === 6) {
     if (horaActual < 9 || horaActual > 14) {
       pintar("FUERA DE HORARIO (SÁBADO)", "error", trabajador);
@@ -167,7 +162,6 @@ async function validar() {
     }
   }
 
-  // 🟢 L-V
   if (dia >= 1 && dia <= 5) {
     if (horaActual < 8 || horaActual > 18) {
       pintar("FUERA DE HORARIO", "error", trabajador);
@@ -208,7 +202,6 @@ async function validar() {
   document.getElementById("control").style.display = "block";
 }
 
-// 🔐 PIN
 const pinInput = document.getElementById("pin");
 const btn = document.getElementById("btnConfirmar");
 
@@ -222,7 +215,6 @@ pinInput.addEventListener("input", () => {
   }
 });
 
-// 🎯 CONFIRMAR
 btn.addEventListener("click", async () => {
 
   btn.disabled = true;
@@ -267,7 +259,6 @@ btn.addEventListener("click", async () => {
   document.querySelector(".container").appendChild(finalizarBtn);
 });
 
-// 🎨 UI
 function pintar(mensaje, tipo, trabajador = null) {
   document.getElementById("estado").innerText = mensaje;
   document.body.className = tipo;
