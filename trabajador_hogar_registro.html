@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<script src="auth.js"></script>
+<script>
+protegerPagina(["colono"]);
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trabajador del Hogar</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+}
+
+.container {
+  max-width: 420px;
+  margin: auto;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  color: black;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.header {
+  background: #1e293b;
+  color: white;
+  padding: 12px;
+  border-radius: 10px;
+  text-align: center;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+}
+
+.btn-primary { background: #2563eb; color: white; }
+.btn-wa { background: #25D366; color: white; margin-top:10px; }
+
+#qr { margin-top:20px; text-align:center; }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="card">
+
+    <div class="header">
+      Trabajador del hogar
+    </div>
+
+    <input id="nombre" placeholder="Nombre del trabajador">
+    <input id="fecha_inicio" type="date">
+    <input id="fecha_fin" type="date">
+
+    <button class="btn-primary" onclick="generar()">Generar QR</button>
+
+    <div id="qr"></div>
+
+    <button id="btnWA" class="btn-wa" style="display:none;">
+      Enviar por WhatsApp
+    </button>
+
+  </div>
+</div>
+
+<script>
+
+const client = supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+const privada = localStorage.getItem("privada");
+const casa = localStorage.getItem("casa");
+
+async function generar() {
+
+  const nombre = document.getElementById("nombre").value;
+  const inicio = document.getElementById("fecha_inicio").value;
+  const fin = document.getElementById("fecha_fin").value;
+
+  if (!nombre) {
+    alert("Nombre requerido");
+    return;
+  }
+
+  // 🔥 CONFIG GLOBAL
+  const { data: config } = await client
+    .from("configuracion_sistema")
+    .select("*")
+    .eq("clave", "trabajadores_hogar_activo")
+    .single();
+
+  const activoGlobal = config.valor;
+
+  // 🔥 OBTENER RESIDENTE
+  const { data: residente } = await client
+    .from("residentes")
+    .select("*")
+    .eq("privada", privada)
+    .eq("casa", casa)
+    .single();
+
+  const estado = (residente.estado_pago || "").toLowerCase().trim();
+
+  // 🔥 VALIDACIÓN (SOLO SI SISTEMA ESTÁ ACTIVADO)
+  if (!activoGlobal) {
+
+    if (estado === "moroso") {
+      alert("Acceso bloqueado por adeudo");
+      return;
+    }
+
+    if (estado === "atraso_1") {
+      const continuar = confirm("Tiene atraso. ¿Desea continuar?");
+      if (!continuar) return;
+    }
+  }
+
+  const codigo = crypto.randomUUID();
+
+  await client.from("trabajadores_hogar").insert([{
+    residente_id: residente.id,
+    nombre,
+    qr_codigo: codigo,
+    fecha_inicio: inicio || null,
+    fecha_fin: fin || null,
+    activo: true
+  }]);
+
+  const link = `${window.location.origin}/credencial_trabajador_hogar.html?qr=${codigo}`;
+
+  document.getElementById("qr").innerHTML = "";
+  new QRCode(document.getElementById("qr"), link);
+
+  const btn = document.getElementById("btnWA");
+  btn.style.display = "block";
+
+  btn.onclick = () => {
+    window.open(`https://wa.me/?text=${encodeURIComponent(link)}`);
+  };
+}
+
+</script>
+
+</body>
+</html>
