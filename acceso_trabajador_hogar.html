@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acceso Hogar</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: white;
+  text-align: center;
+}
+
+.ok { background: #16a34a; }
+.warn { background: #f59e0b; }
+.error { background: #dc2626; }
+
+.container {
+  max-width: 320px;
+}
+
+input, button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  border-radius: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1 id="estado">Validando...</h1>
+  <div id="nombre"></div>
+
+  <input type="password" id="pin" placeholder="PIN">
+  <button onclick="confirmar()">Confirmar</button>
+</div>
+
+<script>
+
+const PIN = "7482";
+
+const client = supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+const qr = new URLSearchParams(window.location.search).get("qr");
+
+let trabajador = null;
+let tipo = "";
+
+init();
+
+async function init() {
+
+  const { data } = await client
+    .from("trabajadores_hogar")
+    .select("*")
+    .eq("qr_codigo", qr)
+    .single();
+
+  if (!data) {
+    pintar("QR INVÁLIDO", "error");
+    return;
+  }
+
+  trabajador = data;
+
+  const hoy = new Date().toISOString().split('T')[0];
+
+  if (!data.activo) {
+    pintar("ACCESO CANCELADO", "error");
+    return;
+  }
+
+  if (data.fecha_inicio && hoy < data.fecha_inicio) {
+    pintar("AÚN NO VÁLIDO", "warn");
+    return;
+  }
+
+  if (data.fecha_fin && hoy > data.fecha_fin) {
+    pintar("ACCESO VENCIDO", "error");
+    return;
+  }
+
+  document.getElementById("nombre").innerText = data.nombre;
+
+  const { data: acceso } = await client
+    .from("accesos_trabajadores_hogar")
+    .select("*")
+    .eq("trabajador_id", data.id)
+    .is("fecha_hora_salida", null)
+    .maybeSingle();
+
+  if (!acceso) {
+    tipo = "entrada";
+    pintar("PERMITIR ENTRADA", "ok");
+  } else {
+    tipo = "salida";
+    pintar("REGISTRAR SALIDA", "warn");
+  }
+}
+
+function pintar(texto, color) {
+  document.body.className = color;
+  document.getElementById("estado").innerText = texto;
+}
+
+async function confirmar() {
+
+  const pin = document.getElementById("pin").value;
+
+  if (pin !== PIN) {
+    alert("PIN incorrecto");
+    return;
+  }
+
+  const ahora = new Date().toISOString();
+
+  if (tipo === "entrada") {
+
+    await client.from("accesos_trabajadores_hogar").insert([{
+      trabajador_id: trabajador.id,
+      fecha_hora_entrada: ahora,
+      estatus: "dentro"
+    }]);
+
+    pintar("ENTRADA REGISTRADA", "ok");
+
+  } else {
+
+    await client.from("accesos_trabajadores_hogar")
+      .update({
+        fecha_hora_salida: ahora,
+        estatus: "fuera"
+      })
+      .eq("trabajador_id", trabajador.id)
+      .is("fecha_hora_salida", null);
+
+    pintar("SALIDA REGISTRADA", "warn");
+  }
+}
+
+</script>
+
+</body>
+</html>

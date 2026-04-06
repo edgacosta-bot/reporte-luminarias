@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Credencial Trabajador Hogar</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.card {
+  width: 320px;
+  background: #111827;
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+  color: white;
+}
+
+#qr { margin: 20px 0; }
+
+.nombre {
+  font-size: 18px;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <div>Villas de la Concepción</div>
+  <div><b>Acceso Trabajador Hogar</b></div>
+
+  <div id="qr"></div>
+
+  <div class="nombre" id="nombre"></div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<script>
+
+// 🔥 LIMPIAR CONTEXTO
+localStorage.clear();
+sessionStorage.clear();
+
+const params = new URLSearchParams(window.location.search);
+const qr = params.get("qr");
+
+const url = `${window.location.origin}/acceso_trabajador_hogar.html?qr=${qr}`;
+
+QRCode.toCanvas(url, { width: 220 }, function (err, canvas) {
+  document.getElementById("qr").appendChild(canvas);
+});
+
+</script>
+
+</body>
+</html>
