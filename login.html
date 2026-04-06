@@ -6,8 +6,7 @@
 
   <!-- 🔥 PWA -->
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#4B2E83">
-  <link rel="apple-touch-icon" href="/icono-512.png">
+  <meta name="theme-color" content="#0f172a">
 
   <title>Acceso</title>
 
@@ -15,7 +14,7 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #161a1d, #1e293b);
+      background: linear-gradient(135deg, #0f172a, #1e293b);
       color: white;
       display: flex;
       align-items: center;
@@ -31,57 +30,6 @@
       max-width: 400px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.4);
       text-align: center;
-    }
-
-    /* LOGO (sin círculo extra) */
-    .logo {
-      margin: 0 auto 10px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      animation: fadeScale 0.6s ease;
-    }
-
-    .logo img {
-      width: 90px;
-      display: block;
-    }
-
-    @keyframes fadeScale {
-      from { opacity: 0; transform: scale(0.9); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    .titulo-app {
-      font-size: 16px;
-      color: #cbd5f5;
-      margin-bottom: 10px;
-    }
-
-    /* LINEA ANIMADA */
-    .linea {
-      width: 100%;
-      height: 4px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 10px;
-      overflow: hidden;
-      margin-bottom: 20px;
-      position: relative;
-    }
-
-    .linea::after {
-      content: "";
-      position: absolute;
-      width: 40%;
-      height: 100%;
-      background: #4B2E83;
-      animation: mover 2s infinite;
-      border-radius: 10px;
-    }
-
-    @keyframes mover {
-      0% { left: -40%; }
-      100% { left: 100%; }
     }
 
     h2 { margin-bottom: 10px; }
@@ -116,16 +64,14 @@
       padding: 14px;
       border: none;
       border-radius: 12px;
-      background: #4B2E83;
+      background: #2563eb;
       color: white;
       font-size: 16px;
       cursor: pointer;
-      transition: transform 0.1s ease;
     }
 
-    button:active {
-      transform: scale(0.97);
-    }
+    .mensaje { margin-top: 15px; font-size: 14px; }
+    .error { color: #f87171; }
 
     .registro-link {
       margin-top: 15px;
@@ -134,22 +80,9 @@
     }
 
     .registro-link a {
-      color: #a57f2c;
+      color: #60a5fa;
       text-decoration: underline;
       cursor: pointer;
-    }
-
-    #toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #4B2E83;
-      color: white;
-      padding: 12px 18px;
-      border-radius: 10px;
-      display: none;
-      z-index: 999;
     }
   </style>
 </head>
@@ -157,15 +90,6 @@
 <body>
 
 <div class="card">
-
-  <!-- LOGO -->
-  <div class="logo">
-    <img src="/icono-512.png">
-  </div>
-
-  <div class="titulo-app">Villas de la Concepción</div>
-  <div class="linea"></div>
-
   <h2>Acceso al sistema</h2>
   <p>Ingresa tus datos</p>
 
@@ -176,19 +100,19 @@
   </div>
 
   <input type="text" id="privada" placeholder="Privada o tipo de acceso">
-  <input type="text" id="casa" placeholder="Número de lote">
+  <input type="text" id="casa" placeholder="Número de casa">
   <input type="password" id="clave" placeholder="Contraseña (4 dígitos)" maxlength="4">
 
   <button onclick="login()">Entrar</button>
 
+  <div id="mensaje" class="mensaje"></div>
+
   <div class="registro-link">
-    ¿No tienes acceso aún?<br>
+    ¿No tienes acceso aún?
+    <br>
     <a href="registro.html">Registrarse</a>
   </div>
-
 </div>
-
-<div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -197,37 +121,35 @@ const { createClient } = supabase;
 
 const supabaseClient = createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA476375765.XXXX"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
-
-function toast(msg) {
-  const t = document.getElementById("toast");
-  t.innerText = msg;
-  t.style.display = "block";
-  setTimeout(() => t.style.display = "none", 2500);
-}
 
 async function login() {
   try {
-    const privada = document.getElementById("privada").value.trim();
+    const privada = document.getElementById("privada").value.trim().toUpperCase();
     const casa = document.getElementById("casa").value.trim();
-    const clave = document.getElementById("clave").value;
+    const clave = document.getElementById("clave").value.trim();
+    const mensaje = document.getElementById("mensaje");
+
+    mensaje.className = "mensaje";
 
     if (!privada || !casa || !clave) {
-      toast("Completa todos los campos");
+      mensaje.innerText = "Completa todos los campos";
+      mensaje.classList.add("error");
       return;
     }
 
     const { data, error } = await supabaseClient
       .from("residentes")
       .select("*")
-      .eq("privada", privada)
+      .ilike("privada", privada)
       .eq("casa", casa)
       .eq("clave", clave)
       .maybeSingle();
 
     if (error || !data) {
-      toast("Datos incorrectos");
+      mensaje.innerText = "Datos incorrectos";
+      mensaje.classList.add("error");
       return;
     }
 
@@ -241,20 +163,20 @@ async function login() {
     localStorage.setItem("privada", privada);
     localStorage.setItem("casa", casa);
     localStorage.setItem("rol", rol);
+    localStorage.setItem("mesa_directiva", data.es_mesa_directiva || false);
+    localStorage.setItem("soporte", data.es_soporte || false);
 
-    toast("Acceso correcto");
-
-    setTimeout(() => {
-      window.location.href = "index.html";
-    }, 800);
+    window.location.href = "index.html";
 
   } catch (err) {
-    toast("Error inesperado");
+    document.getElementById("mensaje").innerText = "Error inesperado";
   }
 }
 
+// 🔥 SERVICE WORKER
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js');
+  navigator.serviceWorker.register('/sw.js')
+    .then(() => console.log('SW registrado'));
 }
 </script>
 
