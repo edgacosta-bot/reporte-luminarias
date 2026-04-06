@@ -50,7 +50,6 @@ h2 {
   margin-top: 15px;
 }
 
-/* 🔥 BOTÓN WHATSAPP */
 .btn-wa {
   margin-top: 20px;
   padding: 14px;
@@ -78,7 +77,6 @@ h2 {
 
   <div id="qr"></div>
 
-  <!-- 🔥 BOTÓN AQUÍ (CORRECTO) -->
   <button id="btnWA" class="btn-wa">
     📲 Enviar por WhatsApp
   </button>
@@ -97,7 +95,7 @@ const nombre = params.get("nombre");
 const privada = params.get("privada");
 const casa = params.get("casa");
 
-// 🔥 URL REAL DE ACCESO
+// 🔥 URL REAL DE ACCESO (QR interno)
 const urlQR = `${window.location.origin}/acceso_trabajador_hogar.html?qr=${codigo}`;
 
 // 🎯 GENERAR QR
@@ -111,14 +109,16 @@ document.getElementById("detalle").innerText =
   `Privada ${privada || ""} - Lote ${casa || ""}`;
 
 
-// 📲 WHATSAPP
+// 📲 WHATSAPP (🔥 CORREGIDO)
 document.getElementById("btnWA").addEventListener("click", () => {
+
+  const linkCredencial = window.location.href;
 
   const mensaje =
     `👷 Credencial de acceso\n\n` +
     `Nombre: ${nombre}\n` +
     `Ubicación: Privada ${privada} - Lote ${casa}\n\n` +
-    `Presenta este código en caseta:\n${urlQR}`;
+    `Presenta este código en caseta:\n${linkCredencial}`;
 
   const wa = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
 
