@@ -68,7 +68,6 @@ button {
   font-weight: bold;
 }
 </style>
-
 </head>
 
 <body>
@@ -106,7 +105,6 @@ const supabaseClient = createClient(
 
 let trabajadorSeleccionado = null;
 
-// 🔥 Cargar trabajadores
 async function cargarTrabajadores() {
 
   const { data } = await supabaseClient
@@ -128,7 +126,6 @@ async function cargarTrabajadores() {
 
 cargarTrabajadores();
 
-// 🎯 Generar QR (para vista previa)
 document.getElementById("trabajador").addEventListener("change", function() {
 
   const qrDiv = document.getElementById("qr");
@@ -149,8 +146,8 @@ document.getElementById("trabajador").addEventListener("change", function() {
 
   trabajadorSeleccionado = { codigo, nombre, privada, casa };
 
-  // 🔥 QR apunta a la CREDENCIAL (no al acceso directo)
-  const url = `https://villas-concepcion-app.vercel.app/credencial_trabajador.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
+  // 🔥 CORRECCIÓN AQUÍ
+  const url = `${window.location.origin}/credencial_trabajador.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
 
   QRCode.toCanvas(url, { width: 200 }, function (err, canvas) {
     qrDiv.appendChild(canvas);
@@ -162,14 +159,13 @@ document.getElementById("trabajador").addEventListener("change", function() {
   btn.style.display = "block";
 });
 
-// 📲 ENVIAR POR WHATSAPP
 document.getElementById("btnWA").addEventListener("click", () => {
 
   if (!trabajadorSeleccionado) return;
 
   const { codigo, nombre, privada, casa } = trabajadorSeleccionado;
 
-  const link = `https://villas-concepcion-app.vercel.app/credencial_trabajador.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
+  const link = `${window.location.origin}/credencial_trabajador.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
 
   const mensaje = `👷 Credencial de acceso\n\n` +
                   `Nombre: ${nombre}\n` +
