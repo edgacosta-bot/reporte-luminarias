@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- 🔥 EVITA CACHE (CLAVE) -->
+<!-- 🔥 EVITA CACHE -->
 <meta http-equiv="Cache-Control" content="no-store" />
 
 <title>Credencial Trabajador</title>
@@ -85,6 +85,11 @@ body {
 
 <script>
 
+// 🔥 LIMPIA CONTEXTO DE SESIÓN (SOLUCIÓN AL PROBLEMA)
+localStorage.clear();
+sessionStorage.clear();
+
+// 🔎 Leer parámetros
 const params = new URLSearchParams(window.location.search);
 
 const codigo = params.get("qr");
@@ -92,13 +97,15 @@ const nombre = params.get("nombre");
 const privada = params.get("privada");
 const casa = params.get("casa");
 
-// 🔥 usa origin dinámico también
+// 🔥 QR apunta al acceso real del vigilante
 const urlQR = `${window.location.origin}/acceso_trabajador.html?qr=${codigo}`;
 
+// 🎯 Generar QR
 QRCode.toCanvas(urlQR, { width: 220 }, function (err, canvas) {
   document.getElementById("qr").appendChild(canvas);
 });
 
+// 🧾 Datos
 document.getElementById("nombre").innerText = nombre || "";
 document.getElementById("obra").innerText =
   `Privada ${privada || ""} - Lote ${casa || ""}`;
