@@ -3,67 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Credencial</title>
+<title>Credencial Trabajador Hogar</title>
 
 <style>
 body {
   margin: 0;
-  font-family: Arial;
-  background: #0f172a;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   height: 100vh;
-}
-
-.card {
-  background: #111827;
-  padding: 20px;
-  border-radius: 20px;
-  width: 320px;
-  text-align: center;
   color: white;
+  text-align: center;
 }
 
-.header {
-  font-size: 14px;
-  color: #9ca3af;
+.container {
+  padding: 20px;
+  max-width: 320px;
+  width: 100%;
 }
 
-.titulo {
+h1 {
   font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
+  color: #94a3b8;
+}
+
+h2 {
+  font-size: 22px;
+  margin: 0;
 }
 
 .nombre {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
   margin-top: 10px;
 }
 
-.datos {
-  font-size: 14px;
+.detalle {
   color: #9ca3af;
+  margin-bottom: 15px;
 }
 
 #qr {
-  margin: 15px 0;
+  margin-top: 15px;
+}
+
+/* 🔥 BOTÓN WHATSAPP */
+.btn-wa {
+  margin-top: 20px;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #25D366;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  width: 100%;
+  cursor: pointer;
 }
 </style>
 </head>
 
 <body>
 
-<div class="card">
+<div class="container">
 
-  <div class="header">Villas de la Concepción</div>
-  <div class="titulo">Acceso trabajador hogar</div>
+  <h1>Villas de la Concepción</h1>
+  <h2>Acceso trabajador hogar</h2>
 
   <div class="nombre" id="nombre"></div>
-  <div class="datos" id="datos"></div>
+  <div class="detalle" id="detalle"></div>
 
   <div id="qr"></div>
+
+  <!-- 🔥 BOTÓN AQUÍ (CORRECTO) -->
+  <button id="btnWA" class="btn-wa">
+    📲 Enviar por WhatsApp
+  </button>
 
 </div>
 
@@ -71,21 +89,40 @@ body {
 
 <script>
 
+// 🔎 PARAMETROS
 const params = new URLSearchParams(window.location.search);
 
-const qr = params.get("qr");
+const codigo = params.get("qr");
 const nombre = params.get("nombre");
 const privada = params.get("privada");
 const casa = params.get("casa");
 
-document.getElementById("nombre").innerText = nombre;
-document.getElementById("datos").innerText =
-  `Privada ${privada} - Lote ${casa}`;
+// 🔥 URL REAL DE ACCESO
+const urlQR = `${window.location.origin}/acceso_trabajador_hogar.html?qr=${codigo}`;
 
-const url = `${window.location.origin}/acceso_trabajador_hogar.html?qr=${qr}`;
-
-QRCode.toCanvas(url, { width: 220 }, function (err, canvas) {
+// 🎯 GENERAR QR
+QRCode.toCanvas(urlQR, { width: 220 }, function (err, canvas) {
   document.getElementById("qr").appendChild(canvas);
+});
+
+// 🧾 DATOS
+document.getElementById("nombre").innerText = nombre || "";
+document.getElementById("detalle").innerText =
+  `Privada ${privada || ""} - Lote ${casa || ""}`;
+
+
+// 📲 WHATSAPP
+document.getElementById("btnWA").addEventListener("click", () => {
+
+  const mensaje =
+    `👷 Credencial de acceso\n\n` +
+    `Nombre: ${nombre}\n` +
+    `Ubicación: Privada ${privada} - Lote ${casa}\n\n` +
+    `Presenta este código en caseta:\n${urlQR}`;
+
+  const wa = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+
+  window.open(wa, "_blank");
 });
 
 </script>
