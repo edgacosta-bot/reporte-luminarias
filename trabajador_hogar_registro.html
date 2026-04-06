@@ -58,11 +58,6 @@ button {
   font-weight: bold;
   cursor: pointer;
 }
-
-.btn-wa {
-  background: #25D366;
-  display: none;
-}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -86,11 +81,6 @@ button {
 
 <button onclick="registrar()">Generar QR</button>
 
-<!-- 🔥 BOTÓN WHATSAPP RESTAURADO -->
-<button id="btnWA" class="btn-wa">
-  📲 Enviar credencial por WhatsApp
-</button>
-
 </div>
 
 <script>
@@ -99,8 +89,6 @@ const client = window.supabase.createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
-
-let datosQR = null;
 
 async function registrar() {
 
@@ -145,43 +133,10 @@ async function registrar() {
     return;
   }
 
-  // 🔥 GUARDAMOS DATOS PARA WHATSAPP
-  datosQR = {
-    codigo,
-    nombre,
-    privada: residente.privada,
-    casa: residente.casa
-  };
-
-  // 🔥 MOSTRAR BOTÓN
-  document.getElementById("btnWA").style.display = "block";
-
-  // 🔥 OPCIONAL: redirigir como antes
+  // 🔥 SOLO REDIRECCIÓN (COMO DEBE SER)
   window.location.href =
     `credencial_trabajador_hogar.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${residente.privada}&casa=${residente.casa}`;
 }
-
-
-// 📲 WHATSAPP
-document.getElementById("btnWA").addEventListener("click", () => {
-
-  if (!datosQR) return;
-
-  const { codigo, nombre, privada, casa } = datosQR;
-
-  const link =
-    `${window.location.origin}/credencial_trabajador_hogar.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
-
-  const mensaje =
-    `👷 Credencial de acceso\n\n` +
-    `Nombre: ${nombre}\n` +
-    `Ubicación: Privada ${privada} - Lote ${casa}\n\n` +
-    `Presenta este código en caseta:\n${link}`;
-
-  const wa = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
-
-  window.open(wa, "_blank");
-});
 
 </script>
 
