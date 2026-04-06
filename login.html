@@ -117,67 +117,71 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-const { createClient } = supabase;
+  const { createClient } = supabase;
 
-const supabaseClient = createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
+  const supabaseClient = createClient(
+    "https://prjxmfhahnzosdwljode.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+  );
 
-async function login() {
-  try {
-    const privada = document.getElementById("privada").value.trim().toUpperCase();
-    const casa = document.getElementById("casa").value.trim();
-    const clave = document.getElementById("clave").value.trim();
-    const mensaje = document.getElementById("mensaje");
+  async function login() {
+    try {
+      const privada = document.getElementById("privada").value.trim();
+      const casa = document.getElementById("casa").value.trim();
+      const clave = document.getElementById("clave").value.trim();
+      const mensaje = document.getElementById("mensaje");
 
-    mensaje.className = "mensaje";
+      mensaje.className = "mensaje";
 
-    if (!privada || !casa || !clave) {
-      mensaje.innerText = "Completa todos los campos";
-      mensaje.classList.add("error");
-      return;
+      if (!privada || !casa || !clave) {
+        mensaje.innerText = "Completa todos los campos";
+        mensaje.classList.add("error");
+        return;
+      }
+
+      const { data, error } = await supabaseClient
+        .from("residentes")
+        .select("*")
+        .eq("privada", privada)
+        .eq("casa", casa)
+        .eq("clave", clave)
+        .maybeSingle();
+
+      if (error || !data) {
+        console.log("ERROR LOGIN:", error);
+        mensaje.innerText = "Datos incorrectos";
+        mensaje.classList.add("error");
+        return;
+      }
+
+      console.log("LOGIN OK:", data);
+
+      let rol = data.tipo;
+
+      if (rol === "residente") rol = "colono";
+      if (rol === "administracion") rol = "admin";
+      if (rol === "vigilante") rol = "vigilante";
+
+      localStorage.setItem("usuario_valido", "true");
+      localStorage.setItem("privada", privada);
+      localStorage.setItem("casa", casa);
+      localStorage.setItem("rol", rol);
+      localStorage.setItem("mesa_directiva", data.es_mesa_directiva || false);
+      localStorage.setItem("soporte", data.es_soporte || false);
+
+      window.location.href = "index.html";
+
+    } catch (err) {
+      console.log("ERROR GENERAL:", err);
+      document.getElementById("mensaje").innerText = "Error inesperado";
     }
-
-    const { data, error } = await supabaseClient
-      .from("residentes")
-      .select("*")
-      .ilike("privada", privada)
-      .eq("casa", casa)
-      .eq("clave", clave)
-      .maybeSingle();
-
-    if (error || !data) {
-      mensaje.innerText = "Datos incorrectos";
-      mensaje.classList.add("error");
-      return;
-    }
-
-    let rol = data.tipo;
-
-    if (rol === "residente") rol = "colono";
-    if (rol === "administracion") rol = "admin";
-    if (rol === "vigilante") rol = "vigilante";
-
-    localStorage.setItem("usuario_valido", "true");
-    localStorage.setItem("privada", privada);
-    localStorage.setItem("casa", casa);
-    localStorage.setItem("rol", rol);
-    localStorage.setItem("mesa_directiva", data.es_mesa_directiva || false);
-    localStorage.setItem("soporte", data.es_soporte || false);
-
-    window.location.href = "index.html";
-
-  } catch (err) {
-    document.getElementById("mensaje").innerText = "Error inesperado";
   }
-}
 
-// 🔥 SERVICE WORKER
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
-    .then(() => console.log('SW registrado'));
-}
+  // 🔥 SERVICE WORKER
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+      .then(() => console.log('SW registrado'));
+  }
 </script>
 
 </body>
