@@ -26,11 +26,24 @@ body {
   padding: 20px;
 }
 
+/* OBRA */
+.obra {
+  margin-top: 25px;
+}
+
+.obra-titulo {
+  font-weight: bold;
+  font-size: 14px;
+  color: #94a3b8;
+  margin-bottom: 10px;
+}
+
+/* TARJETAS */
 .card {
   background: #1e293b;
   padding: 15px;
   border-radius: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .nombre {
@@ -70,6 +83,26 @@ button {
 .estado-verde { color: #34d399; }
 .estado-rojo { color: #f87171; }
 .estado-amarillo { color: #fbbf24; }
+
+/* 🔥 TOAST */
+#toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 18px;
+  border-radius: 10px;
+  display: none;
+  z-index: 999;
+  font-size: 14px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+  color: white;
+}
+
+.toast-ok { background: #16a34a; }
+.toast-error { background: #dc2626; }
+.toast-warning { background: #f59e0b; }
+
 </style>
 </head>
 
@@ -80,12 +113,30 @@ button {
   <div id="lista"></div>
 </div>
 
+<!-- 🔥 TOAST -->
+<div id="toast"></div>
+
 <script>
 
 const supabaseClient = supabase.createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
+
+// 🔥 TOAST FUNCTION
+function toast(msg, tipo="ok") {
+  const t = document.getElementById("toast");
+
+  t.className = "";
+  t.classList.add(`toast-${tipo}`);
+
+  t.innerText = msg;
+  t.style.display = "block";
+
+  setTimeout(() => {
+    t.style.display = "none";
+  }, 2000);
+}
 
 cargar();
 
@@ -94,57 +145,82 @@ async function cargar() {
   const { data } = await supabaseClient
     .from("trabajadores_obra")
     .select("*")
-    .order("nombre");
+    .order("privada")
+    .order("casa");
 
   const lista = document.getElementById("lista");
   lista.innerHTML = "";
 
   const hoy = new Date().toISOString().split("T")[0];
 
+  const grupos = {};
+
   data.forEach(t => {
+    const clave = `${t.privada}-${t.casa}`;
+    if (!grupos[clave]) grupos[clave] = [];
+    grupos[clave].push(t);
+  });
 
-    let estado = "";
-    let clase = "";
+  Object.keys(grupos).forEach(clave => {
 
-    if (!t.activo) {
-      estado = "⛔ Cancelado";
-      clase = "estado-rojo";
-    }
-    else if (t.fecha_inicio && hoy < t.fecha_inicio) {
-      estado = "🟡 Aún no inicia";
-      clase = "estado-amarillo";
-    }
-    else if (t.fecha_fin && hoy > t.fecha_fin) {
-      estado = "🔴 Vencido";
-      clase = "estado-rojo";
-    }
-    else {
-      estado = "🟢 Vigente";
-      clase = "estado-verde";
-    }
+    const [privada, casa] = clave.split("-");
 
-    const div = document.createElement("div");
-    div.className = "card";
+    const bloque = document.createElement("div");
+    bloque.className = "obra";
 
-    div.innerHTML = `
-      <div class="nombre">${t.nombre}</div>
-      <div class="estado ${clase}">${estado}</div>
-
-      <input type="date" id="inicio_${t.id}" value="${t.fecha_inicio || ""}">
-      <input type="date" id="fin_${t.id}" value="${t.fecha_fin || ""}">
-
-      <button class="btn-renovar" onclick="renovar('${t.id}')">
-        🔄 Guardar / Renovar
-      </button>
-
-      ${
-        t.activo
-        ? `<button class="btn-cancelar" onclick="cancelar('${t.id}')">⛔ Cancelar permiso</button>`
-        : `<button class="btn-reactivar" onclick="reactivar('${t.id}')">🟢 Reactivar</button>`
-      }
+    bloque.innerHTML = `
+      <div class="obra-titulo">
+        🏗 Privada ${privada} - Lote ${casa}
+      </div>
     `;
 
-    lista.appendChild(div);
+    grupos[clave].forEach(t => {
+
+      let estado = "";
+      let clase = "";
+
+      if (!t.activo) {
+        estado = "⛔ Cancelado";
+        clase = "estado-rojo";
+      }
+      else if (t.fecha_inicio && hoy < t.fecha_inicio) {
+        estado = "🟡 Aún no inicia";
+        clase = "estado-amarillo";
+      }
+      else if (t.fecha_fin && hoy > t.fecha_fin) {
+        estado = "🔴 Vencido";
+        clase = "estado-rojo";
+      }
+      else {
+        estado = "🟢 Vigente";
+        clase = "estado-verde";
+      }
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <div class="nombre">${t.nombre}</div>
+        <div class="estado ${clase}">${estado}</div>
+
+        <input type="date" id="inicio_${t.id}" value="${t.fecha_inicio || ""}">
+        <input type="date" id="fin_${t.id}" value="${t.fecha_fin || ""}">
+
+        <button class="btn-renovar" onclick="renovar('${t.id}')">
+          🔄 Guardar / Renovar
+        </button>
+
+        ${
+          t.activo
+          ? `<button class="btn-cancelar" onclick="cancelar('${t.id}')">⛔ Cancelar</button>`
+          : `<button class="btn-reactivar" onclick="reactivar('${t.id}')">🟢 Reactivar</button>`
+        }
+      `;
+
+      bloque.appendChild(card);
+    });
+
+    lista.appendChild(bloque);
   });
 }
 
@@ -155,11 +231,11 @@ async function renovar(id) {
   const fin = document.getElementById(`fin_${id}`).value;
 
   if (inicio && fin && inicio > fin) {
-    alert("La fecha inicio no puede ser mayor que fin");
+    toast("Fecha inválida", "warning");
     return;
   }
 
-  await supabaseClient
+  const { error } = await supabaseClient
     .from("trabajadores_obra")
     .update({
       fecha_inicio: inicio || null,
@@ -168,31 +244,48 @@ async function renovar(id) {
     })
     .eq("id", id);
 
-  alert("Permiso actualizado");
+  if (error) {
+    toast("Error al actualizar", "error");
+    return;
+  }
+
+  toast("Permiso actualizado ✅", "ok");
   cargar();
 }
 
 // ⛔ CANCELAR
 async function cancelar(id) {
 
-  if (!confirm("¿Cancelar permiso del trabajador?")) return;
+  if (!confirm("¿Cancelar permiso?")) return;
 
-  await supabaseClient
+  const { error } = await supabaseClient
     .from("trabajadores_obra")
     .update({ activo: false })
     .eq("id", id);
 
+  if (error) {
+    toast("Error al cancelar", "error");
+    return;
+  }
+
+  toast("Permiso cancelado", "warning");
   cargar();
 }
 
 // 🟢 REACTIVAR
 async function reactivar(id) {
 
-  await supabaseClient
+  const { error } = await supabaseClient
     .from("trabajadores_obra")
     .update({ activo: true })
     .eq("id", id);
 
+  if (error) {
+    toast("Error al reactivar", "error");
+    return;
+  }
+
+  toast("Trabajador reactivado", "ok");
   cargar();
 }
 
