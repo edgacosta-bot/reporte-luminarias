@@ -114,6 +114,12 @@ async function registrar() {
     return;
   }
 
+  // 🔒 BLOQUEO POR ADEUDO
+if (residente.moroso) {
+  alert("No puedes registrar trabajadores por adeudo");
+  return;
+}
+
   const codigo = crypto.randomUUID();
 
   const { error: insertError } = await client
