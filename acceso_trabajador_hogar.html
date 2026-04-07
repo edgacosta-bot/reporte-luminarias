@@ -60,6 +60,9 @@ const qr = new URLSearchParams(window.location.search).get("qr");
 let trabajador = null;
 let tipo = "";
 
+// 🔥 NUEVO CONTROL
+let puedeConfirmar = false;
+
 init();
 
 async function init() {
@@ -72,6 +75,7 @@ async function init() {
 
   if (!data) {
     pintar("QR INVÁLIDO", "error");
+    puedeConfirmar = false;
     return;
   }
 
@@ -81,16 +85,19 @@ async function init() {
 
   if (!data.activo) {
     pintar("ACCESO CANCELADO", "error");
+    puedeConfirmar = false;
     return;
   }
 
   if (data.fecha_inicio && hoy < data.fecha_inicio) {
     pintar("AÚN NO VÁLIDO", "warn");
+    puedeConfirmar = false;
     return;
   }
 
   if (data.fecha_fin && hoy > data.fecha_fin) {
     pintar("ACCESO VENCIDO", "error");
+    puedeConfirmar = false;
     return;
   }
 
@@ -105,9 +112,11 @@ async function init() {
 
   if (!acceso) {
     tipo = "entrada";
+    puedeConfirmar = true;
     pintar("PERMITIR ENTRADA", "ok");
   } else {
     tipo = "salida";
+    puedeConfirmar = true;
     pintar("REGISTRAR SALIDA", "warn");
   }
 }
@@ -118,6 +127,9 @@ function pintar(texto, color) {
 }
 
 async function confirmar() {
+
+  // 🔥 BLOQUEO CLAVE
+  if (!puedeConfirmar) return;
 
   const pin = document.getElementById("pin").value;
 
