@@ -94,6 +94,7 @@ const codigo = params.get("qr");
 const nombre = params.get("nombre");
 const privada = params.get("privada");
 const casa = params.get("casa");
+const origen = params.get("origen"); // 🔥 NUEVO
 
 // 🔥 URL REAL DE ACCESO (QR interno)
 const urlQR = `${window.location.origin}/acceso_trabajador_hogar.html?qr=${codigo}`;
@@ -109,10 +110,17 @@ document.getElementById("detalle").innerText =
   `Privada ${privada || ""} - Lote ${casa || ""}`;
 
 
-// 📲 WHATSAPP (🔥 CORREGIDO)
+// 🔥 CONTROL DE VISIBILIDAD BOTÓN
+if (origen !== "admin") {
+  document.getElementById("btnWA").style.display = "none";
+}
+
+
+// 📲 WHATSAPP
 document.getElementById("btnWA").addEventListener("click", () => {
 
-  const linkCredencial = window.location.href;
+  const linkCredencial =
+    `${window.location.origin}/credencial_trabajador_hogar.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
 
   const mensaje =
     `👷 Credencial de acceso\n\n` +
