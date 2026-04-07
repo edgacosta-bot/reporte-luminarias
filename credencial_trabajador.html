@@ -35,6 +35,14 @@ body {
   color: #9ca3af;
 }
 
+/* 🔥 NUEVO: etiqueta reimpresión */
+.reimpresion {
+  color: #f59e0b;
+  font-weight: bold;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
 .titulo {
   font-size: 18px;
   font-weight: bold;
@@ -68,6 +76,10 @@ body {
 <div class="card">
 
   <div class="header">Villas de la Concepción</div>
+
+  <!-- 🔥 NUEVO -->
+  <div id="reimpresionLabel" class="reimpresion"></div>
+
   <div class="titulo">Acceso de Trabajador</div>
 
   <div id="qr"></div>
@@ -96,6 +108,13 @@ const codigo = params.get("qr");
 const nombre = params.get("nombre");
 const privada = params.get("privada");
 const casa = params.get("casa");
+
+// 🔥 NUEVO: detectar reimpresión
+const esReimpresion = params.get("reimpresion");
+
+if (esReimpresion) {
+  document.getElementById("reimpresionLabel").innerText = "⚠️ REIMPRESIÓN";
+}
 
 // 🔥 QR apunta al acceso real del vigilante
 const urlQR = `${window.location.origin}/acceso_trabajador.html?qr=${codigo}`;
