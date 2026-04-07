@@ -29,6 +29,25 @@ h2 {
   margin-bottom: 20px;
 }
 
+/* 🔥 AVISOS */
+.aviso {
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.aviso-warning {
+  background: #f59e0b;
+  color: #1f2937;
+}
+
+.aviso-error {
+  background: #dc2626;
+}
+
+/* TARJETAS */
 .card {
   background: #1f2937;
   border-radius: 14px;
@@ -65,43 +84,10 @@ button {
 .btn-off { background: #6b7280; color: white; }
 .btn-del { background: #dc2626; color: white; }
 
-/* 🔥 MODAL */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.6);
-  display: none;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-box {
-  background: #1f2937;
-  padding: 20px;
-  border-radius: 16px;
-  width: 85%;
-  max-width: 320px;
-  text-align: center;
-}
-
-.modal-box p {
-  margin-bottom: 20px;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.btn-cancel {
-  background: #6b7280;
-}
-
-.btn-confirm {
-  background: #dc2626;
+/* 🔒 BOTÓN BLOQUEADO */
+.bloqueado {
+  opacity: 0.5;
+  pointer-events: none;
 }
 </style>
 
@@ -114,19 +100,11 @@ button {
 
 <h2>👷 Trabajadores del hogar</h2>
 
+<!-- 🔥 AVISO DINÁMICO -->
+<div id="aviso"></div>
+
 <div id="lista"></div>
 
-</div>
-
-<!-- 🔥 MODAL -->
-<div id="modal" class="modal">
-  <div class="modal-box">
-    <p>¿Eliminar trabajador?</p>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
-      <button class="btn-confirm" onclick="confirmarEliminar()">Eliminar</button>
-    </div>
-  </div>
 </div>
 
 <script>
@@ -139,12 +117,12 @@ const client = window.supabase.createClient(
 const identificador = localStorage.getItem("identificador");
 
 let residente = null;
-let idAEliminar = null; // 🔥 NUEVO
 
 cargar();
 
 async function cargar() {
 
+  // 🔎 obtener residente
   const { data } = await client
     .from("residentes")
     .select("*")
@@ -153,6 +131,20 @@ async function cargar() {
 
   residente = data;
 
+  // 🔥 MOSTRAR AVISO
+  const aviso = document.getElementById("aviso");
+
+  if (residente.estado_pago === "atraso_1") {
+    aviso.className = "aviso aviso-warning";
+    aviso.innerText = "⚠️ Tienes atraso en tus aportaciones. Puedes continuar, pero regulariza.";
+  }
+
+  if (residente.estado_pago === "moroso") {
+    aviso.className = "aviso aviso-error";
+    aviso.innerText = "⛔ No puedes gestionar trabajadores por adeudo. Regulariza para continuar.";
+  }
+
+  // 🔎 obtener trabajadores
   const { data: trabajadores } = await client
     .from("trabajadores_hogar")
     .select("*")
@@ -187,13 +179,21 @@ async function cargar() {
       </div>
     `;
 
+    // 🔒 BLOQUEAR SI MOROSO
+    if (residente.estado_pago === "moroso") {
+      card.querySelectorAll("button").forEach(btn => {
+        btn.classList.add("bloqueado");
+      });
+    }
+
     contenedor.appendChild(card);
   });
 }
 
-
 // 🔥 ACTIVAR / DESACTIVAR
 async function toggle(id, estadoActual) {
+
+  if (residente.estado_pago === "moroso") return;
 
   await client
     .from("trabajadores_hogar")
@@ -203,30 +203,18 @@ async function toggle(id, estadoActual) {
   cargar();
 }
 
+// 🔥 ELIMINAR
+async function eliminar(id) {
 
-// 🔥 MOSTRAR MODAL
-function eliminar(id) {
-  idAEliminar = id;
-  document.getElementById("modal").style.display = "flex";
-}
+  if (residente.estado_pago === "moroso") return;
 
-function cerrarModal() {
-  document.getElementById("modal").style.display = "none";
-  idAEliminar = null;
-}
-
-
-// 🔥 CONFIRMAR ELIMINACIÓN
-async function confirmarEliminar() {
-
-  if (!idAEliminar) return;
+  if (!confirm("¿Eliminar trabajador?")) return;
 
   await client
     .from("trabajadores_hogar")
     .delete()
-    .eq("id", idAEliminar);
+    .eq("id", id);
 
-  cerrarModal();
   cargar();
 }
 
