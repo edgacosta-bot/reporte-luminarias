@@ -45,6 +45,7 @@ input {
   border-radius: 10px;
   border: none;
   margin-top: 5px;
+  box-sizing: border-box;
 }
 
 button {
@@ -58,10 +59,24 @@ button {
   font-weight: bold;
   cursor: pointer;
 }
+
+/* 🔥 MENSAJE APP */
+.mensaje {
+  margin-top: 10px;
+  font-size: 14px;
+  display: none;
+}
+
+.error {
+  color: #dc2626;
+}
+
+.warning {
+  color: #f59e0b;
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 </head>
 
 <body>
@@ -81,6 +96,8 @@ button {
 
 <button onclick="registrar()">Generar QR</button>
 
+<div id="mensaje" class="mensaje"></div>
+
 </div>
 
 <script>
@@ -95,9 +112,14 @@ async function registrar() {
   const nombre = document.getElementById("nombre").value;
   const inicio = document.getElementById("inicio").value;
   const fin = document.getElementById("fin").value;
+  const mensaje = document.getElementById("mensaje");
+
+  mensaje.style.display = "none";
 
   if (!nombre) {
-    alert("Ingresa nombre");
+    mensaje.innerText = "Ingresa nombre";
+    mensaje.className = "mensaje error";
+    mensaje.style.display = "block";
     return;
   }
 
@@ -110,15 +132,28 @@ async function registrar() {
     .single();
 
   if (error || !residente) {
-    alert("Error obteniendo datos del residente");
+    mensaje.innerText = "Error obteniendo datos";
+    mensaje.className = "mensaje error";
+    mensaje.style.display = "block";
     return;
   }
 
-  // 🔒 BLOQUEO POR ADEUDO
-if (residente.moroso) {
-  alert("No puedes registrar trabajadores por adeudo");
-  return;
-}
+  const estado = (residente.estado_pago || "").toLowerCase();
+
+  // 🔴 BLOQUEO TOTAL
+  if (estado === "moroso") {
+    mensaje.innerText = "⛔ No puedes generar accesos. Regulariza tu pago.";
+    mensaje.className = "mensaje error";
+    mensaje.style.display = "block";
+    return;
+  }
+
+  // 🟡 ADVERTENCIA
+  if (estado === "atraso_1") {
+    mensaje.innerText = "⚠️ Tienes atraso. Puedes continuar, pero regulariza.";
+    mensaje.className = "mensaje warning";
+    mensaje.style.display = "block";
+  }
 
   const codigo = crypto.randomUUID();
 
@@ -134,12 +169,12 @@ if (residente.moroso) {
     }]);
 
   if (insertError) {
-    alert("Error al registrar");
-    console.log(insertError);
+    mensaje.innerText = "Error al registrar";
+    mensaje.className = "mensaje error";
+    mensaje.style.display = "block";
     return;
   }
 
-  // 🔥 SOLO REDIRECCIÓN (COMO DEBE SER)
   window.location.href =
   `credencial_trabajador_hogar.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${residente.privada}&casa=${residente.casa}&origen=admin`;
 }
