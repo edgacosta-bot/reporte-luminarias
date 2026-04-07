@@ -160,11 +160,12 @@ if (origen === "admin") {
 
     // 🔥 LINK LIMPIO (SIN origen=admin)
     const linkCredencial =
-      `${window.location.origin}/credencial_trabajador.html` +
-      `?qr=${codigo}` +
-      `&nombre=${encodeURIComponent(nombre)}` +
-      `&privada=${privada}` +
-      `&casa=${casa}`;
+  `${window.location.origin}/credencial_trabajador.html` +
+  `?qr=${codigo}` +
+  `&nombre=${encodeURIComponent(nombre)}` +
+  `&privada=${privada}` +
+  `&casa=${casa}` +
+  (esReimpresion ? `&reimpresion=1` : "");
 
     const mensaje =
       `👷 Credencial de acceso\n\n` +
