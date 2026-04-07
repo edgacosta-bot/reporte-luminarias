@@ -68,6 +68,20 @@ body {
   font-size: 12px;
   color: #94a3b8;
 }
+
+/* 🔥 BOTÓN WHATSAPP */
+#btnWA {
+  display: none;
+  margin-top: 15px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #25D366;
+  color: white;
+  font-weight: bold;
+  width: 100%;
+  cursor: pointer;
+}
 </style>
 </head>
 
@@ -77,7 +91,7 @@ body {
 
   <div class="header">Villas de la Concepción</div>
 
-  <!-- 🔥 NUEVO -->
+  <!-- 🔥 REIMPRESIÓN -->
   <div id="reimpresionLabel" class="reimpresion"></div>
 
   <div class="titulo">Acceso de Trabajador</div>
@@ -90,6 +104,11 @@ body {
   <div class="indicacion">
     Presentar este código en caseta
   </div>
+
+  <!-- 🔥 BOTÓN WHATSAPP -->
+  <button id="btnWA">
+    📲 Enviar por WhatsApp
+  </button>
 
 </div>
 
@@ -109,9 +128,11 @@ const nombre = params.get("nombre");
 const privada = params.get("privada");
 const casa = params.get("casa");
 
-// 🔥 NUEVO: detectar reimpresión
+// 🔥 NUEVOS PARAMS
 const esReimpresion = params.get("reimpresion");
+const origen = params.get("origen");
 
+// 🔥 MOSTRAR REIMPRESIÓN
 if (esReimpresion) {
   document.getElementById("reimpresionLabel").innerText = "⚠️ REIMPRESIÓN";
 }
@@ -128,6 +149,28 @@ QRCode.toCanvas(urlQR, { width: 220 }, function (err, canvas) {
 document.getElementById("nombre").innerText = nombre || "";
 document.getElementById("obra").innerText =
   `Privada ${privada || ""} - Lote ${casa || ""}`;
+
+// 🔥 CONTROL DE BOTÓN WHATSAPP
+if (origen === "admin") {
+
+  const btn = document.getElementById("btnWA");
+  btn.style.display = "block";
+
+  btn.addEventListener("click", () => {
+
+    const linkCredencial = window.location.href;
+
+    const mensaje =
+      `👷 Credencial de acceso\n\n` +
+      `Nombre: ${nombre}\n` +
+      `Ubicación: Privada ${privada} - Lote ${casa}\n\n` +
+      `Presenta este código en caseta:\n${linkCredencial}`;
+
+    const wa = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+
+    window.open(wa, "_blank");
+  });
+}
 
 </script>
 
