@@ -63,10 +63,8 @@ input, button {
   <input type="password" id="pin" placeholder="PIN">
   <button id="btnConfirmar" onclick="confirmar()">Confirmar</button>
 
-  <!-- 🔥 NUEVO MENSAJE -->
   <div id="errorMsg">PIN incorrecto</div>
 
-  <!-- 🔥 NUEVO -->
   <button id="btnSalir" onclick="salir()">Salir</button>
 </div>
 
@@ -103,18 +101,20 @@ async function init() {
 
   trabajador = data;
 
-  // 🔒 VALIDAR MOROSIDAD DEL RESIDENTE
-const { data: residente } = await client
-  .from("residentes")
-  .select("moroso")
-  .eq("id", trabajador.residente_id)
-  .maybeSingle();
+  // 🔥 VALIDACIÓN CORRECTA (ESTADO_PAGO)
+  const { data: residente } = await client
+    .from("residentes")
+    .select("estado_pago")
+    .eq("id", trabajador.residente_id)
+    .single();
 
-if (residente && residente.moroso) {
-  pintar("ACCESO BLOQUEADO POR ADEUDO", "error");
-  puedeConfirmar = false;
-  return;
-}
+  const estado = (residente?.estado_pago || "").toLowerCase();
+
+  if (estado === "moroso") {
+    pintar("ACCESO BLOQUEADO POR ADEUDO", "error");
+    puedeConfirmar = false;
+    return;
+  }
 
   const hoy = new Date().toISOString().split('T')[0];
 
@@ -165,7 +165,6 @@ function pintar(texto, color) {
   document.getElementById("pin").style.display = mostrar ? "block" : "none";
   document.getElementById("btnConfirmar").style.display = mostrar ? "block" : "none";
 
-  // 🔥 limpiar error al cambiar estado
   document.getElementById("errorMsg").style.display = "none";
 }
 
@@ -176,10 +175,8 @@ async function confirmar() {
   const pin = document.getElementById("pin").value;
 
   if (pin !== PIN) {
-    // 🔥 NUEVO COMPORTAMIENTO
     const error = document.getElementById("errorMsg");
     error.style.display = "block";
-
     document.getElementById("pin").value = "";
     return;
   }
@@ -210,7 +207,6 @@ async function confirmar() {
   }
 }
 
-/* 🔥 NUEVA FUNCIÓN FINAL */
 function pintarFinal(texto, color) {
   document.body.className = color;
   document.getElementById("estado").innerText = texto;
@@ -221,7 +217,6 @@ function pintarFinal(texto, color) {
   document.getElementById("btnSalir").style.display = "block";
 }
 
-/* 🔥 SALIR */
 function salir() {
   window.location.href = "index.html";
 }
