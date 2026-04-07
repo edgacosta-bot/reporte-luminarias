@@ -73,8 +73,8 @@ body {
 .btn-infra { background: #611232; }
 .btn-admin { background: #002f2a; }
 
-/* 🔥 NUEVO COLOR REALMENTE DISTINTO */
-.btn-hogar { background: #9F2241; }
+/* 🔥 GRIS PARA TRABAJADORES DEL HOGAR */
+.btn-hogar { background: #6b7280; }
 
 .logout {
   background: #9b2247;
@@ -105,7 +105,7 @@ body {
   <a href="bitacora_visitantes.html" class="button btn-visitas">📋 Bitácora de visitantes</a>
 </div>
 
-<!-- ✅ TRABAJADORES DEL HOGAR (CORREGIDO) -->
+<!-- TRABAJADORES DEL HOGAR -->
 <div id="hogar-section" class="section">
   <div class="section-title">TRABAJADORES DEL HOGAR</div>
 
@@ -178,6 +178,8 @@ body {
 
 <script>
 
+// (sin cambios en JS)
+
 if (!localStorage.getItem("usuario_valido")) {
   window.location.href = "login.html";
 }
@@ -199,7 +201,6 @@ const hogarSection = document.getElementById("hogar-section");
 const btnReportes = document.getElementById("btnReportes");
 const btnPaquetesColono = document.getElementById("btnPaquetesColono");
 
-// VIGILANTE
 if (rol === "vigilante") {
   adminSection.style.display = "none";
   colonoSection.style.display = "none";
@@ -208,22 +209,18 @@ if (rol === "vigilante") {
   if (hogarSection) hogarSection.style.display = "none";
 }
 
-// COLONO
 if (rol === "colono") {
   adminSection.style.display = "none";
   vigilanteSection.style.display = "none";
 }
 
-// ADMIN
 if (rol === "admin") {
   btnReportes.innerText = "📊 Reporte general";
   vigilanteSection.style.display = "none";
   if (hogarSection) hogarSection.style.display = "none";
-
   if (btnPaquetesColono) btnPaquetesColono.style.display = "none";
 }
 
-// SEGURIDAD EXTRA
 if (rol !== "colono") {
   if (btnPaquetesColono) btnPaquetesColono.style.display = "none";
 }
@@ -236,7 +233,6 @@ function irAReportes() {
   }
 }
 
-// SERVICE WORKER
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js');
 }
