@@ -103,6 +103,19 @@ async function init() {
 
   trabajador = data;
 
+  // 🔒 VALIDAR MOROSIDAD DEL RESIDENTE
+const { data: residente } = await client
+  .from("residentes")
+  .select("moroso")
+  .eq("id", trabajador.residente_id)
+  .maybeSingle();
+
+if (residente && residente.moroso) {
+  pintar("ACCESO BLOQUEADO POR ADEUDO", "error");
+  puedeConfirmar = false;
+  return;
+}
+
   const hoy = new Date().toISOString().split('T')[0];
 
   if (!data.activo) {
