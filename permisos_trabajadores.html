@@ -153,10 +153,8 @@ button {
   <div id="lista"></div>
 </div>
 
-<!-- 🔥 TOAST -->
 <div id="toast"></div>
 
-<!-- 🔥 MODAL -->
 <div id="modal" class="modal">
   <div class="modal-box">
     <p>¿Cancelar permiso?</p>
@@ -176,7 +174,6 @@ const supabaseClient = supabase.createClient(
 
 let idCancelar = null;
 
-// 🔥 TOAST
 function toast(msg, tipo="ok") {
   const t = document.getElementById("toast");
 
@@ -198,8 +195,7 @@ async function cargar() {
   const { data } = await supabaseClient
     .from("trabajadores_obra")
     .select("*")
-    .order("privada")
-    .order("casa");
+    .order("created_at", { ascending: false }); // 🔥 CAMBIO CLAVE
 
   const lista = document.getElementById("lista");
   lista.innerHTML = "";
@@ -276,7 +272,6 @@ async function cargar() {
   });
 }
 
-// 🔄 RENOVAR (sin cambios)
 async function renovar(id) {
 
   const inicio = document.getElementById(`inicio_${id}`).value;
@@ -305,7 +300,6 @@ async function renovar(id) {
   cargar();
 }
 
-// 🔥 NUEVO FLUJO CANCELAR
 function cancelar(id) {
   idCancelar = id;
   document.getElementById("modal").style.display = "flex";
@@ -335,7 +329,6 @@ async function confirmarCancelacion() {
   cargar();
 }
 
-// 🟢 REACTIVAR (sin cambios)
 async function reactivar(id) {
 
   const { error } = await supabaseClient
