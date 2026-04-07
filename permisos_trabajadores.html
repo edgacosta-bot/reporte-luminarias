@@ -64,6 +64,7 @@ input {
   border: none;
   background: #020617;
   color: white;
+  box-sizing: border-box;
 }
 
 button {
@@ -103,6 +104,45 @@ button {
 .toast-error { background: #dc2626; }
 .toast-warning { background: #f59e0b; }
 
+/* 🔥 MODAL */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 16px;
+  width: 85%;
+  max-width: 320px;
+  text-align: center;
+}
+
+.modal-box p {
+  margin-bottom: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-cancel {
+  background: #6b7280;
+}
+
+.btn-confirm {
+  background: #dc2626;
+}
 </style>
 </head>
 
@@ -116,6 +156,17 @@ button {
 <!-- 🔥 TOAST -->
 <div id="toast"></div>
 
+<!-- 🔥 MODAL -->
+<div id="modal" class="modal">
+  <div class="modal-box">
+    <p>¿Cancelar permiso?</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-confirm" onclick="confirmarCancelacion()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 
 const supabaseClient = supabase.createClient(
@@ -123,7 +174,9 @@ const supabaseClient = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-// 🔥 TOAST FUNCTION
+let idCancelar = null;
+
+// 🔥 TOAST
 function toast(msg, tipo="ok") {
   const t = document.getElementById("toast");
 
@@ -152,7 +205,6 @@ async function cargar() {
   lista.innerHTML = "";
 
   const hoy = new Date().toISOString().split("T")[0];
-
   const grupos = {};
 
   data.forEach(t => {
@@ -224,7 +276,7 @@ async function cargar() {
   });
 }
 
-// 🔄 RENOVAR
+// 🔄 RENOVAR (sin cambios)
 async function renovar(id) {
 
   const inicio = document.getElementById(`inicio_${id}`).value;
@@ -253,26 +305,37 @@ async function renovar(id) {
   cargar();
 }
 
-// ⛔ CANCELAR
-async function cancelar(id) {
+// 🔥 NUEVO FLUJO CANCELAR
+function cancelar(id) {
+  idCancelar = id;
+  document.getElementById("modal").style.display = "flex";
+}
 
-  if (!confirm("¿Cancelar permiso?")) return;
+function cerrarModal() {
+  document.getElementById("modal").style.display = "none";
+  idCancelar = null;
+}
+
+async function confirmarCancelacion() {
+
+  if (!idCancelar) return;
 
   const { error } = await supabaseClient
     .from("trabajadores_obra")
     .update({ activo: false })
-    .eq("id", id);
+    .eq("id", idCancelar);
 
   if (error) {
     toast("Error al cancelar", "error");
     return;
   }
 
+  cerrarModal();
   toast("Permiso cancelado", "warning");
   cargar();
 }
 
-// 🟢 REACTIVAR
+// 🟢 REACTIVAR (sin cambios)
 async function reactivar(id) {
 
   const { error } = await supabaseClient
