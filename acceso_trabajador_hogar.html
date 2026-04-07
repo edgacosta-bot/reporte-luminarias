@@ -25,13 +25,23 @@ body {
 
 .container {
   max-width: 320px;
+  width: 90%;
 }
 
+/* 🔥 FIX GLOBAL DE DIMENSIONES */
 input, button {
   width: 100%;
   padding: 14px;
   margin-top: 10px;
   border-radius: 10px;
+  box-sizing: border-box;
+}
+
+/* 🔥 BOTÓN SALIR */
+#btnSalir {
+  display: none;
+  background: #1f2937;
+  color: white;
 }
 </style>
 </head>
@@ -44,6 +54,9 @@ input, button {
 
   <input type="password" id="pin" placeholder="PIN">
   <button id="btnConfirmar" onclick="confirmar()">Confirmar</button>
+
+  <!-- 🔥 NUEVO -->
+  <button id="btnSalir" onclick="salir()">Salir</button>
 </div>
 
 <script>
@@ -69,7 +82,7 @@ async function init() {
     .from("trabajadores_hogar")
     .select("*")
     .eq("qr_codigo", qr)
-    .maybeSingle(); // 🔥 CAMBIO CLAVE
+    .maybeSingle();
 
   if (!data) {
     pintar("QR INVÁLIDO", "error");
@@ -150,7 +163,7 @@ async function confirmar() {
       estatus: "dentro"
     }]);
 
-    pintar("ENTRADA REGISTRADA", "ok");
+    pintarFinal("ENTRADA REGISTRADA", "ok");
 
   } else {
 
@@ -162,8 +175,24 @@ async function confirmar() {
       .eq("trabajador_id", trabajador.id)
       .is("fecha_hora_salida", null);
 
-    pintar("SALIDA REGISTRADA", "warn");
+    pintarFinal("SALIDA REGISTRADA", "warn");
   }
+}
+
+/* 🔥 NUEVA FUNCIÓN FINAL */
+function pintarFinal(texto, color) {
+  document.body.className = color;
+  document.getElementById("estado").innerText = texto;
+
+  document.getElementById("pin").style.display = "none";
+  document.getElementById("btnConfirmar").style.display = "none";
+
+  document.getElementById("btnSalir").style.display = "block";
+}
+
+/* 🔥 SALIR */
+function salir() {
+  window.location.href = "index.html";
 }
 
 </script>
