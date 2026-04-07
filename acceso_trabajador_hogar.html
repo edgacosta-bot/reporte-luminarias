@@ -43,7 +43,7 @@ input, button {
   <div id="nombre"></div>
 
   <input type="password" id="pin" placeholder="PIN">
-  <button onclick="confirmar()">Confirmar</button>
+  <button id="btnConfirmar" onclick="confirmar()">Confirmar</button>
 </div>
 
 <script>
@@ -52,15 +52,13 @@ const PIN = "7482";
 
 const client = supabase.createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nz20NjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
 const qr = new URLSearchParams(window.location.search).get("qr");
 
 let trabajador = null;
 let tipo = "";
-
-// 🔥 NUEVO CONTROL
 let puedeConfirmar = false;
 
 init();
@@ -124,11 +122,16 @@ async function init() {
 function pintar(texto, color) {
   document.body.className = color;
   document.getElementById("estado").innerText = texto;
+
+  // 🔥 CONTROL VISUAL (CLAVE)
+  const mostrar = (color === "ok" || texto === "REGISTRAR SALIDA");
+
+  document.getElementById("pin").style.display = mostrar ? "block" : "none";
+  document.getElementById("btnConfirmar").style.display = mostrar ? "block" : "none";
 }
 
 async function confirmar() {
 
-  // 🔥 BLOQUEO CLAVE
   if (!puedeConfirmar) return;
 
   const pin = document.getElementById("pin").value;
