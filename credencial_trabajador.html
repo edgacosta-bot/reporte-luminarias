@@ -35,7 +35,7 @@ body {
   color: #9ca3af;
 }
 
-/* 🔥 NUEVO: etiqueta reimpresión */
+/* 🔥 etiqueta reimpresión */
 .reimpresion {
   color: #f59e0b;
   font-weight: bold;
@@ -116,7 +116,7 @@ body {
 
 <script>
 
-// 🔥 LIMPIA CONTEXTO DE SESIÓN (SOLUCIÓN AL PROBLEMA)
+// 🔥 LIMPIA CONTEXTO DE SESIÓN
 localStorage.clear();
 sessionStorage.clear();
 
@@ -128,16 +128,16 @@ const nombre = params.get("nombre");
 const privada = params.get("privada");
 const casa = params.get("casa");
 
-// 🔥 NUEVOS PARAMS
+// 🔥 nuevos params
 const esReimpresion = params.get("reimpresion");
 const origen = params.get("origen");
 
-// 🔥 MOSTRAR REIMPRESIÓN
+// 🔥 etiqueta reimpresión
 if (esReimpresion) {
   document.getElementById("reimpresionLabel").innerText = "⚠️ REIMPRESIÓN";
 }
 
-// 🔥 QR apunta al acceso real del vigilante
+// 🔥 QR apunta al acceso real
 const urlQR = `${window.location.origin}/acceso_trabajador.html?qr=${codigo}`;
 
 // 🎯 Generar QR
@@ -150,7 +150,7 @@ document.getElementById("nombre").innerText = nombre || "";
 document.getElementById("obra").innerText =
   `Privada ${privada || ""} - Lote ${casa || ""}`;
 
-// 🔥 CONTROL DE BOTÓN WHATSAPP
+// 🔥 CONTROL BOTÓN WA (SOLO ADMIN)
 if (origen === "admin") {
 
   const btn = document.getElementById("btnWA");
@@ -158,7 +158,13 @@ if (origen === "admin") {
 
   btn.addEventListener("click", () => {
 
-    const linkCredencial = window.location.href;
+    // 🔥 LINK LIMPIO (SIN origen=admin)
+    const linkCredencial =
+      `${window.location.origin}/credencial_trabajador.html` +
+      `?qr=${codigo}` +
+      `&nombre=${encodeURIComponent(nombre)}` +
+      `&privada=${privada}` +
+      `&casa=${casa}`;
 
     const mensaje =
       `👷 Credencial de acceso\n\n` +
