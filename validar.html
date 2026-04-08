@@ -94,7 +94,6 @@
     .btn.enabled:hover {
       transform: scale(1.05);
     }
-
   </style>
 </head>
 
@@ -113,6 +112,7 @@
 </div>
 
 <script>
+
 const PIN_CORRECTO = "7482";
 
 const client = window.supabase.createClient(
@@ -169,13 +169,15 @@ btn.addEventListener("click", async () => {
   btn.disabled = true;
   btn.innerText = "Procesando...";
 
-  const { error } = await client
+  const { data, error } = await client
     .from('visitas_qr')
     .update({
       estatus: 'usado',
       hora_ingreso_utc: new Date().toISOString()
     })
-    .eq('id', visitaGlobal.id);
+    .eq('id', visitaGlobal.id)
+    .eq('estatus', 'activo')   // 🔐 CONTROL ATÓMICO
+    .select();
 
   if (error) {
     alert("Error al registrar acceso");
@@ -184,7 +186,14 @@ btn.addEventListener("click", async () => {
     return;
   }
 
-  // ✅ MENSAJE CLARO
+  // 🔐 SI YA FUE USADO EN PARALELO
+  if (!data || data.length === 0) {
+    pintar("QR YA UTILIZADO", "warn", visitaGlobal);
+    document.getElementById("control").style.display = "none";
+    return;
+  }
+
+  // ✅ ÉXITO
   document.getElementById("estado").innerText = "ACCESO REGISTRADO";
   document.body.className = "ok";
 
@@ -192,10 +201,8 @@ btn.addEventListener("click", async () => {
     <p style="margin-top:10px;">Registro exitoso</p>
   `;
 
-  // 🔒 ocultar control
   document.getElementById("control").style.display = "none";
 
-  // 🚪 botón finalizar
   const finalizarBtn = document.createElement("button");
   finalizarBtn.innerText = "Finalizar";
 
