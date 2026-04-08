@@ -74,7 +74,17 @@ input, button {
 
 <script>
 
-const PIN = "7482";
+let PIN = "";
+
+async function obtenerPIN() {
+  const { data } = await client
+    .from("seguridad_config")
+    .select("pin_acceso")
+    .limit(1)
+    .single();
+
+  PIN = data.pin_acceso;
+}
 
 const client = supabase.createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
@@ -90,6 +100,8 @@ let puedeConfirmar = false;
 init();
 
 async function init() {
+
+  await obtenerPIN();
 
   const { data } = await client
     .from("accesos_propietarios")
