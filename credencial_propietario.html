@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Credencial Propietario</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: white;
+  text-align: center;
+}
+
+.container {
+  padding: 20px;
+  max-width: 340px;
+  width: 100%;
+}
+
+.logo {
+  width: 70px;
+  margin: 0 auto 10px;
+}
+
+.logo img {
+  width: 100%;
+}
+
+h1 {
+  font-size: 16px;
+  color: #94a3b8;
+  margin-bottom: 5px;
+}
+
+h2 {
+  font-size: 20px;
+  margin: 0;
+}
+
+.nombre {
+  font-size: 22px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.detalle {
+  color: #9ca3af;
+  margin-bottom: 15px;
+}
+
+#qr {
+  margin-top: 15px;
+}
+
+.btn-wa {
+  margin-top: 20px;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #25D366;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  width: 100%;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="logo">
+    <img src="/icono-512.png">
+  </div>
+
+  <h1>Villas de la Concepción</h1>
+  <h2>Acceso propietario</h2>
+
+  <div class="nombre" id="nombre"></div>
+  <div class="detalle" id="detalle"></div>
+
+  <div id="qr"></div>
+
+  <button id="btnWA" class="btn-wa">
+    📲 Enviar por WhatsApp
+  </button>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<script>
+
+const params = new URLSearchParams(window.location.search);
+
+const codigo = params.get("qr");
+const nombre = params.get("nombre");
+const privada = params.get("privada");
+const casa = params.get("casa");
+const origen = params.get("origen");
+
+// 🔐 URL REAL DE ACCESO
+const urlQR = `${window.location.origin}/acceso_propietario.html?qr=${codigo}`;
+
+// 🎯 GENERAR QR
+QRCode.toCanvas(urlQR, { width: 220 }, function (err, canvas) {
+  document.getElementById("qr").appendChild(canvas);
+});
+
+// 🧾 DATOS
+document.getElementById("nombre").innerText = nombre || "";
+document.getElementById("detalle").innerText =
+  `Privada ${privada || ""} - Lote ${casa || ""}`;
+
+// 🔥 OCULTAR BOTÓN SI NO ES ADMIN
+if (origen !== "admin") {
+  document.getElementById("btnWA").style.display = "none";
+}
+
+// 📲 WHATSAPP
+document.getElementById("btnWA").addEventListener("click", () => {
+
+  const link =
+    `${window.location.origin}/credencial_propietario.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
+
+  const mensaje =
+    `🔐 Acceso al fraccionamiento\n\n` +
+    `Nombre: ${nombre}\n` +
+    `Ubicación: Privada ${privada} - Lote ${casa}\n\n` +
+    `Presenta este código en caseta:\n${link}`;
+
+  const wa = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+
+  window.open(wa, "_blank");
+});
+
+</script>
+
+</body>
+</html>
