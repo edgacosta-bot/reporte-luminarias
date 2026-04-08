@@ -66,18 +66,21 @@ body {
   font-weight: 500;
 }
 
-/* COLORES */
+/* COLORES GENERALES (SIN CAMBIOS) */
 .btn-visitas { background: #1e5b4f; }
 .btn-reportes { background: #9b2247; }
 .btn-servicios { background: #a57f2c; }
 .btn-infra { background: #611232; }
 .btn-admin { background: #002f2a; }
-
-/* 🔥 GRIS PARA TRABAJADORES DEL HOGAR */
 .btn-hogar { background: #6b7280; }
 
+/* 🔥 COLORES VIGILANTE (NUEVA PALETA) */
+.btn-obras { background: #9b2247; }
+.btn-servicios-vig { background: #1e5b4f; }
+.btn-paqueteria { background: #a57f2c; }
+
 .logout {
-  background: #9b2247;
+  background: #611232;
   text-align: center;
   margin-top: 25px;
 }
@@ -116,7 +119,6 @@ body {
   <a href="trabajadores_hogar_gestion.html" class="button btn-hogar">
     👷 Gestionar accesos
   </a>
-
 </div>
 
 <!-- REPORTES -->
@@ -138,11 +140,9 @@ body {
     📦 Autorizar recepción de paquetes
   </a>
 
-  <!-- 🔥 NUEVO BOTÓN COLONO -->
   <a href="servicios_arribo.html" class="button btn-servicios">
     🚚 Autorizar acceso de servicios
   </a>
-
 </div>
 
 <!-- INFRAESTRUCTURA -->
@@ -154,19 +154,33 @@ body {
   <a href="cerco_electrico.html" class="button btn-infra">⚡ Cerco eléctrico</a>
 </div>
 
-<!-- SEGURIDAD -->
+<!-- 🔥 VIGILANTE REORDENADO -->
 <div id="vigilante-section" class="section">
-  <div class="section-title">SEGURIDAD</div>
 
-  <a href="acceso_trabajador.html" class="button btn-reportes">🛡 Control de acceso</a>
-  <a href="trabajadores_dentro.html" class="button btn-reportes">👷 Trabajadores dentro</a>
-  <a href="incidencia_manual.html" class="button btn-reportes">🚨 Reportar incidencia</a>
-  <a href="paquetes.html" class="button btn-reportes">📦 Recepción de paquetes</a>
-  <a href="entrega_paquetes.html" class="button btn-reportes">📦 Entrega de paquetes</a>
+  <div class="section-title">CONTROL DE OBRAS</div>
 
-  <!-- 🔥 NUEVO BOTÓN VIGILANTE -->
-  <a href="servicios_arribo_vigilante.html" class="button btn-reportes">
-    🚚 Lista de servicios por arribar
+  <a href="trabajadores_dentro.html" class="button btn-obras">
+    👷 Trabajadores dentro
+  </a>
+
+  <a href="incidencia_manual.html" class="button btn-obras">
+    🚨 Reportar incidencia
+  </a>
+
+  <div class="section-title">ACCESO DE SERVICIOS</div>
+
+  <a href="servicios_arribo_vigilante.html" class="button btn-servicios-vig">
+    🚚 Servicios por arribar
+  </a>
+
+  <div class="section-title">PAQUETERÍA</div>
+
+  <a href="paquetes.html" class="button btn-paqueteria">
+    📦 Recepción de paquetes
+  </a>
+
+  <a href="entrega_paquetes.html" class="button btn-paqueteria">
+    📦 Entrega de paquetes
   </a>
 
 </div>
@@ -212,6 +226,7 @@ const colonoSection = document.getElementById("colono-section");
 const infraestructuraSection = document.getElementById("infraestructura-section");
 const serviciosSection = document.getElementById("servicios-section");
 const hogarSection = document.getElementById("hogar-section");
+const reportesSection = document.getElementById("reportes-section");
 const btnReportes = document.getElementById("btnReportes");
 const btnPaquetesColono = document.getElementById("btnPaquetesColono");
 
@@ -220,6 +235,7 @@ if (rol === "vigilante") {
   colonoSection.style.display = "none";
   infraestructuraSection.style.display = "none";
   serviciosSection.style.display = "none";
+  reportesSection.style.display = "none";
   if (hogarSection) hogarSection.style.display = "none";
 }
 
