@@ -210,7 +210,7 @@ async function registrar() {
   // 🟡 ATRASO (advierte y permite)
   if (residente.estado_pago === "atraso_1") {
     mostrarModal(
-      "Puede registrar el servicio en esta ocasión, sin embargo presenta retraso en sus cuotas.",
+      "Puede registrar el servicio en esta ocasión, sin embargo presenta retraso en sus cuotas, por lo que se sugiere regularizar sus pagos",
       "warn",
       () => insertarServicio()
     );
