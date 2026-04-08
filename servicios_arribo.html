@@ -62,7 +62,7 @@ button {
   cursor: pointer;
 }
 
-/* 🔥 MODAL ESTILO APP */
+/* 🔥 MODAL */
 .modal {
   position: fixed;
   top: 0;
@@ -102,7 +102,7 @@ button {
 <h2>🚚 Servicio por arribar</h2>
 
 <label>Nombre del servicio</label>
-<input id="servicio" placeholder="Ej: Uber Eats, Rappi, Gas Hidalgo, Plomeria">
+<input id="servicio" placeholder="Ej: Uber Eats, Carnicería Morales, Gas Hidalgo, Plomería">
 
 <label>Tipo (opcional)</label>
 <select id="tipo">
@@ -120,11 +120,11 @@ button {
   <option value="120">2 horas</option>
 </select>
 
-<button onclick="registrar()">Registrar servicio</button>
+<button id="btnRegistrar" onclick="registrar()">Registrar servicio</button>
 
 </div>
 
-<!-- 🔥 MODAL -->
+<!-- MODAL -->
 <div id="modalOk" class="modal">
   <div class="modal-content">
     <div id="modalTexto"></div>
@@ -139,14 +139,39 @@ const client = window.supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-function mostrarModal(texto) {
+let redirigir = false;
+
+function mostrarModal(texto, redirect=false) {
   document.getElementById("modalTexto").innerText = texto;
   document.getElementById("modalOk").style.display = "flex";
+  redirigir = redirect;
 }
 
 function cerrarModal() {
-  window.location.href = "index.html";
+  if (redirigir) {
+    window.location.href = "index.html";
+  } else {
+    document.getElementById("modalOk").style.display = "none";
+  }
 }
+
+window.onload = async () => {
+
+  const identificador = localStorage.getItem("identificador");
+
+  const { data: residente } = await client
+    .from("residentes")
+    .select("estado_pago")
+    .eq("identificador", identificador)
+    .single();
+
+  if (residente.estado_pago === "moroso") {
+    document.getElementById("btnRegistrar").disabled = true;
+    document.getElementById("btnRegistrar").style.background = "#9ca3af";
+
+    mostrarModal("No puedes registrar servicios. Regulariza tu pago.");
+  }
+};
 
 async function registrar() {
 
@@ -167,9 +192,14 @@ async function registrar() {
     .eq("identificador", identificador)
     .single();
 
-  if (!residente) {
-    mostrarModal("Error obteniendo datos");
+  // 🔥 CONTROL DE PAGO
+  if (residente.estado_pago === "moroso") {
+    mostrarModal("No puedes registrar servicios. Regulariza tu pago.");
     return;
+  }
+
+  if (residente.estado_pago === "retraso_1") {
+    mostrarModal("Advertencia: tienes atraso en cuotas.");
   }
 
   const ahora = new Date();
@@ -190,12 +220,10 @@ async function registrar() {
 
   if (error) {
     mostrarModal("Error al registrar servicio");
-    console.log(error);
     return;
   }
 
-  // 🔥 ÉXITO BONITO
-  mostrarModal("Servicio registrado correctamente");
+  mostrarModal("Servicio registrado correctamente", true);
 }
 
 </script>
