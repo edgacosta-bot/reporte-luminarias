@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Servicios por arribar</title>
+
+<script src="auth.js"></script>
+<script>
+protegerPagina(["vigilante"]);
+</script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.card {
+  border-radius: 14px;
+  padding: 15px;
+  margin-bottom: 12px;
+}
+
+.pendiente { background: #f59e0b; }
+.dentro { background: #16a34a; }
+.finalizado { background: #374151; }
+
+.nombre {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.info {
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.botones {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-entrada { background: #16a34a; color: white; }
+.btn-salida { background: #1f2937; color: white; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🚚 Servicios por arribar</h2>
+
+<div id="lista"></div>
+
+</div>
+
+<script>
+
+const client = window.supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+cargar();
+
+async function cargar() {
+
+  const ahora = new Date().toISOString();
+
+  const { data } = await client
+    .from("servicios_arribo")
+    .select("*")
+    .gt("expira_en", ahora)
+    .neq("estado", "finalizado")
+    .order("privada", { ascending: true })
+    .order("casa", { ascending: true });
+
+  const contenedor = document.getElementById("lista");
+  contenedor.innerHTML = "";
+
+  data.forEach(s => {
+
+    const card = document.createElement("div");
+
+    card.className = "card " + s.estado;
+
+    card.innerHTML = `
+      <div class="nombre">
+        Privada ${s.privada} - Casa ${s.casa}
+      </div>
+
+      <div class="info">
+        ${s.nombre_servicio}
+      </div>
+
+      <div class="botones">
+
+        ${s.estado === "pendiente" ? `
+          <button class="btn-entrada" onclick="entrada('${s.id}')">
+            Registrar entrada
+          </button>
+        ` : ""}
+
+        ${s.estado === "dentro" ? `
+          <button class="btn-salida" onclick="salida('${s.id}')">
+            Registrar salida
+          </button>
+        ` : ""}
+
+      </div>
+    `;
+
+    contenedor.appendChild(card);
+  });
+}
+
+
+// 🔥 ENTRADA
+async function entrada(id) {
+
+  const ahora = new Date().toISOString();
+
+  await client
+    .from("servicios_arribo")
+    .update({
+      estado: "dentro",
+      hora_entrada: ahora
+    })
+    .eq("id", id);
+
+  cargar();
+}
+
+
+// 🔥 SALIDA
+async function salida(id) {
+
+  const ahora = new Date().toISOString();
+
+  await client
+    .from("servicios_arribo")
+    .update({
+      estado: "finalizado",
+      hora_salida: ahora
+    })
+    .eq("id", id);
+
+  cargar();
+}
+
+</script>
+
+</body>
+</html>
