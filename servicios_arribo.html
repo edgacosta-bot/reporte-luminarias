@@ -61,34 +61,6 @@ button {
   font-weight: bold;
   cursor: pointer;
 }
-
-/* 🔥 MODAL */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.6);
-  display: none;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-content {
-  background: #1f2937;
-  padding: 20px;
-  border-radius: 16px;
-  width: 85%;
-  max-width: 300px;
-  text-align: center;
-  color: white;
-}
-
-.modal-content button {
-  margin-top: 15px;
-  background: #16a34a;
-}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -102,11 +74,11 @@ button {
 <h2>🚚 Servicio por arribar</h2>
 
 <label>Nombre del servicio</label>
-<input id="servicio" placeholder="Ej: Uber Eats, Carnicería Morales, Gas Hidalgo, Plomería">
+<input id="servicio" placeholder="Ej: Uber Eats, Gas, Plomería">
 
 <label>Tipo (opcional)</label>
 <select id="tipo">
-  <option value="">Seleccionar (opcional)</option>
+  <option value="">Seleccionar</option>
   <option value="comida">Comida</option>
   <option value="suministros">Suministros</option>
   <option value="mantenimiento">Mantenimiento</option>
@@ -120,16 +92,8 @@ button {
   <option value="120">2 horas</option>
 </select>
 
-<button id="btnRegistrar" onclick="registrar()">Registrar servicio</button>
+<button onclick="registrar()">Registrar servicio</button>
 
-</div>
-
-<!-- MODAL -->
-<div id="modalOk" class="modal">
-  <div class="modal-content">
-    <div id="modalTexto"></div>
-    <button onclick="cerrarModal()">Aceptar</button>
-  </div>
 </div>
 
 <script>
@@ -139,48 +103,14 @@ const client = window.supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-let redirigir = false;
-
-function mostrarModal(texto, redirect=false) {
-  document.getElementById("modalTexto").innerText = texto;
-  document.getElementById("modalOk").style.display = "flex";
-  redirigir = redirect;
-}
-
-function cerrarModal() {
-  if (redirigir) {
-    window.location.href = "index.html";
-  } else {
-    document.getElementById("modalOk").style.display = "none";
-  }
-}
-
-window.onload = async () => {
-
-  const identificador = localStorage.getItem("identificador");
-
-  const { data: residente } = await client
-    .from("residentes")
-    .select("estado_pago")
-    .eq("identificador", identificador)
-    .single();
-
-  if (residente.estado_pago === "moroso") {
-    document.getElementById("btnRegistrar").disabled = true;
-    document.getElementById("btnRegistrar").style.background = "#9ca3af";
-
-    mostrarModal("No puedes registrar servicios. Regulariza tu pago.");
-  }
-};
-
 async function registrar() {
 
   const servicio = document.getElementById("servicio").value.trim();
-  const tipo = document.getElementById("tipo").value || null;
+  const tipo = document.getElementById("tipo").value;
   const vigencia = parseInt(document.getElementById("vigencia").value);
 
   if (!servicio) {
-    mostrarModal("Ingresa el nombre del servicio");
+    alert("Ingresa el nombre del servicio");
     return;
   }
 
@@ -192,16 +122,22 @@ async function registrar() {
     .eq("identificador", identificador)
     .single();
 
-  // 🔥 CONTROL DE PAGO
-  if (residente.estado_pago === "moroso") {
-    mostrarModal("No puedes registrar servicios. Regulariza tu pago.");
+  if (!residente) {
+    alert("Error obteniendo datos");
     return;
   }
 
-  if (residente.estado_pago === "retraso_1") {
-    mostrarModal("Advertencia: tienes atraso en cuotas.");
+  // 🔥 VALIDACIÓN POR ESTADO DE PAGO
+  if (residente.estado_pago === "moroso") {
+    alert("No es posible registrar el servicio. Presenta adeudo en sus cuotas. Favor de regularizar.");
+    return;
   }
 
+  if (residente.estado_pago === "atraso_1") {
+    alert("Puede registrar el servicio en esta ocasión, sin embargo presenta retraso en sus cuotas. Se le invita a regularizar su situación.");
+  }
+
+  // 🔥 cálculo de expiración
   const ahora = new Date();
   const expira = new Date(ahora.getTime() + (vigencia * 60000));
 
@@ -210,7 +146,7 @@ async function registrar() {
     .insert([{
       residente_id: residente.id,
       nombre_servicio: servicio,
-      tipo: tipo,
+      tipo: tipo || null,
       privada: residente.privada,
       casa: residente.casa,
       vigencia_minutos: vigencia,
@@ -219,11 +155,14 @@ async function registrar() {
     }]);
 
   if (error) {
-    mostrarModal("Error al registrar servicio");
+    alert("Error al registrar servicio");
+    console.log(error);
     return;
   }
 
-  mostrarModal("Servicio registrado correctamente", true);
+  alert("Servicio registrado correctamente");
+
+  window.location.href = "index.html";
 }
 
 </script>
