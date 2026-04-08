@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Generar QR Propietario</title>
+
+<script src="auth.js"></script>
+<script>
+protegerPagina(["admin"]);
+</script>
+
+<style>
+body {
+  font-family: Arial;
+  background: #161a1d;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+}
+
+input, button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: none;
+}
+
+button {
+  background: #6b7280;
+  color: white;
+  font-weight: bold;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h3>Generar QR propietario</h3>
+
+<input id="nombre" placeholder="Nombre del propietario o familiar">
+
+<button onclick="generar()">Generar QR</button>
+
+</div>
+
+<script>
+
+const client = window.supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+async function generar() {
+
+  const nombre = document.getElementById("nombre").value.trim();
+
+  if (!nombre) {
+    alert("Ingresa nombre");
+    return;
+  }
+
+  const identificador = localStorage.getItem("identificador");
+
+  const { data: residente } = await client
+    .from("residentes")
+    .select("*")
+    .eq("identificador", identificador)
+    .single();
+
+  const codigo = crypto.randomUUID();
+
+  await client.from("propietarios_qr").insert([{
+    residente_id: residente.id,
+    nombre: nombre,
+    qr_codigo: codigo
+  }]);
+
+  window.location.href =
+  `credencial_propietario.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${residente.privada}&casa=${residente.casa}&origen=admin`;
+}
+
+</script>
+
+</body>
+</html>
