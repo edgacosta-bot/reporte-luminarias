@@ -82,7 +82,7 @@
   <input type="text" id="casa" placeholder="Número de casa">
   <input type="text" id="nombre" placeholder="Tu nombre">
 
-  <input type="password" id="clave" placeholder="Contraseña (mínimo 4 dígitos)">
+  <input type="password" id="clave" placeholder="Contraseña (mínimo 6 caracteres)">
   <input type="password" id="confirmar_clave" placeholder="Confirmar contraseña">
 
   <button onclick="registrar()">Registrarme</button>
@@ -117,8 +117,8 @@ async function registrar() {
     return;
   }
 
-  if (clave.length < 4) {
-    mensaje.innerText = "La contraseña debe tener al menos 4 dígitos";
+  if (clave.length < 6) {
+    mensaje.innerText = "La contraseña debe tener al menos 6 caracteres";
     mensaje.classList.add("error");
     return;
   }
@@ -161,31 +161,30 @@ async function registrar() {
 
   const email = `${privada.toLowerCase()}-${casa}@villas.com`;
 
-  // 🔐 Crear usuario Auth
-  const { error: authError } = await supabaseClient.auth.signUp({
+  // 🔐 CREAR USUARIO (VERSIÓN ESTABLE)
+  const { data: authData, error: authError } = await supabaseClient.auth.signUp({
     email,
     password: clave
   });
 
   if (authError) {
     console.log("AUTH ERROR:", authError);
-    mensaje.innerText = "Error al crear usuario";
+    mensaje.innerText = authError.message || "Error al crear usuario";
     mensaje.classList.add("error");
     return;
   }
 
-  // 🔥 OBTENER USUARIO REAL (FORMA SEGURA)
-  const { data: userData } = await supabaseClient.auth.getUser();
-  const user = userData?.user;
+  // 🔥 USAR USER CORRECTAMENTE (FIX REAL)
+  const user = authData.user || authData.session?.user;
 
   if (!user || !user.id) {
-    console.log("USER ERROR:", userData);
+    console.log("USER ERROR:", authData);
     mensaje.innerText = "Error al obtener usuario";
     mensaje.classList.add("error");
     return;
   }
 
-  // 🔒 Actualizar residente
+  // 🔒 ACTUALIZAR RESIDENTE
   const { error: errorUpdate } = await supabaseClient
     .from("residentes")
     .update({
@@ -208,10 +207,7 @@ async function registrar() {
   mensaje.innerText = "Registro exitoso ✅";
   mensaje.classList.add("ok");
 
-  // 🔐 Cerrar sesión para flujo limpio
-  await supabaseClient.auth.signOut();
-
-  // 👉 Ir a login
+  // 🚨 NO auto login
   setTimeout(() => {
     window.location.href = "login.html";
   }, 1200);
