@@ -18,25 +18,20 @@ h2 {
   text-align: center;
 }
 
+/* 🔥 FIX DIMENSIONES */
 select, input, button {
   width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
-  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 12px;
   border: none;
+  box-sizing: border-box;
 }
 
 button {
   background: #2563eb;
   color: white;
   cursor: pointer;
-}
-
-.card {
-  background: #1f2937;
-  padding: 15px;
-  border-radius: 12px;
-  margin-top: 15px;
 }
 
 .qr {
@@ -83,12 +78,13 @@ const supabaseClient = createClient(
 );
 
 let urlCredencial = "";
+let urlParaEnviar = "";
 
 async function cargarResidentes() {
 
   const { data } = await supabaseClient
     .from("residentes")
-    .select("id, privada, casa, nombre")
+    .select("id, privada, casa")
     .eq("es_residente", false)
     .order("privada");
 
@@ -97,7 +93,7 @@ async function cargarResidentes() {
   data.forEach(r => {
     const option = document.createElement("option");
     option.value = r.id;
-    option.text = `${r.privada} - ${r.casa} (${r.nombre || "Sin nombre"})`;
+    option.text = `${r.privada} - ${r.casa}`; // 🔥 SIN (pendiente)
     select.appendChild(option);
   });
 }
@@ -120,7 +116,6 @@ async function crearAcceso() {
 
   const identificador = generarUUID();
 
-  // 🔥 obtener datos de residente
   const { data: residente } = await supabaseClient
     .from("residentes")
     .select("privada, casa")
@@ -144,8 +139,11 @@ async function crearAcceso() {
 
   resultado.innerText = "Acceso creado correctamente";
 
-  // 🔥 URL DE CREDENCIAL (NUEVO)
+  // 🔥 ADMIN VIEW (con botón WA)
   urlCredencial = `${window.location.origin}/credencial_propietario.html?qr=${identificador}&nombre=${encodeURIComponent(nombre)}&privada=${residente.privada}&casa=${residente.casa}&origen=admin`;
+
+  // 🔥 USUARIO FINAL (SIN BOTÓN)
+  urlParaEnviar = `${window.location.origin}/credencial_propietario.html?qr=${identificador}&nombre=${encodeURIComponent(nombre)}&privada=${residente.privada}&casa=${residente.casa}`;
 
   generarQR(urlCredencial);
 
@@ -172,7 +170,7 @@ function prepararWhatsApp(nombre, privada, casa) {
       `🔐 Acceso al fraccionamiento\n\n` +
       `Nombre: ${nombre}\n` +
       `Ubicación: Privada ${privada} - Lote ${casa}\n\n` +
-      `Presenta este código en caseta:\n${urlCredencial}`;
+      `Presenta este código en caseta:\n${urlParaEnviar}`;
 
     const wa = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
 
