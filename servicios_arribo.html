@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Servicios por arribar</title>
+
+<script src="auth.js"></script>
+<script>
+protegerPagina(["colono"]);
+</script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.card {
+  background: #e5e7eb;
+  padding: 25px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+label {
+  font-weight: bold;
+  margin-top: 10px;
+  display: block;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  margin-top: 5px;
+  box-sizing: border-box;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 12px;
+  background: #2563eb;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>🚚 Servicio por arribar</h2>
+
+<label>Nombre del servicio</label>
+<input id="servicio" placeholder="Ej: Uber Eats, Gas, Plomero">
+
+<label>Tipo (opcional)</label>
+<input id="tipo" placeholder="Ej: comida, mantenimiento">
+
+<label>Tiempo de vigencia</label>
+<select id="vigencia">
+  <option value="30">30 minutos</option>
+  <option value="60" selected>1 hora</option>
+  <option value="120">2 horas</option>
+</select>
+
+<button onclick="registrar()">Registrar servicio</button>
+
+</div>
+
+<script>
+
+const client = window.supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+async function registrar() {
+
+  const servicio = document.getElementById("servicio").value.trim();
+  const tipo = document.getElementById("tipo").value.trim();
+  const vigencia = parseInt(document.getElementById("vigencia").value);
+
+  if (!servicio) {
+    alert("Ingresa el nombre del servicio");
+    return;
+  }
+
+  const identificador = localStorage.getItem("identificador");
+
+  const { data: residente } = await client
+    .from("residentes")
+    .select("*")
+    .eq("identificador", identificador)
+    .single();
+
+  if (!residente) {
+    alert("Error obteniendo datos");
+    return;
+  }
+
+  // 🔥 cálculo de expiración
+  const ahora = new Date();
+  const expira = new Date(ahora.getTime() + (vigencia * 60000));
+
+  const { error } = await client
+    .from("servicios_arribo")
+    .insert([{
+      residente_id: residente.id,
+      nombre_servicio: servicio,
+      tipo: tipo || null,
+      privada: residente.privada,
+      casa: residente.casa,
+      vigencia_minutos: vigencia,
+      expira_en: expira.toISOString(),
+      estado: "pendiente"
+    }]);
+
+  if (error) {
+    alert("Error al registrar servicio");
+    console.log(error);
+    return;
+  }
+
+  alert("Servicio registrado correctamente");
+
+  window.location.href = "index.html";
+}
+
+</script>
+
+</body>
+</html>
