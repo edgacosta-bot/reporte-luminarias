@@ -129,7 +129,7 @@ async function registrar() {
     return;
   }
 
-  // 🔍 Buscar lote
+  // 🔍 Validar lote
   const { data, error } = await supabaseClient
     .from("residentes")
     .select("*")
@@ -159,32 +159,34 @@ async function registrar() {
     return;
   }
 
-  // 🔐 EMAIL INTERNO
   const email = `${privada.toLowerCase()}-${casa}@villas.com`;
 
-  // 🔐 CREAR USUARIO AUTH
-  const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+  // 🔐 Crear usuario Auth
+  const { error: authError } = await supabaseClient.auth.signUp({
     email,
     password: clave
   });
 
   if (authError) {
-    console.log("ERROR AUTH:", authError);
+    console.log("AUTH ERROR:", authError);
     mensaje.innerText = "Error al crear usuario";
     mensaje.classList.add("error");
     return;
   }
 
-  const user = authData.user;
+  // 🔥 OBTENER USUARIO REAL (FORMA SEGURA)
+  const { data: userData } = await supabaseClient.auth.getUser();
+  const user = userData?.user;
 
-  if (!user) {
-    mensaje.innerText = "No se pudo crear el usuario";
+  if (!user || !user.id) {
+    console.log("USER ERROR:", userData);
+    mensaje.innerText = "Error al obtener usuario";
     mensaje.classList.add("error");
     return;
   }
 
-  // 🔒 ACTUALIZAR RESIDENTE
-  const { data: updated, error: errorUpdate } = await supabaseClient
+  // 🔒 Actualizar residente
+  const { error: errorUpdate } = await supabaseClient
     .from("residentes")
     .update({
       nombre: nombre,
@@ -194,22 +196,22 @@ async function registrar() {
       user_id: user.id
     })
     .eq("privada", privada)
-    .eq("casa", casa)
-    .select();
+    .eq("casa", casa);
 
   if (errorUpdate) {
-    console.log("ERROR UPDATE:", errorUpdate);
+    console.log("UPDATE ERROR:", errorUpdate);
     mensaje.innerText = "Error al registrar";
     mensaje.classList.add("error");
     return;
   }
 
-  console.log("UPDATE OK:", updated);
-
   mensaje.innerText = "Registro exitoso ✅";
   mensaje.classList.add("ok");
 
-  // 🚨 IMPORTANTE: NO loguear automáticamente
+  // 🔐 Cerrar sesión para flujo limpio
+  await supabaseClient.auth.signOut();
+
+  // 👉 Ir a login
   setTimeout(() => {
     window.location.href = "login.html";
   }, 1200);
