@@ -43,6 +43,10 @@ button {
   text-align: center;
   margin-top: 20px;
 }
+
+.btn-wa {
+  background: #25D366;
+}
 </style>
 </head>
 
@@ -63,6 +67,10 @@ button {
   <canvas id="qr"></canvas>
 </div>
 
+<button id="btnWA" class="btn-wa" style="display:none;">
+  📲 Enviar por WhatsApp
+</button>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
@@ -73,6 +81,8 @@ const supabaseClient = createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
+
+let urlCredencial = "";
 
 async function cargarResidentes() {
 
@@ -110,6 +120,13 @@ async function crearAcceso() {
 
   const identificador = generarUUID();
 
+  // 🔥 obtener datos de residente
+  const { data: residente } = await supabaseClient
+    .from("residentes")
+    .select("privada, casa")
+    .eq("id", residente_id)
+    .single();
+
   const { error } = await supabaseClient
     .from("accesos_propietarios")
     .insert({
@@ -127,16 +144,40 @@ async function crearAcceso() {
 
   resultado.innerText = "Acceso creado correctamente";
 
-  generarQR(identificador);
+  // 🔥 URL DE CREDENCIAL (NUEVO)
+  urlCredencial = `${window.location.origin}/credencial_propietario.html?qr=${identificador}&nombre=${encodeURIComponent(nombre)}&privada=${residente.privada}&casa=${residente.casa}&origen=admin`;
+
+  generarQR(urlCredencial);
+
+  prepararWhatsApp(nombre, residente.privada, residente.casa);
 }
 
 function generarQR(texto) {
 
   const canvas = document.getElementById("qr");
 
-  QRCode.toCanvas(canvas, texto, function (error) {
+  QRCode.toCanvas(canvas, texto, { width: 220 }, function (error) {
     if (error) console.error(error);
   });
+}
+
+function prepararWhatsApp(nombre, privada, casa) {
+
+  const btn = document.getElementById("btnWA");
+  btn.style.display = "block";
+
+  btn.onclick = () => {
+
+    const mensaje =
+      `🔐 Acceso al fraccionamiento\n\n` +
+      `Nombre: ${nombre}\n` +
+      `Ubicación: Privada ${privada} - Lote ${casa}\n\n` +
+      `Presenta este código en caseta:\n${urlCredencial}`;
+
+    const wa = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+
+    window.open(wa, "_blank");
+  };
 }
 
 cargarResidentes();
