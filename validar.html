@@ -129,17 +129,18 @@ validar();
 
 async function validar() {
 
-  const { data } = await client
+  const { data, error } = await client
     .from('visitas_qr')
     .select('*')
-    .eq('codigo_qr', qr);
+    .eq('codigo_qr', qr)
+    .maybeSingle(); // 🔥 CAMBIO CLAVE
 
-  if (!data || data.length === 0) {
+  if (error || !data) {
     pintar("QR inválido", "error");
     return;
   }
 
-  const visita = data[0];
+  const visita = data; // 🔥 CAMBIO CLAVE
   visitaGlobal = visita;
 
   if (visita.estatus !== 'activo') {
@@ -176,7 +177,7 @@ btn.addEventListener("click", async () => {
       hora_ingreso_utc: new Date().toISOString()
     })
     .eq('id', visitaGlobal.id)
-    .eq('estatus', 'activo')   // 🔐 CONTROL ATÓMICO
+    .eq('estatus', 'activo') // 🔐 PROTECCIÓN ANTIFRAUDE
     .select();
 
   if (error) {
@@ -186,14 +187,12 @@ btn.addEventListener("click", async () => {
     return;
   }
 
-  // 🔐 SI YA FUE USADO EN PARALELO
   if (!data || data.length === 0) {
     pintar("QR YA UTILIZADO", "warn", visitaGlobal);
     document.getElementById("control").style.display = "none";
     return;
   }
 
-  // ✅ ÉXITO
   document.getElementById("estado").innerText = "ACCESO REGISTRADO";
   document.body.className = "ok";
 
@@ -223,6 +222,7 @@ function pintar(mensaje, tipo, data = null) {
     `;
   }
 }
+
 </script>
 
 </body>
