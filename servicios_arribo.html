@@ -77,7 +77,13 @@ button {
 <input id="servicio" placeholder="Ej: Uber Eats, Rappi, Gas Hidalgo, Plomeria">
 
 <label>Tipo (opcional)</label>
-<input id="tipo" placeholder="Ej: comida, mantenimiento">
+<select id="tipo">
+  <option value="">Seleccionar (opcional)</option>
+  <option value="comida">Comida</option>
+  <option value="suministros">Suministros</option>
+  <option value="mantenimiento">Mantenimiento</option>
+  <option value="otro">Otro</option>
+</select>
 
 <label>Tiempo de vigencia</label>
 <select id="vigencia">
@@ -100,7 +106,7 @@ const client = window.supabase.createClient(
 async function registrar() {
 
   const servicio = document.getElementById("servicio").value.trim();
-  const tipo = document.getElementById("tipo").value.trim();
+  const tipo = document.getElementById("tipo").value || null;
   const vigencia = parseInt(document.getElementById("vigencia").value);
 
   if (!servicio) {
@@ -121,7 +127,6 @@ async function registrar() {
     return;
   }
 
-  // 🔥 cálculo de expiración
   const ahora = new Date();
   const expira = new Date(ahora.getTime() + (vigencia * 60000));
 
@@ -130,7 +135,7 @@ async function registrar() {
     .insert([{
       residente_id: residente.id,
       nombre_servicio: servicio,
-      tipo: tipo || null,
+      tipo: tipo,
       privada: residente.privada,
       casa: residente.casa,
       vigencia_minutos: vigencia,
