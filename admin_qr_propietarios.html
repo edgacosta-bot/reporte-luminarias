@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accesos propietarios</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #161a1d;
+  color: white;
+  margin: 0;
+  padding: 20px;
+}
+
+h2 {
+  text-align: center;
+}
+
+select, input, button {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  border: none;
+}
+
+button {
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.card {
+  background: #1f2937;
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 15px;
+}
+
+.qr {
+  text-align: center;
+  margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Generar accesos propietarios</h2>
+
+<select id="residente"></select>
+
+<input type="text" id="nombre" placeholder="Nombre">
+<input type="text" id="tipo" placeholder="Tipo (esposa, hijo, etc)">
+
+<button onclick="crearAcceso()">Generar acceso</button>
+
+<div id="resultado"></div>
+
+<div class="qr">
+  <canvas id="qr"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<script>
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+async function cargarResidentes() {
+
+  const { data } = await supabaseClient
+    .from("residentes")
+    .select("id, privada, casa, nombre")
+    .eq("es_residente", false)
+    .order("privada");
+
+  const select = document.getElementById("residente");
+
+  data.forEach(r => {
+    const option = document.createElement("option");
+    option.value = r.id;
+    option.text = `${r.privada} - ${r.casa} (${r.nombre || "Sin nombre"})`;
+    select.appendChild(option);
+  });
+}
+
+function generarUUID() {
+  return crypto.randomUUID();
+}
+
+async function crearAcceso() {
+
+  const residente_id = document.getElementById("residente").value;
+  const nombre = document.getElementById("nombre").value.trim();
+  const tipo = document.getElementById("tipo").value.trim();
+  const resultado = document.getElementById("resultado");
+
+  if (!nombre) {
+    resultado.innerText = "Ingresa nombre";
+    return;
+  }
+
+  const identificador = generarUUID();
+
+  const { error } = await supabaseClient
+    .from("accesos_propietarios")
+    .insert({
+      residente_id,
+      nombre,
+      tipo,
+      identificador
+    });
+
+  if (error) {
+    console.log(error);
+    resultado.innerText = "Error al crear acceso";
+    return;
+  }
+
+  resultado.innerText = "Acceso creado correctamente";
+
+  generarQR(identificador);
+}
+
+function generarQR(texto) {
+
+  const canvas = document.getElementById("qr");
+
+  QRCode.toCanvas(canvas, texto, function (error) {
+    if (error) console.error(error);
+  });
+}
+
+cargarResidentes();
+</script>
+
+</body>
+</html>
