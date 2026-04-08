@@ -64,6 +64,8 @@ body {
   color: white;
   font-size: 16px;
   font-weight: 500;
+  border: none;
+  cursor: pointer;
 }
 
 .btn-visitas { background: #1e5b4f; }
@@ -98,168 +100,164 @@ body {
   <span id="rolTexto"></span>
 </div>
 
-<!-- VISITANTES -->
 <div id="colono-section" class="section">
   <div class="section-title">VISITANTES</div>
-
   <a href="crear_qr.html" class="button btn-visitas">📱 Generar acceso (QR)</a>
   <a href="bitacora_visitantes.html" class="button btn-visitas">📋 Bitácora de visitantes</a>
 </div>
 
-<!-- TRABAJADORES DEL HOGAR -->
 <div id="hogar-section" class="section">
   <div class="section-title">TRABAJADORES DEL HOGAR</div>
-
-  <a href="trabajador_hogar_registro.html" class="button btn-hogar">
-    📱 Generar QR para empleados
-  </a>
-
-  <a href="trabajadores_hogar_gestion.html" class="button btn-hogar">
-    👷 Gestionar accesos
-  </a>
+  <a href="trabajador_hogar_registro.html" class="button btn-hogar">📱 Generar QR para empleados</a>
+  <a href="trabajadores_hogar_gestion.html" class="button btn-hogar">👷 Gestionar accesos</a>
 </div>
 
-<!-- REPORTES -->
 <div id="reportes-section" class="section">
   <div class="section-title">REPORTES</div>
-
-  <a href="#" onclick="irAReportes()" id="btnReportes" class="button btn-reportes">
-    🚨 Generar reportes
-  </a>
+  <a href="#" onclick="irAReportes()" id="btnReportes" class="button btn-reportes">🚨 Generar reportes</a>
 </div>
 
-<!-- SERVICIOS -->
 <div id="servicios-section" class="section">
   <div class="section-title">SERVICIOS</div>
-
   <a href="agua.html" class="button btn-servicios">💧 Ver reportes de agua </a>
-
-  <a id="btnPaquetesColono" href="residente_paquetes.html" class="button btn-servicios">
-    📦 Autorizar recepción de paquetes
-  </a>
-
-  <a id="btnServiciosArribo" href="servicios_arribo.html" class="button btn-servicios">
-    🚚 Autorizar acceso de servicios
-  </a>
+  <a id="btnPaquetesColono" href="residente_paquetes.html" class="button btn-servicios">📦 Autorizar recepción de paquetes</a>
+  <a id="btnServiciosArribo" href="servicios_arribo.html" class="button btn-servicios">🚚 Autorizar acceso de servicios</a>
 </div>
 
-<!-- INFRAESTRUCTURA -->
 <div id="infraestructura-section" class="section">
   <div class="section-title">INFRAESTRUCTURA</div>
-
   <a href="luminarias.html" class="button btn-infra">💡 Luminarias</a>
   <a href="videocamaras.html" class="button btn-infra">📹 Videovigilancia</a>
   <a href="cerco_electrico.html" class="button btn-infra">⚡ Cerco eléctrico</a>
 </div>
 
-<!-- VIGILANTE -->
 <div id="vigilante-section" class="section">
-
   <div class="section-title">CONTROL DE OBRAS</div>
-
-  <a href="trabajadores_dentro.html" class="button btn-obras">
-    👷 Trabajadores dentro
-  </a>
-
-  <a href="incidencia_manual.html" class="button btn-obras">
-    🚨 Reportar incidencia
-  </a>
+  <a href="trabajadores_dentro.html" class="button btn-obras">👷 Trabajadores dentro</a>
+  <a href="incidencia_manual.html" class="button btn-obras">🚨 Reportar incidencia</a>
 
   <div class="section-title">ACCESO DE SERVICIOS</div>
-
-  <a href="servicios_arribo_vigilante.html" class="button btn-servicios-vig">
-    🚚 Servicios por arribar
-  </a>
+  <a href="servicios_arribo_vigilante.html" class="button btn-servicios-vig">🚚 Servicios por arribar</a>
 
   <div class="section-title">PAQUETERÍA</div>
-
-  <a href="paquetes.html" class="button btn-paqueteria">
-    📦 Recepción de paquetes
-  </a>
-
-  <a href="entrega_paquetes.html" class="button btn-paqueteria">
-    📦 Entrega de paquetes
-  </a>
-
+  <a href="paquetes.html" class="button btn-paqueteria">📦 Recepción de paquetes</a>
+  <a href="entrega_paquetes.html" class="button btn-paqueteria">📦 Entrega de paquetes</a>
 </div>
 
-<!-- ADMIN -->
 <div id="admin-section" class="section">
   <div class="section-title">OBRAS EN EJECUCIÓN</div>
-
   <a href="obras_registro.html" class="button btn-admin">🏗 Alta de obras</a>
   <a href="trabajadores_registro.html" class="button btn-admin">👷 Alta de trabajadores</a>
   <a href="permisos_trabajadores.html" class="button btn-admin">🪪 Gestionar permisos trabajadores</a>
   <a href="trabajador_qr.html" class="button btn-admin">📱 Generar QR trabajador</a>
-
-  <a href="reimpresion_trabajadores.html" class="button btn-admin">
-    🔁 Reimpresión de QR
-  </a>
+  <a href="reimpresion_trabajadores.html" class="button btn-admin">🔁 Reimpresión de QR</a>
 
   <div class="section-title">CUOTAS</div>
   <a href="aportaciones.html" class="button btn-admin">💰 Situación cuotas</a>
 </div>
 
-<a href="login.html" class="button logout">Cerrar sesión</a>
+<button onclick="logout()" class="button logout">Cerrar sesión</button>
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
+const { createClient } = supabase;
 
-if (!localStorage.getItem("usuario_valido")) {
-  window.location.href = "login.html";
+const supabaseClient = createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+async function iniciarSistema() {
+
+  let rol = null;
+
+  try {
+    const { data } = await supabaseClient.auth.getUser();
+
+    if (data.user) {
+      const user = data.user;
+
+      const { data: residente } = await supabaseClient
+        .from("residentes")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      if (residente) {
+        rol = residente.tipo;
+        localStorage.setItem("rol", rol);
+        localStorage.setItem("usuario_valido", "true");
+      }
+    }
+
+  } catch (e) {
+    console.log("Auth fallback:", e);
+  }
+
+  if (!rol) {
+    rol = localStorage.getItem("rol");
+  }
+
+  if (!rol) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  aplicarUI(rol);
 }
 
-const rol = localStorage.getItem("rol");
+function aplicarUI(rol) {
 
-const rolTexto = document.getElementById("rolTexto");
+  const rolTexto = document.getElementById("rolTexto");
 
-if (rol === "admin") rolTexto.innerText = "Panel de administración";
-if (rol === "vigilante") rolTexto.innerText = "Panel de vigilancia";
-if (rol === "colono") rolTexto.innerText = "Panel de colono";
+  if (rol === "admin") rolTexto.innerText = "Panel de administración";
+  if (rol === "vigilante") rolTexto.innerText = "Panel de vigilancia";
+  if (rol === "colono") rolTexto.innerText = "Panel de colono";
 
-const adminSection = document.getElementById("admin-section");
-const vigilanteSection = document.getElementById("vigilante-section");
-const colonoSection = document.getElementById("colono-section");
-const infraestructuraSection = document.getElementById("infraestructura-section");
-const serviciosSection = document.getElementById("servicios-section");
-const hogarSection = document.getElementById("hogar-section");
-const reportesSection = document.getElementById("reportes-section");
-const btnReportes = document.getElementById("btnReportes");
-const btnPaquetesColono = document.getElementById("btnPaquetesColono");
+  const adminSection = document.getElementById("admin-section");
+  const vigilanteSection = document.getElementById("vigilante-section");
+  const colonoSection = document.getElementById("colono-section");
+  const infraestructuraSection = document.getElementById("infraestructura-section");
+  const serviciosSection = document.getElementById("servicios-section");
+  const hogarSection = document.getElementById("hogar-section");
+  const reportesSection = document.getElementById("reportes-section");
+  const btnReportes = document.getElementById("btnReportes");
+  const btnPaquetesColono = document.getElementById("btnPaquetesColono");
+  const btnServiciosArribo = document.getElementById("btnServiciosArribo");
 
-/* 🔥 NUEVO */
-const btnServiciosArribo = document.getElementById("btnServiciosArribo");
+  if (rol === "vigilante") {
+    adminSection.style.display = "none";
+    colonoSection.style.display = "none";
+    infraestructuraSection.style.display = "none";
+    serviciosSection.style.display = "none";
+    reportesSection.style.display = "none";
+    if (hogarSection) hogarSection.style.display = "none";
+  }
 
-if (rol === "vigilante") {
-  adminSection.style.display = "none";
-  colonoSection.style.display = "none";
-  infraestructuraSection.style.display = "none";
-  serviciosSection.style.display = "none";
-  reportesSection.style.display = "none";
-  if (hogarSection) hogarSection.style.display = "none";
-}
+  if (rol === "colono") {
+    adminSection.style.display = "none";
+    vigilanteSection.style.display = "none";
+  }
 
-if (rol === "colono") {
-  adminSection.style.display = "none";
-  vigilanteSection.style.display = "none";
-}
+  if (rol === "admin") {
+    btnReportes.innerText = "📊 Reporte general";
+    vigilanteSection.style.display = "none";
+    if (hogarSection) hogarSection.style.display = "none";
+    if (btnPaquetesColono) btnPaquetesColono.style.display = "none";
+    if (btnServiciosArribo) btnServiciosArribo.style.display = "none";
+  }
 
-if (rol === "admin") {
-  btnReportes.innerText = "📊 Reporte general";
-  vigilanteSection.style.display = "none";
-  if (hogarSection) hogarSection.style.display = "none";
-  if (btnPaquetesColono) btnPaquetesColono.style.display = "none";
-
-  /* 🔥 OCULTAR BOTÓN INCORRECTO */
-  if (btnServiciosArribo) btnServiciosArribo.style.display = "none";
-}
-
-if (rol !== "colono") {
-  if (btnPaquetesColono) btnPaquetesColono.style.display = "none";
+  if (rol !== "colono") {
+    if (btnPaquetesColono) btnPaquetesColono.style.display = "none";
+  }
 }
 
 function irAReportes() {
+  const rol = localStorage.getItem("rol");
+
   if (rol === "admin") {
     window.location.href = "admin_reporte_general.html";
   } else {
@@ -267,10 +265,17 @@ function irAReportes() {
   }
 }
 
+async function logout() {
+  await supabaseClient.auth.signOut();
+  localStorage.clear();
+  window.location.href = "login.html";
+}
+
+iniciarSistema();
+
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js');
 }
-
 </script>
 
 </body>
