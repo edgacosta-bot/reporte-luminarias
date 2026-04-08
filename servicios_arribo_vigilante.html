@@ -30,42 +30,62 @@ h2 {
   margin-bottom: 20px;
 }
 
+/* 🔥 TARJETA MÁS ELEGANTE */
 .card {
-  border-radius: 14px;
-  padding: 15px;
-  margin-bottom: 12px;
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
 }
 
-.pendiente { background: #f59e0b; }
-.dentro { background: #16a34a; }
-.finalizado { background: #374151; }
+/* 🔥 COLORES NUEVOS (PALETA) */
+.pendiente { background: #a57f2c; }  /* dorado sobrio */
+.dentro { background: #1e5b4f; }     /* verde elegante */
+.finalizado { background: #374151; } /* gris */
 
 .nombre {
   font-weight: bold;
-  font-size: 16px;
+  font-size: 17px;
+  margin-bottom: 5px;
 }
 
 .info {
-  font-size: 12px;
-  margin-bottom: 10px;
+  font-size: 13px;
+  margin-bottom: 14px;
+  opacity: 0.9;
 }
 
 .botones {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
+/* 🔥 BOTONES MÁS PRO */
 button {
   flex: 1;
-  padding: 10px;
+  padding: 12px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-weight: bold;
   cursor: pointer;
+  font-size: 14px;
+  transition: transform 0.1s ease, opacity 0.2s ease;
 }
 
-.btn-entrada { background: #16a34a; color: white; }
-.btn-salida { background: #1f2937; color: white; }
+button:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+.btn-entrada {
+  background: #1e5b4f;
+  color: white;
+}
+
+.btn-salida {
+  background: #111827;
+  color: white;
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -143,7 +163,7 @@ async function cargar() {
 }
 
 
-// 🔥 ENTRADA (AJUSTE WHATSAPP)
+// 🔥 ENTRADA
 async function entrada(id) {
 
   const ahora = new Date().toISOString();
@@ -156,7 +176,6 @@ async function entrada(id) {
     })
     .eq("id", id);
 
-  // 🔥 MENSAJE WHATSAPP (SIN NÚMERO)
   const mensaje = `Estimado residente, el servicio que tiene en espera, en este momento ha entrado al fraccionamiento. Gracias.`;
 
   const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
@@ -167,7 +186,7 @@ async function entrada(id) {
 }
 
 
-// 🔥 SALIDA (SIN CAMBIOS)
+// 🔥 SALIDA
 async function salida(id) {
 
   const ahora = new Date().toISOString();
