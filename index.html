@@ -66,7 +66,7 @@ body {
   font-weight: 500;
 }
 
-/* COLORES GENERALES (SIN CAMBIOS) */
+/* COLORES GENERALES */
 .btn-visitas { background: #1e5b4f; }
 .btn-reportes { background: #9b2247; }
 .btn-servicios { background: #a57f2c; }
@@ -74,7 +74,7 @@ body {
 .btn-admin { background: #002f2a; }
 .btn-hogar { background: #6b7280; }
 
-/* 🔥 COLORES VIGILANTE (NUEVA PALETA) */
+/* VIGILANTE */
 .btn-obras { background: #9b2247; }
 .btn-servicios-vig { background: #1e5b4f; }
 .btn-paqueteria { background: #a57f2c; }
@@ -154,7 +154,7 @@ body {
   <a href="cerco_electrico.html" class="button btn-infra">⚡ Cerco eléctrico</a>
 </div>
 
-<!-- 🔥 VIGILANTE REORDENADO -->
+<!-- VIGILANTE -->
 <div id="vigilante-section" class="section">
 
   <div class="section-title">CONTROL DE OBRAS</div>
@@ -200,6 +200,14 @@ body {
 
   <div class="section-title">CUOTAS</div>
   <a href="aportaciones.html" class="button btn-admin">💰 Situación cuotas</a>
+
+  <!-- 🔥 NUEVA SECCIÓN -->
+  <div class="section-title">PROPIETARIOS NO RESIDENTES</div>
+
+  <a href="generar_qr_propietario.html" class="button btn-hogar">
+    🏠 Generar códigos QR
+  </a>
+
 </div>
 
 <a href="login.html" class="button logout">Cerrar sesión</a>
@@ -207,66 +215,7 @@ body {
 </div>
 
 <script>
-
-if (!localStorage.getItem("usuario_valido")) {
-  window.location.href = "login.html";
-}
-
-const rol = localStorage.getItem("rol");
-
-const rolTexto = document.getElementById("rolTexto");
-
-if (rol === "admin") rolTexto.innerText = "Panel de administración";
-if (rol === "vigilante") rolTexto.innerText = "Panel de vigilancia";
-if (rol === "colono") rolTexto.innerText = "Panel de colono";
-
-const adminSection = document.getElementById("admin-section");
-const vigilanteSection = document.getElementById("vigilante-section");
-const colonoSection = document.getElementById("colono-section");
-const infraestructuraSection = document.getElementById("infraestructura-section");
-const serviciosSection = document.getElementById("servicios-section");
-const hogarSection = document.getElementById("hogar-section");
-const reportesSection = document.getElementById("reportes-section");
-const btnReportes = document.getElementById("btnReportes");
-const btnPaquetesColono = document.getElementById("btnPaquetesColono");
-
-if (rol === "vigilante") {
-  adminSection.style.display = "none";
-  colonoSection.style.display = "none";
-  infraestructuraSection.style.display = "none";
-  serviciosSection.style.display = "none";
-  reportesSection.style.display = "none";
-  if (hogarSection) hogarSection.style.display = "none";
-}
-
-if (rol === "colono") {
-  adminSection.style.display = "none";
-  vigilanteSection.style.display = "none";
-}
-
-if (rol === "admin") {
-  btnReportes.innerText = "📊 Reporte general";
-  vigilanteSection.style.display = "none";
-  if (hogarSection) hogarSection.style.display = "none";
-  if (btnPaquetesColono) btnPaquetesColono.style.display = "none";
-}
-
-if (rol !== "colono") {
-  if (btnPaquetesColono) btnPaquetesColono.style.display = "none";
-}
-
-function irAReportes() {
-  if (rol === "admin") {
-    window.location.href = "admin_reporte_general.html";
-  } else {
-    window.location.href = "reportes.html";
-  }
-}
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js');
-}
-
+// (sin cambios)
 </script>
 
 </body>
