@@ -66,7 +66,6 @@ body {
   font-weight: 500;
 }
 
-/* COLORES GENERALES (SIN CAMBIOS) */
 .btn-visitas { background: #1e5b4f; }
 .btn-reportes { background: #9b2247; }
 .btn-servicios { background: #a57f2c; }
@@ -74,7 +73,6 @@ body {
 .btn-admin { background: #002f2a; }
 .btn-hogar { background: #6b7280; }
 
-/* 🔥 COLORES VIGILANTE (NUEVA PALETA) */
 .btn-obras { background: #9b2247; }
 .btn-servicios-vig { background: #1e5b4f; }
 .btn-paqueteria { background: #a57f2c; }
@@ -140,7 +138,7 @@ body {
     📦 Autorizar recepción de paquetes
   </a>
 
-  <a href="servicios_arribo.html" class="button btn-servicios">
+  <a id="btnServiciosArribo" href="servicios_arribo.html" class="button btn-servicios">
     🚚 Autorizar acceso de servicios
   </a>
 </div>
@@ -154,7 +152,7 @@ body {
   <a href="cerco_electrico.html" class="button btn-infra">⚡ Cerco eléctrico</a>
 </div>
 
-<!-- 🔥 VIGILANTE REORDENADO -->
+<!-- VIGILANTE -->
 <div id="vigilante-section" class="section">
 
   <div class="section-title">CONTROL DE OBRAS</div>
@@ -230,6 +228,9 @@ const reportesSection = document.getElementById("reportes-section");
 const btnReportes = document.getElementById("btnReportes");
 const btnPaquetesColono = document.getElementById("btnPaquetesColono");
 
+/* 🔥 NUEVO */
+const btnServiciosArribo = document.getElementById("btnServiciosArribo");
+
 if (rol === "vigilante") {
   adminSection.style.display = "none";
   colonoSection.style.display = "none";
@@ -249,6 +250,9 @@ if (rol === "admin") {
   vigilanteSection.style.display = "none";
   if (hogarSection) hogarSection.style.display = "none";
   if (btnPaquetesColono) btnPaquetesColono.style.display = "none";
+
+  /* 🔥 OCULTAR BOTÓN INCORRECTO */
+  if (btnServiciosArribo) btnServiciosArribo.style.display = "none";
 }
 
 if (rol !== "colono") {
