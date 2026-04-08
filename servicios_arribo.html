@@ -71,19 +71,24 @@ button {
   display: none;
   justify-content: center;
   align-items: center;
+  z-index: 999;
 }
 
 .modal-content {
-  background: #111827;
-  padding: 20px;
+  background: #ffffff; /* 🔥 CAMBIO CLAVE */
+  padding: 22px;
   border-radius: 16px;
   width: 85%;
   max-width: 320px;
   text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
 }
 
 .modal-text {
   margin-bottom: 20px;
+  color: #111827; /* 🔥 TEXTO OSCURO SOBRE FONDO CLARO */
+  font-size: 15px;
+  line-height: 1.4;
 }
 
 .modal-btn {
@@ -93,11 +98,14 @@ button {
   width: 100%;
   font-weight: bold;
   cursor: pointer;
+  color: white;
 }
 
-/* estilos por tipo */
+/* 🎨 COLORES BONITOS */
 .warn { background: #a57f2c; }
 .error { background: #9b2247; }
+.success { background: #1e5b4f; }
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -148,8 +156,6 @@ const client = window.supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-let continuarRegistro = false;
-
 function mostrarModal(texto, tipo, callback) {
 
   const modal = document.getElementById("modal");
@@ -192,7 +198,7 @@ async function registrar() {
     return;
   }
 
-  // 🔥 MOROSO (bloquea)
+  // 🔴 MOROSO (bloquea)
   if (residente.estado_pago === "moroso") {
     mostrarModal(
       "No es posible registrar el servicio. Presenta adeudo en sus cuotas.",
@@ -201,7 +207,7 @@ async function registrar() {
     return;
   }
 
-  // 🔥 ATRASO (advierte y luego continúa)
+  // 🟡 ATRASO (advierte y permite)
   if (residente.estado_pago === "atraso_1") {
     mostrarModal(
       "Puede registrar el servicio en esta ocasión, sin embargo presenta retraso en sus cuotas.",
@@ -242,7 +248,7 @@ async function insertarServicio() {
     estado: "pendiente"
   }]);
 
-  mostrarModal("Servicio registrado correctamente", "warn", () => {
+  mostrarModal("Servicio registrado correctamente", "success", () => {
     window.location.href = "index.html";
   });
 }
