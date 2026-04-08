@@ -48,6 +48,12 @@ input, button {
   font-size: 14px;
   margin-top: 8px;
 }
+
+#mensajeExtra {
+  margin-top: 15px;
+  font-size: 14px;
+  line-height: 1.4;
+}
 </style>
 </head>
 
@@ -56,6 +62,7 @@ input, button {
 <div class="container">
   <h1 id="estado">Validando...</h1>
   <div id="nombre"></div>
+  <div id="mensajeExtra"></div>
 
   <input type="password" id="pin" placeholder="PIN">
   <button id="btnConfirmar" onclick="confirmar()">Confirmar</button>
@@ -105,13 +112,17 @@ async function init() {
 
   const estado = (residente?.estado_pago || "").toLowerCase();
 
+  document.getElementById("nombre").innerText = acceso.nombre;
+
   if (estado === "moroso") {
-    pintar("ACCESO DENEGADO POR ADEUDO", "error");
+    pintar("ACCESO DENEGADO", "error");
+
+    document.getElementById("mensajeExtra").innerText =
+      "Notificar al usuario que el servicio de seguridad no puede realizar la apertura de puerta, por lo que se invita a que pase a la administración a cubrir los adeudos de sus cuotas";
+
     puedeConfirmar = false;
     return;
   }
-
-  document.getElementById("nombre").innerText = acceso.nombre;
 
   const { data: movimiento } = await client
     .from("accesos_registro_propietarios")
@@ -121,19 +132,30 @@ async function init() {
     .maybeSingle();
 
   if (!movimiento) {
+
     tipo = "entrada";
     puedeConfirmar = true;
 
     if (estado === "atraso_1") {
+
       pintar("ACCESO CON ALERTA", "warn");
+
+      document.getElementById("mensajeExtra").innerText =
+        "Notificar al usuario que el servicio de seguridad le otorgará acceso pero se le invita a pasar a la administración a la brevedad para cubrir su cuota de atraso";
+
     } else {
+
       pintar("PERMITIR ACCESO", "ok");
+      document.getElementById("mensajeExtra").innerText = "";
     }
 
   } else {
+
     tipo = "salida";
     puedeConfirmar = true;
+
     pintar("REGISTRAR SALIDA", "warn");
+    document.getElementById("mensajeExtra").innerText = "";
   }
 }
 
@@ -193,6 +215,8 @@ function pintarFinal(texto, color) {
 
   document.getElementById("pin").style.display = "none";
   document.getElementById("btnConfirmar").style.display = "none";
+
+  document.getElementById("mensajeExtra").innerText = "";
 
   document.getElementById("btnSalir").style.display = "block";
 }
