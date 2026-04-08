@@ -61,6 +61,34 @@ button {
   font-weight: bold;
   cursor: pointer;
 }
+
+/* 🔥 MODAL ESTILO APP */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: #1f2937;
+  padding: 20px;
+  border-radius: 16px;
+  width: 85%;
+  max-width: 300px;
+  text-align: center;
+  color: white;
+}
+
+.modal-content button {
+  margin-top: 15px;
+  background: #16a34a;
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -96,12 +124,29 @@ button {
 
 </div>
 
+<!-- 🔥 MODAL -->
+<div id="modalOk" class="modal">
+  <div class="modal-content">
+    <div id="modalTexto"></div>
+    <button onclick="cerrarModal()">Aceptar</button>
+  </div>
+</div>
+
 <script>
 
 const client = window.supabase.createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
+
+function mostrarModal(texto) {
+  document.getElementById("modalTexto").innerText = texto;
+  document.getElementById("modalOk").style.display = "flex";
+}
+
+function cerrarModal() {
+  window.location.href = "index.html";
+}
 
 async function registrar() {
 
@@ -110,7 +155,7 @@ async function registrar() {
   const vigencia = parseInt(document.getElementById("vigencia").value);
 
   if (!servicio) {
-    alert("Ingresa el nombre del servicio");
+    mostrarModal("Ingresa el nombre del servicio");
     return;
   }
 
@@ -123,7 +168,7 @@ async function registrar() {
     .single();
 
   if (!residente) {
-    alert("Error obteniendo datos");
+    mostrarModal("Error obteniendo datos");
     return;
   }
 
@@ -144,14 +189,13 @@ async function registrar() {
     }]);
 
   if (error) {
-    alert("Error al registrar servicio");
+    mostrarModal("Error al registrar servicio");
     console.log(error);
     return;
   }
 
-  alert("Servicio registrado correctamente");
-
-  window.location.href = "index.html";
+  // 🔥 ÉXITO BONITO
+  mostrarModal("Servicio registrado correctamente");
 }
 
 </script>
