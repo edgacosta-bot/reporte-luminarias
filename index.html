@@ -167,7 +167,7 @@ const { createClient } = supabase;
 
 const supabaseClient = createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+  "TU_ANON_KEY_AQUI"
 );
 
 async function iniciarSistema() {
@@ -187,7 +187,13 @@ async function iniciarSistema() {
         .single();
 
       if (residente) {
-        rol = residente.tipo;
+        let tipo = residente.tipo;
+
+        if (tipo === "residente") rol = "colono";
+        else if (tipo === "administracion") rol = "admin";
+        else if (tipo === "vigilante") rol = "vigilante";
+        else rol = null;
+
         localStorage.setItem("rol", rol);
         localStorage.setItem("usuario_valido", "true");
       }
