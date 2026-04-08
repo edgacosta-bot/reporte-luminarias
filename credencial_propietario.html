@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Credencial Propietario</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.card {
+  width: 320px;
+  background: #111827;
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+  color: white;
+}
+
+#qr {
+  margin: 20px 0;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #25D366;
+  color: white;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h3>Acceso propietario</h3>
+
+<div id="qr"></div>
+
+<div id="nombre"></div>
+<div id="direccion"></div>
+
+<button id="btnWA">Enviar por WhatsApp</button>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<script>
+
+const params = new URLSearchParams(window.location.search);
+
+const qr = params.get("qr");
+const nombre = params.get("nombre");
+const privada = params.get("privada");
+const casa = params.get("casa");
+const origen = params.get("origen");
+
+const urlQR = `${window.location.origin}/acceso_propietario.html?qr=${qr}`;
+
+QRCode.toCanvas(urlQR, { width: 220 }, function (err, canvas) {
+  document.getElementById("qr").appendChild(canvas);
+});
+
+document.getElementById("nombre").innerText = nombre;
+document.getElementById("direccion").innerText = `Privada ${privada} - Casa ${casa}`;
+
+if (origen !== "admin") {
+  document.getElementById("btnWA").style.display = "none";
+}
+
+document.getElementById("btnWA").onclick = () => {
+
+  const mensaje = `Acceso al fraccionamiento:\n${urlQR}`;
+  const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+
+  window.open(url, "_blank");
+};
+
+</script>
+
+</body>
+</html>
