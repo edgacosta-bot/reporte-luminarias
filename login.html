@@ -145,34 +145,52 @@ async function login() {
       return;
     }
 
-    const { data, error } = await supabaseClient
-      .from("residentes")
-      .select("*")
-      .eq("privada", privada)
-      .eq("casa", casa)
-      .eq("clave", clave)
-      .maybeSingle();
+    // 🔐 GENERAR EMAIL INTERNO (IMPORTANTE)
+    const email = `${privada.toLowerCase()}-${casa}@villas.com`;
+    const password = clave;
 
-    if (error || !data) {
+    // 🔐 LOGIN REAL
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) {
       mensaje.innerText = "Datos incorrectos";
       mensaje.classList.add("error");
       return;
     }
 
-    let rol = data.tipo;
+    const user = data.user;
+
+    // 🔗 OBTENER RESIDENTE
+    const { data: residente, error: err2 } = await supabaseClient
+      .from("residentes")
+      .select("*")
+      .eq("user_id", user.id)
+      .single();
+
+    if (!residente) {
+      mensaje.innerText = "Usuario no vinculado";
+      mensaje.classList.add("error");
+      return;
+    }
+
+    // 🧠 MAPEAR ROL
+    let rol = residente.tipo;
 
     if (rol === "residente") rol = "colono";
     if (rol === "administracion") rol = "admin";
     if (rol === "vigilante") rol = "vigilante";
 
+    // 🔄 COMPATIBILIDAD CON TU SISTEMA ACTUAL
     localStorage.setItem("usuario_valido", "true");
-    localStorage.setItem("privada", privada);
-    localStorage.setItem("casa", casa);
+    localStorage.setItem("privada", residente.privada);
+    localStorage.setItem("casa", residente.casa);
     localStorage.setItem("rol", rol);
+    localStorage.setItem("identificador", residente.identificador);
 
-    // 🔥 ESTA ES LA ÚNICA LÍNEA NUEVA (CRÍTICA)
-    localStorage.setItem("identificador", data.identificador);
-
+    // 🚀 REDIRECCIÓN
     window.location.href = "index.html";
 
   } catch (err) {
