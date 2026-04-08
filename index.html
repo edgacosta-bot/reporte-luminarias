@@ -137,6 +137,12 @@ body {
   <a id="btnPaquetesColono" href="residente_paquetes.html" class="button btn-servicios">
     📦 Recepción de paquetes
   </a>
+
+  <!-- 🔥 NUEVO BOTÓN COLONO -->
+  <a href="servicios_arribo.html" class="button btn-servicios">
+    🚚 Servicios por arribar
+  </a>
+
 </div>
 
 <!-- INFRAESTRUCTURA -->
@@ -157,6 +163,12 @@ body {
   <a href="incidencia_manual.html" class="button btn-reportes">🚨 Reportar incidencia</a>
   <a href="paquetes.html" class="button btn-reportes">📦 Recepción de paquetes</a>
   <a href="entrega_paquetes.html" class="button btn-reportes">📦 Entrega de paquetes</a>
+
+  <!-- 🔥 NUEVO BOTÓN VIGILANTE -->
+  <a href="servicios_arribo_vigilante.html" class="button btn-reportes">
+    🚚 Lista de servicios por arribar
+  </a>
+
 </div>
 
 <!-- ADMIN -->
@@ -168,7 +180,6 @@ body {
   <a href="permisos_trabajadores.html" class="button btn-admin">🪪 Gestionar permisos trabajadores</a>
   <a href="trabajador_qr.html" class="button btn-admin">📱 Generar QR trabajador</a>
 
-  <!-- 🔥 NUEVO BOTÓN (MODO SEGURO) -->
   <a href="reimpresion_trabajadores.html" class="button btn-admin">
     🔁 Reimpresión de QR
   </a>
@@ -182,8 +193,6 @@ body {
 </div>
 
 <script>
-
-// (sin cambios en JS)
 
 if (!localStorage.getItem("usuario_valido")) {
   window.location.href = "login.html";
