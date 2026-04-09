@@ -220,7 +220,13 @@ btn.addEventListener("click", async () => {
   btn.disabled = true;
   btn.innerText = "Procesando...";
 
-  const ahora = new Date().toISOString();
+  // 🔥 UTC
+  const ahoraUTC = new Date().toISOString();
+
+  // 🔥 LOCAL MÉXICO (SOLUCIÓN)
+  const ahoraLocal = new Date().toLocaleString("sv-SE", {
+    timeZone: "America/Mexico_City"
+  }).replace(" ", "T");
 
   if (tipoAccion === "entrada") {
 
@@ -228,7 +234,8 @@ btn.addEventListener("click", async () => {
       .from("accesos_trabajadores")
       .insert([{
         trabajador_id: trabajadorGlobal.id,
-        fecha_hora_entrada: ahora,
+        fecha_hora_entrada: ahoraUTC,
+        fecha_hora_entrada_local: ahoraLocal,
         estatus: "dentro"
       }]);
 
@@ -239,7 +246,8 @@ btn.addEventListener("click", async () => {
     await supabaseClient
       .from("accesos_trabajadores")
       .update({
-        fecha_hora_salida: ahora,
+        fecha_hora_salida: ahoraUTC,
+        fecha_hora_salida_local: ahoraLocal,
         estatus: "fuera"
       })
       .eq("id", accesoActual.id);
