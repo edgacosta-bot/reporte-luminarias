@@ -100,8 +100,8 @@ function formatearHora(fechaUTC) {
 // 🔥 CÁLCULO CONSISTENTE
 function calcularTiempo(entradaUTC) {
 
-  const entrada = convertirAMexico(entradaUTC);
-  const ahora = convertirAMexico(new Date());
+  const entrada = new Date(entradaUTC);
+  const ahora = new Date();
 
   let diff = ahora.getTime() - entrada.getTime();
 
@@ -110,7 +110,7 @@ function calcularTiempo(entradaUTC) {
   const horas = Math.floor(diff / (1000 * 60 * 60));
   const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-  return { horas, minutos, totalHoras: diff / (1000 * 60 * 60) };
+  return { horas, minutos };
 }
 
 async function cargar() {
