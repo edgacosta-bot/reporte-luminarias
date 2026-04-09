@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Acceso Propietario</title>
+<title>Validación acceso propietario</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -19,40 +19,33 @@ body {
   text-align: center;
 }
 
+.container {
+  max-width: 320px;
+  width: 100%;
+}
+
 .ok { background: #16a34a; }
 .warn { background: #f59e0b; }
 .error { background: #dc2626; }
 
-.container {
-  max-width: 320px;
-  width: 90%;
-}
-
-input, button {
+input {
   width: 100%;
   padding: 14px;
   margin-top: 10px;
   border-radius: 10px;
-  box-sizing: border-box;
+  border: none;
+  font-size: 18px;
+  text-align: center;
 }
 
-#btnSalir {
-  display: none;
-  background: #1f2937;
-  color: white;
-}
-
-#errorMsg {
-  display: none;
-  color: #fecaca;
-  font-size: 14px;
-  margin-top: 8px;
-}
-
-#mensajeExtra {
-  margin-top: 15px;
-  font-size: 14px;
-  line-height: 1.4;
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
 }
 </style>
 </head>
@@ -61,182 +54,126 @@ input, button {
 
 <div class="container">
   <h1 id="estado">Validando...</h1>
-  <div id="nombre"></div>
-  <div id="mensajeExtra"></div>
+  <div id="detalle"></div>
 
-  <input type="password" id="pin" placeholder="PIN">
-  <button id="btnConfirmar" onclick="confirmar()">Confirmar</button>
-
-  <div id="errorMsg">PIN incorrecto</div>
-
-  <button id="btnSalir" onclick="salir()">Salir</button>
+  <div id="control" style="display:none;">
+    <input type="password" id="pin" placeholder="PIN">
+    <button id="btn">Registrar</button>
+  </div>
 </div>
 
 <script>
+const PIN_CORRECTO = "7482";
 
-let PIN = "";
-
-async function obtenerPIN() {
-  const { data } = await client
-    .from("seguridad_config")
-    .select("pin_acceso")
-    .limit(1)
-    .single();
-
-  PIN = data.pin_acceso;
-}
-
-const client = supabase.createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+const client = window.supabase.createClient(
+  'https://prjxmfhahnzosdwljode.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
-const qr = new URLSearchParams(window.location.search).get("qr");
+const params = new URLSearchParams(window.location.search);
+const qr = params.get("qr");
 
 let acceso = null;
-let tipo = "";
-let puedeConfirmar = false;
+let residente = null;
+let movimiento = null;
 
-init();
+validar();
 
-async function init() {
-
-  await obtenerPIN();
+async function validar() {
 
   const { data } = await client
     .from("accesos_propietarios")
     .select("*")
     .eq("identificador", qr)
-    .maybeSingle();
+    .single();
 
   if (!data) {
-    pintar("QR INVÁLIDO", "error");
+    pintar("QR inválido", "error");
     return;
   }
 
   acceso = data;
 
-  const { data: residente } = await client
+  const { data: res } = await client
     .from("residentes")
-    .select("estado_pago")
+    .select("*")
     .eq("id", acceso.residente_id)
     .single();
 
-  const estado = (residente?.estado_pago || "").toLowerCase();
+  residente = res;
 
-  document.getElementById("nombre").innerText = acceso.nombre;
+  const estado = (residente.estado_pago || "").toLowerCase();
 
   if (estado === "moroso") {
-    pintar("ACCESO DENEGADO", "error");
-
-    document.getElementById("mensajeExtra").innerText =
-      "Notificar al usuario que el servicio de seguridad no puede realizar la apertura de puerta, por lo que se invita a que pase a la administración a cubrir los adeudos de sus cuotas";
-
-    puedeConfirmar = false;
+    pintar("ACCESO DENEGADO", "error", residente,
+      "No es posible el acceso debido a la morosidad en sus pagos.");
     return;
   }
 
-  const { data: movimiento } = await client
+  if (estado === "atraso_1") {
+    pintar("ACCESO CON ADVERTENCIA", "warn", residente,
+      "Se permite el acceso, pero se invita a regularizar su situación.");
+  } else {
+    pintar("ACCESO PERMITIDO", "ok", residente);
+  }
+
+  const { data: movimientos } = await client
     .from("accesos_registro_propietarios")
     .select("*")
     .eq("acceso_id", acceso.id)
     .is("fecha_hora_salida", null)
-    .maybeSingle();
+    .order("fecha_hora_entrada", { ascending: false })
+    .limit(1);
 
-  if (!movimiento) {
+  movimiento = movimientos && movimientos.length > 0 ? movimientos[0] : null;
 
-    tipo = "entrada";
-    puedeConfirmar = true;
-
-    if (estado === "atraso_1") {
-
-      pintar("ACCESO CON ALERTA", "warn");
-
-      document.getElementById("mensajeExtra").innerText =
-        "Notificar al usuario que el servicio de seguridad le otorgará acceso pero se le invita a pasar a la administración a la brevedad para cubrir su cuota de atraso";
-
-    } else {
-
-      pintar("PERMITIR ACCESO", "ok");
-      document.getElementById("mensajeExtra").innerText = "";
-    }
-
-  } else {
-
-    tipo = "salida";
-    puedeConfirmar = true;
-
-    pintar("REGISTRAR SALIDA", "warn");
-    document.getElementById("mensajeExtra").innerText = "";
-  }
+  document.getElementById("control").style.display = "block";
 }
 
-function pintar(texto, color) {
-  document.body.className = color;
-  document.getElementById("estado").innerText = texto;
-
-  const mostrar = (color === "ok" || color === "warn");
-
-  document.getElementById("pin").style.display = mostrar ? "block" : "none";
-  document.getElementById("btnConfirmar").style.display = mostrar ? "block" : "none";
-
-  document.getElementById("errorMsg").style.display = "none";
-}
-
-async function confirmar() {
-
-  if (!puedeConfirmar) return;
+document.getElementById("btn").addEventListener("click", async () => {
 
   const pin = document.getElementById("pin").value;
-
-  if (pin !== PIN) {
-    document.getElementById("errorMsg").style.display = "block";
-    document.getElementById("pin").value = "";
-    return;
-  }
+  if (pin !== PIN_CORRECTO) return;
 
   const ahora = new Date().toISOString();
 
-  if (tipo === "entrada") {
-
-    await client.from("accesos_registro_propietarios").insert([{
-      acceso_id: acceso.id,
-      fecha_hora_entrada: ahora,
-      estatus: "dentro"
-    }]);
-
-    pintarFinal("ENTRADA REGISTRADA", "ok");
-
-  } else {
-
-    await client.from("accesos_registro_propietarios")
+  if (movimiento) {
+    await client
+      .from("accesos_registro_propietarios")
       .update({
         fecha_hora_salida: ahora,
         estatus: "fuera"
       })
-      .eq("acceso_id", acceso.id)
-      .is("fecha_hora_salida", null);
+      .eq("id", movimiento.id);
 
-    pintarFinal("SALIDA REGISTRADA", "warn");
+    pintar("SALIDA REGISTRADA", "ok", residente);
+
+  } else {
+    await client
+      .from("accesos_registro_propietarios")
+      .insert([{
+        acceso_id: acceso.id,
+        fecha_hora_entrada: ahora,
+        estatus: "dentro"
+      }]);
+
+    pintar("ENTRADA REGISTRADA", "ok", residente);
+  }
+
+  document.getElementById("control").style.display = "none";
+});
+
+function pintar(mensaje, tipo, data = null, texto = "") {
+  document.body.className = tipo;
+  document.getElementById("estado").innerText = mensaje;
+
+  if (data) {
+    document.getElementById("detalle").innerHTML = `
+      <p>${data.privada}-${data.casa}</p>
+      <p>${texto || ""}</p>
+    `;
   }
 }
-
-function pintarFinal(texto, color) {
-  document.body.className = color;
-  document.getElementById("estado").innerText = texto;
-
-  document.getElementById("pin").style.display = "none";
-  document.getElementById("btnConfirmar").style.display = "none";
-
-  document.getElementById("mensajeExtra").innerText = "";
-
-  document.getElementById("btnSalir").style.display = "block";
-}
-
-function salir() {
-  window.location.href = "index.html";
-}
-
 </script>
 
 </body>
