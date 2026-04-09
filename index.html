@@ -44,7 +44,6 @@ body {
   color: #98989A;
 }
 
-/* 🔥 NUEVO */
 #ubicacion {
   font-size: 13px;
   color: #cbd5f5;
@@ -105,7 +104,7 @@ body {
 
   <h1>Villas de la Concepción</h1>
   <span id="rolTexto"></span>
-  <div id="ubicacion"></div> <!-- 🔥 NUEVO -->
+  <div id="ubicacion"></div>
 </div>
 
 <div id="colono-section" class="section">
@@ -184,44 +183,7 @@ const supabaseClient = createClient(
 
 async function iniciarSistema() {
 
-  let rol = null;
-
-  try {
-    const { data } = await supabaseClient.auth.getUser();
-
-    if (data.user) {
-      const user = data.user;
-
-      const { data: residente } = await supabaseClient
-        .from("residentes")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
-
-      if (residente) {
-        let tipo = residente.tipo;
-
-        if (tipo === "residente") rol = "colono";
-        else if (tipo === "administracion") rol = "admin";
-        else if (tipo === "vigilante") rol = "vigilante";
-        else rol = null;
-
-        localStorage.setItem("rol", rol);
-        localStorage.setItem("usuario_valido", "true");
-
-        // 🔥 NUEVO (MOSTRAR UBICACIÓN)
-        document.getElementById("ubicacion").innerText =
-          `${residente.privada} - ${residente.casa}`;
-      }
-    }
-
-  } catch (e) {
-    console.log("Auth fallback:", e);
-  }
-
-  if (!rol) {
-    rol = localStorage.getItem("rol");
-  }
+  let rol = localStorage.getItem("rol");
 
   if (!rol) {
     window.location.href = "login.html";
@@ -229,6 +191,15 @@ async function iniciarSistema() {
   }
 
   aplicarUI(rol);
+
+  // 🔥 UBICACIÓN (MODO DEMO)
+  const privada = localStorage.getItem("privada");
+  const casa = localStorage.getItem("casa");
+
+  if (privada && casa) {
+    document.getElementById("ubicacion").innerText =
+      `${privada} - ${casa}`;
+  }
 }
 
 function aplicarUI(rol) {
