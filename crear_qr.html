@@ -205,7 +205,7 @@ const client = window.supabase.createClient(
 
 const privada = localStorage.getItem("privada");
 const casa = localStorage.getItem("casa");
-const rol = localStorage.getItem("rol"); // 🔥 NUEVO
+const rol = localStorage.getItem("rol");
 
 document.getElementById("infoUsuario").innerText =
   `Privada ${privada} - Casa ${casa}`;
@@ -267,7 +267,7 @@ async function generarQR() {
   }
 
   const codigo = crypto.randomUUID();
-  const tipo_generador = obtenerTipoGenerador(); // 🔥 CLAVE
+  const tipo_generador = obtenerTipoGenerador();
 
   await client.from('visitas_qr').insert([{
     residente_id: user.id,
@@ -279,7 +279,8 @@ async function generarQR() {
     privada: user.privada,
     casa: user.casa,
     estatus: 'activo',
-    tipo_generador: tipo_generador // 🔥 FIX
+    tipo_generador: tipo_generador,
+    residente_nombre: user.nombre || '' // 🔥 FIX
   }]);
 
   const link = `${window.location.origin}/mostrar_qr.html?qr=${codigo}`;
