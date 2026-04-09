@@ -5,36 +5,46 @@
 <script>
 protegerPagina(["colono"]);
 </script>  
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Reporte de luminaria</title>
 
 <style>
+* { box-sizing: border-box; }
+
 body {
   margin: 0;
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   background: linear-gradient(135deg, #0f172a, #1e293b);
   color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
 }
 
-.container {
-  max-width: 500px;
-  margin: auto;
-  padding: 20px;
+.card {
+  background: #111827;
+  padding: 25px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
 }
 
 h2 {
   text-align: center;
+  margin-bottom: 15px;
 }
 
-select, textarea, button {
+select, textarea {
   width: 100%;
   padding: 12px;
   margin-bottom: 12px;
   border-radius: 10px;
   border: none;
+  background: #1f2937;
+  color: white;
 }
 
 textarea {
@@ -42,33 +52,38 @@ textarea {
 }
 
 button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
   background: #2563eb;
   color: white;
+  font-size: 16px;
   cursor: pointer;
 }
 
+button:hover {
+  background: #1d4ed8;
+}
+
 .mensaje {
-  text-align: center;
   margin-top: 10px;
+  text-align: center;
 }
 
 .error { color: #f87171; }
 .ok { color: #34d399; }
 
 </style>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
 
-<div class="container">
+<div class="card">
 
-<h2>💡 Reporte de luminaria</h2>
+<h2>Reporte de luminaria</h2>
 
-<select id="luminaria">
-  <option value="">Cargando luminarias...</option>
-</select>
+<select id="luminaria"></select>
 
 <textarea id="descripcion" placeholder="Describe el problema"></textarea>
 
@@ -78,9 +93,13 @@ button {
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
 
-const client = window.supabase.createClient(
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
@@ -88,12 +107,11 @@ const client = window.supabase.createClient(
 // 🔥 CARGAR LUMINARIAS
 async function cargarLuminarias() {
 
-  const select = document.getElementById("luminaria");
-
-  const { data, error } = await client
+  const { data, error } = await supabaseClient
     .from("control_luminarias")
-    .select("*")
-    .order("no_luminaria");
+    .select("*");
+
+  const select = document.getElementById("luminaria");
 
   if (error || !data) {
     select.innerHTML = '<option>Error cargando luminarias</option>';
@@ -114,7 +132,7 @@ async function cargarLuminarias() {
 cargarLuminarias();
 
 
-// 🚀 REGISTRAR REPORTE
+// 🚀 REGISTRAR
 async function registrar() {
 
   const luminariaSelect = document.getElementById("luminaria");
@@ -134,7 +152,7 @@ async function registrar() {
 
   try {
 
-    // 🔥 USAR LOCALSTORAGE (MODO SEGURO PARA DEMO)
+    // 🔥 MODO SEGURO PARA DEMO
     const privada = localStorage.getItem("privada");
     const casa = localStorage.getItem("casa");
 
@@ -142,7 +160,7 @@ async function registrar() {
       throw new Error("No se pudo obtener la información del usuario");
     }
 
-    const { error } = await client
+    const { error } = await supabaseClient
       .from("reportes_vecinales")
       .insert([{
         luminaria_id: luminaria_id,
@@ -158,7 +176,7 @@ async function registrar() {
       throw error;
     }
 
-    mensaje.innerText = "Reporte enviado correctamente ✅";
+    mensaje.innerText = "Reporte enviado correctamente";
     mensaje.classList.add("ok");
 
     document.getElementById("luminaria").value = "";
