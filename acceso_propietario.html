@@ -8,6 +8,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+* { box-sizing: border-box; }
+
 body {
   margin: 0;
   font-family: Arial;
@@ -22,6 +24,7 @@ body {
 .container {
   max-width: 320px;
   width: 100%;
+  padding: 20px;
 }
 
 .ok { background: #16a34a; }
@@ -33,15 +36,17 @@ input {
   padding: 14px;
   margin-top: 10px;
   border-radius: 10px;
-  border: none;
+  border: 1px solid #334155;
   font-size: 18px;
   text-align: center;
+  background: #020617;
+  color: white;
 }
 
 button {
   width: 100%;
   padding: 14px;
-  margin-top: 10px;
+  margin-top: 12px;
   border-radius: 10px;
   border: none;
   font-weight: bold;
@@ -109,7 +114,6 @@ async function validar() {
     return;
   }
 
-  // 🔍 BUSCAR ÚLTIMO MOVIMIENTO
   const { data: movimientos } = await client
     .from("accesos_registro_propietarios")
     .select("*")
@@ -119,24 +123,19 @@ async function validar() {
 
   const ultimo = movimientos && movimientos.length > 0 ? movimientos[0] : null;
 
-  // 🔥 USAR ESTATUS (CORRECTO)
   if (ultimo && ultimo.estatus === "dentro") {
-
-    pintar("REGISTRAR SALIDA", "warn", residente);
-
+    pintar("ESCANEAR PARA SALIDA", "warn", residente);
+    // 🔴 NO mostramos control aún
   } else {
-
-    if (estado_pago === "atraso_1") {
-      pintar("ACCESO CON ADVERTENCIA", "warn", residente,
-        "Se permite el acceso, pero se invita a regularizar su situación.");
-    } else {
-      pintar("REGISTRAR ENTRADA", "ok", residente);
-    }
-
+    pintar("ESCANEAR PARA ENTRADA", "ok", residente);
+    // 🟢 NO mostramos control aún
   }
-
-  document.getElementById("control").style.display = "block";
 }
+
+// 🔥 ACTIVAR CONTROL SOLO AL HACER ACCIÓN
+document.body.addEventListener("click", () => {
+  document.getElementById("control").style.display = "block";
+});
 
 document.getElementById("btn").addEventListener("click", async () => {
 
@@ -145,7 +144,6 @@ document.getElementById("btn").addEventListener("click", async () => {
 
   const ahora = new Date().toISOString();
 
-  // 🔍 OBTENER ÚLTIMO MOVIMIENTO
   const { data: movimientos } = await client
     .from("accesos_registro_propietarios")
     .select("*")
@@ -157,7 +155,6 @@ document.getElementById("btn").addEventListener("click", async () => {
 
   if (ultimo && ultimo.estatus === "dentro") {
 
-    // 🔴 SALIDA
     await client
       .from("accesos_registro_propietarios")
       .update({
@@ -166,11 +163,10 @@ document.getElementById("btn").addEventListener("click", async () => {
       })
       .eq("id", ultimo.id);
 
-    pintar("SALIDA REGISTRADA", "ok", residente);
+    mostrarResultado("SALIDA REGISTRADA");
 
   } else {
 
-    // 🟢 ENTRADA
     await client
       .from("accesos_registro_propietarios")
       .insert([{
@@ -179,15 +175,27 @@ document.getElementById("btn").addEventListener("click", async () => {
         estatus: "dentro"
       }]);
 
-    pintar("ENTRADA REGISTRADA", "ok", residente);
+    mostrarResultado("ENTRADA REGISTRADA");
   }
+
+});
+
+function mostrarResultado(texto) {
+
+  document.getElementById("estado").innerText = texto;
+  document.body.className = "ok";
 
   document.getElementById("control").style.display = "none";
 
-  setTimeout(() => {
-    window.location.href = window.location.href.split("?")[0] + "?qr=" + qr + "&t=" + Date.now();
-  }, 1200);
-});
+  const btnSalir = document.createElement("button");
+  btnSalir.innerText = "Finalizar";
+
+  btnSalir.onclick = () => {
+    window.location.href = "index.html";
+  };
+
+  document.querySelector(".container").appendChild(btnSalir);
+}
 
 function pintar(mensaje, tipo, data = null, texto = "") {
   document.body.className = tipo;
