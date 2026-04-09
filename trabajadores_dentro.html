@@ -86,9 +86,10 @@ function convertirAMexico(fechaUTC) {
 function formatearHora(fechaUTC) {
   if (!fechaUTC) return "-";
 
-  const fecha = convertirAMexico(fechaUTC);
+  const fecha = new Date(fechaUTC);
 
   return fecha.toLocaleString("es-MX", {
+    timeZone: "America/Mexico_City",
     hour: "2-digit",
     minute: "2-digit",
     day: "2-digit",
