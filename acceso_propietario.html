@@ -126,12 +126,12 @@ document.getElementById("btn").addEventListener("click", async () => {
 
   const ahora = new Date().toISOString();
 
-  // 🔥 CONSULTAR SIEMPRE ESTADO ACTUAL (NO USAR VARIABLE)
+  // 🔥 CONSULTA CORREGIDA (SIN .is)
   const { data: movimientos } = await client
     .from("accesos_registro_propietarios")
     .select("*")
     .eq("acceso_id", acceso.id)
-    .is("fecha_hora_salida", null)
+    .eq("fecha_hora_salida", null)
     .order("fecha_hora_entrada", { ascending: false })
     .limit(1);
 
@@ -164,7 +164,6 @@ document.getElementById("btn").addEventListener("click", async () => {
 
   document.getElementById("control").style.display = "none";
 
-  // 🔥 CRÍTICO: recargar estado real desde BD
   setTimeout(() => {
     location.reload();
   }, 1200);
