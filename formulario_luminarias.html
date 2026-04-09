@@ -209,13 +209,38 @@ const descripcion = document.getElementById('descripcion').value;
 const comentario = document.getElementById('comentario').value;
 
 // 🔥 NUEVO: USAR AUTH REAL
+let privada = null;
+let casa = null;
+
+// 🔐 INTENTO CON AUTH
 const { data: userData } = await supabaseClient.auth.getUser();
 
-if (!userData || !userData.user) {
-  throw new Error("Usuario no autenticado");
+if (userData && userData.user) {
+
+  const user_id = userData.user.id;
+
+  const { data: residente } = await supabaseClient
+    .from("residentes")
+    .select("privada, casa")
+    .eq("user_id", user_id)
+    .maybeSingle();
+
+  if (residente) {
+    privada = residente.privada;
+    casa = residente.casa;
+  }
 }
 
-const user_id = userData.user.id;
+// 🔁 FALLBACK LOCALSTORAGE
+if (!privada || !casa) {
+  privada = localStorage.getItem("privada");
+  casa = localStorage.getItem("casa");
+}
+
+// 🚨 VALIDACIÓN FINAL
+if (!privada || !casa) {
+  throw new Error("No se pudo obtener la información del usuario");
+}
 
 // 🔎 Obtener residente por user_id
 const { data: residente, error: errorResidente } = await supabaseClient
@@ -242,8 +267,8 @@ const { error: errorInsert } = await supabaseClient
   descripcion: descripcion,
   estatus: 'NUEVO',
   observaciones: comentario,
-  privada: residente.privada,
-  casa: residente.casa
+  privada: privada,
+  casa: casa
 }]);
 
 if (errorInsert) throw errorInsert;
