@@ -102,6 +102,32 @@ const supabaseClient = window.supabase.createClient(
 cargar();
 setInterval(cargar, 10000);
 
+// 🔥 FORMATEO LOCAL MÉXICO
+function formatearHora(fechaUTC) {
+  if (!fechaUTC) return "-";
+  const fecha = new Date(fechaUTC);
+  return fecha.toLocaleString("es-MX", {
+    timeZone: "America/Mexico_City",
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit"
+  });
+}
+
+// 🔥 TIEMPO TRANSCURRIDO CORRECTO
+function calcularTiempo(entradaUTC) {
+  const ahora = new Date();
+  const entrada = new Date(entradaUTC);
+
+  const diff = ahora.getTime() - entrada.getTime();
+
+  const horas = Math.floor(diff / (1000 * 60 * 60));
+  const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+  return { horas, minutos, totalHoras: diff / (1000 * 60 * 60) };
+}
+
 // 🔥 FUNCIÓN PRINCIPAL
 async function cargar() {
 
@@ -136,16 +162,14 @@ async function cargar() {
       .eq("id", item.trabajador_id)
       .single();
 
-    const entrada = new Date(item.fecha_hora_entrada);
-    const ahora = new Date();
-    const horas = (ahora - entrada) / (1000 * 60 * 60);
+    const tiempo = calcularTiempo(item.fecha_hora_entrada);
 
     let alerta = "";
     let estilo = "";
     let esAlerta = false;
 
     // 🔥 REGLA 1: exceso de tiempo
-    if (horas >= 8) {
+    if (tiempo.totalHoras >= 8) {
       alerta = "⚠️ Exceso de tiempo";
       estilo = "border: 2px solid #dc2626;";
       totalAlertas++;
@@ -153,6 +177,7 @@ async function cargar() {
     }
 
     // 🔥 REGLA 2: fuera de horario
+    const ahora = new Date();
     const dia = ahora.getDay();
     const hora = ahora.getHours();
     const minutos = ahora.getMinutes();
@@ -185,8 +210,8 @@ async function cargar() {
       <div class="nombre">${trabajador?.nombre || "Sin nombre"}</div>
       <div class="detalle">
         Privada ${trabajador?.privada || "-"} - Lote ${trabajador?.casa || "-"}<br>
-        Entrada: ${entrada.toLocaleString()}<br>
-        Tiempo dentro: ${horas.toFixed(1)} hrs<br>
+        Entrada: ${formatearHora(item.fecha_hora_entrada)}<br>
+        Tiempo dentro: ${tiempo.horas}h ${tiempo.minutos}m<br>
         ${alerta}
       </div>
 
