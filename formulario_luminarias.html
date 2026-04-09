@@ -209,20 +209,34 @@ const descripcion = document.getElementById('descripcion').value;
 const comentario = document.getElementById('comentario').value;
 
 // 🔥 FIX SEGURO: obtener desde BD (NO localStorage directo)
+let privada = null;
+let casa = null;
+
+// 🔎 1. INTENTAR BD
 const identificador = localStorage.getItem("identificador");
 
-const { data: residente, error: errorResidente } = await supabaseClient
-  .from("residentes")
-  .select("privada, casa")
-  .eq("identificador", identificador)
-  .single();
+if (identificador) {
+  const { data: residente } = await supabaseClient
+    .from("residentes")
+    .select("privada, casa")
+    .eq("identificador", identificador)
+    .maybeSingle();
 
-if (errorResidente || !residente) {
-  throw new Error("No se pudo obtener la información del usuario");
+  if (residente) {
+    privada = residente.privada;
+    casa = residente.casa;
+  }
 }
 
-if (!luminariaActual) {
-throw new Error("Luminaria no válida");
+// 🔁 2. FALLBACK LOCALSTORAGE (CRÍTICO)
+if (!privada || !casa) {
+  privada = localStorage.getItem("privada");
+  casa = localStorage.getItem("casa");
+}
+
+// 🚨 VALIDACIÓN FINAL
+if (!privada || !casa) {
+  throw new Error("No se pudo obtener la información del usuario");
 }
 
 const luminaria_id = luminariaActual.id;
