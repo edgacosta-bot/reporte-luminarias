@@ -18,7 +18,6 @@ h2 {
   text-align: center;
 }
 
-/* 🔥 FIX DIMENSIONES */
 select, input, button {
   width: 100%;
   padding: 14px;
@@ -93,7 +92,7 @@ async function cargarResidentes() {
   data.forEach(r => {
     const option = document.createElement("option");
     option.value = r.id;
-    option.text = `${r.privada} - ${r.casa}`; // 🔥 SIN (pendiente)
+    option.text = `${r.privada} - ${r.casa}`;
     select.appendChild(option);
   });
 }
@@ -103,6 +102,10 @@ function generarUUID() {
 }
 
 async function crearAcceso() {
+
+  // 🔍 DEBUG AUTH (AGREGADO SEGURO)
+  const { data: userData } = await supabaseClient.auth.getUser();
+  console.log("USER AUTH:", userData);
 
   const residente_id = document.getElementById("residente").value;
   const nombre = document.getElementById("nombre").value.trim();
@@ -132,17 +135,15 @@ async function crearAcceso() {
     });
 
   if (error) {
-    console.log(error);
+    console.log("ERROR INSERT:", error);
     resultado.innerText = "Error al crear acceso";
     return;
   }
 
   resultado.innerText = "Acceso creado correctamente";
 
-  // 🔥 ADMIN VIEW (con botón WA)
   urlCredencial = `${window.location.origin}/credencial_propietario.html?qr=${identificador}&nombre=${encodeURIComponent(nombre)}&privada=${residente.privada}&casa=${residente.casa}&origen=admin`;
 
-  // 🔥 USUARIO FINAL (SIN BOTÓN)
   urlParaEnviar = `${window.location.origin}/credencial_propietario.html?qr=${identificador}&nombre=${encodeURIComponent(nombre)}&privada=${residente.privada}&casa=${residente.casa}`;
 
   generarQR(urlCredencial);
