@@ -126,7 +126,7 @@ document.getElementById("btn").addEventListener("click", async () => {
 
   const ahora = new Date().toISOString();
 
-  // 🔥 OBTENER ÚLTIMO MOVIMIENTO
+  // 🔍 BUSCAR ÚLTIMO MOVIMIENTO
   const { data: movimientos } = await client
     .from("accesos_registro_propietarios")
     .select("*")
@@ -134,24 +134,24 @@ document.getElementById("btn").addEventListener("click", async () => {
     .order("fecha_hora_entrada", { ascending: false })
     .limit(1);
 
-  const movimiento = movimientos && movimientos.length > 0 ? movimientos[0] : null;
+  const ultimo = movimientos && movimientos.length > 0 ? movimientos[0] : null;
 
-  console.log("último movimiento:", movimiento);
+  if (ultimo && ultimo.fecha_hora_salida === null) {
 
-  if (movimiento && movimiento.fecha_hora_salida === null) {
-
+    // 🔴 REGISTRAR SALIDA
     await client
       .from("accesos_registro_propietarios")
       .update({
         fecha_hora_salida: ahora,
         estatus: "fuera"
       })
-      .eq("id", movimiento.id);
+      .eq("id", ultimo.id);
 
     pintar("SALIDA REGISTRADA", "ok", residente);
 
   } else {
 
+    // 🟢 REGISTRAR ENTRADA
     await client
       .from("accesos_registro_propietarios")
       .insert([{
@@ -166,7 +166,7 @@ document.getElementById("btn").addEventListener("click", async () => {
   document.getElementById("control").style.display = "none";
 
   setTimeout(() => {
-    location.reload();
+    window.location.href = window.location.href.split("?")[0] + "?qr=" + qr + "&t=" + Date.now();
   }, 1200);
 });
 
