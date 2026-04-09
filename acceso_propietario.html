@@ -61,9 +61,13 @@ button {
   <h1 id="estado">Validando...</h1>
   <div id="detalle"></div>
 
+  <!-- 🔘 BOTÓN ACCIÓN -->
+  <button id="btnAccion" style="display:none;">Continuar</button>
+
+  <!-- 🔐 CONTROL PIN -->
   <div id="control" style="display:none;">
-    <input type="password" id="pin" placeholder="PIN">
-    <button id="btn">Registrar</button>
+    <input type="password" id="pin" placeholder="Ingrese PIN">
+    <button id="btnRegistrar">Registrar</button>
   </div>
 </div>
 
@@ -80,6 +84,7 @@ const qr = params.get("qr");
 
 let acceso = null;
 let residente = null;
+let accionActual = null;
 
 validar();
 
@@ -123,21 +128,53 @@ async function validar() {
 
   const ultimo = movimientos && movimientos.length > 0 ? movimientos[0] : null;
 
+  // 🔥 AUTO-CIERRE 12H
   if (ultimo && ultimo.estatus === "dentro") {
-    pintar("ESCANEAR PARA SALIDA", "warn", residente);
-    // 🔴 NO mostramos control aún
-  } else {
-    pintar("ESCANEAR PARA ENTRADA", "ok", residente);
-    // 🟢 NO mostramos control aún
+
+    const entrada = new Date(ultimo.fecha_hora_entrada);
+    const ahora = new Date();
+    const diffHoras = (ahora - entrada) / (1000 * 60 * 60);
+
+    if (diffHoras >= 12) {
+      await client
+        .from("accesos_registro_propietarios")
+        .update({
+          fecha_hora_salida: ahora.toISOString(),
+          estatus: "fuera"
+        })
+        .eq("id", ultimo.id);
+    }
   }
+
+  // 🔄 RECONSULTAR
+  const { data: nuevos } = await client
+    .from("accesos_registro_propietarios")
+    .select("*")
+    .eq("acceso_id", acceso.id)
+    .order("fecha_hora_entrada", { ascending: false })
+    .limit(1);
+
+  const actual = nuevos && nuevos.length > 0 ? nuevos[0] : null;
+
+  if (actual && actual.estatus === "dentro") {
+    pintar("Listo para registrar SALIDA", "warn", residente);
+    accionActual = "salida";
+  } else {
+    pintar("Listo para registrar ENTRADA", "ok", residente);
+    accionActual = "entrada";
+  }
+
+  document.getElementById("btnAccion").style.display = "block";
 }
 
-// 🔥 ACTIVAR CONTROL SOLO AL HACER ACCIÓN
-document.body.addEventListener("click", () => {
+// 🔘 BOTÓN CLARO (YA NO TOCAR PANTALLA)
+document.getElementById("btnAccion").addEventListener("click", () => {
   document.getElementById("control").style.display = "block";
+  document.getElementById("btnAccion").style.display = "none";
 });
 
-document.getElementById("btn").addEventListener("click", async () => {
+// 🔐 REGISTRO
+document.getElementById("btnRegistrar").addEventListener("click", async () => {
 
   const pin = document.getElementById("pin").value;
   if (pin !== PIN_CORRECTO) return;
@@ -153,7 +190,7 @@ document.getElementById("btn").addEventListener("click", async () => {
 
   const ultimo = movimientos && movimientos.length > 0 ? movimientos[0] : null;
 
-  if (ultimo && ultimo.estatus === "dentro") {
+  if (accionActual === "salida" && ultimo) {
 
     await client
       .from("accesos_registro_propietarios")
