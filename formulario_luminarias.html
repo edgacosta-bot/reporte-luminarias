@@ -11,7 +11,6 @@
 
 <div class="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md border border-gray-200">
 
-<!-- ENCABEZADO -->
 <div class="text-center mb-6">
   <h1 class="text-xl font-semibold text-gray-800">
     Sistema de Información Vecinal
@@ -21,7 +20,6 @@
   </p>
 </div>
 
-<!-- MENSAJE DE CONTEXTO -->
 <div class="bg-blue-50 border border-blue-200 text-blue-700 text-sm rounded-lg p-3 mb-5">
   Este formulario permite registrar fallas en luminarias para su atención y seguimiento dentro del fraccionamiento.
 </div>
@@ -110,8 +108,6 @@ La información proporcionada será utilizada únicamente para fines de atenció
 const supabaseUrl = 'https://prjxmfhahnzosdwljode.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwaH8lMepC5iFCLTOXVsMroOeKCT1i3opN7O19Ha02vRyB6C2QvesO-eT_nU9fKaYhA/exec";
 
 let reporteValido = false;
 let luminariaActual = null;
@@ -212,9 +208,18 @@ const no_luminaria = Number(document.getElementById('no_luminaria').value);
 const descripcion = document.getElementById('descripcion').value;
 const comentario = document.getElementById('comentario').value;
 
-// 🔥 NUEVO: DATOS DEL USUARIO
-const privada = localStorage.getItem("privada");
-const casa = localStorage.getItem("casa");
+// 🔥 FIX SEGURO: obtener desde BD (NO localStorage directo)
+const identificador = localStorage.getItem("identificador");
+
+const { data: residente, error: errorResidente } = await supabaseClient
+  .from("residentes")
+  .select("privada, casa")
+  .eq("identificador", identificador)
+  .single();
+
+if (errorResidente || !residente) {
+  throw new Error("No se pudo obtener la información del usuario");
+}
 
 if (!luminariaActual) {
 throw new Error("Luminaria no válida");
@@ -222,7 +227,7 @@ throw new Error("Luminaria no válida");
 
 const luminaria_id = luminariaActual.id;
 
-const { data: insertedData, error: errorInsert } = await supabaseClient
+const { error: errorInsert } = await supabaseClient
 .from('reportes_vecinales')
 .insert([{
   luminaria_id: luminaria_id,
@@ -230,10 +235,9 @@ const { data: insertedData, error: errorInsert } = await supabaseClient
   descripcion: descripcion,
   estatus: 'NUEVO',
   observaciones: comentario,
-  privada: privada,
-  casa: casa
-}])
-.select();
+  privada: residente.privada,
+  casa: residente.casa
+}]);
 
 if (errorInsert) throw errorInsert;
 
