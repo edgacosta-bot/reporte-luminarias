@@ -208,35 +208,28 @@ const no_luminaria = Number(document.getElementById('no_luminaria').value);
 const descripcion = document.getElementById('descripcion').value;
 const comentario = document.getElementById('comentario').value;
 
-// 🔥 FIX SEGURO: obtener desde BD (NO localStorage directo)
-let privada = null;
-let casa = null;
+// 🔥 NUEVO: USAR AUTH REAL
+const { data: userData } = await supabaseClient.auth.getUser();
 
-// 🔎 1. INTENTAR BD
-const identificador = localStorage.getItem("identificador");
-
-if (identificador) {
-  const { data: residente } = await supabaseClient
-    .from("residentes")
-    .select("privada, casa")
-    .eq("identificador", identificador)
-    .maybeSingle();
-
-  if (residente) {
-    privada = residente.privada;
-    casa = residente.casa;
-  }
+if (!userData || !userData.user) {
+  throw new Error("Usuario no autenticado");
 }
 
-// 🔁 2. FALLBACK LOCALSTORAGE (CRÍTICO)
-if (!privada || !casa) {
-  privada = localStorage.getItem("privada");
-  casa = localStorage.getItem("casa");
-}
+const user_id = userData.user.id;
 
-// 🚨 VALIDACIÓN FINAL
-if (!privada || !casa) {
+// 🔎 Obtener residente por user_id
+const { data: residente, error: errorResidente } = await supabaseClient
+  .from("residentes")
+  .select("privada, casa")
+  .eq("user_id", user_id)
+  .single();
+
+if (errorResidente || !residente) {
   throw new Error("No se pudo obtener la información del usuario");
+}
+
+if (!luminariaActual) {
+throw new Error("Luminaria no válida");
 }
 
 const luminaria_id = luminariaActual.id;
@@ -249,8 +242,8 @@ const { error: errorInsert } = await supabaseClient
   descripcion: descripcion,
   estatus: 'NUEVO',
   observaciones: comentario,
-  privada: privada,
-  casa: casa
+  privada: residente.privada,
+  casa: residente.casa
 }]);
 
 if (errorInsert) throw errorInsert;
