@@ -105,7 +105,6 @@
       color: #374151;
     }
 
-    /* MODALES */
     .modal {
       display: none;
       position: fixed;
@@ -178,7 +177,7 @@
   </div>
 </div>
 
-<!-- MODAL ATRASO -->
+<!-- MODALES -->
 <div id="modalAviso" class="modal">
   <div class="modal-content">
     <p><b>⚠️ Tiene atraso en sus aportaciones</b></p>
@@ -190,7 +189,6 @@
   </div>
 </div>
 
-<!-- MODAL MOROSO -->
 <div id="modalBloqueo" class="modal">
   <div class="modal-content">
     <p><b>⛔ Acceso bloqueado</b></p>
@@ -207,9 +205,17 @@ const client = window.supabase.createClient(
 
 const privada = localStorage.getItem("privada");
 const casa = localStorage.getItem("casa");
+const rol = localStorage.getItem("rol"); // 🔥 NUEVO
 
 document.getElementById("infoUsuario").innerText =
   `Privada ${privada} - Casa ${casa}`;
+
+function obtenerTipoGenerador() {
+  if (rol === "admin") return "administracion";
+  if (rol === "colono") return "residente";
+  if (rol === "vigilante") return "vigilante";
+  return "residente";
+}
 
 let resolverModal;
 
@@ -261,6 +267,7 @@ async function generarQR() {
   }
 
   const codigo = crypto.randomUUID();
+  const tipo_generador = obtenerTipoGenerador(); // 🔥 CLAVE
 
   await client.from('visitas_qr').insert([{
     residente_id: user.id,
@@ -271,7 +278,8 @@ async function generarQR() {
     codigo_qr: codigo,
     privada: user.privada,
     casa: user.casa,
-    estatus: 'activo'
+    estatus: 'activo',
+    tipo_generador: tipo_generador // 🔥 FIX
   }]);
 
   const link = `${window.location.origin}/mostrar_qr.html?qr=${codigo}`;
