@@ -102,10 +102,12 @@ const supabaseClient = window.supabase.createClient(
 cargar();
 setInterval(cargar, 10000);
 
-// 🔥 FORMATEO LOCAL MÉXICO
+// 🔥 FORMATO LOCAL MÉXICO
 function formatearHora(fechaUTC) {
   if (!fechaUTC) return "-";
+
   const fecha = new Date(fechaUTC);
+
   return fecha.toLocaleString("es-MX", {
     timeZone: "America/Mexico_City",
     hour: "2-digit",
@@ -115,12 +117,27 @@ function formatearHora(fechaUTC) {
   });
 }
 
-// 🔥 TIEMPO TRANSCURRIDO CORRECTO
+// 🔥 CÁLCULO CORREGIDO (SIN NEGATIVOS)
 function calcularTiempo(entradaUTC) {
-  const ahora = new Date();
-  const entrada = new Date(entradaUTC);
 
-  const diff = ahora.getTime() - entrada.getTime();
+  const ahora = new Date();
+
+  const entradaLocal = new Date(
+    new Date(entradaUTC).toLocaleString("en-US", {
+      timeZone: "America/Mexico_City"
+    })
+  );
+
+  const ahoraLocal = new Date(
+    ahora.toLocaleString("en-US", {
+      timeZone: "America/Mexico_City"
+    })
+  );
+
+  let diff = ahoraLocal.getTime() - entradaLocal.getTime();
+
+  // 🔥 evitar negativos
+  if (diff < 0) diff = 0;
 
   const horas = Math.floor(diff / (1000 * 60 * 60));
   const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -168,7 +185,7 @@ async function cargar() {
     let estilo = "";
     let esAlerta = false;
 
-    // 🔥 REGLA 1: exceso de tiempo
+    // 🔥 exceso de tiempo
     if (tiempo.totalHoras >= 8) {
       alerta = "⚠️ Exceso de tiempo";
       estilo = "border: 2px solid #dc2626;";
@@ -176,7 +193,7 @@ async function cargar() {
       esAlerta = true;
     }
 
-    // 🔥 REGLA 2: fuera de horario
+    // 🔥 fuera de horario
     const ahora = new Date();
     const dia = ahora.getDay();
     const hora = ahora.getHours();
@@ -231,7 +248,6 @@ async function cargar() {
     lista.appendChild(div);
   }
 
-  // 🚨 ALERTA GLOBAL
   if (totalAlertas > 0) {
     alertaDiv.innerHTML = `🚨 ${totalAlertas} trabajador(es) con irregularidades`;
     alertaDiv.style.color = "#f87171";
