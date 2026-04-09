@@ -75,7 +75,6 @@ const qr = params.get("qr");
 
 let acceso = null;
 let residente = null;
-let movimiento = null;
 
 validar();
 
@@ -117,16 +116,6 @@ async function validar() {
     pintar("ACCESO PERMITIDO", "ok", residente);
   }
 
-  const { data: movimientos } = await client
-    .from("accesos_registro_propietarios")
-    .select("*")
-    .eq("acceso_id", acceso.id)
-    .is("fecha_hora_salida", null)
-    .order("fecha_hora_entrada", { ascending: false })
-    .limit(1);
-
-  movimiento = movimientos && movimientos.length > 0 ? movimientos[0] : null;
-
   document.getElementById("control").style.display = "block";
 }
 
@@ -137,7 +126,19 @@ document.getElementById("btn").addEventListener("click", async () => {
 
   const ahora = new Date().toISOString();
 
+  // 🔥 CONSULTAR SIEMPRE ESTADO ACTUAL (NO USAR VARIABLE)
+  const { data: movimientos } = await client
+    .from("accesos_registro_propietarios")
+    .select("*")
+    .eq("acceso_id", acceso.id)
+    .is("fecha_hora_salida", null)
+    .order("fecha_hora_entrada", { ascending: false })
+    .limit(1);
+
+  const movimiento = movimientos && movimientos.length > 0 ? movimientos[0] : null;
+
   if (movimiento) {
+
     await client
       .from("accesos_registro_propietarios")
       .update({
@@ -149,6 +150,7 @@ document.getElementById("btn").addEventListener("click", async () => {
     pintar("SALIDA REGISTRADA", "ok", residente);
 
   } else {
+
     await client
       .from("accesos_registro_propietarios")
       .insert([{
@@ -161,6 +163,11 @@ document.getElementById("btn").addEventListener("click", async () => {
   }
 
   document.getElementById("control").style.display = "none";
+
+  // 🔥 CRÍTICO: recargar estado real desde BD
+  setTimeout(() => {
+    location.reload();
+  }, 1200);
 });
 
 function pintar(mensaje, tipo, data = null, texto = "") {
