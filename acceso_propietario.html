@@ -101,19 +101,38 @@ async function validar() {
 
   residente = res;
 
-  const estado = (residente.estado_pago || "").toLowerCase();
+  const estado_pago = (residente.estado_pago || "").toLowerCase();
 
-  if (estado === "moroso") {
+  if (estado_pago === "moroso") {
     pintar("ACCESO DENEGADO", "error", residente,
       "No es posible el acceso debido a la morosidad en sus pagos.");
     return;
   }
 
-  if (estado === "atraso_1") {
-    pintar("ACCESO CON ADVERTENCIA", "warn", residente,
-      "Se permite el acceso, pero se invita a regularizar su situación.");
+  // 🔍 BUSCAR ÚLTIMO MOVIMIENTO
+  const { data: movimientos } = await client
+    .from("accesos_registro_propietarios")
+    .select("*")
+    .eq("acceso_id", acceso.id)
+    .order("fecha_hora_entrada", { ascending: false })
+    .limit(1);
+
+  const ultimo = movimientos && movimientos.length > 0 ? movimientos[0] : null;
+
+  // 🔥 USAR ESTATUS (CORRECTO)
+  if (ultimo && ultimo.estatus === "dentro") {
+
+    pintar("REGISTRAR SALIDA", "warn", residente);
+
   } else {
-    pintar("ACCESO PERMITIDO", "ok", residente);
+
+    if (estado_pago === "atraso_1") {
+      pintar("ACCESO CON ADVERTENCIA", "warn", residente,
+        "Se permite el acceso, pero se invita a regularizar su situación.");
+    } else {
+      pintar("REGISTRAR ENTRADA", "ok", residente);
+    }
+
   }
 
   document.getElementById("control").style.display = "block";
@@ -126,7 +145,7 @@ document.getElementById("btn").addEventListener("click", async () => {
 
   const ahora = new Date().toISOString();
 
-  // 🔍 BUSCAR ÚLTIMO MOVIMIENTO
+  // 🔍 OBTENER ÚLTIMO MOVIMIENTO
   const { data: movimientos } = await client
     .from("accesos_registro_propietarios")
     .select("*")
@@ -136,9 +155,9 @@ document.getElementById("btn").addEventListener("click", async () => {
 
   const ultimo = movimientos && movimientos.length > 0 ? movimientos[0] : null;
 
-  if (ultimo && ultimo.fecha_hora_salida === null) {
+  if (ultimo && ultimo.estatus === "dentro") {
 
-    // 🔴 REGISTRAR SALIDA
+    // 🔴 SALIDA
     await client
       .from("accesos_registro_propietarios")
       .update({
@@ -151,7 +170,7 @@ document.getElementById("btn").addEventListener("click", async () => {
 
   } else {
 
-    // 🟢 REGISTRAR ENTRADA
+    // 🟢 ENTRADA
     await client
       .from("accesos_registro_propietarios")
       .insert([{
