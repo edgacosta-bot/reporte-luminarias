@@ -126,18 +126,17 @@ document.getElementById("btn").addEventListener("click", async () => {
 
   const ahora = new Date().toISOString();
 
-  // 🔥 CONSULTA CORREGIDA (SIN .is)
+  // 🔥 NUEVA LÓGICA ROBUSTA (SIN FILTROS NULL)
   const { data: movimientos } = await client
     .from("accesos_registro_propietarios")
     .select("*")
     .eq("acceso_id", acceso.id)
-    .eq("fecha_hora_salida", null)
     .order("fecha_hora_entrada", { ascending: false })
     .limit(1);
 
   const movimiento = movimientos && movimientos.length > 0 ? movimientos[0] : null;
 
-  if (movimiento) {
+  if (movimiento && movimiento.fecha_hora_salida === null) {
 
     await client
       .from("accesos_registro_propietarios")
