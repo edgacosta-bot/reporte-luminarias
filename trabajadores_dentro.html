@@ -28,12 +28,11 @@ body {
 
 h1 {
   text-align: center;
-  margin-bottom: 10px;
 }
 
 .alerta-global {
   text-align: center;
-  margin-bottom: 15px;
+  margin: 10px 0;
   font-weight: bold;
 }
 
@@ -53,32 +52,6 @@ h1 {
   font-size: 13px;
   color: #9ca3af;
 }
-
-.vacio {
-  text-align: center;
-  margin-top: 40px;
-  color: #9ca3af;
-}
-
-.acciones button {
-  margin-top: 10px;
-  width: 100%;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.btn-reporte {
-  background: #dc2626;
-  color: white;
-}
-
-.btn-salida {
-  background: #2563eb;
-  color: white;
-}
 </style>
 </head>
 
@@ -86,9 +59,7 @@ h1 {
 
 <div class="container">
   <h1>👷 Trabajadores dentro</h1>
-
   <div id="alerta" class="alerta-global"></div>
-
   <div id="lista"></div>
 </div>
 
@@ -102,14 +73,22 @@ const supabaseClient = window.supabase.createClient(
 cargar();
 setInterval(cargar, 10000);
 
-// 🔥 FORMATO LOCAL MÉXICO
+// 🔥 NORMALIZADOR ÚNICO (CLAVE)
+function convertirAMexico(fechaUTC) {
+  return new Date(
+    new Date(fechaUTC).toLocaleString("en-US", {
+      timeZone: "America/Mexico_City"
+    })
+  );
+}
+
+// 🔥 FORMATO CORRECTO
 function formatearHora(fechaUTC) {
   if (!fechaUTC) return "-";
 
-  const fecha = new Date(fechaUTC);
+  const fecha = convertirAMexico(fechaUTC);
 
   return fecha.toLocaleString("es-MX", {
-    timeZone: "America/Mexico_City",
     hour: "2-digit",
     minute: "2-digit",
     day: "2-digit",
@@ -117,26 +96,14 @@ function formatearHora(fechaUTC) {
   });
 }
 
-// 🔥 CÁLCULO CORREGIDO (SIN NEGATIVOS)
+// 🔥 CÁLCULO CONSISTENTE
 function calcularTiempo(entradaUTC) {
 
-  const ahora = new Date();
+  const entrada = convertirAMexico(entradaUTC);
+  const ahora = convertirAMexico(new Date());
 
-  const entradaLocal = new Date(
-    new Date(entradaUTC).toLocaleString("en-US", {
-      timeZone: "America/Mexico_City"
-    })
-  );
+  let diff = ahora.getTime() - entrada.getTime();
 
-  const ahoraLocal = new Date(
-    ahora.toLocaleString("en-US", {
-      timeZone: "America/Mexico_City"
-    })
-  );
-
-  let diff = ahoraLocal.getTime() - entradaLocal.getTime();
-
-  // 🔥 evitar negativos
   if (diff < 0) diff = 0;
 
   const horas = Math.floor(diff / (1000 * 60 * 60));
@@ -145,7 +112,6 @@ function calcularTiempo(entradaUTC) {
   return { horas, minutos, totalHoras: diff / (1000 * 60 * 60) };
 }
 
-// 🔥 FUNCIÓN PRINCIPAL
 async function cargar() {
 
   const { data: accesos, error } = await supabaseClient
@@ -157,19 +123,19 @@ async function cargar() {
   const alertaDiv = document.getElementById("alerta");
 
   if (error) {
-    lista.innerHTML = "<p>Error al cargar</p>";
+    lista.innerHTML = "Error";
     return;
   }
 
   if (!accesos || accesos.length === 0) {
-    lista.innerHTML = "<p class='vacio'>No hay trabajadores dentro</p>";
-    alertaDiv.innerHTML = "Todo en orden";
+    lista.innerHTML = "<p style='text-align:center;'>Todo en orden</p>";
+    alertaDiv.innerText = "Todo en orden";
     alertaDiv.style.color = "#34d399";
     return;
   }
 
   lista.innerHTML = "";
-  let totalAlertas = 0;
+  let alertas = 0;
 
   for (const item of accesos) {
 
@@ -183,40 +149,11 @@ async function cargar() {
 
     let alerta = "";
     let estilo = "";
-    let esAlerta = false;
 
-    // 🔥 exceso de tiempo
     if (tiempo.totalHoras >= 8) {
       alerta = "⚠️ Exceso de tiempo";
-      estilo = "border: 2px solid #dc2626;";
-      totalAlertas++;
-      esAlerta = true;
-    }
-
-    // 🔥 fuera de horario
-    const ahora = new Date();
-    const dia = ahora.getDay();
-    const hora = ahora.getHours();
-    const minutos = ahora.getMinutes();
-    const horaActual = hora + (minutos / 60);
-
-    let fueraDeHorario = false;
-
-    if (dia === 0) fueraDeHorario = true;
-
-    if (dia === 6 && (horaActual < 9 || horaActual > 14)) {
-      fueraDeHorario = true;
-    }
-
-    if (dia >= 1 && dia <= 5 && (horaActual < 8 || horaActual > 18)) {
-      fueraDeHorario = true;
-    }
-
-    if (fueraDeHorario) {
-      alerta = "🚨 Fuera de horario";
-      estilo = "border: 2px solid #dc2626;";
-      totalAlertas++;
-      esAlerta = true;
+      estilo = "border:2px solid red;";
+      alertas++;
     }
 
     const div = document.createElement("div");
@@ -224,70 +161,25 @@ async function cargar() {
     div.style = estilo;
 
     div.innerHTML = `
-      <div class="nombre">${trabajador?.nombre || "Sin nombre"}</div>
+      <div class="nombre">${trabajador?.nombre || "-"}</div>
       <div class="detalle">
         Privada ${trabajador?.privada || "-"} - Lote ${trabajador?.casa || "-"}<br>
         Entrada: ${formatearHora(item.fecha_hora_entrada)}<br>
         Tiempo dentro: ${tiempo.horas}h ${tiempo.minutos}m<br>
         ${alerta}
       </div>
-
-      ${esAlerta ? `
-        <div class="acciones">
-          <button class="btn-reporte" onclick="reportar('${item.trabajador_id}')">
-            🚨 Reportar incidencia
-          </button>
-
-          <button class="btn-salida" onclick="forzarSalida('${item.id}')">
-            🚪 Forzar salida
-          </button>
-        </div>
-      ` : ""}
     `;
 
     lista.appendChild(div);
   }
 
-  if (totalAlertas > 0) {
-    alertaDiv.innerHTML = `🚨 ${totalAlertas} trabajador(es) con irregularidades`;
+  if (alertas > 0) {
+    alertaDiv.innerText = "⚠️ Hay irregularidades";
     alertaDiv.style.color = "#f87171";
   } else {
-    alertaDiv.innerHTML = "Todo en orden";
+    alertaDiv.innerText = "Todo en orden";
     alertaDiv.style.color = "#34d399";
   }
-}
-
-// 🚨 REPORTAR
-async function reportar(trabajador_id) {
-
-  await supabaseClient
-    .from("incidencias_trabajadores")
-    .insert([{
-      trabajador_id: trabajador_id,
-      tipo: "irregularidad",
-      descripcion: "Detectado por sistema",
-      registrado_por: "vigilante"
-    }]);
-
-  alert("Incidencia registrada");
-}
-
-// 🚪 FORZAR SALIDA
-async function forzarSalida(acceso_id) {
-
-  const ahora = new Date().toISOString();
-
-  await supabaseClient
-    .from("accesos_trabajadores")
-    .update({
-      fecha_hora_salida: ahora,
-      estatus: "forzado"
-    })
-    .eq("id", acceso_id);
-
-  alert("Salida registrada");
-
-  cargar();
 }
 
 </script>
