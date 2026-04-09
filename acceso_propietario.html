@@ -61,10 +61,8 @@ button {
   <h1 id="estado">Validando...</h1>
   <div id="detalle"></div>
 
-  <!-- 🔘 BOTÓN ACCIÓN -->
   <button id="btnAccion" style="display:none;">Continuar</button>
 
-  <!-- 🔐 CONTROL PIN -->
   <div id="control" style="display:none;">
     <input type="password" id="pin" placeholder="Ingrese PIN">
     <button id="btnRegistrar">Registrar</button>
@@ -113,9 +111,14 @@ async function validar() {
 
   const estado_pago = (residente.estado_pago || "").toLowerCase();
 
+  // 🔴 MOROSO (BLOQUEO TOTAL)
   if (estado_pago === "moroso") {
-    pintar("ACCESO DENEGADO", "error", residente,
-      "No es posible el acceso debido a la morosidad en sus pagos.");
+    pintar(
+      "ACCESO DENEGADO",
+      "error",
+      residente,
+      "Indicar al usuario que debido al retraso de sus cuotas, la vigilancia tiene instrucción de los colonos de no abrir la puerta de acceso, invitándolo a pasar a la administración a regularizar su situación"
+    );
     return;
   }
 
@@ -156,18 +159,26 @@ async function validar() {
 
   const actual = nuevos && nuevos.length > 0 ? nuevos[0] : null;
 
+  // 🟡 ATRASO
+  if (estado_pago === "atraso_1") {
+    pintar(
+      "ACCESO CON ADVERTENCIA",
+      "warn",
+      residente,
+      "Indicar al usuario que debe de pasar a la administración regularizar su cuota atrasada para no tener problemas con el acceso"
+    );
+  }
+
   if (actual && actual.estatus === "dentro") {
-    pintar("Listo para registrar SALIDA", "warn", residente);
     accionActual = "salida";
   } else {
-    pintar("Listo para registrar ENTRADA", "ok", residente);
     accionActual = "entrada";
   }
 
   document.getElementById("btnAccion").style.display = "block";
 }
 
-// 🔘 BOTÓN CLARO (YA NO TOCAR PANTALLA)
+// 🔘 BOTÓN CONTINUAR
 document.getElementById("btnAccion").addEventListener("click", () => {
   document.getElementById("control").style.display = "block";
   document.getElementById("btnAccion").style.display = "none";
