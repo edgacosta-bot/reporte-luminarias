@@ -1,299 +1,174 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
+<script src="auth.js"></script>
+<script>
+protegerPagina(["colono"]);
+</script>  
+
 <meta charset="UTF-8">
-<title>Sistema de Información Vecinal - Villas de la Concepción</title>
-<script src="https://cdn.tailwindcss.com"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
 
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<title>Reporte de luminaria</title>
 
-<div class="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md border border-gray-200">
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+}
 
-<div class="text-center mb-6">
-  <h1 class="text-xl font-semibold text-gray-800">
-    Sistema de Información Vecinal
-  </h1>
-  <p class="text-sm text-gray-500">
-    Fraccionamiento Villas de la Concepción
-  </p>
-</div>
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
 
-<div class="bg-blue-50 border border-blue-200 text-blue-700 text-sm rounded-lg p-3 mb-5">
-  Este formulario permite registrar fallas en luminarias para su atención y seguimiento dentro del fraccionamiento.
-</div>
+h2 {
+  text-align: center;
+}
 
-<h2 class="text-lg font-semibold text-gray-700 mb-4 text-center">
-  Reporte de luminaria
-</h2>
+select, textarea, button {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  border: none;
+}
 
-<form id="formReporte" class="space-y-4">
+textarea {
+  min-height: 100px;
+}
 
-<div>
-<label class="block text-sm font-medium text-gray-600">
-Número de luminaria conforme al croquis
-</label>
+button {
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
 
-<input 
-type="number"
-id="no_luminaria"
-required
-placeholder="Ej. 50"
-class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
->
+.mensaje {
+  text-align: center;
+  margin-top: 10px;
+}
 
-<div id="info_luminaria" class="text-sm mt-2"></div>
-</div>
+.error { color: #f87171; }
+.ok { color: #34d399; }
 
-<div>
-<label class="block text-sm font-medium text-gray-600">
-Tipo de falla
-</label>
-
-<select
-id="descripcion"
-required
-class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
->
-<option value="">Seleccione una opción</option>
-<option value="NO_PRENDE">No enciende</option>
-<option value="BAJA_ILUMINACION">Baja iluminación</option>
-<option value="PARPADEA">Parpadea</option>
-<option value="SE_APAGA">Se apaga</option>
-<option value="DAÑO_FISICO">Daño físico</option>
-<option value="OTRO">Otro</option>
-</select>
-</div>
-
-<div>
-<label class="block text-sm font-medium text-gray-600">
-Comentario (opcional)
-</label>
-
-<textarea
-id="comentario"
-rows="3"
-class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-placeholder="Describe brevemente el problema si lo deseas">
-</textarea>
-</div>
-
-<button
-id="btn_enviar"
-type="submit"
-disabled
-class="w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed transition">
-Registrar reporte
-</button>
-
-<p id="mensaje" class="text-center text-sm mt-2"></p>
-
-</form>
-
-<a href="luminarias.html" class="block text-center mt-4 text-sm text-blue-600">
-← Volver a Luminarias
-</a>
-
-<p class="text-xs text-gray-400 text-center mt-4">
-La información proporcionada será utilizada únicamente para fines de atención y mantenimiento del fraccionamiento.
-</p>
-
-</div>
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>💡 Reporte de luminaria</h2>
+
+<select id="luminaria">
+  <option value="">Cargando luminarias...</option>
+</select>
+
+<textarea id="descripcion" placeholder="Describe el problema"></textarea>
+
+<button onclick="registrar()">Enviar reporte</button>
+
+<div id="mensaje" class="mensaje"></div>
+
+</div>
 
 <script>
 
-const supabaseUrl = 'https://prjxmfhahnzosdwljode.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+const client = window.supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
 
-let reporteValido = false;
-let luminariaActual = null;
-let debounceTimer = null;
+// 🔥 CARGAR LUMINARIAS
+async function cargarLuminarias() {
 
-/* VALIDAR LUMINARIA */
+  const select = document.getElementById("luminaria");
 
-document.getElementById('no_luminaria').addEventListener('input', () => {
+  const { data, error } = await client
+    .from("control_luminarias")
+    .select("*")
+    .order("no_luminaria");
 
-clearTimeout(debounceTimer);
+  if (error || !data) {
+    select.innerHTML = '<option>Error cargando luminarias</option>';
+    return;
+  }
 
-debounceTimer = setTimeout(async () => {
+  select.innerHTML = '<option value="">Selecciona luminaria</option>';
 
-const numero = Number(document.getElementById('no_luminaria').value);
-const info = document.getElementById('info_luminaria');
-const boton = document.getElementById('btn_enviar');
-
-if (!numero) {
-info.innerHTML = "";
-boton.disabled = true;
-luminariaActual = null;
-return;
+  data.forEach(l => {
+    const option = document.createElement("option");
+    option.value = l.id;
+    option.textContent = `Luminaria ${l.no_luminaria}`;
+    option.dataset.numero = l.no_luminaria;
+    select.appendChild(option);
+  });
 }
 
-const { data, error } = await supabaseClient
-.from('luminarias_lookup')
-.select('id, calle, privada, situacion')
-.eq('no_luminaria', numero);
+cargarLuminarias();
 
-if (error) {
-console.error(error);
-return;
-}
 
-if (data && data.length > 0) {
+// 🚀 REGISTRAR REPORTE
+async function registrar() {
 
-luminariaActual = data[0];
+  const luminariaSelect = document.getElementById("luminaria");
+  const luminaria_id = luminariaSelect.value;
+  const no_luminaria = luminariaSelect.selectedOptions[0]?.dataset.numero;
 
-if (data[0].situacion === "Fuera de servicio") {
+  const descripcion = document.getElementById("descripcion").value.trim();
 
-info.innerHTML =
-"Calle: <b>" + data[0].calle +
-"</b> | Privada: <b>" + data[0].privada +
-"</b><br><span class='text-orange-600'>Esta luminaria ya está registrada como fuera de servicio.</span>";
+  const mensaje = document.getElementById("mensaje");
+  mensaje.className = "mensaje";
 
-reporteValido = false;
-luminariaActual = null;
+  if (!luminaria_id || !descripcion) {
+    mensaje.innerText = "Completa todos los campos";
+    mensaje.classList.add("error");
+    return;
+  }
 
-boton.disabled = true;
-boton.className =
-"w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed";
+  try {
 
-return;
-}
+    // 🔥 USAR LOCALSTORAGE (MODO SEGURO PARA DEMO)
+    const privada = localStorage.getItem("privada");
+    const casa = localStorage.getItem("casa");
 
-info.innerHTML =
-"Calle: <b>" + data[0].calle +
-"</b> | Privada: <b>" + data[0].privada + "</b>";
+    if (!privada || !casa) {
+      throw new Error("No se pudo obtener la información del usuario");
+    }
 
-info.className = "text-green-600 text-sm mt-2";
+    const { error } = await client
+      .from("reportes_vecinales")
+      .insert([{
+        luminaria_id: luminaria_id,
+        no_luminaria: no_luminaria,
+        descripcion: descripcion,
+        estatus: 'NUEVO',
+        observaciones: descripcion,
+        privada: privada,
+        casa: casa
+      }]);
 
-reporteValido = true;
+    if (error) {
+      throw error;
+    }
 
-boton.disabled = false;
-boton.className =
-"w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition";
+    mensaje.innerText = "Reporte enviado correctamente ✅";
+    mensaje.classList.add("ok");
 
-} else {
+    document.getElementById("luminaria").value = "";
+    document.getElementById("descripcion").value = "";
 
-info.innerHTML = "Número de luminaria no encontrado";
-info.className = "text-red-600 text-sm mt-2";
-
-reporteValido = false;
-luminariaActual = null;
-
-boton.disabled = true;
-boton.className =
-"w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed";
-}
-
-}, 400);
-
-});
-
-/* ENVIAR REPORTE */
-
-document.getElementById('formReporte').addEventListener('submit', async (e) => {
-
-e.preventDefault();
-
-if (!reporteValido) return;
-
-const mensaje = document.getElementById('mensaje');
-
-try {
-
-const no_luminaria = Number(document.getElementById('no_luminaria').value);
-const descripcion = document.getElementById('descripcion').value;
-const comentario = document.getElementById('comentario').value;
-
-// 🔥 NUEVO: USAR AUTH REAL
-let privada = null;
-let casa = null;
-
-// 🔐 INTENTO CON AUTH
-const { data: userData } = await supabaseClient.auth.getUser();
-
-if (userData && userData.user) {
-
-  const user_id = userData.user.id;
-
-  const { data: residente } = await supabaseClient
-    .from("residentes")
-    .select("privada, casa")
-    .eq("user_id", user_id)
-    .maybeSingle();
-
-  if (residente) {
-    privada = residente.privada;
-    casa = residente.casa;
+  } catch (err) {
+    mensaje.innerText = err.message || "Error al registrar";
+    mensaje.classList.add("error");
   }
 }
-
-// 🔁 FALLBACK LOCALSTORAGE
-if (!privada || !casa) {
-  privada = localStorage.getItem("privada");
-  casa = localStorage.getItem("casa");
-}
-
-// 🚨 VALIDACIÓN FINAL
-if (!privada || !casa) {
-  throw new Error("No se pudo obtener la información del usuario");
-}
-
-// 🔎 Obtener residente por user_id
-const { data: residente, error: errorResidente } = await supabaseClient
-  .from("residentes")
-  .select("privada, casa")
-  .eq("user_id", user_id)
-  .single();
-
-if (errorResidente || !residente) {
-  throw new Error("No se pudo obtener la información del usuario");
-}
-
-if (!luminariaActual) {
-throw new Error("Luminaria no válida");
-}
-
-const luminaria_id = luminariaActual.id;
-
-const { error: errorInsert } = await supabaseClient
-.from('reportes_vecinales')
-.insert([{
-  luminaria_id: luminaria_id,
-  no_luminaria: no_luminaria,
-  descripcion: descripcion,
-  estatus: 'NUEVO',
-  observaciones: comentario,
-  privada: privada,
-  casa: casa
-}]);
-
-if (errorInsert) throw errorInsert;
-
-mensaje.innerText =
-"Reporte registrado correctamente. Gracias por tu apoyo para el mantenimiento del fraccionamiento.";
-
-mensaje.className = "text-center text-green-600";
-
-document.getElementById('formReporte').reset();
-document.getElementById('info_luminaria').innerHTML = "";
-luminariaActual = null;
-
-document.getElementById('btn_enviar').disabled = true;
-
-} catch (error) {
-
-mensaje.innerText = "Error: " + error.message;
-mensaje.className = "text-center text-red-600";
-
-console.error(error);
-
-}
-
-});
 
 </script>
 
