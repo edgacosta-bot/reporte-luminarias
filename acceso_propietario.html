@@ -126,7 +126,7 @@ document.getElementById("btn").addEventListener("click", async () => {
 
   const ahora = new Date().toISOString();
 
-  // 🔥 NUEVA LÓGICA ROBUSTA (SIN FILTROS NULL)
+  // 🔥 OBTENER ÚLTIMO MOVIMIENTO (SIN FILTROS PROBLEMÁTICOS)
   const { data: movimientos } = await client
     .from("accesos_registro_propietarios")
     .select("*")
@@ -138,13 +138,14 @@ document.getElementById("btn").addEventListener("click", async () => {
 
   if (movimiento && movimiento.fecha_hora_salida === null) {
 
+    // 🔥 UPDATE SIN FILTROS NULL
     await client
       .from("accesos_registro_propietarios")
       .update({
         fecha_hora_salida: ahora,
         estatus: "fuera"
       })
-      .eq("id", movimiento.id);
+      .eq("acceso_id", acceso.id);
 
     pintar("SALIDA REGISTRADA", "ok", residente);
 
