@@ -249,8 +249,8 @@ const { error: errorInsert } = await supabaseClient
   descripcion: descripcion,
   estatus: 'NUEVO',
   observaciones: comentario,
-  privada: residente.privada,
-  casa: residente.casa
+  privada: privada,
+  casa: casa
 }]);
 
 if (errorInsert) throw errorInsert;
