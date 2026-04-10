@@ -84,7 +84,7 @@ const qr = params.get("qr");
 let acceso = null;
 let residente = null;
 let accionActual = null;
-let colorActual = ""; // 🔥 NUEVO
+let colorActual = "";
 
 validar();
 
@@ -125,35 +125,7 @@ async function validar() {
 
     const estado_pago = (residente.estado_pago || "").toLowerCase();
 
-    // 🔴 MOROSO (TEXTO ORIGINAL)
-    if (estado_pago === "moroso") {
-      colorActual = "error";
-      pintar(
-        "ACCESO DENEGADO",
-        "error",
-        residente,
-        "Indicar al usuario que debido al retraso de sus cuotas, la vigilancia tiene instrucción de los colonos de no abrir la puerta de acceso, invitándolo a pasar a la administración a regularizar su situación"
-      );
-      return;
-    }
-
-    // 🟡 ATRASO (TEXTO ORIGINAL)
-    if (estado_pago === "atraso_1") {
-      colorActual = "warn";
-      pintar(
-        "ACCESO CON ADVERTENCIA",
-        "warn",
-        residente,
-        "Indicar al usuario que debe de pasar a la administración regularizar su cuota atrasada para no tener problemas con el acceso"
-      );
-    }
-
-    // 🟢 CORRIENTE
-    if (estado_pago === "corriente" || !estado_pago) {
-      colorActual = "ok";
-      pintar("ACCESO AUTORIZADO", "ok", residente);
-    }
-
+    // 🔎 determinar primero si es entrada o salida
     const { data: movimientos } = await client
       .from("accesos_registro_propietarios")
       .select("*")
@@ -167,6 +139,47 @@ async function validar() {
       accionActual = "salida";
     } else {
       accionActual = "entrada";
+    }
+
+    // 🔴 MOROSO (solo bloquea entrada)
+    if (estado_pago === "moroso" && accionActual === "entrada") {
+      colorActual = "error";
+      pintar(
+        "ACCESO DENEGADO",
+        "error",
+        residente,
+        "Indicar al usuario que debido al retraso de sus cuotas, la vigilancia tiene instrucción de los colonos de no abrir la puerta de acceso, invitándolo a pasar a la administración a regularizar su situación"
+      );
+      return;
+    }
+
+    // 🟡 ATRASO
+    if (estado_pago === "atraso_1") {
+
+      colorActual = "warn";
+
+      if (accionActual === "entrada") {
+        pintar(
+          "ACCESO CON ADVERTENCIA",
+          "warn",
+          residente,
+          "Indicar al usuario que debe de pasar a la administración regularizar su cuota atrasada para no tener problemas con el acceso"
+        );
+      } else {
+        pintar("SALIDA", "warn", residente);
+      }
+    }
+
+    // 🟢 CORRIENTE
+    if (estado_pago === "corriente" || !estado_pago) {
+
+      colorActual = "ok";
+
+      if (accionActual === "entrada") {
+        pintar("ACCESO AUTORIZADO", "ok", residente);
+      } else {
+        pintar("SALIDA", "ok", residente);
+      }
     }
 
     document.getElementById("btnAccion").style.display = "block";
@@ -229,7 +242,7 @@ function mostrarResultado(texto) {
 
   document.getElementById("estado").innerText = texto;
 
-  // 🔥 MANTIENE COLOR ORIGINAL
+  // 🔥 mantiene color original
   document.body.className = colorActual;
 
   document.getElementById("control").style.display = "none";
