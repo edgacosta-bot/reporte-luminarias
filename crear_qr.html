@@ -287,7 +287,8 @@ async function generarQR() {
     residente_nombre: user.nombre || ''
   }]);
 
-  const link = `/mostrar_qr.html?qr=${codigo}`;
+  const linkRelativo = `/mostrar_qr.html?qr=${codigo}`;
+  const linkAbsoluto = `${window.location.origin}/mostrar_qr.html?qr=${codigo}`;
 
   document.getElementById("qrcode").innerHTML = `
     <div class="qr-wrapper">
@@ -298,14 +299,14 @@ async function generarQR() {
   `;
 
   new QRCode(document.getElementById("qrCanvas"), {
-    text: link,
+    text: linkRelativo,
     width: 200,
     height: 200
   });
 
   const btn = document.getElementById("btnWhatsapp");
   btn.style.display = "block";
-  btn.onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(link)}`);
+  btn.onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(linkAbsoluto)}`);
 }
 </script>
 
