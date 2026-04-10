@@ -258,6 +258,35 @@ function mostrarResultado(texto) {
 
 // 🔥 CORREGIDO: backticks + compatibilidad
 function pintar(mensaje, tipo, data = null, texto = "") {
+  document.body.className = tipo;
+  document.getElementById("estado").innerText = mensaje;
+
+  const detalle = document.getElementById("detalle");
+
+  if (data) {
+    detalle.innerHTML = `
+      <p><b>PROPIETARIO</b></p>
+      <p><b>${(acceso && acceso.nombre) ? acceso.nombre : "SIN NOMBRE"}</b></p>
+      <p>${data.privada}-${data.casa}</p>
+      <p>${texto || ""}</p>
+    `;
+  } else {
+    detalle.innerHTML = "";
+  }
+
+  // 🔥 BOTÓN SOLO PARA PANTALLA ROJA
+  if (tipo === "error") {
+
+    const btn = document.createElement("button");
+    btn.innerText = "Aceptar";
+
+    btn.onclick = () => {
+      window.location.href = "index.html";
+    };
+
+    detalle.appendChild(btn);
+  }
+} {
 
   document.body.className = tipo;
   document.getElementById("estado").innerText = mensaje;
