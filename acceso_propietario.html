@@ -70,6 +70,7 @@ button {
 </div>
 
 <script>
+
 const PIN_CORRECTO = "7482";
 
 const client = window.supabase.createClient(
@@ -88,103 +89,114 @@ validar();
 
 async function validar() {
 
-  const { data } = await client
-    .from("accesos_propietarios")
-    .select("*")
-    .eq("identificador", qr)
-    .single();
+  try {
 
-  if (!data) {
-    pintar("QR inválido", "error");
-    return;
-  }
-
-  acceso = data;
-
-  const { data: res } = await client
-    .from("residentes")
-    .select("*")
-    .eq("id", acceso.residente_id)
-    .single();
-
-  residente = res;
-
-  const estado_pago = (residente.estado_pago || "").toLowerCase();
-
-  // 🔴 MOROSO (BLOQUEO TOTAL)
-  if (estado_pago === "moroso") {
-    pintar(
-      "ACCESO DENEGADO",
-      "error",
-      residente,
-      "Indicar al usuario que debido al retraso de sus cuotas, la vigilancia tiene instrucción de los colonos de no abrir la puerta de acceso, invitándolo a pasar a la administración a regularizar su situación"
-    );
-    return;
-  }
-
-  const { data: movimientos } = await client
-    .from("accesos_registro_propietarios")
-    .select("*")
-    .eq("acceso_id", acceso.id)
-    .order("fecha_hora_entrada", { ascending: false })
-    .limit(1);
-
-  const ultimo = movimientos && movimientos.length > 0 ? movimientos[0] : null;
-
-  // 🔥 AUTO-CIERRE 12H
-  if (ultimo && ultimo.estatus === "dentro") {
-
-    const entrada = new Date(ultimo.fecha_hora_entrada);
-    const ahora = new Date();
-    const diffHoras = (ahora - entrada) / (1000 * 60 * 60);
-
-    if (diffHoras >= 12) {
-      await client
-        .from("accesos_registro_propietarios")
-        .update({
-          fecha_hora_salida: ahora.toISOString(),
-          estatus: "fuera"
-        })
-        .eq("id", ultimo.id);
+    if (!qr) {
+      pintar("QR inválido", "error");
+      return;
     }
+
+    const { data, error } = await client
+      .from("accesos_propietarios")
+      .select("*")
+      .eq("identificador", qr)
+      .single();
+
+    if (error || !data) {
+      pintar("QR inválido", "error");
+      return;
+    }
+
+    acceso = data;
+
+    const { data: res, error: errRes } = await client
+      .from("residentes")
+      .select("*")
+      .eq("id", acceso.residente_id)
+      .single();
+
+    if (errRes || !res) {
+      pintar("Error de residente", "error");
+      return;
+    }
+
+    residente = res;
+
+    const estado_pago = (residente.estado_pago || "").toLowerCase();
+
+    if (estado_pago === "moroso") {
+      pintar(
+        "ACCESO DENEGADO",
+        "error",
+        residente,
+        "Indicar al usuario que debe regularizar su situación"
+      );
+      return;
+    }
+
+    const { data: movimientos } = await client
+      .from("accesos_registro_propietarios")
+      .select("*")
+      .eq("acceso_id", acceso.id)
+      .order("fecha_hora_entrada", { ascending: false })
+      .limit(1);
+
+    const ultimo = movimientos && movimientos.length > 0 ? movimientos[0] : null;
+
+    if (ultimo && ultimo.estatus === "dentro") {
+
+      const entrada = new Date(ultimo.fecha_hora_entrada);
+      const ahora = new Date();
+      const diffHoras = (ahora - entrada) / (1000 * 60 * 60);
+
+      if (diffHoras >= 12) {
+        await client
+          .from("accesos_registro_propietarios")
+          .update({
+            fecha_hora_salida: ahora.toISOString(),
+            estatus: "fuera"
+          })
+          .eq("id", ultimo.id);
+      }
+    }
+
+    const { data: nuevos } = await client
+      .from("accesos_registro_propietarios")
+      .select("*")
+      .eq("acceso_id", acceso.id)
+      .order("fecha_hora_entrada", { ascending: false })
+      .limit(1);
+
+    const actual = nuevos && nuevos.length > 0 ? nuevos[0] : null;
+
+    if (estado_pago === "atraso_1") {
+      pintar(
+        "ACCESO CON ADVERTENCIA",
+        "warn",
+        residente,
+        "Usuario con atraso"
+      );
+    }
+
+    if (actual && actual.estatus === "dentro") {
+      accionActual = "salida";
+    } else {
+      accionActual = "entrada";
+    }
+
+    document.getElementById("btnAccion").style.display = "block";
+
+  } catch (e) {
+    console.error("ERROR VALIDAR:", e);
+    pintar("ERROR DE SISTEMA", "error");
   }
-
-  // 🔄 RECONSULTAR
-  const { data: nuevos } = await client
-    .from("accesos_registro_propietarios")
-    .select("*")
-    .eq("acceso_id", acceso.id)
-    .order("fecha_hora_entrada", { ascending: false })
-    .limit(1);
-
-  const actual = nuevos && nuevos.length > 0 ? nuevos[0] : null;
-
-  // 🟡 ATRASO
-  if (estado_pago === "atraso_1") {
-    pintar(
-      "ACCESO CON ADVERTENCIA",
-      "warn",
-      residente,
-      "Indicar al usuario que debe de pasar a la administración regularizar su cuota atrasada para no tener problemas con el acceso"
-    );
-  }
-
-  if (actual && actual.estatus === "dentro") {
-    accionActual = "salida";
-  } else {
-    accionActual = "entrada";
-  }
-
-  document.getElementById("btnAccion").style.display = "block";
 }
 
-// 🔘 BOTÓN CONTINUAR
 document.getElementById("btnAccion").addEventListener("click", () => {
   document.getElementById("control").style.display = "block";
   document.getElementById("btnAccion").style.display = "none";
 });
 
-// 🔐 REGISTRO
 document.getElementById("btnRegistrar").addEventListener("click", async () => {
 
   const pin = document.getElementById("pin").value;
@@ -256,6 +268,7 @@ function pintar(mensaje, tipo, data = null, texto = "") {
     `;
   }
 }
+
 </script>
 
 </body>
