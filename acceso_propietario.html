@@ -84,6 +84,7 @@ const qr = params.get("qr");
 let acceso = null;
 let residente = null;
 let accionActual = null;
+let colorActual = ""; // 🔥 NUEVO
 
 validar();
 
@@ -124,34 +125,33 @@ async function validar() {
 
     const estado_pago = (residente.estado_pago || "").toLowerCase();
 
-    // 🔴 MOROSO
+    // 🔴 MOROSO (TEXTO ORIGINAL)
     if (estado_pago === "moroso") {
+      colorActual = "error";
       pintar(
         "ACCESO DENEGADO",
         "error",
         residente,
-        "Indicar al usuario que debe regularizar su situación"
+        "Indicar al usuario que debido al retraso de sus cuotas, la vigilancia tiene instrucción de los colonos de no abrir la puerta de acceso, invitándolo a pasar a la administración a regularizar su situación"
       );
       return;
     }
 
-    // 🟡 ATRASO
+    // 🟡 ATRASO (TEXTO ORIGINAL)
     if (estado_pago === "atraso_1") {
+      colorActual = "warn";
       pintar(
         "ACCESO CON ADVERTENCIA",
         "warn",
         residente,
-        "Usuario con atraso"
+        "Indicar al usuario que debe de pasar a la administración regularizar su cuota atrasada para no tener problemas con el acceso"
       );
     }
 
-    // 🟢 CORRIENTE (🔥 ESTE FALTABA)
+    // 🟢 CORRIENTE
     if (estado_pago === "corriente" || !estado_pago) {
-      pintar(
-        "ACCESO AUTORIZADO",
-        "ok",
-        residente
-      );
+      colorActual = "ok";
+      pintar("ACCESO AUTORIZADO", "ok", residente);
     }
 
     const { data: movimientos } = await client
@@ -163,34 +163,7 @@ async function validar() {
 
     const ultimo = movimientos && movimientos.length > 0 ? movimientos[0] : null;
 
-    // 🔥 AUTO-CIERRE
     if (ultimo && ultimo.estatus === "dentro") {
-
-      const entrada = new Date(ultimo.fecha_hora_entrada);
-      const ahora = new Date();
-      const diffHoras = (ahora - entrada) / (1000 * 60 * 60);
-
-      if (diffHoras >= 12) {
-        await client
-          .from("accesos_registro_propietarios")
-          .update({
-            fecha_hora_salida: ahora.toISOString(),
-            estatus: "fuera"
-          })
-          .eq("id", ultimo.id);
-      }
-    }
-
-    const { data: nuevos } = await client
-      .from("accesos_registro_propietarios")
-      .select("*")
-      .eq("acceso_id", acceso.id)
-      .order("fecha_hora_entrada", { ascending: false })
-      .limit(1);
-
-    const actual = nuevos && nuevos.length > 0 ? nuevos[0] : null;
-
-    if (actual && actual.estatus === "dentro") {
       accionActual = "salida";
     } else {
       accionActual = "entrada";
@@ -255,7 +228,9 @@ document.getElementById("btnRegistrar").addEventListener("click", async () => {
 function mostrarResultado(texto) {
 
   document.getElementById("estado").innerText = texto;
-  document.body.className = "ok";
+
+  // 🔥 MANTIENE COLOR ORIGINAL
+  document.body.className = colorActual;
 
   document.getElementById("control").style.display = "none";
 
