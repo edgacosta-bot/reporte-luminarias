@@ -134,23 +134,28 @@ async function registrar() {
     .from("residentes")
     .select("*")
     .eq("privada", privada)
-    .eq("casa", casa);
+    .eq("casa", casa)
+    .maybeSingle();
 
-  if (error || !data || data.length === 0) {
+  if (error) {
+    mensaje.innerText = "Error validando lote";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  if (!data) {
     mensaje.innerText = "Lote no válido";
     mensaje.classList.add("error");
     return;
   }
 
-  const registro = data[0];
-
-  if (!registro.habilitado_registro) {
+  if (!data.habilitado_registro) {
     mensaje.innerText = "Este lote aún no está habilitado para registro.";
     mensaje.classList.add("error");
     return;
   }
 
-  if (registro.registrado === true) {
+  if (data.registrado === true) {
     mensaje.innerHTML = `
       Esta vivienda ya cuenta con registro.<br><br>
       <a href="login.html" style="color:#60a5fa;">Iniciar sesión</a>
@@ -161,35 +166,30 @@ async function registrar() {
 
   const email = `${privada.toLowerCase()}-${casa}@villas.com`;
 
-  // 🔐 CREAR USUARIO (VERSIÓN ESTABLE)
   const { data: authData, error: authError } = await supabaseClient.auth.signUp({
     email,
     password: clave
   });
 
   if (authError) {
-    console.log("AUTH ERROR:", authError);
     mensaje.innerText = authError.message || "Error al crear usuario";
     mensaje.classList.add("error");
     return;
   }
 
-  // 🔥 USAR USER CORRECTAMENTE (FIX REAL)
   const user = authData.user || authData.session?.user;
 
   if (!user || !user.id) {
-    console.log("USER ERROR:", authData);
     mensaje.innerText = "Error al obtener usuario";
     mensaje.classList.add("error");
     return;
   }
 
-  // 🔒 ACTUALIZAR RESIDENTE
+  // 🔒 ACTUALIZAR RESIDENTE (SIN GUARDAR PASSWORD)
   const { error: errorUpdate } = await supabaseClient
     .from("residentes")
     .update({
       nombre: nombre,
-      clave: clave,
       registrado: true,
       tipo: "residente",
       user_id: user.id
@@ -198,7 +198,6 @@ async function registrar() {
     .eq("casa", casa);
 
   if (errorUpdate) {
-    console.log("UPDATE ERROR:", errorUpdate);
     mensaje.innerText = "Error al registrar";
     mensaje.classList.add("error");
     return;
@@ -207,7 +206,6 @@ async function registrar() {
   mensaje.innerText = "Registro exitoso ✅";
   mensaje.classList.add("ok");
 
-  // 🚨 NO auto login
   setTimeout(() => {
     window.location.href = "login.html";
   }, 1200);
