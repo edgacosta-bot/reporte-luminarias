@@ -287,7 +287,7 @@ async function generarQR() {
     residente_nombre: user.nombre || ''
   }]);
 
-  const link = `${window.location.origin}/mostrar_qr.html?qr=${codigo}`;
+  const link = `/mostrar_qr.html?qr=${codigo}`;
 
   document.getElementById("qrcode").innerHTML = `
     <div class="qr-wrapper">
