@@ -110,7 +110,7 @@ let accesoActual = null;
 let tipoAccion = "";
 let CONFIG = null;
 
-// 🔐 Cargar configuración UNA SOLA VEZ y luego validar
+// 🔐 Cargar configuración UNA SOLA VEZ
 supabaseClient
   .from("seguridad_config")
   .select("*")
@@ -130,95 +130,107 @@ supabaseClient
 
 async function validar() {
 
-  const { data: trabajador } = await supabaseClient
-    .from("trabajadores_obra")
-    .select("*")
-    .eq("qr_codigo", qr)
-    .single();
+  try {
 
-  if (!trabajador) {
-    pintar("QR INVÁLIDO", "error");
-    return;
-  }
-
-  const hoy = new Date().toISOString().split('T')[0];
-
-  if (!trabajador.activo) {
-    pintar("ACCESO DENEGADO", "error", trabajador);
-    return;
-  }
-
-  if (trabajador.fecha_inicio && hoy < trabajador.fecha_inicio) {
-    pintar("AÚN NO AUTORIZADO", "warn", trabajador);
-    return;
-  }
-
-  if (trabajador.fecha_fin && hoy > trabajador.fecha_fin) {
-    pintar("ACCESO VENCIDO", "error", trabajador);
-    return;
-  }
-
-  const ahora = new Date();
-  const dia = ahora.getDay();
-  const hora = ahora.getHours();
-  const minutos = ahora.getMinutes();
-  const horaActual = hora + (minutos / 60);
-
-  const MODO_PRUEBA = false;
-
-  if (!MODO_PRUEBA && CONFIG) {
-
-    if (dia === 0 && !CONFIG.domingo_permitido) {
-      pintar("ACCESO NO PERMITIDO (DOMINGO)", "error", trabajador);
+    if (!qr) {
+      pintar("QR INVÁLIDO", "error");
       return;
     }
 
-    if (dia === 6) {
-      if (horaActual < CONFIG.sabado_inicio || horaActual > CONFIG.sabado_fin) {
-        pintar("FUERA DE HORARIO (SÁBADO)", "error", trabajador);
+    const { data: trabajador, error } = await supabaseClient
+      .from("trabajadores_obra")
+      .select("*")
+      .eq("qr_codigo", qr)
+      .single();
+
+    if (error || !trabajador) {
+      pintar("QR INVÁLIDO", "error");
+      return;
+    }
+
+    const hoy = new Date().toISOString().split('T')[0];
+
+    if (!trabajador.activo) {
+      pintar("ACCESO DENEGADO", "error", trabajador);
+      return;
+    }
+
+    if (trabajador.fecha_inicio && hoy < trabajador.fecha_inicio) {
+      pintar("AÚN NO AUTORIZADO", "warn", trabajador);
+      return;
+    }
+
+    if (trabajador.fecha_fin && hoy > trabajador.fecha_fin) {
+      pintar("ACCESO VENCIDO", "error", trabajador);
+      return;
+    }
+
+    const ahora = new Date();
+    const dia = ahora.getDay();
+    const hora = ahora.getHours();
+    const minutos = ahora.getMinutes();
+    const horaActual = hora + (minutos / 60);
+
+    const MODO_PRUEBA = false;
+
+    if (!MODO_PRUEBA && CONFIG) {
+
+      if (dia === 0 && !CONFIG.domingo_permitido) {
+        pintar("ACCESO NO PERMITIDO (DOMINGO)", "error", trabajador);
         return;
+      }
+
+      if (dia === 6) {
+        if (horaActual < CONFIG.sabado_inicio || horaActual > CONFIG.sabado_fin) {
+          pintar("FUERA DE HORARIO (SÁBADO)", "error", trabajador);
+          return;
+        }
+      }
+
+      if (dia >= 1 && dia <= 5) {
+        if (horaActual < CONFIG.hora_inicio || horaActual > CONFIG.hora_fin) {
+          pintar("FUERA DE HORARIO", "error", trabajador);
+          return;
+        }
       }
     }
 
-    if (dia >= 1 && dia <= 5) {
-      if (horaActual < CONFIG.hora_inicio || horaActual > CONFIG.hora_fin) {
-        pintar("FUERA DE HORARIO", "error", trabajador);
-        return;
-      }
+    trabajadorGlobal = trabajador;
+
+    const { data: obra } = await supabaseClient
+      .from("obras")
+      .select("*")
+      .eq("id", trabajador.obra_id)
+      .single();
+
+    if (!obra || !obra.aprobada) {
+      pintar("OBRA NO AUTORIZADA", "error", trabajador);
+      return;
     }
+
+    const { data: acceso } = await supabaseClient
+      .from("accesos_trabajadores")
+      .select("*")
+      .eq("trabajador_id", trabajador.id)
+      .is("fecha_hora_salida", null)
+      .maybeSingle();
+
+    accesoActual = acceso;
+
+    if (!acceso) {
+      tipoAccion = "entrada";
+      pintar("REGISTRAR ENTRADA", "ok", trabajador);
+    } else {
+      tipoAccion = "salida";
+      pintar("REGISTRAR SALIDA", "warn", trabajador);
+    }
+
+    document.getElementById("control").style.display = "block";
+
+  } catch (e) {
+    console.error("ERROR VALIDAR:", e);
+    pintar("ERROR DE SISTEMA", "error");
   }
-
-  trabajadorGlobal = trabajador;
-
-  const { data: obra } = await supabaseClient
-    .from("obras")
-    .select("*")
-    .eq("id", trabajador.obra_id)
-    .single();
-
-  if (!obra || !obra.aprobada) {
-    pintar("OBRA NO AUTORIZADA", "error", trabajador);
-    return;
-  }
-
-  const { data: acceso } = await supabaseClient
-    .from("accesos_trabajadores")
-    .select("*")
-    .eq("trabajador_id", trabajador.id)
-    .is("fecha_hora_salida", null)
-    .maybeSingle();
-
-  accesoActual = acceso;
-
-  if (!acceso) {
-    tipoAccion = "entrada";
-    pintar("REGISTRAR ENTRADA", "ok", trabajador);
-  } else {
-    tipoAccion = "salida";
-    pintar("REGISTRAR SALIDA", "warn", trabajador);
-  }
-
-  document.getElementById("control").style.display = "block";
 }
 
 const pinInput = document.getElementById("pin");
