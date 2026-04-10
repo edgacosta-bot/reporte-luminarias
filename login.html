@@ -180,8 +180,9 @@ async function login() {
           tipo: "residente"
         });
 
-      if (insertError) {
-        mensaje.innerText = "Error al vincular usuario";
+     if (insertError) {
+  console.error("INSERT ERROR:", insertError);
+  mensaje.innerText = insertError.message;
         mensaje.classList.add("error");
         return;
       }
