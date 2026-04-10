@@ -164,7 +164,9 @@ async function validar() {
   const hora = ahora.getHours();
   const minutos = ahora.getMinutes();
   const horaActual = hora + (minutos / 60);
+  const MODO_PRUEBA = true;
 
+  if (!MODO_PRUEBA) {
   if (dia === 0) {
     pintar("ACCESO NO PERMITIDO (DOMINGO)", "error", trabajador);
     return;
@@ -183,6 +185,8 @@ async function validar() {
       return;
     }
   }
+
+}    
 
   trabajadorGlobal = trabajador;
 
