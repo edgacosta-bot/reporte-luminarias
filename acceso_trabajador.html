@@ -114,15 +114,20 @@ let tipoAccion = "";
 
 validar();
 // 🔐 Obtener PIN desde DB
-const { data: config } = await supabaseClient
+// 🔐 Cargar PIN SIN BLOQUEAR
+supabaseClient
   .from("seguridad_config")
   .select("pin_acceso")
   .limit(1)
-  .single();
-
-if (config && config.pin_acceso) {
-  PIN_CORRECTO = config.pin_acceso;
-}
+  .single()
+  .then(({ data }) => {
+    if (data && data.pin_acceso) {
+      PIN_CORRECTO = data.pin_acceso;
+    }
+  })
+  .catch(() => {
+    console.warn("No se pudo cargar PIN");
+  });
   
 async function validar() {
 
@@ -217,6 +222,7 @@ const btn = document.getElementById("btnConfirmar");
 
 pinInput.addEventListener("input", () => {
 
+  // 🔐 NUEVO: esperar a que cargue el PIN
   if (!PIN_CORRECTO) {
     btn.disabled = true;
     return;
