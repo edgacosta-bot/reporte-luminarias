@@ -111,20 +111,25 @@ let PIN_CORRECTO = null;
 let trabajadorGlobal = null;
 let accesoActual = null;
 let tipoAccion = "";
+let CONFIG = null;  
 
 validar();
 // 🔐 Obtener PIN desde DB
 // 🔐 Cargar PIN SIN BLOQUEAR
 supabaseClient
   .from("seguridad_config")
-  .select("pin_acceso")
+  .select("*")
   .limit(1)
   .single()
   .then(({ data }) => {
-    if (data && data.pin_acceso) {
+    if (data) {
+      CONFIG = data;
       PIN_CORRECTO = data.pin_acceso;
     }
   })
+  .catch(() => {
+    console.warn("Error cargando configuración");
+  });
   .catch(() => {
     console.warn("No se pudo cargar PIN");
   });
@@ -167,27 +172,28 @@ async function validar() {
   const MODO_PRUEBA = false;
 
   if (!MODO_PRUEBA) {
-  if (dia === 0) {
+  if (!MODO_PRUEBA && CONFIG) {
+
+  if (dia === 0 && !CONFIG.domingo_permitido) {
     pintar("ACCESO NO PERMITIDO (DOMINGO)", "error", trabajador);
     return;
   }
 
   if (dia === 6) {
-    if (horaActual < 9 || horaActual > 14) {
+    if (horaActual < CONFIG.sabado_inicio || horaActual > CONFIG.sabado_fin) {
       pintar("FUERA DE HORARIO (SÁBADO)", "error", trabajador);
       return;
     }
   }
 
   if (dia >= 1 && dia <= 5) {
-    if (horaActual < 8 || horaActual > 18) {
+    if (horaActual < CONFIG.hora_inicio || horaActual > CONFIG.hora_fin) {
       pintar("FUERA DE HORARIO", "error", trabajador);
       return;
     }
   }
 
-}    
-
+}
   trabajadorGlobal = trabajador;
 
   const { data: obra } = await supabaseClient
