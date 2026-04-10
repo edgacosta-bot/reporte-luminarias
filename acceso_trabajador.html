@@ -2,8 +2,6 @@
 <html lang="es">
 <head>
 
-<!-- 🔥 ELIMINADO auth.js (CLAVE) -->
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Acceso Trabajador</title>
@@ -98,7 +96,6 @@ button {
 
 <script>
 
-
 const supabaseClient = window.supabase.createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
@@ -111,9 +108,9 @@ let PIN_CORRECTO = null;
 let trabajadorGlobal = null;
 let accesoActual = null;
 let tipoAccion = "";
-let CONFIG = null;  
+let CONFIG = null;
 
-// 🔐 Cargar configuración y luego validar
+// 🔐 Cargar configuración UNA SOLA VEZ y luego validar
 supabaseClient
   .from("seguridad_config")
   .select("*")
@@ -124,36 +121,13 @@ supabaseClient
       CONFIG = data;
       PIN_CORRECTO = data.pin_acceso;
     }
-
-    // 🔥 IMPORTANTE: ahora sí ejecuta validar
     validar();
   })
   .catch(() => {
     console.warn("Error cargando configuración");
-
-    // Aún así intenta validar para no romper flujo
     validar();
   });
-// 🔐 Obtener PIN desde DB
-// 🔐 Cargar PIN SIN BLOQUEAR
-supabaseClient
-  .from("seguridad_config")
-  .select("*")
-  .limit(1)
-  .single()
-  .then(({ data }) => {
-    if (data) {
-      CONFIG = data;
-      PIN_CORRECTO = data.pin_acceso;
-    }
-  })
-  .catch(() => {
-    console.warn("Error cargando configuración");
-  });
-  .catch(() => {
-    console.warn("No se pudo cargar PIN");
-  });
-  
+
 async function validar() {
 
   const { data: trabajador } = await supabaseClient
@@ -189,31 +163,31 @@ async function validar() {
   const hora = ahora.getHours();
   const minutos = ahora.getMinutes();
   const horaActual = hora + (minutos / 60);
+
   const MODO_PRUEBA = false;
 
-  if (!MODO_PRUEBA) {
   if (!MODO_PRUEBA && CONFIG) {
 
-  if (dia === 0 && !CONFIG.domingo_permitido) {
-    pintar("ACCESO NO PERMITIDO (DOMINGO)", "error", trabajador);
-    return;
-  }
-
-  if (dia === 6) {
-    if (horaActual < CONFIG.sabado_inicio || horaActual > CONFIG.sabado_fin) {
-      pintar("FUERA DE HORARIO (SÁBADO)", "error", trabajador);
+    if (dia === 0 && !CONFIG.domingo_permitido) {
+      pintar("ACCESO NO PERMITIDO (DOMINGO)", "error", trabajador);
       return;
+    }
+
+    if (dia === 6) {
+      if (horaActual < CONFIG.sabado_inicio || horaActual > CONFIG.sabado_fin) {
+        pintar("FUERA DE HORARIO (SÁBADO)", "error", trabajador);
+        return;
+      }
+    }
+
+    if (dia >= 1 && dia <= 5) {
+      if (horaActual < CONFIG.hora_inicio || horaActual > CONFIG.hora_fin) {
+        pintar("FUERA DE HORARIO", "error", trabajador);
+        return;
+      }
     }
   }
 
-  if (dia >= 1 && dia <= 5) {
-    if (horaActual < CONFIG.hora_inicio || horaActual > CONFIG.hora_fin) {
-      pintar("FUERA DE HORARIO", "error", trabajador);
-      return;
-    }
-  }
-
-}
   trabajadorGlobal = trabajador;
 
   const { data: obra } = await supabaseClient
@@ -252,7 +226,6 @@ const btn = document.getElementById("btnConfirmar");
 
 pinInput.addEventListener("input", () => {
 
-  // 🔐 NUEVO: esperar a que cargue el PIN
   if (!PIN_CORRECTO) {
     btn.disabled = true;
     return;
@@ -272,10 +245,8 @@ btn.addEventListener("click", async () => {
   btn.disabled = true;
   btn.innerText = "Procesando...";
 
-  // 🔥 UTC
   const ahoraUTC = new Date().toISOString();
 
-  // 🔥 LOCAL MÉXICO (SOLUCIÓN)
   const ahoraLocal = new Date().toLocaleString("sv-SE", {
     timeZone: "America/Mexico_City"
   }).replace(" ", "T");
