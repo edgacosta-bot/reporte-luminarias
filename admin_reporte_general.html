@@ -14,12 +14,15 @@ body {
   background: linear-gradient(135deg, #e0f2fe, #f8fafc);
   color: #0f172a;
 }
+
 .container {
   max-width: 520px;
   margin: auto;
   padding: 20px;
 }
+
 h2 { text-align: center; }
+
 .label { font-size: 13px; color: #475569; }
 .input-group { margin-bottom: 15px; }
 
@@ -112,6 +115,17 @@ button {
   <input type="date" id="fin">
 </div>
 
+<!-- NUEVOS FILTROS -->
+<div class="input-group">
+  <div class="label">Privada (opcional)</div>
+  <input type="text" id="privada" placeholder="Ej. I">
+</div>
+
+<div class="input-group">
+  <div class="label">Casa (opcional)</div>
+  <input type="text" id="casa" placeholder="Ej. 1">
+</div>
+
 <button onclick="cargar()">Consultar</button>
 
 <div class="kpis">
@@ -151,6 +165,8 @@ async function cargar(){
 
   const inicio = document.getElementById("inicio").value;
   const fin = document.getElementById("fin").value;
+  const privada = document.getElementById("privada").value.trim();
+  const casa = document.getElementById("casa").value.trim();
 
   if(!inicio || !fin){
     mostrarModal();
@@ -160,11 +176,16 @@ async function cargar(){
   let registros=[];
 
   // 🔴 INCIDENCIAS VECINALES
-  const {data:inc} = await supabaseClient
+  let queryInc = supabaseClient
     .from("incidencias_vecinales")
     .select("*")
     .gte("fecha_local", inicio+"T00:00:00")
     .lt("fecha_local", fin+"T23:59:59.999");
+
+  if (privada) queryInc = queryInc.eq("privada", privada);
+  if (casa) queryInc = queryInc.eq("casa", casa);
+
+  const {data:inc} = await queryInc;
 
   inc?.forEach(i=>{
     registros.push({
@@ -176,19 +197,16 @@ async function cargar(){
     });
   });
 
-  // 🔴 INCIDENCIAS TRABAJADORES (PRUEBA SIN FILTRO)
-const {data:trab, error:errorTrab} = await supabaseClient
-  .from("incidencias_trabajadores")
-  .select("*");
-
-console.log("TRABAJADORES DATA:", trab);
-console.log("ERROR:", errorTrab);
-
-  console.log("TRAB:", trab, errorTrab);
+  // 🔴 INCIDENCIAS TRABAJADORES
+  const {data:trab} = await supabaseClient
+    .from("incidencias_trabajadores")
+    .select("*")
+    .gte("fecha_local", inicio+"T00:00:00")
+    .lt("fecha_local", fin+"T23:59:59.999");
 
   const ids = [...new Set((trab || [])
     .map(i=>i.trabajador_id)
-    .filter(id => id !== null && id !== undefined)
+    .filter(id => id != null)
   )];
 
   let mapaTrab = {};
@@ -207,6 +225,9 @@ console.log("ERROR:", errorTrab);
   (trab || []).forEach(i=>{
     const t = mapaTrab[i.trabajador_id];
 
+    if (privada && t?.privada !== privada) return;
+    if (casa && t?.casa !== casa) return;
+
     registros.push({
       tipo:"incidencia",
       titulo:`Incidencia trabajador (${i.tipo})`,
@@ -218,11 +239,16 @@ console.log("ERROR:", errorTrab);
   });
 
   // 💧 AGUA
-  const {data:agua} = await supabaseClient
+  let queryAgua = supabaseClient
     .from("reportes_agua_caasim")
     .select("*, ubicaciones(calle)")
     .gte("fecha_registro", inicio+"T00:00:00")
     .lt("fecha_registro", fin+"T23:59:59.999");
+
+  if (privada) queryAgua = queryAgua.eq("privada", privada);
+  if (casa) queryAgua = queryAgua.eq("numero_exterior", casa);
+
+  const {data:agua} = await queryAgua;
 
   agua?.forEach(i=>{
     registros.push({
@@ -236,11 +262,16 @@ console.log("ERROR:", errorTrab);
   });
 
   // 💡 LUMINARIAS
-  const {data:luminarias} = await supabaseClient
+  let queryLum = supabaseClient
     .from("vista_reportes_luminarias")
     .select("*")
     .gte("fecha_reporte", inicio+"T00:00:00")
     .lt("fecha_reporte", fin+"T23:59:59.999");
+
+  if (privada) queryLum = queryLum.eq("privada", privada);
+  if (casa) queryLum = queryLum.eq("casa", casa);
+
+  const {data:luminarias} = await queryLum;
 
   luminarias?.forEach(i=>{
     registros.push({
