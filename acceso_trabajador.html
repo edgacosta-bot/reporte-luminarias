@@ -113,7 +113,27 @@ let accesoActual = null;
 let tipoAccion = "";
 let CONFIG = null;  
 
-validar();
+// 🔐 Cargar configuración y luego validar
+supabaseClient
+  .from("seguridad_config")
+  .select("*")
+  .limit(1)
+  .single()
+  .then(({ data }) => {
+    if (data) {
+      CONFIG = data;
+      PIN_CORRECTO = data.pin_acceso;
+    }
+
+    // 🔥 IMPORTANTE: ahora sí ejecuta validar
+    validar();
+  })
+  .catch(() => {
+    console.warn("Error cargando configuración");
+
+    // Aún así intenta validar para no romper flujo
+    validar();
+  });
 // 🔐 Obtener PIN desde DB
 // 🔐 Cargar PIN SIN BLOQUEAR
 supabaseClient
