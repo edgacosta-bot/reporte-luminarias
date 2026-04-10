@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- 🔥 PWA (NO SE TOCA) -->
+  <!-- 🔥 PWA -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0f172a">
 
@@ -161,15 +161,23 @@ async function login() {
 
     const user = data.user;
 
-    // 🔍 BUSCAR RESIDENTE (ajuste seguro)
+    // 🔍 DEBUG: mostrar UID
+    mensaje.innerText = "UID: " + user.id;
+
     let { data: residente, error: err2 } = await supabaseClient
       .from("residentes")
       .select("*")
       .eq("user_id", user.id)
       .maybeSingle();
 
-    // 🔥 AUTO-VINCULACIÓN CONTROLADA (solo si no existe)
+    if (err2) {
+      mensaje.innerText = "Error consulta: " + err2.message;
+      mensaje.classList.add("error");
+      return;
+    }
+
     if (!residente) {
+      mensaje.innerText = "No vinculado → intentando crear...";
 
       const { error: insertError } = await supabaseClient
         .from("residentes")
@@ -180,44 +188,33 @@ async function login() {
           tipo: "residente"
         });
 
-     if (insertError) {
-  console.error("INSERT ERROR:", insertError);
-  mensaje.innerText = insertError.message;
+      if (insertError) {
+        mensaje.innerText = "Error insert: " + insertError.message;
         mensaje.classList.add("error");
         return;
       }
 
-      // volver a consultar
-      const { data: nuevoResidente, error: err3 } = await supabaseClient
-        .from("residentes")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
-
-      if (err3 || !nuevoResidente) {
-        mensaje.innerText = "Error al recuperar usuario";
-        mensaje.classList.add("error");
-        return;
-      }
-
-      residente = nuevoResidente;
+      mensaje.innerText = "Usuario vinculado, intenta nuevamente";
+      return;
     }
 
-    // 🧠 MAPEAR ROL (NO SE TOCA)
+    mensaje.innerText = "Acceso correcto";
+
     let rol = residente.tipo;
 
     if (rol === "residente") rol = "colono";
     if (rol === "administracion") rol = "admin";
     if (rol === "vigilante") rol = "vigilante";
 
-    // 💾 COMPATIBILIDAD TOTAL (NO SE TOCA)
     localStorage.setItem("usuario_valido", "true");
     localStorage.setItem("privada", residente.privada);
     localStorage.setItem("casa", residente.casa);
     localStorage.setItem("rol", rol);
     localStorage.setItem("identificador", residente.identificador);
 
-    window.location.href = "index.html";
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 1000);
 
   } catch (err) {
     console.error(err);
@@ -225,7 +222,7 @@ async function login() {
   }
 }
 
-// 🔥 SERVICE WORKER (NO SE TOCA)
+// 🔥 SERVICE WORKER
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js')
     .then(() => console.log('SW registrado'));
