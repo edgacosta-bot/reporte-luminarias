@@ -176,12 +176,13 @@ async function cargar(){
     });
   });
 
-  // 🔴 INCIDENCIAS TRABAJADORES
-  const {data:trab, error:errorTrab} = await supabaseClient
-    .from("incidencias_trabajadores")
-    .select("*")
-    .gte("fecha_local", inicio+"T00:00:00")
-    .lt("fecha_local", fin+"T23:59:59.999");
+  // 🔴 INCIDENCIAS TRABAJADORES (PRUEBA SIN FILTRO)
+const {data:trab, error:errorTrab} = await supabaseClient
+  .from("incidencias_trabajadores")
+  .select("*");
+
+console.log("TRABAJADORES DATA:", trab);
+console.log("ERROR:", errorTrab);
 
   console.log("TRAB:", trab, errorTrab);
 
