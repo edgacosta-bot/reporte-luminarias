@@ -98,7 +98,6 @@ button {
 
 <script>
 
-const PIN_CORRECTO = "7482";
 
 const supabaseClient = window.supabase.createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
@@ -108,12 +107,23 @@ const supabaseClient = window.supabase.createClient(
 const params = new URLSearchParams(window.location.search);
 const qr = params.get("qr");
 
+let PIN_CORRECTO = null;
 let trabajadorGlobal = null;
 let accesoActual = null;
 let tipoAccion = "";
 
 validar();
+// 🔐 Obtener PIN desde DB
+const { data: config } = await supabaseClient
+  .from("seguridad_config")
+  .select("pin_acceso")
+  .limit(1)
+  .single();
 
+if (config && config.pin_acceso) {
+  PIN_CORRECTO = config.pin_acceso;
+}
+  
 async function validar() {
 
   const { data: trabajador } = await supabaseClient
@@ -206,6 +216,12 @@ const pinInput = document.getElementById("pin");
 const btn = document.getElementById("btnConfirmar");
 
 pinInput.addEventListener("input", () => {
+
+  if (!PIN_CORRECTO) {
+    btn.disabled = true;
+    return;
+  }
+
   if (pinInput.value === PIN_CORRECTO) {
     btn.disabled = false;
     btn.classList.add("enabled");
