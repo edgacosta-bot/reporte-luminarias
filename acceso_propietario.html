@@ -124,6 +124,7 @@ async function validar() {
 
     const estado_pago = (residente.estado_pago || "").toLowerCase();
 
+    // 🔴 MOROSO
     if (estado_pago === "moroso") {
       pintar(
         "ACCESO DENEGADO",
@@ -132,6 +133,25 @@ async function validar() {
         "Indicar al usuario que debe regularizar su situación"
       );
       return;
+    }
+
+    // 🟡 ATRASO
+    if (estado_pago === "atraso_1") {
+      pintar(
+        "ACCESO CON ADVERTENCIA",
+        "warn",
+        residente,
+        "Usuario con atraso"
+      );
+    }
+
+    // 🟢 CORRIENTE (🔥 ESTE FALTABA)
+    if (estado_pago === "corriente" || !estado_pago) {
+      pintar(
+        "ACCESO AUTORIZADO",
+        "ok",
+        residente
+      );
     }
 
     const { data: movimientos } = await client
@@ -143,6 +163,7 @@ async function validar() {
 
     const ultimo = movimientos && movimientos.length > 0 ? movimientos[0] : null;
 
+    // 🔥 AUTO-CIERRE
     if (ultimo && ultimo.estatus === "dentro") {
 
       const entrada = new Date(ultimo.fecha_hora_entrada);
@@ -168,15 +189,6 @@ async function validar() {
       .limit(1);
 
     const actual = nuevos && nuevos.length > 0 ? nuevos[0] : null;
-
-    if (estado_pago === "atraso_1") {
-      pintar(
-        "ACCESO CON ADVERTENCIA",
-        "warn",
-        residente,
-        "Usuario con atraso"
-      );
-    }
 
     if (actual && actual.estatus === "dentro") {
       accionActual = "salida";
