@@ -14,16 +14,12 @@ body {
   background: linear-gradient(135deg, #e0f2fe, #f8fafc);
   color: #0f172a;
 }
-
 .container {
   max-width: 520px;
   margin: auto;
   padding: 20px;
 }
-
 h2 { text-align: center; }
-
-/* INPUTS */
 .label { font-size: 13px; color: #475569; }
 .input-group { margin-bottom: 15px; }
 
@@ -35,7 +31,6 @@ input {
   box-sizing: border-box;
 }
 
-/* BOTÓN */
 button {
   width: 100%;
   padding: 15px;
@@ -46,7 +41,6 @@ button {
   font-weight: bold;
 }
 
-/* KPIs */
 .kpis {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -67,7 +61,6 @@ button {
 .luminaria { background: #10b981; }
 .total { background: #0f172a; }
 
-/* CARDS */
 .item {
   background: white;
   padding: 16px;
@@ -84,7 +77,6 @@ button {
 .hora { font-size: 12px; color: #64748b; }
 .extra { font-size: 14px; margin-top: 4px; }
 
-/* MODAL */
 .modal-bg {
   position: fixed;
   top:0; left:0;
@@ -172,7 +164,7 @@ async function cargar(){
     .from("incidencias_vecinales")
     .select("*")
     .gte("fecha_local", inicio+"T00:00:00")
-    .lte("fecha_local", fin+"T23:59:59");
+    .lt("fecha_local", fin+"T23:59:59.999");
 
   inc?.forEach(i=>{
     registros.push({
@@ -185,23 +177,31 @@ async function cargar(){
   });
 
   // 🔴 INCIDENCIAS TRABAJADORES
-  const {data:trab} = await supabaseClient
+  const {data:trab, error:errorTrab} = await supabaseClient
     .from("incidencias_trabajadores")
     .select("*")
     .gte("fecha_local", inicio+"T00:00:00")
-    .lte("fecha_local", fin+"T23:59:59");
+    .lt("fecha_local", fin+"T23:59:59.999");
 
-  const ids = [...new Set((trab || []).map(i=>i.trabajador_id))];
+  console.log("TRAB:", trab, errorTrab);
 
-  const {data:trabajadores} = await supabaseClient
-    .from("trabajadores_obra")
-    .select("id, nombre, privada, casa")
-    .in("id", ids);
+  const ids = [...new Set((trab || [])
+    .map(i=>i.trabajador_id)
+    .filter(id => id !== null && id !== undefined)
+  )];
 
-  const mapaTrab = {};
-  (trabajadores || []).forEach(t=>{
-    mapaTrab[t.id] = t;
-  });
+  let mapaTrab = {};
+
+  if(ids.length > 0){
+    const {data:trabajadores} = await supabaseClient
+      .from("trabajadores_obra")
+      .select("id, nombre, privada, casa")
+      .in("id", ids);
+
+    (trabajadores || []).forEach(t=>{
+      mapaTrab[t.id] = t;
+    });
+  }
 
   (trab || []).forEach(i=>{
     const t = mapaTrab[i.trabajador_id];
@@ -211,7 +211,7 @@ async function cargar(){
       titulo:`Incidencia trabajador (${i.tipo})`,
       descripcion:i.descripcion,
       hora:i.fecha_local,
-      trabajador:t?.nombre,
+      trabajador:t?.nombre || "Sin nombre",
       obra:t ? `${t.privada}-${t.casa}` : null
     });
   });
@@ -221,7 +221,7 @@ async function cargar(){
     .from("reportes_agua_caasim")
     .select("*, ubicaciones(calle)")
     .gte("fecha_registro", inicio+"T00:00:00")
-    .lte("fecha_registro", fin+"T23:59:59");
+    .lt("fecha_registro", fin+"T23:59:59.999");
 
   agua?.forEach(i=>{
     registros.push({
@@ -239,7 +239,7 @@ async function cargar(){
     .from("vista_reportes_luminarias")
     .select("*")
     .gte("fecha_reporte", inicio+"T00:00:00")
-    .lte("fecha_reporte", fin+"T23:59:59");
+    .lt("fecha_reporte", fin+"T23:59:59.999");
 
   luminarias?.forEach(i=>{
     registros.push({
@@ -266,7 +266,6 @@ async function cargar(){
 
   registros.sort((a,b)=> new Date(b.hora)-new Date(a.hora));
 
-  // RENDER
   let html="";
 
   const render=(tipo,titulo)=>{
@@ -279,12 +278,10 @@ async function cargar(){
       html+=`<div class="item ${tipo}">
         <b>${r.titulo}</b>
         <div class="hora">${new Date(r.hora).toLocaleString("es-MX")}</div>
-        
         ${r.trabajador ? `<div class="extra">👷 ${r.trabajador}</div>`:""}
         ${r.obra ? `<div class="extra">📍 Obra: ${r.obra}</div>`:""}
         ${r.origen && !r.trabajador ? `<div class="extra"><b>Origen:</b> ${r.origen}</div>`:""}
         ${r.calle ? `<div class="extra">📍 ${r.calle}</div>`:""}
-        
         <div class="extra">${r.descripcion}</div>
       </div>`;
     });
