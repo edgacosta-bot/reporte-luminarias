@@ -269,8 +269,12 @@ async function generarQR() {
   const codigo = crypto.randomUUID();
   const tipo_generador = obtenerTipoGenerador();
 
+  // 🔥 NUEVO: obtener usuario autenticado
+  const { data: { user: userAuth } } = await client.auth.getUser();
+
   await client.from('visitas_qr').insert([{
     residente_id: user.id,
+    user_id: userAuth.id, // 🔥 NUEVO (CLAVE)
     nombre_visitante: visitante,
     fecha_visita: fecha,
     hora_inicio: hora_inicio,
@@ -280,7 +284,7 @@ async function generarQR() {
     casa: user.casa,
     estatus: 'activo',
     tipo_generador: tipo_generador,
-    residente_nombre: user.nombre || '' // 🔥 FIX
+    residente_nombre: user.nombre || ''
   }]);
 
   const link = `${window.location.origin}/mostrar_qr.html?qr=${codigo}`;
