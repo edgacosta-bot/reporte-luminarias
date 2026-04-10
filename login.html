@@ -161,60 +161,40 @@ async function login() {
 
     const user = data.user;
 
-    // 🔍 DEBUG: mostrar UID
-    mensaje.innerText = "UID: " + user.id;
-
-    let { data: residente, error: err2 } = await supabaseClient
+    // 🔍 VALIDAR VÍNCULO (SIN AUTO-CREAR)
+    const { data: residente, error: err2 } = await supabaseClient
       .from("residentes")
       .select("*")
       .eq("user_id", user.id)
       .maybeSingle();
 
     if (err2) {
-      mensaje.innerText = "Error consulta: " + err2.message;
+      mensaje.innerText = "Error al validar usuario";
       mensaje.classList.add("error");
       return;
     }
 
     if (!residente) {
-      mensaje.innerText = "No vinculado → intentando crear...";
-
-      const { error: insertError } = await supabaseClient
-        .from("residentes")
-        .insert({
-          user_id: user.id,
-          privada,
-          casa,
-          tipo: "residente"
-        });
-
-      if (insertError) {
-        mensaje.innerText = "Error insert: " + insertError.message;
-        mensaje.classList.add("error");
-        return;
-      }
-
-      mensaje.innerText = "Usuario vinculado, intenta nuevamente";
+      mensaje.innerText = "Usuario no vinculado";
+      mensaje.classList.add("error");
       return;
     }
 
-    mensaje.innerText = "Acceso correcto";
-
+    // 🧠 MAPEAR ROL
     let rol = residente.tipo;
 
     if (rol === "residente") rol = "colono";
     if (rol === "administracion") rol = "admin";
     if (rol === "vigilante") rol = "vigilante";
 
+    // 💾 SESIÓN LOCAL
     localStorage.setItem("usuario_valido", "true");
     localStorage.setItem("privada", residente.privada);
     localStorage.setItem("casa", residente.casa);
     localStorage.setItem("rol", rol);
     localStorage.setItem("identificador", residente.identificador);
 
-    setTimeout(() => {
-      window.location.href = "index.html";
-    }, 1000);
+    window.location.href = "index.html";
 
   } catch (err) {
     console.error(err);
