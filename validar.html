@@ -97,7 +97,7 @@
 
 <script>
 
-const PIN_CORRECTO = "7482";
+let PIN_CORRECTO = null;
 
 const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
@@ -109,9 +109,22 @@ const qr = params.get("qr");
 
 let visitaGlobal = null;
 
-validar();
+cargarConfiguracion();
 
-async function validar() {
+async function cargarConfiguracion() {
+  const { data } = await client
+    .from("seguridad_config")
+    .select("pin_acceso")
+    .limit(1)
+    .single();
+
+  if (data) {
+    PIN_CORRECTO = data.pin_acceso;
+  }
+
+  validar();
+}
+  async function validar() {
 
   const { data, error } = await client
     .from('visitas_qr')
@@ -139,6 +152,12 @@ const pinInput = document.getElementById("pin");
 const btn = document.getElementById("btnAutorizar");
 
 pinInput.addEventListener("input", () => {
+
+  if (!PIN_CORRECTO) {
+    btn.disabled = true;
+    return;
+  }
+
   if (pinInput.value === PIN_CORRECTO) {
     btn.disabled = false;
     btn.classList.add("enabled");
