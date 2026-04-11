@@ -70,7 +70,7 @@ input, button {
 
 <script>
 
-const PIN = "7482";
+let PIN = null;
 
 const client = supabase.createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
@@ -83,7 +83,20 @@ let trabajador = null;
 let tipo = "";
 let puedeConfirmar = false;
 
-init();
+async function cargarConfiguracion() {
+  const { data } = await client
+    .from("seguridad_config")
+    .select("pin_acceso")
+    .limit(1)
+    .single();
+
+  if (data) {
+    PIN = data.pin_acceso;
+  }
+
+  init();
+}
+cargarConfiguracion();
 
 async function init() {
 
@@ -172,6 +185,11 @@ async function confirmar() {
 
   if (!puedeConfirmar) return;
 
+  if (!PIN) {
+    alert("Error de configuración");
+    return;
+  }
+
   const pin = document.getElementById("pin").value;
 
   if (pin !== PIN) {
@@ -206,8 +224,7 @@ async function confirmar() {
     pintarFinal("SALIDA REGISTRADA", "warn");
   }
 }
-
-function pintarFinal(texto, color) {
+  function pintarFinal(texto, color) {
   document.body.className = color;
   document.getElementById("estado").innerText = texto;
 
