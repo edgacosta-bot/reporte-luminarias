@@ -168,15 +168,19 @@ async function cargar() {
       </div>
 
       <div class="botones">
-        <button class="${t.activo ? 'btn-off' : 'btn-on'}"
-          onclick="toggle('${t.id}', ${t.activo})">
-          ${t.activo ? 'Desactivar' : 'Activar'}
-        </button>
+  <button class="${t.activo ? 'btn-off' : 'btn-on'}"
+    onclick="toggle('${t.id}', ${t.activo})">
+    ${t.activo ? 'Desactivar' : 'Activar'}
+  </button>
 
-        <button class="btn-del" onclick="eliminar('${t.id}')">
-          Eliminar
-        </button>
-      </div>
+  <button onclick="abrirRenovar('${t.id}', '${t.fecha_fin || ''}')">
+    Renovar
+  </button>
+
+  <button class="btn-del" onclick="eliminar('${t.id}')">
+    Eliminar
+  </button>
+</div>
     `;
 
     // 🔒 BLOQUEAR SI MOROSO
@@ -218,6 +222,43 @@ async function eliminar(id) {
   cargar();
 }
 
+// 🔄 RENOVAR
+function abrirRenovar(id, fechaActual) {
+
+  if (residente.estado_pago === "moroso") return;
+
+  const nuevaFecha = prompt("Nueva fecha fin (YYYY-MM-DD):", fechaActual);
+
+  if (isNaN(Date.parse(nuevaFecha))) {
+  alert("Formato inválido. Usa YYYY-MM-DD");
+  return;
+}
+
+  if (!nuevaFecha) return;
+
+  renovarTrabajador(id, nuevaFecha);
+}
+
+async function renovarTrabajador(id, nuevaFecha) {
+
+  const { error } = await client
+    .from("trabajadores_hogar")
+    .update({
+      fecha_fin: nuevaFecha,
+      activo: true
+    })
+    .eq("id", id);
+
+  if (error) {
+    alert("Error al renovar");
+    console.log(error);
+    return;
+  }
+
+  alert("Renovado correctamente");
+
+  cargar();
+}  
 </script>
 
 </body>
