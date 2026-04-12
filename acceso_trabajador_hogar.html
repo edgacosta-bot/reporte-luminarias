@@ -208,12 +208,19 @@ btn.disabled = true;
   const ahora = new Date().toISOString();
 
   // 🔍 verificar estado REAL en BD
-const { data: accesoAbierto } = await client
+const { data: accesosAbiertos } = await client
   .from("accesos_trabajadores_hogar")
   .select("*")
   .eq("trabajador_id", trabajador.id)
   .is("fecha_hora_salida", null)
-  .maybeSingle();
+  .limit(1);
+
+console.log("TRABAJADOR ID:", trabajador.id);
+console.log("ACCESOS ABIERTOS:", accesosAbiertos);
+
+const accesoAbierto = accesosAbiertos && accesosAbiertos.length > 0
+  ? accesosAbiertos[0]
+  : null;
 
 if (!accesoAbierto) {
 
