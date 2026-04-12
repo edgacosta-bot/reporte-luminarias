@@ -156,6 +156,31 @@ const client = window.supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
+  let residenteGlobal = null;
+
+async function obtenerResidente() {
+
+  const { data: userData } = await client.auth.getUser();
+
+  if (!userData?.user) {
+    window.location.href = "login.html";
+    return null;
+  }
+
+  const { data: residente } = await client
+    .from("residentes")
+    .select("*")
+    .eq("user_id", userData.user.id)
+    .single();
+
+  if (!residente) {
+    mostrarModal("Error obteniendo datos", "error");
+    return null;
+  }
+
+  residenteGlobal = residente;
+  return residente;
+}
 function mostrarModal(texto, tipo, callback) {
 
   const modal = document.getElementById("modal");
@@ -185,14 +210,9 @@ async function registrar() {
     return;
   }
 
-  const identificador = localStorage.getItem("identificador");
-
-  const { data: residente } = await client
-    .from("residentes")
-    .select("*")
-    .eq("identificador", identificador)
-    .single();
-
+  
+  const residente = residenteGlobal;
+  
   if (!residente) {
     mostrarModal("Error obteniendo datos", "error");
     return;
@@ -226,13 +246,8 @@ async function insertarServicio() {
   const tipo = document.getElementById("tipo").value;
   const vigencia = parseInt(document.getElementById("vigencia").value);
 
-  const identificador = localStorage.getItem("identificador");
-
-  const { data: residente } = await client
-    .from("residentes")
-    .select("*")
-    .eq("identificador", identificador)
-    .single();
+ const residente = residenteGlobal;
+if (!residente) return;
 
   const ahora = new Date();
   const expira = new Date(ahora.getTime() + (vigencia * 60000));
@@ -252,7 +267,9 @@ async function insertarServicio() {
     window.location.href = "index.html";
   });
 }
-
+(async () => {
+  await obtenerResidente();
+})();
 </script>
 
 </body>
