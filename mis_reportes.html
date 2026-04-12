@@ -91,9 +91,34 @@ const supabaseClient = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-const privada = localStorage.getItem("privada");
-const casa = localStorage.getItem("casa");
+let privada = null;
+let casa = null;
 
+async function obtenerDatosUsuario() {
+
+  const { data: userData } = await supabaseClient.auth.getUser();
+
+  if (!userData?.user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const userId = userData.user.id;
+
+  const { data: residente } = await supabaseClient
+    .from("residentes")
+    .select("privada, casa")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!residente) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  privada = residente.privada;
+  casa = residente.casa;
+}  
 function formatearFechaLocal(fechaISO) {
   if (!fechaISO) return "";
 
@@ -196,7 +221,12 @@ async function cargarReportes() {
   lista.innerHTML = html || "No hay reportes";
 }
 
-cargarReportes();
+async function iniciar() {
+  await obtenerDatosUsuario();
+  cargarReportes();
+}
+
+iniciar();
 
 </script>
 
