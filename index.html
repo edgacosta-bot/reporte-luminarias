@@ -183,7 +183,29 @@ const supabaseClient = createClient(
 
 async function iniciarSistema() {
 
-  let rol = localStorage.getItem("rol");
+ const { data: userData } = await supabaseClient.auth.getUser();
+
+if (!userData?.user) {
+  window.location.href = "login.html";
+  return;
+}
+
+const userId = userData.user.id;
+
+const { data: residente } = await supabaseClient
+  .from("residentes")
+  .select("tipo, privada, casa")
+  .eq("user_id", userId)
+  .maybeSingle();
+
+if (!residente) {
+  window.location.href = "login.html";
+  return;
+}
+
+let rol = residente.tipo;
+if (rol === "residente") rol = "colono";
+if (rol === "administracion") rol = "admin";
 
   if (!rol) {
     window.location.href = "login.html";
@@ -193,8 +215,8 @@ async function iniciarSistema() {
   aplicarUI(rol);
 
   // 🔥 UBICACIÓN (MODO DEMO)
-  const privada = localStorage.getItem("privada");
-  const casa = localStorage.getItem("casa");
+  const privada = residente.privada;
+const casa = residente.casa;
 
   if (privada && casa) {
     document.getElementById("ubicacion").innerText =
