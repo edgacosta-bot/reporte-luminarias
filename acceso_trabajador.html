@@ -132,10 +132,10 @@ async function validar() {
 
   try {
 
-    if (!qr) {
-      pintar("QR INVÁLIDO", "error");
-      return;
-    }
+   if (!qr || qr.length < 10) {
+  pintar("QR INVÁLIDO", "error");
+  return;
+}
 
     const { data: trabajador, error } = await supabaseClient
       .from("trabajadores_obra")
@@ -253,6 +253,8 @@ pinInput.addEventListener("input", () => {
 });
 
 btn.addEventListener("click", async () => {
+if (!trabajadorGlobal) return;
+if (!tipoAccion) return;
 
   btn.disabled = true;
   btn.innerText = "Procesando...";
@@ -263,6 +265,28 @@ btn.addEventListener("click", async () => {
     timeZone: "America/Mexico_City"
   }).replace(" ", "T");
 
+const { data: accesoVerificacion } = await supabaseClient
+  .from("accesos_trabajadores")
+  .select("*")
+  .eq("trabajador_id", trabajadorGlobal.id)
+  .is("fecha_hora_salida", null)
+  .maybeSingle();
+
+// Revalidar estado
+if (tipoAccion === "entrada" && accesoVerificacion) {
+  pintar("YA REGISTRADO COMO DENTRO", "warn", trabajadorGlobal);
+  btn.disabled = false;
+  btn.innerText = "Confirmar";
+  return;
+}
+
+if (tipoAccion === "salida" && !accesoVerificacion) {
+  pintar("NO HAY ENTRADA ACTIVA", "error", trabajadorGlobal);
+  btn.disabled = false;
+  btn.innerText = "Confirmar";
+  return;
+}
+ 
   if (tipoAccion === "entrada") {
 
     await supabaseClient
