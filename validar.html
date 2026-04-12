@@ -97,9 +97,6 @@
 
 <script>
 
-let PIN_CORRECTO = null;
-let vigilanteId = null;  
-
 const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
@@ -113,33 +110,10 @@ let visitaGlobal = null;
 cargarConfiguracion();
 
 async function cargarConfiguracion() {
-  // 🔐 obtener usuario logueado
-const { data: userData } = await client.auth.getUser();
-
-if (!userData?.user) {
-  pintar("Sesión inválida", "error");
-  return;
-}
-
-vigilanteId = userData.user.id;
-
-// 🔎 obtener PIN del vigilante
-const { data: vigilante } = await client
-  .from("residentes")
-  .select("pin_vigilante")
-  .eq("user_id", vigilanteId)
-  .single();
-
-if (!vigilante || !vigilante.pin_vigilante) {
-  pintar("PIN no configurado", "error");
-  return;
-}
-
-PIN_CORRECTO = vigilante.pin_vigilante;
-
   validar();
 }
-  async function validar() {
+
+async function validar() {
 
   const { data, error } = await client
     .from('visitas_qr')
@@ -162,18 +136,12 @@ PIN_CORRECTO = vigilante.pin_vigilante;
   pintar("ACCESO PERMITIDO", "ok", visitaGlobal);
   document.getElementById("control").style.display = "block";
 }
-
+  
 const pinInput = document.getElementById("pin");
 const btn = document.getElementById("btnAutorizar");
 
 pinInput.addEventListener("input", () => {
-
-  if (!PIN_CORRECTO) {
-    btn.disabled = true;
-    return;
-  }
-
-  if (pinInput.value === PIN_CORRECTO) {
+  if (pinInput.value.length >= 4) {
     btn.disabled = false;
     btn.classList.add("enabled");
   } else {
@@ -188,13 +156,20 @@ btn.addEventListener("click", async () => {
   btn.innerText = "Procesando...";
 
   const pin = document.getElementById("pin").value;
+  const { data: vigilante } = await client
+  .from("residentes")
+  .select("id, nombre")
+  .eq("pin_vigilante", pin)
+  .eq("tipo", "vigilante")
+  .maybeSingle();
 
-if (pin !== PIN_CORRECTO) {
+if (!vigilante) {
   alert("PIN incorrecto");
   btn.disabled = false;
   btn.innerText = "Autorizar acceso";
   return;
 }
+
 
 const ahora = new Date();
 
@@ -204,7 +179,7 @@ const { error } = await client
     estatus: 'usado',
     hora_ingreso_utc: ahora.toISOString(),
     hora_ingreso: ahora.toISOString(),
-    vigilante_id: vigilanteId
+    vigilante_id: vigilante.id
   })
   .eq('id', visitaGlobal.id)
   .eq('estatus', 'activo');
