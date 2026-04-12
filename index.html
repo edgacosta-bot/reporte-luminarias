@@ -270,8 +270,32 @@ function aplicarUI(rol) {
   }
 }
 
-function irAReportes() {
-  const rol = localStorage.getItem("rol");
+async function irAReportes() {
+
+  const { data: userData } = await supabaseClient.auth.getUser();
+
+  if (!userData?.user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const userId = userData.user.id;
+
+  const { data: residente } = await supabaseClient
+    .from("residentes")
+    .select("tipo")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!residente) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  let rol = residente.tipo;
+
+  if (rol === "residente") rol = "colono";
+  if (rol === "administracion") rol = "admin";
 
   if (rol === "admin") {
     window.location.href = "admin_reporte_general.html";
