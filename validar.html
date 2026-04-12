@@ -172,17 +172,19 @@ btn.addEventListener("click", async () => {
   btn.disabled = true;
   btn.innerText = "Procesando...";
 
-  const ahora = new Date();
+  const pin = document.getElementById("pin").value;
 
-  const { error } = await client
-    .from('visitas_qr')
-    .update({
-      estatus: 'usado',
-      hora_ingreso_utc: ahora.toISOString(),
-      hora_ingreso: ahora.toISOString() // 🔥 RESTAURADO
-    })
-    .eq('id', visitaGlobal.id)
-    .eq('estatus', 'activo');
+const { data, error } = await client.rpc('validar_acceso_visita', {
+  p_qr: qr,
+  p_pin: pin
+});
+
+if (error || !data?.ok) {
+  alert(data?.mensaje || "Error al validar acceso");
+  btn.disabled = false;
+  btn.innerText = "Autorizar acceso";
+  return;
+}
 
   if (error) {
     alert("Error al registrar acceso");
