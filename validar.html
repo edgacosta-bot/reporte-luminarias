@@ -98,6 +98,7 @@
 <script>
 
 let PIN_CORRECTO = null;
+let vigilanteId = null;  
 
 const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
@@ -112,15 +113,29 @@ let visitaGlobal = null;
 cargarConfiguracion();
 
 async function cargarConfiguracion() {
-  const { data } = await client
-    .from("seguridad_config")
-    .select("pin_acceso")
-    .limit(1)
-    .single();
+  // 🔐 obtener usuario logueado
+const { data: userData } = await client.auth.getUser();
 
-  if (data) {
-    PIN_CORRECTO = data.pin_acceso;
-  }
+if (!userData?.user) {
+  pintar("Sesión inválida", "error");
+  return;
+}
+
+vigilanteId = userData.user.id;
+
+// 🔎 obtener PIN del vigilante
+const { data: vigilante } = await client
+  .from("residentes")
+  .select("pin_vigilante")
+  .eq("user_id", vigilanteId)
+  .single();
+
+if (!vigilante || !vigilante.pin_vigilante) {
+  pintar("PIN no configurado", "error");
+  return;
+}
+
+PIN_CORRECTO = vigilante.pin_vigilante;
 
   validar();
 }
@@ -174,17 +189,25 @@ btn.addEventListener("click", async () => {
 
   const pin = document.getElementById("pin").value;
 
-const { data, error } = await client.rpc('validar_acceso_visita', {
-  p_qr: qr,
-  p_pin: pin
-});
-
-if (error || !data?.ok) {
-  alert(data?.mensaje || "Error al validar acceso");
+if (pin !== PIN_CORRECTO) {
+  alert("PIN incorrecto");
   btn.disabled = false;
   btn.innerText = "Autorizar acceso";
   return;
 }
+
+const ahora = new Date();
+
+const { error } = await client
+  .from('visitas_qr')
+  .update({
+    estatus: 'usado',
+    hora_ingreso_utc: ahora.toISOString(),
+    hora_ingreso: ahora.toISOString(),
+    vigilante_id: vigilanteId
+  })
+  .eq('id', visitaGlobal.id)
+  .eq('estatus', 'activo');
 
   if (error) {
     alert("Error al registrar acceso");
