@@ -244,14 +244,17 @@ if (!accesoAbierto) {
 } else {
 
   // 👉 SALIDA (usa ID exacto)
-  const { error } = await client
-    .from("accesos_trabajadores_hogar")
-    .update({
-      fecha_hora_salida: ahora,
-      estatus: "fuera"
-    })
-    .eq("id", accesoAbierto.id);
+ const { error } = await client
+  .from("accesos_trabajadores_hogar")
+  .update({
+    fecha_hora_salida: ahora,
+    estatus: "fuera"
+  })
+  .eq("trabajador_id", trabajador.id)
+  .is("fecha_hora_salida", null);
 
+  console.log("ERROR UPDATE:", error);
+  
   if (error) {
     alert("Error al registrar salida");
     btn.disabled = false;
