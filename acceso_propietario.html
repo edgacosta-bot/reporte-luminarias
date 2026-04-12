@@ -71,7 +71,7 @@ button {
 
 <script>
 
-const PIN_CORRECTO = "7482";
+let PIN_CORRECTO = null;
 
 const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
@@ -86,8 +86,21 @@ let residente = null;
 let accionActual = null;
 let colorActual = "";
 
-validar();
+cargarConfiguracion();
 
+async function cargarConfiguracion() {
+  const { data } = await client
+    .from("seguridad_config")
+    .select("pin_acceso")
+    .limit(1)
+    .single();
+
+  if (data) {
+    PIN_CORRECTO = data.pin_acceso;
+  }
+
+  validar();
+}
 async function validar() {
 
   try {
@@ -198,7 +211,13 @@ document.getElementById("btnAccion").addEventListener("click", () => {
 document.getElementById("btnRegistrar").addEventListener("click", async () => {
 
   const pin = document.getElementById("pin").value;
-  if (pin !== PIN_CORRECTO) return;
+
+if (!PIN_CORRECTO) {
+  alert("Error de configuración");
+  return;
+}
+
+if (pin !== PIN_CORRECTO) return;
 
   const ahora = new Date().toISOString();
 
@@ -286,20 +305,6 @@ function pintar(mensaje, tipo, data = null, texto = "") {
 
     detalle.appendChild(btn);
   }
-} {
-
-  document.body.className = tipo;
-  document.getElementById("estado").innerText = mensaje;
-
-  if (data) {
-    document.getElementById("detalle").innerHTML = `
-      <p><b>PROPIETARIO</b></p>
-      <p><b>${(acceso && acceso.nombre) ? acceso.nombre : "SIN NOMBRE"}</b></p>
-      <p>${data.privada}-${data.casa}</p>
-      <p>${texto || ""}</p>
-    `;
-  }
-}
 
 </script>
 
