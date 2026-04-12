@@ -207,13 +207,24 @@ btn.disabled = true;
 
   const ahora = new Date().toISOString();
 
-  if (tipo === "entrada") {
+  // 🔍 verificar estado REAL en BD
+const { data: accesoAbierto } = await client
+  .from("accesos_trabajadores_hogar")
+  .select("*")
+  .eq("trabajador_id", trabajador.id)
+  .is("fecha_hora_salida", null)
+  .maybeSingle();
 
-  const { error } = await client.from("accesos_trabajadores_hogar").insert([{
-    trabajador_id: trabajador.id,
-    fecha_hora_entrada: ahora,
-    estatus: "dentro"
-  }]);
+if (!accesoAbierto) {
+
+  // 👉 ENTRADA
+  const { error } = await client
+    .from("accesos_trabajadores_hogar")
+    .insert([{
+      trabajador_id: trabajador.id,
+      fecha_hora_entrada: ahora,
+      estatus: "dentro"
+    }]);
 
   if (error) {
     alert("Error al registrar entrada");
@@ -225,13 +236,14 @@ btn.disabled = true;
 
 } else {
 
-  const { error } = await client.from("accesos_trabajadores_hogar")
+  // 👉 SALIDA (usa ID exacto)
+  const { error } = await client
+    .from("accesos_trabajadores_hogar")
     .update({
       fecha_hora_salida: ahora,
       estatus: "fuera"
     })
-    .eq("trabajador_id", trabajador.id)
-    .is("fecha_hora_salida", null);
+    .eq("id", accesoAbierto.id);
 
   if (error) {
     alert("Error al registrar salida");
