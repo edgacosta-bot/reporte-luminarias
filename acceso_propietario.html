@@ -219,8 +219,6 @@ if (!PIN_CORRECTO) {
 
 if (pin !== PIN_CORRECTO) return;
 
-  const pin = document.getElementById("pin").value;
-
 const { data, error } = await client.rpc('registrar_acceso_propietario', {
   p_qr: qr,
   p_pin: pin
