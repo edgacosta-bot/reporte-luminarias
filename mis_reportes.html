@@ -223,7 +223,7 @@ async function cargarReportes() {
 
 async function iniciar() {
   await obtenerDatosUsuario();
-  cargarReportes();
+  await cargarReportes();
 }
 
 iniciar();
