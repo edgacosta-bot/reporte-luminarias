@@ -89,6 +89,14 @@ button {
   opacity: 0.5;
   pointer-events: none;
 }
+
+  #modalRenovar {
+  backdrop-filter: blur(4px);
+}
+
+#modalRenovar div {
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -105,6 +113,22 @@ button {
 
 <div id="lista"></div>
 
+ <div id="modalRenovar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
+
+  <div style="background:#1f2937; padding:20px; border-radius:16px; width:90%; max-width:300px;">
+
+    <h3 style="margin-top:0;">Renovar vigencia</h3>
+
+    <input type="date" id="nuevaFecha" style="width:100%; padding:10px; border-radius:10px; border:none; margin-top:10px;">
+
+    <div style="display:flex; gap:10px; margin-top:15px;">
+      <button onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-on" onclick="confirmarRenovar()">Guardar</button>
+    </div>
+
+  </div>
+</div> 
+
 </div>
 
 <script>
@@ -117,6 +141,8 @@ const client = window.supabase.createClient(
 const identificador = localStorage.getItem("identificador");
 
 let residente = null;
+
+let trabajadorSeleccionado = null;  
 
 cargar();
 
@@ -227,19 +253,36 @@ function abrirRenovar(id, fechaActual) {
 
   if (residente.estado_pago === "moroso") return;
 
-  const nuevaFecha = prompt("Nueva fecha fin (YYYY-MM-DD):", fechaActual);
+  trabajadorSeleccionado = id;
 
-  if (isNaN(Date.parse(nuevaFecha))) {
-  alert("Formato inválido. Usa YYYY-MM-DD");
+  document.getElementById("modalRenovar").style.display = "flex";
+  document.getElementById("nuevaFecha").value = fechaActual || "";
+}
+
+  function cerrarModal() {
+  document.getElementById("modalRenovar").style.display = "none";
+}
+
+async function confirmarRenovar() {
+
+  const nuevaFecha = document.getElementById("nuevaFecha").value;
+  const btn = event.target;
+btn.disabled = true;
+btn.innerText = "Guardando...";
+
+  if (!nuevaFecha) {
+  alert("Selecciona una fecha");
+  btn.disabled = false;
+  btn.innerText = "Guardar";
   return;
 }
 
-  if (!nuevaFecha) return;
-
-  renovarTrabajador(id, nuevaFecha);
+  if (isNaN(Date.parse(nuevaFecha))) {
+  alert("Fecha inválida");
+  btn.disabled = false;
+  btn.innerText = "Guardar";
+  return;
 }
-
-async function renovarTrabajador(id, nuevaFecha) {
 
   const { error } = await client
     .from("trabajadores_hogar")
@@ -247,18 +290,22 @@ async function renovarTrabajador(id, nuevaFecha) {
       fecha_fin: nuevaFecha,
       activo: true
     })
-    .eq("id", id);
+    .eq("id", trabajadorSeleccionado);
 
-  if (error) {
-    alert("Error al renovar");
-    console.log(error);
-    return;
-  }
+ if (error) {
+  alert("Error al renovar");
+  console.log(error);
+  btn.disabled = false;
+  btn.innerText = "Guardar";
+  return;
+}
 
-  alert("Renovado correctamente");
-
+  cerrarModal();
   cargar();
-}  
+  alert("Renovado correctamente");
+  btn.disabled = false;
+btn.innerText = "Guardar";
+}
 </script>
 
 </body>
