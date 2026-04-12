@@ -182,13 +182,18 @@ function pintar(texto, color) {
 }
 
 async function confirmar() {
+const btn = document.getElementById("btnConfirmar");
+btn.disabled = true;
 
-  if (!puedeConfirmar) return;
+  if (!puedeConfirmar) {
+  btn.disabled = false;
+  return;
+}
 
-  if (!PIN) {
-    alert("Error de configuración");
-    return;
-  }
+ if (!PIN || PIN.length < 4) {
+  alert("Error de configuración de seguridad");
+  return;
+}
 
   const pin = document.getElementById("pin").value;
 
@@ -196,6 +201,7 @@ async function confirmar() {
     const error = document.getElementById("errorMsg");
     error.style.display = "block";
     document.getElementById("pin").value = "";
+    btn.disabled = false;
     return;
   }
 
@@ -203,26 +209,38 @@ async function confirmar() {
 
   if (tipo === "entrada") {
 
-    await client.from("accesos_trabajadores_hogar").insert([{
-      trabajador_id: trabajador.id,
-      fecha_hora_entrada: ahora,
-      estatus: "dentro"
-    }]);
+  const { error } = await client.from("accesos_trabajadores_hogar").insert([{
+    trabajador_id: trabajador.id,
+    fecha_hora_entrada: ahora,
+    estatus: "dentro"
+  }]);
 
-    pintarFinal("ENTRADA REGISTRADA", "ok");
-
-  } else {
-
-    await client.from("accesos_trabajadores_hogar")
-      .update({
-        fecha_hora_salida: ahora,
-        estatus: "fuera"
-      })
-      .eq("trabajador_id", trabajador.id)
-      .is("fecha_hora_salida", null);
-
-    pintarFinal("SALIDA REGISTRADA", "warn");
+  if (error) {
+    alert("Error al registrar entrada");
+    btn.disabled = false;
+    return;
   }
+
+  pintarFinal("ENTRADA REGISTRADA", "ok");
+
+} else {
+
+  const { error } = await client.from("accesos_trabajadores_hogar")
+    .update({
+      fecha_hora_salida: ahora,
+      estatus: "fuera"
+    })
+    .eq("trabajador_id", trabajador.id)
+    .is("fecha_hora_salida", null);
+
+  if (error) {
+    alert("Error al registrar salida");
+    btn.disabled = false;
+    return;
+  }
+
+  pintarFinal("SALIDA REGISTRADA", "warn");
+}
 }
   function pintarFinal(texto, color) {
   document.body.className = color;
