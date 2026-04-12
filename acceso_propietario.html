@@ -219,41 +219,23 @@ if (!PIN_CORRECTO) {
 
 if (pin !== PIN_CORRECTO) return;
 
-  const ahora = new Date().toISOString();
+  const pin = document.getElementById("pin").value;
 
-  const { data: movimientos } = await client
-    .from("accesos_registro_propietarios")
-    .select("*")
-    .eq("acceso_id", acceso.id)
-    .order("fecha_hora_entrada", { ascending: false })
-    .limit(1);
+const { data, error } = await client.rpc('registrar_acceso_propietario', {
+  p_qr: qr,
+  p_pin: pin
+});
 
-  const ultimo = movimientos && movimientos.length > 0 ? movimientos[0] : null;
+if (error || !data?.ok) {
+  alert(data?.mensaje || "Error");
+  return;
+}
 
-  if (accionActual === "salida" && ultimo) {
-
-    await client
-      .from("accesos_registro_propietarios")
-      .update({
-        fecha_hora_salida: ahora,
-        estatus: "fuera"
-      })
-      .eq("id", ultimo.id);
-
-    mostrarResultado("SALIDA REGISTRADA");
-
-  } else {
-
-    await client
-      .from("accesos_registro_propietarios")
-      .insert([{
-        acceso_id: acceso.id,
-        fecha_hora_entrada: ahora,
-        estatus: "dentro"
-      }]);
-
-    mostrarResultado("ENTRADA REGISTRADA");
-  }
+if (data.accion === "salida") {
+  mostrarResultado("SALIDA REGISTRADA");
+} else {
+  mostrarResultado("ENTRADA REGISTRADA");
+}
 
 });
 
