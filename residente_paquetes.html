@@ -109,34 +109,43 @@ const supabaseClient = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-const privada = localStorage.getItem("privada");
-const casa = localStorage.getItem("casa");
-
-const toggle = document.getElementById("toggle");
-const mensaje = document.getElementById("mensaje");
-
 let residenteId = null;
 let estadoPago = null;
 let autorizado = false;
 
-// 🔽 CARGAR DATOS
-async function cargar() {
+async function obtenerDatosUsuario() {
 
-  const { data } = await supabaseClient
+  const { data: userData } = await supabaseClient.auth.getUser();
+
+  if (!userData?.user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const userId = userData.user.id;
+
+  const { data: residente } = await supabaseClient
     .from("residentes")
     .select("*")
-    .eq("privada", privada)
-    .eq("casa", casa)
+    .eq("user_id", userId)
     .maybeSingle();
 
-  if (!data) return;
+  if (!residente) {
+    window.location.href = "login.html";
+    return;
+  }
 
-  residenteId = data.id;
-  estadoPago = data.estado_pago;
+  residenteId = residente.id;
+  estadoPago = residente.estado_pago;
+  autorizado = residente.recibe_paquetes || false;
+}
+  
+const toggle = document.getElementById("toggle");
+const mensaje = document.getElementById("mensaje");
 
-  // ✅ CORRECTO (antes estaba mal)
-  autorizado = data.recibe_paquetes || false;
-
+// 🔽 CARGAR DATOS
+async function cargar() {
+  await obtenerDatosUsuario();
   render();
 }
 
@@ -189,7 +198,9 @@ toggle.addEventListener("click", async () => {
 });
 
 // INIT
-cargar();
+(async () => {
+  await cargar();
+})();
 </script>
 
 </body>
