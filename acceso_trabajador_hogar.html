@@ -28,7 +28,6 @@ body {
   width: 90%;
 }
 
-/* 🔥 FIX GLOBAL DE DIMENSIONES */
 input, button {
   width: 100%;
   padding: 14px;
@@ -37,14 +36,12 @@ input, button {
   box-sizing: border-box;
 }
 
-/* 🔥 BOTÓN SALIR */
 #btnSalir {
   display: none;
   background: #1f2937;
   color: white;
 }
 
-/* 🔥 MENSAJE ERROR */
 #errorMsg {
   display: none;
   color: #fecaca;
@@ -70,8 +67,6 @@ input, button {
 
 <script>
 
-let PIN = null;
-
 const client = supabase.createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
@@ -83,20 +78,7 @@ let trabajador = null;
 let tipo = "";
 let puedeConfirmar = false;
 
-async function cargarConfiguracion() {
-  const { data } = await client
-    .from("seguridad_config")
-    .select("pin_acceso")
-    .limit(1)
-    .single();
-
-  if (data) {
-    PIN = data.pin_acceso;
-  }
-
-  init();
-}
-cargarConfiguracion();
+init();
 
 async function init() {
 
@@ -114,7 +96,6 @@ async function init() {
 
   trabajador = data;
 
-  // 🔥 VALIDACIÓN CORRECTA (ESTADO_PAGO)
   const { data: residente } = await client
     .from("residentes")
     .select("estado_pago")
@@ -182,22 +163,26 @@ function pintar(texto, color) {
 }
 
 async function confirmar() {
-const btn = document.getElementById("btnConfirmar");
-btn.disabled = true;
+  const btn = document.getElementById("btnConfirmar");
+  btn.disabled = true;
 
   if (!puedeConfirmar) {
-  btn.disabled = false;
-  return;
-}
-
- if (!PIN || PIN.length < 4) {
-  alert("Error de configuración de seguridad");
-  return;
-}
+    btn.disabled = false;
+    return;
+  }
 
   const pin = document.getElementById("pin").value;
 
-  if (pin !== PIN) {
+  // 🔐 VALIDACIÓN DE VIGILANTE (PIN INDIVIDUAL)
+  const { data: vigilante } = await client
+    .from("residentes")
+    .select("id, nombre")
+    .eq("pin_vigilante", pin)
+    .eq("tipo", "vigilante")
+    .eq("activo", true)
+    .maybeSingle();
+
+  if (!vigilante) {
     const error = document.getElementById("errorMsg");
     error.style.display = "block";
     document.getElementById("pin").value = "";
@@ -205,66 +190,65 @@ btn.disabled = true;
     return;
   }
 
+  // 🔥 GUARDAMOS VIGILANTE
+  localStorage.setItem("vigilante_id", vigilante.id);
+
   const ahora = new Date().toISOString();
 
-  // 🔍 verificar estado REAL en BD
-const { data: accesosAbiertos } = await client
-  .from("accesos_trabajadores_hogar")
-  .select("*")
-  .eq("trabajador_id", trabajador.id)
-  .is("fecha_hora_salida", null)
-  .limit(1);
-
-console.log("TRABAJADOR ID:", trabajador.id);
-console.log("ACCESOS ABIERTOS:", accesosAbiertos);
-
-const accesoAbierto = accesosAbiertos && accesosAbiertos.length > 0
-  ? accesosAbiertos[0]
-  : null;
-
-if (!accesoAbierto) {
-
-  // 👉 ENTRADA
-  const { error } = await client
+  // 🔍 BUSCAR ACCESO ABIERTO
+  const { data: accesosAbiertos } = await client
     .from("accesos_trabajadores_hogar")
-    .insert([{
-      trabajador_id: trabajador.id,
-      fecha_hora_entrada: ahora,
-      estatus: "dentro"
-    }]);
+    .select("*")
+    .eq("trabajador_id", trabajador.id)
+    .is("fecha_hora_salida", null)
+    .limit(1);
 
-  if (error) {
-    alert("Error al registrar entrada");
-    btn.disabled = false;
-    return;
+  const accesoAbierto = accesosAbiertos && accesosAbiertos.length > 0
+    ? accesosAbiertos[0]
+    : null;
+
+  if (!accesoAbierto) {
+
+    // 👉 ENTRADA
+    const { error } = await client
+      .from("accesos_trabajadores_hogar")
+      .insert([{
+        trabajador_id: trabajador.id,
+        fecha_hora_entrada: ahora,
+        estatus: "dentro",
+        vigilante_id: vigilante.id
+      }]);
+
+    if (error) {
+      alert("Error al registrar entrada");
+      btn.disabled = false;
+      return;
+    }
+
+    pintarFinal("ENTRADA REGISTRADA", "ok");
+
+  } else {
+
+    // 👉 SALIDA SEGURA (POR ID)
+    const { error } = await client
+      .from("accesos_trabajadores_hogar")
+      .update({
+        fecha_hora_salida: ahora,
+        estatus: "fuera"
+      })
+      .eq("id", accesoAbierto.id);
+
+    if (error) {
+      alert("Error al registrar salida");
+      btn.disabled = false;
+      return;
+    }
+
+    pintarFinal("SALIDA REGISTRADA", "warn");
   }
-
-  pintarFinal("ENTRADA REGISTRADA", "ok");
-
-} else {
-
-  // 👉 SALIDA (usa ID exacto)
- const { error } = await client
-  .from("accesos_trabajadores_hogar")
-  .update({
-    fecha_hora_salida: ahora,
-    estatus: "fuera"
-  })
-  .eq("trabajador_id", trabajador.id)
-  .is("fecha_hora_salida", null);
-
-  console.log("ERROR UPDATE:", error);
-  
-  if (error) {
-    alert("Error al registrar salida");
-    btn.disabled = false;
-    return;
-  }
-
-  pintarFinal("SALIDA REGISTRADA", "warn");
 }
-}
-  function pintarFinal(texto, color) {
+
+function pintarFinal(texto, color) {
   document.body.className = color;
   document.getElementById("estado").innerText = texto;
 
