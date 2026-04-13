@@ -304,10 +304,11 @@ async function crearVigilante() {
       activo: true
     }]);
 
-  if (error) {
-    alert("Error al crear vigilante");
-    return;
-  }
+ if (error) {
+  console.log("ERROR COMPLETO:", error);
+  alert(error.message);
+  return;
+}
 
   cerrarModalNuevo();
   cargar();
