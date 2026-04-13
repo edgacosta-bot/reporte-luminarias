@@ -103,8 +103,8 @@ const client = window.supabase.createClient(
 );
 
 const params = new URLSearchParams(window.location.search);
-const qr = params.get("qr");
-
+const qr = params.get("qr")?.trim();
+  
 let visitaGlobal = null;
 
 init();
@@ -203,7 +203,8 @@ btn.addEventListener("click", async () => {
   .from('accesos_visitas')
   .select('*')
   .eq('visita_id', visitaGlobal.id)
-  .filter('fecha_hora_salida', 'is', null);
+  .is('fecha_hora_salida', null)
+  .limit(1);
 
 console.log("ACCESOS ABIERTOS:", accesos);
 
