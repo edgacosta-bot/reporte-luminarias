@@ -128,7 +128,7 @@ async function validar() {
 
   visitaGlobal = data;
 
-  // 🔒 Validaciones de estado
+  // 🔒 Estado
   if (visitaGlobal.estatus === 'finalizado') {
     pintar("ACCESO YA FINALIZADO", "error", visitaGlobal);
     return;
@@ -139,20 +139,24 @@ async function validar() {
     return;
   }
 
-  // 🔒 Validación de fecha y hora
+  // 🔒 Fecha y hora LOCAL
   const now = new Date();
+
   const hoy = now.getFullYear() + '-' +
-  String(now.getMonth() + 1).padStart(2, '0') + '-' +
-  String(now.getDate()).padStart(2, '0');
-  const ahora = new Date();
-  const horaActual = ahora.toTimeString().slice(0,5);
+    String(now.getMonth() + 1).padStart(2, '0') + '-' +
+    String(now.getDate()).padStart(2, '0');
+
+  const horaActual = now.toTimeString().slice(0,5);
+
+  const horaInicio = visitaGlobal.hora_inicio.slice(0,5);
+  const horaFin = visitaGlobal.hora_fin.slice(0,5);
 
   if (visitaGlobal.fecha_visita !== hoy) {
     pintar("QR NO VÁLIDO PARA HOY", "error", visitaGlobal);
     return;
   }
 
-  if (horaActual < visitaGlobal.hora_inicio || horaActual > visitaGlobal.hora_fin) {
+  if (horaActual < horaInicio || horaActual > horaFin) {
     pintar("FUERA DE HORARIO", "error", visitaGlobal);
     return;
   }
@@ -166,13 +170,8 @@ const pinInput = document.getElementById("pin");
 const btn = document.getElementById("btnAutorizar");
 
 pinInput.addEventListener("input", () => {
-  if (pinInput.value.length >= 4) {
-    btn.disabled = false;
-    btn.classList.add("enabled");
-  } else {
-    btn.disabled = true;
-    btn.classList.remove("enabled");
-  }
+  btn.disabled = pinInput.value.length < 4;
+  btn.classList.toggle("enabled", pinInput.value.length >= 4);
 });
 
 btn.addEventListener("click", async () => {
@@ -204,7 +203,8 @@ btn.addEventListener("click", async () => {
     .from('accesos_visitas')
     .select('*')
     .eq('visita_id', visitaGlobal.id)
-    .is('fecha_hora_salida', null)
+    .filter('fecha_hora_salida', 'is', null)
+    .limit(1)
     .maybeSingle();
 
   if (!acceso) {
@@ -215,6 +215,7 @@ btn.addEventListener("click", async () => {
       .insert([{
         visita_id: visitaGlobal.id,
         fecha_hora_entrada: ahora,
+        fecha_hora_salida: null,
         estatus: 'dentro',
         vigilante_id: vigilante.id
       }]);
@@ -248,10 +249,14 @@ btn.addEventListener("click", async () => {
     }
 
     // 🔥 cerrar QR
-    await client
+    const { error: errorFinal } = await client
       .from('visitas_qr')
       .update({ estatus: 'finalizado' })
       .eq('id', visitaGlobal.id);
+
+    if (errorFinal) {
+      console.error("Error al finalizar QR", errorFinal);
+    }
 
     pintar("SALIDA REGISTRADA", "warn", visitaGlobal);
   }
