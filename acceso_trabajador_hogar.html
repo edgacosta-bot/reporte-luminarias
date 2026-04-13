@@ -233,10 +233,11 @@ async function confirmar() {
     const { error } = await client
       .from("accesos_trabajadores_hogar")
       .update({
-        fecha_hora_salida: ahora,
-        estatus: "fuera"
-      })
-      .eq("id", accesoAbierto.id);
+  fecha_hora_salida: ahora,
+  estatus: "fuera",
+  vigilante_salida_id: vigilante.id
+})
+.eq("id", accesoAbierto.id);
 
     if (error) {
       alert("Error al registrar salida");
