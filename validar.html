@@ -78,6 +78,16 @@
       opacity: 1;
       transform: scale(1.02);
     }
+
+    .error-box {
+      display: none;
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #7f1d1d;
+      color: #fecaca;
+      font-weight: bold;
+    }
   </style>
 </head>
 
@@ -89,6 +99,12 @@
 
   <div id="control" class="control">
     <input type="password" id="pin" placeholder="Ingrese PIN">
+
+    <!-- 🔴 ERROR BONITO -->
+    <div id="errorPin" class="error-box">
+      PIN incorrecto
+    </div>
+
     <button id="btnAutorizar" class="btn" disabled>
       Autorizar acceso
     </button>
@@ -104,10 +120,10 @@ const client = window.supabase.createClient(
 
 const params = new URLSearchParams(window.location.search);
 const qr = params.get("qr")?.trim();
-  
+
 let visitaGlobal = null;
 let tipoAccion = "";
-let accesoActual = null;  
+let accesoActual = null;
 
 init();
 
@@ -130,7 +146,6 @@ async function validar() {
 
   visitaGlobal = data;
 
-  // 🔒 Estado
   if (visitaGlobal.estatus === 'finalizado') {
     pintar("ACCESO YA FINALIZADO", "error", visitaGlobal);
     return;
@@ -141,7 +156,6 @@ async function validar() {
     return;
   }
 
-  // 🔒 Fecha y hora LOCAL
   const now = new Date();
 
   const hoy = now.getFullYear() + '-' +
@@ -163,37 +177,39 @@ async function validar() {
     return;
   }
 
-  // 🔍 detectar acceso abierto (igual que hogar)
-const { data: accesos } = await client
-  .from('accesos_visitas')
-  .select('*')
-  .eq('visita_id', visitaGlobal.id)
-  .is('fecha_hora_salida', null)
-  .limit(1);
+  // 🔍 detectar acceso abierto
+  const { data: accesos } = await client
+    .from('accesos_visitas')
+    .select('*')
+    .eq('visita_id', visitaGlobal.id)
+    .is('fecha_hora_salida', null)
+    .limit(1);
 
-const acceso = accesos && accesos.length > 0 ? accesos[0] : null;
+  const acceso = accesos && accesos.length > 0 ? accesos[0] : null;
 
-if (!acceso) {
-  tipoAccion = "entrada";
-  pintar("REGISTRAR ENTRADA", "ok", visitaGlobal);
-} else {
-  tipoAccion = "salida";
-  accesoActual = acceso;
-  pintar("REGISTRAR SALIDA", "warn", visitaGlobal);
-}
+  if (!acceso) {
+    tipoAccion = "entrada";
+    pintar("REGISTRAR ENTRADA", "ok", visitaGlobal);
+  } else {
+    tipoAccion = "salida";
+    accesoActual = acceso;
+    pintar("REGISTRAR SALIDA", "warn", visitaGlobal);
+  }
 
-document.getElementById("control").style.display = "block";
-return;
-  
+  document.getElementById("control").style.display = "block";
 }
 
 // 🔹 CONTROLES
 const pinInput = document.getElementById("pin");
 const btn = document.getElementById("btnAutorizar");
+const errorDiv = document.getElementById("errorPin");
 
 pinInput.addEventListener("input", () => {
   btn.disabled = pinInput.value.length < 4;
   btn.classList.toggle("enabled", pinInput.value.length >= 4);
+
+  // 🔄 limpiar error al escribir
+  errorDiv.style.display = "none";
 });
 
 btn.addEventListener("click", async () => {
@@ -205,14 +221,15 @@ btn.addEventListener("click", async () => {
 
   const { data: vigilante } = await client
     .from("residentes")
-    .select("id, nombre")
+    .select("id")
     .eq("pin_vigilante", pin)
     .eq("tipo", "vigilante")
     .eq("activo", true)
     .maybeSingle();
 
   if (!vigilante) {
-    alert("PIN incorrecto");
+    errorDiv.style.display = "block";
+    pinInput.value = "";
     btn.disabled = false;
     btn.innerText = "Autorizar acceso";
     return;
@@ -220,11 +237,8 @@ btn.addEventListener("click", async () => {
 
   const ahora = new Date().toISOString();
 
- 
-
   if (tipoAccion === "entrada") {
 
-    // 👉 ENTRADA
     const { error } = await client
       .from('accesos_visitas')
       .insert([{
@@ -237,8 +251,6 @@ btn.addEventListener("click", async () => {
 
     if (error) {
       alert("Error al registrar entrada");
-      btn.disabled = false;
-      btn.innerText = "Autorizar acceso";
       return;
     }
 
@@ -246,7 +258,6 @@ btn.addEventListener("click", async () => {
 
   } else {
 
-    // 👉 SALIDA
     const { error } = await client
       .from('accesos_visitas')
       .update({
@@ -258,20 +269,13 @@ btn.addEventListener("click", async () => {
 
     if (error) {
       alert("Error al registrar salida");
-      btn.disabled = false;
-      btn.innerText = "Autorizar acceso";
       return;
     }
 
-    // 🔥 cerrar QR
-    const { error: errorFinal } = await client
+    await client
       .from('visitas_qr')
       .update({ estatus: 'finalizado' })
       .eq('id', visitaGlobal.id);
-
-    if (errorFinal) {
-      console.error("Error al finalizar QR", errorFinal);
-    }
 
     pintar("SALIDA REGISTRADA", "warn", visitaGlobal);
   }
