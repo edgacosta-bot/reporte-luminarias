@@ -106,6 +106,8 @@ const params = new URLSearchParams(window.location.search);
 const qr = params.get("qr")?.trim();
   
 let visitaGlobal = null;
+let tipoAccion = "";
+let accesoActual = null;  
 
 init();
 
@@ -161,8 +163,28 @@ async function validar() {
     return;
   }
 
-  pintar("ACCESO PERMITIDO", "ok", visitaGlobal);
-  document.getElementById("control").style.display = "block";
+  // 🔍 detectar acceso abierto (igual que hogar)
+const { data: accesos } = await client
+  .from('accesos_visitas')
+  .select('*')
+  .eq('visita_id', visitaGlobal.id)
+  .is('fecha_hora_salida', null)
+  .limit(1);
+
+const acceso = accesos && accesos.length > 0 ? accesos[0] : null;
+
+if (!acceso) {
+  tipoAccion = "entrada";
+  pintar("REGISTRAR ENTRADA", "ok", visitaGlobal);
+} else {
+  tipoAccion = "salida";
+  accesoActual = acceso;
+  pintar("REGISTRAR SALIDA", "warn", visitaGlobal);
+}
+
+document.getElementById("control").style.display = "block";
+return;
+  
 }
 
 // 🔹 CONTROLES
@@ -198,19 +220,9 @@ btn.addEventListener("click", async () => {
 
   const ahora = new Date().toISOString();
 
-  // 🔍 buscar acceso abierto
- const { data: accesos } = await client
-  .from('accesos_visitas')
-  .select('*')
-  .eq('visita_id', visitaGlobal.id)
-  .is('fecha_hora_salida', null)
-  .limit(1);
+ 
 
-console.log("ACCESOS ABIERTOS:", accesos);
-
-const acceso = accesos && accesos.length > 0 ? accesos[0] : null;
-
-  if (!acceso) {
+  if (tipoAccion === "entrada") {
 
     // 👉 ENTRADA
     const { error } = await client
@@ -242,7 +254,7 @@ const acceso = accesos && accesos.length > 0 ? accesos[0] : null;
         estatus: 'fuera',
         vigilante_salida_id: vigilante.id
       })
-      .eq('id', acceso.id);
+      .eq('id', accesoActual.id);
 
     if (error) {
       alert("Error al registrar salida");
