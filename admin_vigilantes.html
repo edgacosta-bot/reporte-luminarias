@@ -197,11 +197,22 @@ async function guardarPin() {
 
   const nuevo = document.getElementById("nuevoPinInput").value;
 
-  if (!nuevo || nuevo.length < 4) {
-    alert("PIN inválido");
-    return;
-  }
+  if (!nuevo || nuevo.length !== 4 || isNaN(nuevo)) {
+  alert("El PIN debe ser de 4 dígitos numéricos");
+  return;
+}
 
+  const { data: existe } = await client
+  .from("residentes")
+  .select("id")
+  .eq("pin_vigilante", nuevo)
+  .neq("id", vigilanteSeleccionado)
+  .maybeSingle();
+
+if (existe) {
+  alert("Ese PIN ya está en uso");
+  return;
+}
   const { error } = await client
     .from("residentes")
     .update({ pin_vigilante: nuevo })
