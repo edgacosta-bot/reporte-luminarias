@@ -149,7 +149,7 @@ async function validar() {
   // 🔍 verificar si ya tiene salida registrada
 const { data: accesosFinalizados } = await client
   .from('accesos_visitas')
-  .select('*')
+  .select('id')
   .eq('visita_id', visitaGlobal.id)
   .not('fecha_hora_salida', 'is', null)
   .limit(1);
@@ -193,7 +193,7 @@ if (accesosFinalizados && accesosFinalizados.length > 0) {
   // 🔍 detectar acceso abierto
   const { data: accesos } = await client
     .from('accesos_visitas')
-    .select('*')
+    .select('id')
     .eq('visita_id', visitaGlobal.id)
     .is('fecha_hora_salida', null)
     .limit(1);
@@ -252,15 +252,17 @@ btn.addEventListener("click", async () => {
 
   if (tipoAccion === "entrada") {
 
-    const { error } = await client
-      .from('accesos_visitas')
-      .insert([{
-        visita_id: visitaGlobal.id,
-        fecha_hora_entrada: ahora,
-        fecha_hora_salida: null,
-        estatus: 'dentro',
-        vigilante_id: vigilante.id
-      }]);
+   const { data: nuevoAcceso, error } = await client
+  .from('accesos_visitas')
+  .insert([{
+    visita_id: visitaGlobal.id,
+    fecha_hora_entrada: ahora,
+    fecha_hora_salida: null,
+    estatus: 'dentro',
+    vigilante_id: vigilante.id
+  }])
+  .select()
+  .single();
 
     if (error) {
       alert("Error al registrar entrada");
@@ -268,6 +270,25 @@ btn.addEventListener("click", async () => {
     }
 
     pintar("ENTRADA REGISTRADA", "ok", visitaGlobal);
+
+    // 🔔 marcar como notificado
+const { error: errorNotif } = await client
+  .from('accesos_visitas')
+  .update({
+    notificado: true,
+    fecha_notificacion: new Date().toISOString()
+  })
+  .eq('id', nuevoAcceso.id);
+
+if (errorNotif) {
+  console.error("Error registrando notificación", errorNotif);
+}
+
+    const mensaje = `Estimado residente, le informamos que su visitante *${visitaGlobal.nombre_visitante}* acaba de ingresar al fraccionamiento. Gracias`;
+
+const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+
+window.open(url, '_blank');
 
   } else {
 
