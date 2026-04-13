@@ -199,13 +199,15 @@ btn.addEventListener("click", async () => {
   const ahora = new Date().toISOString();
 
   // 🔍 buscar acceso abierto
-  const { data: acceso } = await client
-    .from('accesos_visitas')
-    .select('*')
-    .eq('visita_id', visitaGlobal.id)
-    .filter('fecha_hora_salida', 'is', null)
-    .limit(1)
-    .maybeSingle();
+ const { data: accesos } = await client
+  .from('accesos_visitas')
+  .select('*')
+  .eq('visita_id', visitaGlobal.id)
+  .filter('fecha_hora_salida', 'is', null);
+
+console.log("ACCESOS ABIERTOS:", accesos);
+
+const acceso = accesos && accesos.length > 0 ? accesos[0] : null;
 
   if (!acceso) {
 
