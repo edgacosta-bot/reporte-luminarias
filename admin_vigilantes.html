@@ -136,6 +136,22 @@ button {
 
 </div>
 
+<!-- 🔥 TOAST -->
+<div id="toast" style="
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111827;
+  color: white;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 9999;
+"></div>
+
 <script>
 
 const client = window.supabase.createClient(
@@ -146,6 +162,25 @@ const client = window.supabase.createClient(
 let vigilanteSeleccionado = null;
 
 cargar();
+
+function mostrarToast(mensaje, tipo = "ok") {
+
+  const toast = document.getElementById("toast");
+
+  toast.innerText = mensaje;
+
+  if (tipo === "error") toast.style.background = "#dc2626";
+  else if (tipo === "warn") toast.style.background = "#f59e0b";
+  else toast.style.background = "#16a34a";
+
+  toast.style.opacity = "1";
+  toast.style.bottom = "30px";
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.bottom = "20px";
+  }, 2500);
+}
 
 async function cargar() {
 
@@ -193,6 +228,7 @@ async function cargar() {
 }
 
 async function toggle(id, estadoActual) {
+
   await client
     .from("residentes")
     .update({ activo: !estadoActual })
@@ -202,6 +238,7 @@ async function toggle(id, estadoActual) {
 }
 
 async function eliminar(id) {
+
   if (!confirm("¿Eliminar vigilante?")) return;
 
   await client
@@ -227,7 +264,7 @@ async function guardarPin() {
   const nuevo = document.getElementById("nuevoPinInput").value;
 
   if (!nuevo || nuevo.length !== 4 || isNaN(nuevo)) {
-    alert("El PIN debe ser de 4 dígitos numéricos");
+    mostrarToast("El PIN debe ser de 4 dígitos", "warn");
     return;
   }
 
@@ -239,7 +276,7 @@ async function guardarPin() {
     .maybeSingle();
 
   if (existe) {
-    alert("Ese PIN ya está en uso");
+    mostrarToast("Ese PIN ya está en uso", "error");
     return;
   }
 
@@ -249,11 +286,12 @@ async function guardarPin() {
     .eq("id", vigilanteSeleccionado);
 
   if (error) {
-    alert("Error al guardar");
+    mostrarToast("Error al guardar", "error");
     return;
   }
 
   cerrarModal();
+  mostrarToast("PIN actualizado");
   cargar();
 }
 
@@ -273,12 +311,12 @@ async function crearVigilante() {
   const pin = document.getElementById("pinNuevo").value;
 
   if (!nombre) {
-    alert("Ingresa nombre");
+    mostrarToast("Ingresa nombre", "warn");
     return;
   }
 
   if (!pin || pin.length !== 4 || isNaN(pin)) {
-    alert("PIN inválido");
+    mostrarToast("PIN inválido", "warn");
     return;
   }
 
@@ -289,7 +327,7 @@ async function crearVigilante() {
     .maybeSingle();
 
   if (existe) {
-    alert("Ese PIN ya existe");
+    mostrarToast("Ese PIN ya existe", "error");
     return;
   }
 
@@ -304,13 +342,13 @@ async function crearVigilante() {
       activo: true
     }]);
 
- if (error) {
-  console.log("ERROR COMPLETO:", error);
-  alert(error.message);
-  return;
-}
+  if (error) {
+    mostrarToast(error.message, "error");
+    return;
+  }
 
   cerrarModalNuevo();
+  mostrarToast("Vigilante creado");
   cargar();
 }
 
