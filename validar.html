@@ -281,10 +281,14 @@ btn.addEventListener("click", async () => {
     btnWA.style.color = "white";
     btnWA.style.fontWeight = "bold";
     btnWA.style.borderRadius = "10px";
+    btnWA.style.boxShadow = "0 4px 10px rgba(0,0,0,0.3)";
+    btnWA.style.padding = "14px";
+    btnWA.style.border = "none";
+    btnWA.style.cursor = "pointer";
 
     btnWA.onclick = () => window.open(url, '_blank');
 
-    document.querySelector(".container").appendChild(btnWA);
+    document.getElementById("control").appendChild(btnWA);
 
   } else {
 
