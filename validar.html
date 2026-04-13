@@ -145,6 +145,19 @@ async function validar() {
   }
 
   visitaGlobal = data;
+  
+  // 🔍 verificar si ya tiene salida registrada
+const { data: accesosFinalizados } = await client
+  .from('accesos_visitas')
+  .select('*')
+  .eq('visita_id', visitaGlobal.id)
+  .not('fecha_hora_salida', 'is', null)
+  .limit(1);
+
+if (accesosFinalizados && accesosFinalizados.length > 0) {
+  pintar("ACCESO YA FINALIZADO", "error", visitaGlobal);
+  return;
+}
 
   if (visitaGlobal.estatus === 'finalizado') {
     pintar("ACCESO YA FINALIZADO", "error", visitaGlobal);
