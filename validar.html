@@ -107,10 +107,10 @@ const qr = params.get("qr");
 
 let visitaGlobal = null;
 
-cargarConfiguracion();
+init();
 
-async function cargarConfiguracion() {
-  validar();
+async function init() {
+  await validar();
 }
 
 async function validar() {
@@ -128,15 +128,37 @@ async function validar() {
 
   visitaGlobal = data;
 
-  if (visitaGlobal.estatus !== 'activo') {
-    pintar("QR YA UTILIZADO", "warn", visitaGlobal);
+  // 🔒 Validaciones de estado
+  if (visitaGlobal.estatus === 'finalizado') {
+    pintar("ACCESO YA FINALIZADO", "error", visitaGlobal);
+    return;
+  }
+
+  if (visitaGlobal.estatus === 'cancelado') {
+    pintar("ACCESO CANCELADO", "error", visitaGlobal);
+    return;
+  }
+
+  // 🔒 Validación de fecha y hora
+  const hoy = new Date().toISOString().split('T')[0];
+  const ahora = new Date();
+  const horaActual = ahora.toTimeString().slice(0,5);
+
+  if (visitaGlobal.fecha_visita !== hoy) {
+    pintar("QR NO VÁLIDO PARA HOY", "error", visitaGlobal);
+    return;
+  }
+
+  if (horaActual < visitaGlobal.hora_inicio || horaActual > visitaGlobal.hora_fin) {
+    pintar("FUERA DE HORARIO", "error", visitaGlobal);
     return;
   }
 
   pintar("ACCESO PERMITIDO", "ok", visitaGlobal);
   document.getElementById("control").style.display = "block";
 }
-  
+
+// 🔹 CONTROLES
 const pinInput = document.getElementById("pin");
 const btn = document.getElementById("btnAutorizar");
 
@@ -155,48 +177,81 @@ btn.addEventListener("click", async () => {
   btn.disabled = true;
   btn.innerText = "Procesando...";
 
-  const pin = document.getElementById("pin").value;
+  const pin = pinInput.value;
+
   const { data: vigilante } = await client
-  .from("residentes")
-  .select("id, nombre")
-  .eq("pin_vigilante", pin)
-  .eq("tipo", "vigilante")
-  .maybeSingle();
+    .from("residentes")
+    .select("id, nombre")
+    .eq("pin_vigilante", pin)
+    .eq("tipo", "vigilante")
+    .eq("activo", true)
+    .maybeSingle();
 
-if (!vigilante) {
-  alert("PIN incorrecto");
-  btn.disabled = false;
-  btn.innerText = "Autorizar acceso";
-  return;
-}
-
-
-const ahora = new Date();
-
-const { error } = await client
-  .from('visitas_qr')
-  .update({
-    estatus: 'usado',
-    hora_ingreso_utc: ahora.toISOString(),
-    hora_ingreso: ahora.toISOString(),
-    vigilante_id: vigilante.id
-  })
-  .eq('id', visitaGlobal.id)
-  .eq('estatus', 'activo');
-
-  if (error) {
-    alert("Error al registrar acceso");
+  if (!vigilante) {
+    alert("PIN incorrecto");
     btn.disabled = false;
     btn.innerText = "Autorizar acceso";
     return;
   }
 
-  document.getElementById("estado").innerText = "ACCESO REGISTRADO";
-  document.body.className = "ok";
+  const ahora = new Date().toISOString();
 
-  document.getElementById("detalle").innerHTML += `
-    <p style="margin-top:10px;">Registro exitoso</p>
-  `;
+  // 🔍 buscar acceso abierto
+  const { data: acceso } = await client
+    .from('accesos_visitas')
+    .select('*')
+    .eq('visita_id', visitaGlobal.id)
+    .is('fecha_hora_salida', null)
+    .maybeSingle();
+
+  if (!acceso) {
+
+    // 👉 ENTRADA
+    const { error } = await client
+      .from('accesos_visitas')
+      .insert([{
+        visita_id: visitaGlobal.id,
+        fecha_hora_entrada: ahora,
+        estatus: 'dentro',
+        vigilante_id: vigilante.id
+      }]);
+
+    if (error) {
+      alert("Error al registrar entrada");
+      btn.disabled = false;
+      btn.innerText = "Autorizar acceso";
+      return;
+    }
+
+    pintar("ENTRADA REGISTRADA", "ok", visitaGlobal);
+
+  } else {
+
+    // 👉 SALIDA
+    const { error } = await client
+      .from('accesos_visitas')
+      .update({
+        fecha_hora_salida: ahora,
+        estatus: 'fuera',
+        vigilante_salida_id: vigilante.id
+      })
+      .eq('id', acceso.id);
+
+    if (error) {
+      alert("Error al registrar salida");
+      btn.disabled = false;
+      btn.innerText = "Autorizar acceso";
+      return;
+    }
+
+    // 🔥 cerrar QR
+    await client
+      .from('visitas_qr')
+      .update({ estatus: 'finalizado' })
+      .eq('id', visitaGlobal.id);
+
+    pintar("SALIDA REGISTRADA", "warn", visitaGlobal);
+  }
 
   document.getElementById("control").style.display = "none";
 
