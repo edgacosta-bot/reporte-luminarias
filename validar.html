@@ -271,6 +271,38 @@ btn.addEventListener("click", async () => {
 
     pintar("ENTRADA REGISTRADA", "ok", visitaGlobal);
 
+    // 🔔 mensaje WA preparado
+const mensaje = `Estimado residente, le informamos que su visitante *${visitaGlobal.nombre_visitante}* acaba de ingresar al fraccionamiento. Gracias`;
+
+const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+
+// 🟢 botón WhatsApp
+const btnWA = document.createElement("button");
+btnWA.innerText = "Comunicar por WhatsApp";
+
+btnWA.style.marginTop = "12px";
+
+btnWA.style.background = "#16a34a";
+btnWA.style.color = "white";
+btnWA.style.fontWeight = "bold";
+btnWA.style.borderRadius = "10px";
+btnWA.style.padding = "14px";
+btnWA.style.border = "none";
+btnWA.style.cursor = "pointer";
+
+btnWA.onclick = () => {
+  window.open(url, '_blank');
+};
+
+// limpiar botones previos (por seguridad)
+const contenedor = document.querySelector(".container");
+const existentes = contenedor.querySelectorAll(".btn-wa");
+existentes.forEach(b => b.remove());
+
+btnWA.classList.add("btn-wa");
+
+contenedor.appendChild(btnWA);
+
     // 🔔 marcar como notificado
 const { error: errorNotif } = await client
   .from('accesos_visitas')
@@ -286,9 +318,6 @@ if (errorNotif) {
 
     const mensaje = `Estimado residente, le informamos que su visitante *${visitaGlobal.nombre_visitante}* acaba de ingresar al fraccionamiento. Gracias`;
 
-const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
-
-window.open(url, '_blank');
 
   } else {
 
