@@ -104,13 +104,12 @@ const supabaseClient = window.supabase.createClient(
 const params = new URLSearchParams(window.location.search);
 const qr = params.get("qr");
 
-let PIN_CORRECTO = null;
 let trabajadorGlobal = null;
 let accesoActual = null;
 let tipoAccion = "";
 let CONFIG = null;
 
-// 🔐 Cargar configuración UNA SOLA VEZ
+// 🔐 Cargar configuración
 supabaseClient
   .from("seguridad_config")
   .select("*")
@@ -119,7 +118,6 @@ supabaseClient
   .then(({ data }) => {
     if (data) {
       CONFIG = data;
-      PIN_CORRECTO = data.pin_acceso;
     }
     validar();
   })
@@ -132,10 +130,10 @@ async function validar() {
 
   try {
 
-   if (!qr || qr.length < 10) {
-  pintar("QR INVÁLIDO", "error");
-  return;
-}
+    if (!qr || qr.length < 10) {
+      pintar("QR INVÁLIDO", "error");
+      return;
+    }
 
     const { data: trabajador, error } = await supabaseClient
       .from("trabajadores_obra")
@@ -236,25 +234,36 @@ async function validar() {
 const pinInput = document.getElementById("pin");
 const btn = document.getElementById("btnConfirmar");
 
+// 🔧 BOTÓN HABILITADO POR LONGITUD
 pinInput.addEventListener("input", () => {
-
-  if (!PIN_CORRECTO) {
-    btn.disabled = true;
-    return;
-  }
-
-  if (pinInput.value === PIN_CORRECTO) {
-    btn.disabled = false;
-    btn.classList.add("enabled");
-  } else {
-    btn.disabled = true;
-    btn.classList.remove("enabled");
-  }
+  btn.disabled = pinInput.value.length < 4;
 });
 
 btn.addEventListener("click", async () => {
-if (!trabajadorGlobal) return;
-if (!tipoAccion) return;
+
+  const pin = pinInput.value;
+
+  const { data: vigilante } = await supabaseClient
+    .from("residentes")
+    .select("id, nombre")
+    .eq("pin_vigilante", pin)
+    .eq("tipo", "vigilante")
+    .eq("activo", true)
+    .maybeSingle();
+
+  if (!vigilante) {
+    pintar("PIN INCORRECTO", "error", trabajadorGlobal);
+    btn.disabled = false;
+    btn.innerText = "Confirmar";
+    return;
+  }
+
+  if (!trabajadorGlobal || !tipoAccion) {
+    pintar("ERROR DE FLUJO", "error");
+    btn.disabled = false;
+    btn.innerText = "Confirmar";
+    return;
+  }
 
   btn.disabled = true;
   btn.innerText = "Procesando...";
@@ -265,28 +274,27 @@ if (!tipoAccion) return;
     timeZone: "America/Mexico_City"
   }).replace(" ", "T");
 
-const { data: accesoVerificacion } = await supabaseClient
-  .from("accesos_trabajadores")
-  .select("*")
-  .eq("trabajador_id", trabajadorGlobal.id)
-  .is("fecha_hora_salida", null)
-  .maybeSingle();
+  const { data: accesoVerificacion } = await supabaseClient
+    .from("accesos_trabajadores")
+    .select("*")
+    .eq("trabajador_id", trabajadorGlobal.id)
+    .is("fecha_hora_salida", null)
+    .maybeSingle();
 
-// Revalidar estado
-if (tipoAccion === "entrada" && accesoVerificacion) {
-  pintar("YA REGISTRADO COMO DENTRO", "warn", trabajadorGlobal);
-  btn.disabled = false;
-  btn.innerText = "Confirmar";
-  return;
-}
+  if (tipoAccion === "entrada" && accesoVerificacion) {
+    pintar("YA REGISTRADO COMO DENTRO", "warn", trabajadorGlobal);
+    btn.disabled = false;
+    btn.innerText = "Confirmar";
+    return;
+  }
 
-if (tipoAccion === "salida" && !accesoVerificacion) {
-  pintar("NO HAY ENTRADA ACTIVA", "error", trabajadorGlobal);
-  btn.disabled = false;
-  btn.innerText = "Confirmar";
-  return;
-}
- 
+  if (tipoAccion === "salida" && !accesoVerificacion) {
+    pintar("NO HAY ENTRADA ACTIVA", "error", trabajadorGlobal);
+    btn.disabled = false;
+    btn.innerText = "Confirmar";
+    return;
+  }
+
   if (tipoAccion === "entrada") {
 
     await supabaseClient
@@ -295,7 +303,8 @@ if (tipoAccion === "salida" && !accesoVerificacion) {
         trabajador_id: trabajadorGlobal.id,
         fecha_hora_entrada: ahoraUTC,
         fecha_hora_entrada_local: ahoraLocal,
-        estatus: "dentro"
+        estatus: "dentro",
+        vigilante_id: vigilante.id
       }]);
 
     pintar("ENTRADA REGISTRADA", "ok", trabajadorGlobal);
@@ -307,7 +316,8 @@ if (tipoAccion === "salida" && !accesoVerificacion) {
       .update({
         fecha_hora_salida: ahoraUTC,
         fecha_hora_salida_local: ahoraLocal,
-        estatus: "fuera"
+        estatus: "fuera",
+        vigilante_salida_id: vigilante.id
       })
       .eq("id", accesoActual.id);
 
