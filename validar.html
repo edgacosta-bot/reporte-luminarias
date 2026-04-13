@@ -145,7 +145,6 @@ async function validar() {
 
   visitaGlobal = data;
 
-  // 🔍 ya finalizado por accesos
   const { data: accesosFinalizados } = await client
     .from('accesos_visitas')
     .select('id')
@@ -261,7 +260,6 @@ btn.addEventListener("click", async () => {
 
     pintar("ENTRADA REGISTRADA", "ok", visitaGlobal);
 
-    // 🔔 registrar notificación
     await client
       .from('accesos_visitas')
       .update({
@@ -270,7 +268,6 @@ btn.addEventListener("click", async () => {
       })
       .eq('id', nuevoAcceso.id);
 
-    // 📲 botón WhatsApp
     const mensaje = `Estimado residente, le informamos que su visitante *${visitaGlobal.nombre_visitante}* acaba de ingresar al fraccionamiento. Gracias`;
     const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
 
@@ -288,7 +285,14 @@ btn.addEventListener("click", async () => {
 
     btnWA.onclick = () => window.open(url, '_blank');
 
-    document.getElementById("control").appendChild(btnWA);
+    // 🔥 eliminar duplicados
+    const existentes = document.querySelectorAll(".btn-wa");
+    existentes.forEach(b => b.remove());
+
+    btnWA.classList.add("btn-wa");
+
+    // 🔥 agregar correctamente
+    document.querySelector(".container").appendChild(btnWA);
 
   } else {
 
