@@ -7,14 +7,16 @@ const supabaseClient = createClient(
 
 async function protegerPagina(rolesPermitidos) {
 
-  const { data: userData } = await supabaseClient.auth.getUser();
+  const { data: sessionData } = await supabaseClient.auth.getSession();
 
-  if (!userData?.user) {
-    window.location.href = "login.html";
-    return;
-  }
+const user = sessionData?.session?.user;
 
-  const userId = userData.user.id;
+if (!user) {
+  window.location.href = "login.html";
+  return;
+}
+
+const userId = user.id;
 
   const { data: residente } = await supabaseClient
     .from("residentes")
