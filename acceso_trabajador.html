@@ -98,7 +98,7 @@ button {
 
 const supabaseClient = window.supabase.createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+  "TU_ANON_KEY"
 );
 
 const params = new URLSearchParams(window.location.search);
@@ -109,22 +109,17 @@ let accesoActual = null;
 let tipoAccion = "";
 let CONFIG = null;
 
-// 🔐 Cargar configuración
+// 🔐 Config
 supabaseClient
   .from("seguridad_config")
   .select("*")
   .limit(1)
   .single()
   .then(({ data }) => {
-    if (data) {
-      CONFIG = data;
-    }
+    if (data) CONFIG = data;
     validar();
   })
-  .catch(() => {
-    console.warn("Error cargando configuración");
-    validar();
-  });
+  .catch(() => validar());
 
 async function validar() {
 
@@ -146,19 +141,22 @@ async function validar() {
       return;
     }
 
+    // 🔥 FECHAS SEGURAS
     const hoy = new Date().toLocaleDateString('sv-SE');
+    const inicio = trabajador.fecha_inicio?.split("T")[0];
+    const fin = trabajador.fecha_fin?.split("T")[0];
 
     if (!trabajador.activo) {
       pintar("ACCESO DENEGADO", "error", trabajador);
       return;
     }
 
-    if (trabajador.fecha_inicio && hoy < trabajador.fecha_inicio) {
+    if (inicio && hoy < inicio) {
       pintar("AÚN NO AUTORIZADO", "warn", trabajador);
       return;
     }
 
-    if (trabajador.fecha_fin && hoy > trabajador.fecha_fin) {
+    if (fin && hoy > fin) {
       pintar("ACCESO VENCIDO", "error", trabajador);
       return;
     }
@@ -234,7 +232,6 @@ async function validar() {
 const pinInput = document.getElementById("pin");
 const btn = document.getElementById("btnConfirmar");
 
-// 🔧 BOTÓN HABILITADO POR LONGITUD
 pinInput.addEventListener("input", () => {
   btn.disabled = pinInput.value.length < 4;
 });
@@ -269,7 +266,6 @@ btn.addEventListener("click", async () => {
   btn.innerText = "Procesando...";
 
   const ahoraUTC = new Date().toISOString();
-
   const ahoraLocal = new Date().toLocaleString("sv-SE", {
     timeZone: "America/Mexico_City"
   }).replace(" ", "T");
@@ -296,6 +292,21 @@ btn.addEventListener("click", async () => {
   }
 
   if (tipoAccion === "entrada") {
+
+    // 🔥 DOBLE VALIDACIÓN SOLO EN ENTRADA
+    const { data: accesoCheckFinal } = await supabaseClient
+      .from("accesos_trabajadores")
+      .select("id")
+      .eq("trabajador_id", trabajadorGlobal.id)
+      .is("fecha_hora_salida", null)
+      .maybeSingle();
+
+    if (accesoCheckFinal) {
+      pintar("YA REGISTRADO COMO DENTRO", "warn", trabajadorGlobal);
+      btn.disabled = false;
+      btn.innerText = "Confirmar";
+      return;
+    }
 
     await supabaseClient
       .from("accesos_trabajadores")
@@ -328,7 +339,7 @@ btn.addEventListener("click", async () => {
 
   document.getElementById("control").style.display = "none";
 
-  });
+});
 
 function pintar(mensaje, tipo, trabajador = null) {
   document.getElementById("estado").innerText = mensaje;
@@ -341,7 +352,7 @@ function pintar(mensaje, tipo, trabajador = null) {
   }
 }
 
-  function crearBotonFinalizar() {
+function crearBotonFinalizar() {
 
   const existentes = document.querySelectorAll(".btn-cerrar");
   existentes.forEach(b => b.remove());
@@ -358,17 +369,13 @@ function pintar(mensaje, tipo, trabajador = null) {
   btnCerrar.style.border = "none";
   btnCerrar.style.cursor = "pointer";
 
-  btnCerrar.classList.add("btn-cerrar");
-
   btnCerrar.onclick = () => {
-
-  window.close();
-
-  setTimeout(() => {
-    document.body.innerHTML = "";
-    document.body.style.background = "#020617";
-  }, 300);
-};
+    window.close();
+    setTimeout(() => {
+      document.body.innerHTML = "";
+      document.body.style.background = "#020617";
+    }, 300);
+  };
 
   document.querySelector(".container").appendChild(btnCerrar);
 }
