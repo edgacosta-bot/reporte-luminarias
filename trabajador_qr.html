@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<script src="auth.js"></script>
-<script>
-protegerPagina(["admin"]);
-</script>  
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QR Trabajador</title>
+
+<!-- 🔥 ORDEN CORRECTO -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 
 <style>
 * { box-sizing: border-box; }
@@ -91,7 +92,6 @@ button {
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
 <script>
@@ -105,12 +105,23 @@ const supabaseClient = createClient(
 
 let trabajadorSeleccionado = null;
 
+// 🔥 CONTROL TOTAL DE SECUENCIA
+window.addEventListener("DOMContentLoaded", async () => {
+  await protegerPagina(["admin"]);
+  await cargarTrabajadores();
+});
+
 async function cargarTrabajadores() {
 
-  const { data } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("trabajadores_obra")
     .select("*")
     .eq("activo", true);
+
+  if (error) {
+    console.log("ERROR:", error);
+    return;
+  }
 
   const select = document.getElementById("trabajador");
 
@@ -123,8 +134,6 @@ async function cargarTrabajadores() {
     select.appendChild(option);
   });
 }
-
-cargarTrabajadores();
 
 document.getElementById("trabajador").addEventListener("change", function() {
 
@@ -146,7 +155,6 @@ document.getElementById("trabajador").addEventListener("change", function() {
 
   trabajadorSeleccionado = { codigo, nombre, privada, casa };
 
-  // 🔥 CORRECCIÓN AQUÍ
   const url = `${window.location.origin}/credencial_trabajador.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
 
   QRCode.toCanvas(url, { width: 200 }, function (err, canvas) {
