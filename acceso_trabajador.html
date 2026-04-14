@@ -146,7 +146,7 @@ async function validar() {
       return;
     }
 
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = new Date().toLocaleDateString('sv-SE');
 
     if (!trabajador.activo) {
       pintar("ACCESO DENEGADO", "error", trabajador);
