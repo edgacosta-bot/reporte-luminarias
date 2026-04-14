@@ -2,16 +2,12 @@
 <html lang="es">
 <head>
 
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Permisos trabajadores</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
-<script>
-protegerPagina(["admin"]);
-</script>
 
 <style>
 body {
@@ -138,6 +134,12 @@ button {
 
 <script>
 
+// 🔥 SECUENCIA CORRECTA (CLAVE)
+window.addEventListener("DOMContentLoaded", async () => {
+  await protegerPagina(["admin"]);
+  cargar();
+});
+
 const supabaseClient = supabase.createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nz20NjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
@@ -152,8 +154,6 @@ function toast(msg, tipo="ok") {
   t.style.display = "block";
   setTimeout(() => t.style.display = "none", 2000);
 }
-
-cargar();
 
 async function cargar() {
 
