@@ -73,7 +73,7 @@ button {
 <h2>QR Trabajador</h2>
 
 <select id="trabajador">
-  <option value="">Selecciona trabajador</option>
+  <option value="">Cargando trabajadores...</option>
 </select>
 
 <div id="qr"></div>
@@ -95,11 +95,16 @@ let trabajadorSeleccionado = null;
 
 // 🔥 SECUENCIA CORRECTA
 window.addEventListener("DOMContentLoaded", async () => {
-  await protegerPagina(["admin", "administracion"]);
+  await protegerPagina(["administracion"]);
   await cargarTrabajadores();
 });
 
 async function cargarTrabajadores() {
+
+  const select = document.getElementById("trabajador");
+
+  // 🔄 limpiar select
+  select.innerHTML = '<option value="">Cargando trabajadores...</option>';
 
   const { data, error } = await supabaseClient
     .from("trabajadores_obra")
@@ -110,11 +115,16 @@ async function cargarTrabajadores() {
   console.log("ERROR:", error);
 
   if (error) {
-    console.log("ERROR:", error);
+    select.innerHTML = '<option>Error al cargar trabajadores</option>';
     return;
   }
 
-  const select = document.getElementById("trabajador");
+  if (!data || data.length === 0) {
+    select.innerHTML = '<option>No hay trabajadores activos</option>';
+    return;
+  }
+
+  select.innerHTML = '<option value="">Selecciona trabajador</option>';
 
   data.forEach(t => {
     const option = document.createElement("option");
@@ -126,6 +136,7 @@ async function cargarTrabajadores() {
   });
 }
 
+// 🎯 CAMBIO DE TRABAJADOR
 document.getElementById("trabajador").addEventListener("change", function() {
 
   const qrDiv = document.getElementById("qr");
@@ -142,13 +153,22 @@ document.getElementById("trabajador").addEventListener("change", function() {
   const privada = selected.dataset.privada;
   const casa = selected.dataset.casa;
 
-  if (!codigo) return;
+  if (!codigo) {
+    btn.style.display = "none";
+    nombreDiv.innerText = "";
+    obraDiv.innerText = "";
+    return;
+  }
 
   trabajadorSeleccionado = { codigo, nombre, privada, casa };
 
   const url = `${window.location.origin}/credencial_trabajador.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
 
   QRCode.toCanvas(url, { width: 200 }, function (err, canvas) {
+    if (err) {
+      console.error("Error generando QR:", err);
+      return;
+    }
     qrDiv.appendChild(canvas);
   });
 
@@ -158,6 +178,7 @@ document.getElementById("trabajador").addEventListener("change", function() {
   btn.style.display = "block";
 });
 
+// 📲 WHATSAPP
 document.getElementById("btnWA").addEventListener("click", () => {
 
   if (!trabajadorSeleccionado) return;
