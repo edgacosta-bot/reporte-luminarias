@@ -7,6 +7,9 @@
 
 <!-- 🔥 2. DESPUÉS AUTH -->
 <script src="auth.js"></script> 
+<script>
+protegerPagina(["administracion"]);
+</script>  
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -98,13 +101,21 @@ button:hover {
 
 <script>
 
-// 🔥 FLUJO CORRECTO
+// 🔥 CLIENTE SUPABASE (CORREGIDO)
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+// 🔥 FLUJO CONTROLADO
 window.addEventListener("DOMContentLoaded", async () => {
-  await protegerPagina(["admin", "administracion"]);
+  await protegerPagina(["administracion"]);
   await cargarObras();
 });
 
-// 🔥 CARGAR OBRAS (solo activas y aprobadas)
+// 🔥 CARGAR OBRAS
 async function cargarObras() {
 
   const select = document.getElementById("obra");
@@ -124,7 +135,7 @@ async function cargarObras() {
   }
 
   if (!data || data.length === 0) {
-    select.innerHTML = '<option>No hay obras registradas</option>';
+    select.innerHTML = '<option>No hay obras aprobadas</option>';
     return;
   }
 
@@ -138,7 +149,7 @@ async function cargarObras() {
   });
 }
 
-// 🚀 REGISTRAR TRABAJADOR
+// 🚀 REGISTRAR
 async function registrar() {
 
   const obra_id = document.getElementById("obra").value;
@@ -149,8 +160,16 @@ async function registrar() {
   const mensaje = document.getElementById("mensaje");
   mensaje.className = "mensaje";
 
+  // 🔴 VALIDACIÓN BÁSICA
   if (!obra_id || !nombre) {
     mensaje.innerText = "Completa todos los campos";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  // 🔴 VALIDACIÓN FECHAS (CORREGIDO)
+  if (fecha_inicio && fecha_fin && fecha_fin < fecha_inicio) {
+    mensaje.innerText = "La fecha fin no puede ser menor que la de inicio";
     mensaje.classList.add("error");
     return;
   }
@@ -168,7 +187,7 @@ async function registrar() {
     return;
   }
 
-  // 🔒 Validación de aprobación
+  // 🔒 VALIDACIÓN DE APROBACIÓN
   if (!obra.aprobada) {
     mensaje.innerText = "La obra no está autorizada";
     mensaje.classList.add("error");
