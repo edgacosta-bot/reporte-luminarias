@@ -43,14 +43,9 @@ select {
   color: white;
 }
 
-#qr {
-  margin-top: 15px;
-}
+#qr { margin-top: 15px; }
 
-.nombre {
-  margin-top: 10px;
-  font-weight: bold;
-}
+.nombre { margin-top: 10px; font-weight: bold; }
 
 .obra {
   font-size: 13px;
@@ -96,18 +91,11 @@ button {
 
 <script>
 
-const { createClient } = supabase;
-
-const supabaseClient = createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
-
 let trabajadorSeleccionado = null;
 
-// 🔥 CONTROL TOTAL DE SECUENCIA
+// 🔥 SECUENCIA CORRECTA
 window.addEventListener("DOMContentLoaded", async () => {
-  await protegerPagina(["admin"]);
+  await protegerPagina(["admin", "administracion"]);
   await cargarTrabajadores();
 });
 
