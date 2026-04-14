@@ -2,7 +2,6 @@
 <html lang="es">
 <head>
 
-<!-- 🔥 ORDEN CORRECTO -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 
@@ -33,11 +32,6 @@ body {
   box-shadow: 0 10px 30px rgba(0,0,0,0.4);
 }
 
-h2 {
-  text-align: center;
-  margin-bottom: 15px;
-}
-
 select, input {
   width: 100%;
   padding: 12px;
@@ -59,15 +53,7 @@ button {
   cursor: pointer;
 }
 
-button:hover {
-  background: #1d4ed8;
-}
-
-.mensaje {
-  margin-top: 10px;
-  text-align: center;
-}
-
+.mensaje { margin-top: 10px; text-align: center; }
 .error { color: #f87171; }
 .ok { color: #34d399; }
 </style>
@@ -80,15 +66,12 @@ button:hover {
 
 <h2>Registrar obra</h2>
 
-<select id="privada">
-  <option value="">Selecciona privada</option>
-  <option value="I">Privada I</option>
-  <option value="II">Privada II</option>
-  <option value="III">Privada III</option>
+<select id="lote">
+  <option value="">Cargando lotes...</option>
 </select>
 
-<input type="number" id="casa" placeholder="Número de lote">
-<input type="text" id="" placeholder="Director Responsable de Obra ()">
+<input type="text" id="dro" placeholder="Director Responsable de Obra">
+
 <input type="date" id="fecha_inicio">
 
 <button onclick="registrar()">Registrar obra</button>
@@ -99,43 +82,80 @@ button:hover {
 
 <script>
 
-// 🔥 CONTROL DE ACCESO
+// 🔐 CONTROL
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["administracion"]);
+  await cargarLotes();
 });
 
-// 🚀 REGISTRAR OBRA
+// 🔥 CARGAR LOTES
+async function cargarLotes() {
+
+  const select = document.getElementById("lote");
+
+  const { data, error } = await supabaseClient
+    .from("lotes")
+    .select("*")
+    .order("privada")
+    .order("lote");
+
+  if (error) {
+    select.innerHTML = '<option>Error cargando lotes</option>';
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    select.innerHTML = '<option>No hay lotes</option>';
+    return;
+  }
+
+  select.innerHTML = '<option value="">Selecciona lote</option>';
+
+  data.forEach(l => {
+    const option = document.createElement("option");
+    option.value = l.id;
+    option.textContent = `Privada ${l.privada} - Lote ${l.lote}`;
+    select.appendChild(option);
+  });
+}
+
+// 🚀 REGISTRAR
 async function registrar() {
 
-  const privada = document.getElementById("privada").value;
-  const casa = document.getElementById("casa").value;
-  const  = document.getElementById("").value.trim();
+  const lote_id = document.getElementById("lote").value;
+  const dro = document.getElementById("dro").value.trim();
   const fecha_inicio = document.getElementById("fecha_inicio").value;
 
   const mensaje = document.getElementById("mensaje");
   mensaje.className = "mensaje";
 
   // 🔴 VALIDACIÓN
-  if (!privada || !casa || !) {
+  if (!lote_id || !dro) {
     mensaje.innerText = "Completa todos los campos";
     mensaje.classList.add("error");
     return;
   }
 
-  // 📅 Fecha opcional pero validada
-  if (fecha_inicio) {
-    const hoy = new Date().toLocaleDateString('sv-SE');
-    if (fecha_inicio < hoy) {
-      console.log("Fecha en pasado (permitido)");
-    }
+  // 🔎 Obtener lote
+  const { data: lote, error: errorLote } = await supabaseClient
+    .from("lotes")
+    .select("*")
+    .eq("id", lote_id)
+    .single();
+
+  if (errorLote || !lote) {
+    mensaje.innerText = "Error al obtener lote";
+    mensaje.classList.add("error");
+    return;
   }
 
   // 🔥 INSERT
   const { error } = await supabaseClient
     .from("obras")
     .insert([{
-      privada: privada,
-      casa: casa,
+      lote_id: lote_id,
+      privada: lote.privada,
+      casa: lote.lote,
       dro_nombre: dro,
       fecha_inicio: fecha_inicio || null,
       estatus: "activa",
@@ -143,7 +163,7 @@ async function registrar() {
     }]);
 
   if (error) {
-    console.log("ERROR:", error);
+    console.log(error);
     mensaje.innerText = "Error al registrar obra";
     mensaje.classList.add("error");
     return;
@@ -152,9 +172,8 @@ async function registrar() {
   mensaje.innerText = "Obra registrada correctamente ✅";
   mensaje.classList.add("ok");
 
-  // 🔄 limpiar
-  document.getElementById("privada").value = "";
-  document.getElementById("casa").value = "";
+  // limpiar
+  document.getElementById("lote").value = "";
   document.getElementById("dro").value = "";
   document.getElementById("fecha_inicio").value = "";
 }
