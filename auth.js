@@ -1,9 +1,9 @@
 const { createClient } = supabase;
 
-// 🔹 Cliente único (NO duplicar en otros archivos)
+// 🔹 Cliente único global (NO duplicar en otros archivos)
 const supabaseClient = createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nz20NjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
 // 🔹 Protección de páginas por rol
@@ -39,19 +39,22 @@ async function protegerPagina(rolesPermitidos) {
 
     console.log("👤 RESIDENTE:", residente);
     console.log("⚠️ ERROR:", error);
-    console.log("🎯 ROL ESPERADO:", rolesPermitidos);
+    console.log("🎯 ROLES PERMITIDOS:", rolesPermitidos);
 
     // 🔹 5. Normalizar rol
-    const tipo = residente?.tipo?.toLowerCase();
+    const tipo = residente?.tipo?.trim().toLowerCase();
 
-    // 🔹 6. Validación
-    if (!residente || !rolesPermitidos.includes(tipo)) {
-      console.warn("⛔ Acceso no autorizado");
+    // 🔹 6. Normalizar roles permitidos
+    const rolesNormalizados = rolesPermitidos.map(r => r.toLowerCase());
+
+    // 🔹 7. Validación
+    if (!residente || !rolesNormalizados.includes(tipo)) {
+      console.warn("⛔ Acceso no autorizado:", tipo);
       window.location.href = "index.html";
       return;
     }
 
-    console.log("✅ Acceso permitido");
+    console.log("✅ Acceso permitido:", tipo);
 
   } catch (err) {
     console.error("🔥 Error en protegerPagina:", err);
