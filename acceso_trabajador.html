@@ -103,6 +103,7 @@ const supabaseClient = window.supabase.createClient(
 
 const params = new URLSearchParams(window.location.search);
 const qr = params.get("qr");
+console.log("QR RECIBIDO:", qr);  
 
 let trabajadorGlobal = null;
 let accesoActual = null;
@@ -134,12 +135,12 @@ async function validar() {
       .from("trabajadores_obra")
       .select("*")
       .eq("qr_codigo", qr)
-      .single();
+      .maybeSingle();
 
-    if (error || !trabajador) {
-      pintar("QR INVÁLIDO", "error");
-      return;
-    }
+    if (!trabajador) {
+  pintar("QR INVÁLIDO", "error");
+  return;
+}
 
     // 🔥 FECHAS SEGURAS
     const hoy = new Date().toLocaleDateString('sv-SE');
