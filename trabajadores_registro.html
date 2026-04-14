@@ -122,7 +122,8 @@ async function cargarObras() {
   const { data, error } = await supabaseClient
     .from("obras")
     .select("*")
-    .eq("estatus", "activa");
+    .eq("estatus", "activa")
+    .eq("aprobada", true);
 
   if (error) {
     select.innerHTML = '<option>Error cargando obras</option>';
