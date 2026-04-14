@@ -192,11 +192,29 @@ cargar();
 
 async function cargar() {
 
-  const { data } = await supabaseClient
-    .from("trabajadores_obra")
-    .select("*")
-    .order("created_at", { ascending: false }); // 🔥 CAMBIO CLAVE
+ const { data, error } = await supabaseClient
+  .from("trabajadores_obra")
+  .select("*")
+  .order("created_at", { ascending: false });
 
+if (error) {
+  console.error("Error cargando trabajadores:", error);
+  document.getElementById("lista").innerHTML = `
+    <p style="margin-top:20px; color:#f87171;">
+      Error al cargar trabajadores
+    </p>
+  `;
+  return;
+}
+
+if (!data || data.length === 0) {
+  document.getElementById("lista").innerHTML = `
+    <p style="margin-top:20px; color:#94a3b8;">
+      No hay trabajadores registrados
+    </p>
+  `;
+  return;
+}
   const lista = document.getElementById("lista");
   lista.innerHTML = "";
 
