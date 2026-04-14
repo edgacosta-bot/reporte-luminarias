@@ -7,7 +7,11 @@ const supabaseClient = createClient(
 );
 
 // 🔹 Protección de páginas por rol
+let yaValidado = false;
 async function protegerPagina(rolesPermitidos) {
+
+if (yaValidado) return;
+yaValidado = true;  
 
   try {
 
