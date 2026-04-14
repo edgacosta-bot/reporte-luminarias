@@ -2,7 +2,6 @@
 <html lang="es">
 <head>
 
-<!-- 🔥 ORDEN CORRECTO -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 
@@ -43,6 +42,21 @@ button {
 button:disabled {
   background: #64748b;
 }
+
+/* 🔥 NUEVO: MENSAJE BONITO */
+#noComite {
+  display: none;
+  text-align: center;
+  margin-top: 40px;
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+#noComite button {
+  margin-top: 15px;
+  background: #2563eb;
+}
 </style>
 
 </head>
@@ -53,6 +67,16 @@ button:disabled {
 
 <h2>Obras pendientes de aprobación</h2>
 
+<!-- 🔴 MENSAJE ACCESO RESTRINGIDO -->
+<div id="noComite">
+  <h3>Acceso restringido</h3>
+  <p>Esta sección es exclusiva del comité de diseño</p>
+  <button onclick="window.location.href='index.html'">
+    Regresar
+  </button>
+</div>
+
+<!-- 🔥 LISTA NORMAL -->
 <div id="lista"></div>
 
 </div>
@@ -62,7 +86,7 @@ button:disabled {
 let esResponsable = false;
 let usuarioNombre = "";
 
-// 🔐 FLUJO CONTROLADO (UNA SOLA VEZ)
+// 🔐 FLUJO CONTROLADO
 window.addEventListener("DOMContentLoaded", async () => {
 
   await protegerPagina(["admin", "administracion", "residente"]);
@@ -93,9 +117,10 @@ async function validarComite() {
 
   console.log("COMITE:", comite);
 
+  // 🔴 SI NO ES COMITÉ → MOSTRAR MENSAJE BONITO
   if (!comite) {
-    alert("No perteneces al comité");
-    window.location.href = "index.html";
+    document.getElementById("lista").style.display = "none";
+    document.getElementById("noComite").style.display = "block";
     return false;
   }
 
