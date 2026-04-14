@@ -253,11 +253,11 @@ const clave = `${privada}-${casa}`;
         estado = "⛔ Cancelado";
         clase = "estado-rojo";
       }
-      else if (t.fecha_inicio && hoy < t.fecha_inicio) {
+      else if (t.fecha_inicio && hoy < (t.fecha_inicio || "")) {
         estado = "🟡 Aún no inicia";
         clase = "estado-amarillo";
       }
-      else if (t.fecha_fin && hoy > t.fecha_fin) {
+      else if (t.fecha_fin && hoy > (t.fecha_fin || "")) {
         estado = "🔴 Vencido";
         clase = "estado-rojo";
       }
