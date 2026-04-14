@@ -53,6 +53,11 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  background: #6b7280;
+  cursor: not-allowed;
+}
+
 .mensaje { margin-top: 10px; text-align: center; }
 .error { color: #f87171; }
 .ok { color: #34d399; }
@@ -74,7 +79,7 @@ button {
 
 <input type="date" id="fecha_inicio">
 
-<button onclick="registrar()">Registrar obra</button>
+<button id="btnRegistrar" onclick="registrar()">Registrar obra</button>
 
 <div id="mensaje" class="mensaje"></div>
 
@@ -122,6 +127,10 @@ async function cargarLotes() {
 // 🚀 REGISTRAR
 async function registrar() {
 
+  const btn = document.getElementById("btnRegistrar");
+  btn.disabled = true;
+  btn.innerText = "Registrando...";
+
   const lote_id = document.getElementById("lote").value;
   const dro = document.getElementById("dro").value.trim();
   const fecha_inicio = document.getElementById("fecha_inicio").value;
@@ -133,6 +142,24 @@ async function registrar() {
   if (!lote_id || !dro) {
     mensaje.innerText = "Completa todos los campos";
     mensaje.classList.add("error");
+    btn.disabled = false;
+    btn.innerText = "Registrar obra";
+    return;
+  }
+
+  // 🔎 VALIDAR OBRA EXISTENTE
+  const { data: existente } = await supabaseClient
+    .from("obras")
+    .select("id")
+    .eq("lote_id", lote_id)
+    .eq("estatus", "activa")
+    .maybeSingle();
+
+  if (existente) {
+    mensaje.innerText = "Ya existe una obra activa en este lote";
+    mensaje.classList.add("error");
+    btn.disabled = false;
+    btn.innerText = "Registrar obra";
     return;
   }
 
@@ -146,6 +173,8 @@ async function registrar() {
   if (errorLote || !lote) {
     mensaje.innerText = "Error al obtener lote";
     mensaje.classList.add("error");
+    btn.disabled = false;
+    btn.innerText = "Registrar obra";
     return;
   }
 
@@ -166,16 +195,26 @@ async function registrar() {
     console.log(error);
     mensaje.innerText = "Error al registrar obra";
     mensaje.classList.add("error");
+    btn.disabled = false;
+    btn.innerText = "Registrar obra";
     return;
   }
 
-  mensaje.innerText = "Obra registrada correctamente ✅";
+  mensaje.innerHTML = `
+  <b>✅ Obra registrada correctamente</b><br><br>
+  ⚠️ <b>Requiere validación del Comité de Diseño</b><br><br>
+  No podrás registrar trabajadores hasta que sea aprobada.<br><br>
+  📌 Contacta al responsable del comité.
+  `;
   mensaje.classList.add("ok");
 
   // limpiar
   document.getElementById("lote").value = "";
   document.getElementById("dro").value = "";
   document.getElementById("fecha_inicio").value = "";
+
+  btn.disabled = false;
+  btn.innerText = "Registrar obra";
 }
 
 </script>
