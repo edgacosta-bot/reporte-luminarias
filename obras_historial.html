@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historial de Obras</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+}
+
+.container {
+  padding: 20px;
+}
+
+h2 {
+  margin-bottom: 15px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.estado {
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.aprobada { color: #22c55e; }
+.rechazada { color: #ef4444; }
+.pendiente { color: #facc15; }
+
+.motivo {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #cbd5f5;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Historial de Obras</h2>
+
+<div id="lista"></div>
+
+</div>
+
+<script>
+
+// 🔐 CONTROL
+window.addEventListener("DOMContentLoaded", async () => {
+  await protegerPagina(["admin","administracion"]);
+  await cargarHistorial();
+});
+
+// 🔥 CARGAR HISTORIAL
+async function cargarHistorial() {
+
+  const { data, error } = await supabaseClient
+    .from("obras")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  const contenedor = document.getElementById("lista");
+  contenedor.innerHTML = "";
+
+  if (error) {
+    contenedor.innerHTML = "Error cargando historial";
+    console.log(error);
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    contenedor.innerHTML = "No hay registros";
+    return;
+  }
+
+  data.forEach(o => {
+
+    const div = document.createElement("div");
+    div.className = "card";
+
+    let estadoTexto = "";
+    let estadoClase = "";
+
+    if (o.aprobada) {
+      estadoTexto = "Aprobada";
+      estadoClase = "aprobada";
+    } else if (o.estatus === "rechazada") {
+      estadoTexto = "Rechazada";
+      estadoClase = "rechazada";
+    } else {
+      estadoTexto = "Pendiente";
+      estadoClase = "pendiente";
+    }
+
+    div.innerHTML = `
+      <b>Privada ${o.privada} - Lote ${o.casa}</b><br>
+      DRO: ${o.dro_nombre}<br>
+      Fecha inicio: ${o.fecha_inicio || "N/A"}<br>
+
+      <div class="estado ${estadoClase}">
+        ${estadoTexto}
+      </div>
+    `;
+
+    // 🔴 MOSTRAR MOTIVO SI RECHAZADA
+    if (o.estatus === "rechazada") {
+      div.innerHTML += `
+        <div class="motivo">
+          Motivo: ${o.motivo_rechazo || "No especificado"}
+        </div>
+
+        <button onclick="nuevaVersion('${o.privada}','${o.casa}')">
+          Registrar nueva versión
+        </button>
+      `;
+    }
+
+    contenedor.appendChild(div);
+  });
+}
+
+// 🔁 NUEVA VERSIÓN
+function nuevaVersion(privada, casa) {
+
+  // 🔥 guardamos contexto para reutilizar
+  localStorage.setItem("privada_rechazo", privada);
+  localStorage.setItem("casa_rechazo", casa);
+
+  window.location.href = "obras_registro.html";
+}
+
+</script>
+
+</body>
+</html>
