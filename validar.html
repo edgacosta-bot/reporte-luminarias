@@ -272,7 +272,7 @@ btn.addEventListener("click", async () => {
     const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
 
     const btnWA = document.createElement("button");
-    btnWA.innerText = "Comunicar por WhatsApp";
+    btnWA.innerText = "Notificar";
     btnWA.style.marginTop = "12px";
     btnWA.style.background = "#16a34a";
     btnWA.style.color = "white";
@@ -286,8 +286,8 @@ btn.addEventListener("click", async () => {
     btnWA.onclick = () => window.open(url, '_blank');
 
     // 🔥 eliminar duplicados
-    const existentes = document.querySelectorAll(".btn-wa");
-    existentes.forEach(b => b.remove());
+    const existentesSalida = document.querySelectorAll(".btn-wa");
+existentesSalida.forEach(b => b.remove());
 
     btnWA.classList.add("btn-wa");
 
@@ -311,6 +311,35 @@ btn.addEventListener("click", async () => {
       .eq('id', visitaGlobal.id);
 
     pintar("SALIDA REGISTRADA", "warn", visitaGlobal);
+    // 📲 mensaje salida
+const mensajeSalida = `Estimado residente, le informamos que su visita *${visitaGlobal.nombre_visitante}* en este momento acaba de salir del fraccionamiento. Gracias.`;
+
+const urlSalida = `https://wa.me/?text=${encodeURIComponent(mensajeSalida)}`;
+
+// 🟠 botón WhatsApp salida
+const btnWASalida = document.createElement("button");
+btnWASalida.innerText = "Notificar";
+    
+btnWASalida.style.marginTop = "12px";
+btnWASalida.style.background = "#f59e0b"; // color diferente (salida)
+btnWASalida.style.color = "white";
+btnWASalida.style.fontWeight = "bold";
+btnWASalida.style.borderRadius = "10px";
+btnWASalida.style.boxShadow = "0 4px 10px rgba(0,0,0,0.3)";
+btnWASalida.style.padding = "14px";
+btnWASalida.style.border = "none";
+btnWASalida.style.cursor = "pointer";
+
+btnWASalida.onclick = () => window.open(urlSalida, '_blank');
+
+// 🔥 eliminar botones previos
+const existentes = document.querySelectorAll(".btn-wa");
+existentes.forEach(b => b.remove());
+
+btnWASalida.classList.add("btn-wa");
+
+// 🔥 agregar al contenedor
+document.querySelector(".container").appendChild(btnWASalida);
   }
 
   document.getElementById("control").style.display = "none";
