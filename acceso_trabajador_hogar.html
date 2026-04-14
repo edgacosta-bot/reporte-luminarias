@@ -264,9 +264,9 @@ function pintarFinal(texto, color) {
   let mensaje = "";
 
   if (texto.includes("ENTRADA")) {
-    mensaje = `Estimado residente, le informamos que su trabajador *${trabajador.nombre}* ha ingresado a su domicilio.`;
+    mensaje = `Estimado residente, le informamos que su trabajador *${trabajador.nombre}* ha ingresado en este momento al fraccionamiento.`;
   } else {
-    mensaje = `Estimado residente, le informamos que su trabajador *${trabajador.nombre}* ha salido de su domicilio.`;
+    mensaje = `Estimado residente, le informamos que su trabajador *${trabajador.nombre}* ha salido del fraccionamiento`;
   }
 
   const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
