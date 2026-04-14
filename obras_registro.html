@@ -87,6 +87,10 @@ button:disabled {
 
 <script>
 
+// 🔥 CONTEXTO DE RECHAZO (nuevo)
+const privadaGuardada = localStorage.getItem("privada_rechazo");
+const casaGuardada = localStorage.getItem("casa_rechazo");
+
 // 🔐 CONTROL
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["administracion"]);
@@ -122,6 +126,23 @@ async function cargarLotes() {
     option.textContent = `Privada ${l.privada} - Lote ${l.lote}`;
     select.appendChild(option);
   });
+
+  // 🔥 AUTORELLENO SI VIENE DE RECHAZO
+  if (privadaGuardada && casaGuardada) {
+
+    [...select.options].forEach(opt => {
+      if (
+        opt.textContent.includes(privadaGuardada) &&
+        opt.textContent.includes(casaGuardada)
+      ) {
+        opt.selected = true;
+      }
+    });
+
+    // limpiar contexto
+    localStorage.removeItem("privada_rechazo");
+    localStorage.removeItem("casa_rechazo");
+  }
 }
 
 // 🚀 REGISTRAR
