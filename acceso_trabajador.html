@@ -308,6 +308,7 @@ btn.addEventListener("click", async () => {
       }]);
 
     pintar("ENTRADA REGISTRADA", "ok", trabajadorGlobal);
+    crearBotonFinalizar();
 
   } else {
 
@@ -322,23 +323,12 @@ btn.addEventListener("click", async () => {
       .eq("id", accesoActual.id);
 
     pintar("SALIDA REGISTRADA", "warn", trabajadorGlobal);
+    crearBotonFinalizar();
   }
 
   document.getElementById("control").style.display = "none";
 
-  const finalizarBtn = document.createElement("button");
-  finalizarBtn.innerText = "Finalizar";
-
-  finalizarBtn.onclick = () => {
-  window.close();
-
-  setTimeout(() => {
-    window.location.href = "about:blank";
-  }, 300);
-};
-
-  document.querySelector(".container").appendChild(finalizarBtn);
-});
+  });
 
 function pintar(mensaje, tipo, trabajador = null) {
   document.getElementById("estado").innerText = mensaje;
@@ -349,6 +339,35 @@ function pintar(mensaje, tipo, trabajador = null) {
       <p><b>${trabajador.nombre}</b></p>
     `;
   }
+}
+
+  function crearBotonFinalizar() {
+
+  const existentes = document.querySelectorAll(".btn-cerrar");
+  existentes.forEach(b => b.remove());
+
+  const btnCerrar = document.createElement("button");
+  btnCerrar.innerText = "Finalizar";
+
+  btnCerrar.style.marginTop = "12px";
+  btnCerrar.style.background = "#020617";
+  btnCerrar.style.color = "white";
+  btnCerrar.style.borderRadius = "10px";
+  btnCerrar.style.padding = "14px";
+  btnCerrar.style.fontWeight = "bold";
+  btnCerrar.style.border = "none";
+  btnCerrar.style.cursor = "pointer";
+
+  btnCerrar.classList.add("btn-cerrar");
+
+  btnCerrar.onclick = () => {
+    window.close();
+    setTimeout(() => {
+      window.location.href = "about:blank";
+    }, 300);
+  };
+
+  document.querySelector(".container").appendChild(btnCerrar);
 }
 
 </script>
