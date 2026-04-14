@@ -65,7 +65,7 @@ let usuarioNombre = "";
 // 🔐 FLUJO CONTROLADO (UNA SOLA VEZ)
 window.addEventListener("DOMContentLoaded", async () => {
 
-  await protegerPagina(["admin", "administracion"]);
+  await protegerPagina(["admin", "administracion", "residente"]);
 
   const esValido = await validarComite();
   if (!esValido) return;
