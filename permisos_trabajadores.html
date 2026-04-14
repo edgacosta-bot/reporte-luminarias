@@ -215,14 +215,18 @@ if (!data || data.length === 0) {
   `;
   return;
 }
+  console.log("DATA:", data);
   const lista = document.getElementById("lista");
   lista.innerHTML = "";
 
-  const hoy = new Date().toISOString().split("T")[0];
+  const hoy = new Date().toLocaleDateString('sv-SE');
   const grupos = {};
 
   data.forEach(t => {
-    const clave = `${t.privada}-${t.casa}`;
+    const privada = t.privada || "SIN_PRIVADA";
+const casa = t.casa || "SIN_CASA";
+
+const clave = `${privada}-${casa}`;
     if (!grupos[clave]) grupos[clave] = [];
     grupos[clave].push(t);
   });
