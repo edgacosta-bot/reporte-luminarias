@@ -168,7 +168,7 @@ async function validar() {
   }
 
   const now = new Date();
-  const hoy = now.toISOString().slice(0,10);
+  const hoy = new Date().toLocaleDateString('sv-SE');
   const horaActual = now.toTimeString().slice(0,5);
 
   const horaInicio = visitaGlobal.hora_inicio.slice(0,5);
@@ -238,7 +238,7 @@ btn.addEventListener("click", async () => {
     return;
   }
 
-  const ahora = new Date().toISOString();
+ const ahora = new Date().toISOString(); // mantener UTC en DB (RECOMENDADO)
 
   if (tipoAccion === "entrada") {
 
@@ -286,7 +286,7 @@ btn.addEventListener("click", async () => {
     btnWA.onclick = () => window.open(url, '_blank');
 
     // 🔥 eliminar duplicados
-    const existentesSalida = document.querySelectorAll(".btn-wa");
+    const existentes = document.querySelectorAll(".btn-wa");
 existentesSalida.forEach(b => b.remove());
 
     btnWA.classList.add("btn-wa");
