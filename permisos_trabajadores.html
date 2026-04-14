@@ -137,7 +137,8 @@ button {
 // 🔥 SECUENCIA CORRECTA (CLAVE)
 
    window.addEventListener("DOMContentLoaded", async () => {
-  await protegerPagina(["admin"]);
+  await protegerPagina(["admin", "administracion"]);
+  console.log("🚀 INICIANDO PERMISOS");   
   cargar();
 });
 
