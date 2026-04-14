@@ -106,6 +106,9 @@ async function cargarTrabajadores() {
     .select("*")
     .eq("activo", true);
 
+  console.log("DATA:", data);
+  console.log("ERROR:", error);
+
   if (error) {
     console.log("ERROR:", error);
     return;
