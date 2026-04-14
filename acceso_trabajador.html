@@ -67,16 +67,6 @@ button {
   font-size: 18px;
   cursor: pointer;
 }
-
-.btn {
-  background: #020617;
-  color: white;
-  opacity: 0.4;
-}
-
-.btn.enabled {
-  opacity: 1;
-}
 </style>
 </head>
 
@@ -88,9 +78,7 @@ button {
 
   <div id="control" class="control">
     <input type="password" id="pin" placeholder="PIN vigilante">
-    <button id="btnConfirmar" class="btn" disabled>
-      Confirmar
-    </button>
+    <button id="btnConfirmar" disabled>Confirmar</button>
   </div>
 </div>
 
@@ -109,19 +97,9 @@ console.log("QR RECIBIDO:", qr);
 let trabajadorGlobal = null;
 let accesoActual = null;
 let tipoAccion = "";
-let CONFIG = null;
 
-// 🔐 Config
-supabaseClient
-  .from("seguridad_config")
-  .select("*")
-  .limit(1)
-  .single()
-  .then(({ data }) => {
-    if (data) CONFIG = data;
-    validar();
-  })
-  .catch(() => validar());
+// 🚀 INICIO
+validar();
 
 async function validar() {
 
@@ -132,7 +110,6 @@ async function validar() {
       return;
     }
 
-    // 🔥 CONSULTA CORREGIDA
     const { data: trabajador, error } = await supabaseClient
       .from("trabajadores_obra")
       .select("*")
@@ -147,68 +124,7 @@ async function validar() {
       return;
     }
 
-    // 🔥 FECHAS SEGURAS
-    const hoy = new Date().toLocaleDateString('sv-SE');
-    const inicio = trabajador.fecha_inicio?.split("T")[0];
-    const fin = trabajador.fecha_fin?.split("T")[0];
-
-    if (!trabajador.activo) {
-      pintar("ACCESO DENEGADO", "error", trabajador);
-      return;
-    }
-
-    if (inicio && hoy < inicio) {
-      pintar("AÚN NO AUTORIZADO", "warn", trabajador);
-      return;
-    }
-
-    if (fin && hoy > fin) {
-      pintar("ACCESO VENCIDO", "error", trabajador);
-      return;
-    }
-
-    const ahora = new Date();
-    const dia = ahora.getDay();
-    const hora = ahora.getHours();
-    const minutos = ahora.getMinutes();
-    const horaActual = hora + (minutos / 60);
-
-    const MODO_PRUEBA = false;
-
-    if (!MODO_PRUEBA && CONFIG) {
-
-      if (dia === 0 && !CONFIG.domingo_permitido) {
-        pintar("ACCESO NO PERMITIDO (DOMINGO)", "error", trabajador);
-        return;
-      }
-
-      if (dia === 6) {
-        if (horaActual < CONFIG.sabado_inicio || horaActual > CONFIG.sabado_fin) {
-          pintar("FUERA DE HORARIO (SÁBADO)", "error", trabajador);
-          return;
-        }
-      }
-
-      if (dia >= 1 && dia <= 5) {
-        if (horaActual < CONFIG.hora_inicio || horaActual > CONFIG.hora_fin) {
-          pintar("FUERA DE HORARIO", "error", trabajador);
-          return;
-        }
-      }
-    }
-
     trabajadorGlobal = trabajador;
-
-    const { data: obra } = await supabaseClient
-      .from("obras")
-      .select("*")
-      .eq("id", trabajador.obra_id)
-      .single();
-
-    if (!obra || !obra.aprobada) {
-      pintar("OBRA NO AUTORIZADA", "error", trabajador);
-      return;
-    }
 
     const { data: acceso } = await supabaseClient
       .from("accesos_trabajadores")
@@ -230,12 +146,75 @@ async function validar() {
     document.getElementById("control").style.display = "block";
 
   } catch (e) {
-    console.error("ERROR VALIDAR:", e);
+    console.error(e);
     pintar("ERROR DE SISTEMA", "error");
   }
 }
 
-// resto del código queda igual...
+const pinInput = document.getElementById("pin");
+const btn = document.getElementById("btnConfirmar");
+
+pinInput.addEventListener("input", () => {
+  btn.disabled = pinInput.value.length < 4;
+});
+
+btn.addEventListener("click", async () => {
+
+  const pin = pinInput.value;
+
+  const { data: vigilante } = await supabaseClient
+    .from("residentes")
+    .select("id")
+    .eq("pin_vigilante", pin)
+    .maybeSingle();
+
+  if (!vigilante) {
+    pintar("PIN INCORRECTO", "error", trabajadorGlobal);
+    return;
+  }
+
+  const ahora = new Date().toISOString();
+
+  if (tipoAccion === "entrada") {
+
+    await supabaseClient
+      .from("accesos_trabajadores")
+      .insert([{
+        trabajador_id: trabajadorGlobal.id,
+        fecha_hora_entrada: ahora,
+        estatus: "dentro",
+        vigilante_id: vigilante.id
+      }]);
+
+    pintar("ENTRADA REGISTRADA", "ok", trabajadorGlobal);
+
+  } else {
+
+    await supabaseClient
+      .from("accesos_trabajadores")
+      .update({
+        fecha_hora_salida: ahora,
+        estatus: "fuera",
+        vigilante_salida_id: vigilante.id
+      })
+      .eq("id", accesoActual.id);
+
+    pintar("SALIDA REGISTRADA", "warn", trabajadorGlobal);
+  }
+
+  document.getElementById("control").style.display = "none";
+});
+
+function pintar(mensaje, tipo, trabajador = null) {
+  document.getElementById("estado").innerText = mensaje;
+  document.body.className = tipo;
+
+  if (trabajador) {
+    document.getElementById("detalle").innerHTML =
+      `<p><b>${trabajador.nombre}</b></p>`;
+  }
+}
+
 </script>
 
 </body>
