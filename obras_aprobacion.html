@@ -43,7 +43,6 @@ button:disabled {
   background: #64748b;
 }
 
-/* 🔥 NUEVO: MENSAJE BONITO */
 #noComite {
   display: none;
   text-align: center;
@@ -57,6 +56,32 @@ button:disabled {
   margin-top: 15px;
   background: #2563eb;
 }
+
+/* 🔥 MODAL */
+#modalConfirmar {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-box {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 320px;
+  text-align: center;
+}
+
+.modal-box button {
+  margin-top: 10px;
+}
 </style>
 
 </head>
@@ -67,7 +92,7 @@ button:disabled {
 
 <h2>Obras pendientes de aprobación</h2>
 
-<!-- 🔴 MENSAJE ACCESO RESTRINGIDO -->
+<!-- 🔴 ACCESO RESTRINGIDO -->
 <div id="noComite">
   <h3>Acceso restringido</h3>
   <p>Esta sección es exclusiva del comité de diseño</p>
@@ -76,17 +101,29 @@ button:disabled {
   </button>
 </div>
 
-<!-- 🔥 LISTA NORMAL -->
+<!-- 🔥 LISTA -->
 <div id="lista"></div>
 
+</div>
+
+<!-- 🔥 MODAL -->
+<div id="modalConfirmar">
+  <div class="modal-box">
+    <h3>Confirmar acción</h3>
+    <p id="textoModal">¿Aprobar esta obra?</p>
+
+    <button id="btnConfirmar">Aprobar</button>
+    <button onclick="cerrarModal()" style="background:#64748b;">Cancelar</button>
+  </div>
 </div>
 
 <script>
 
 let esResponsable = false;
 let usuarioNombre = "";
+let obraSeleccionada = null;
 
-// 🔐 FLUJO CONTROLADO
+// 🔐 INICIO
 window.addEventListener("DOMContentLoaded", async () => {
 
   await protegerPagina(["admin", "administracion", "residente"]);
@@ -115,9 +152,6 @@ async function validarComite() {
     .eq("activo", true)
     .maybeSingle();
 
-  console.log("COMITE:", comite);
-
-  // 🔴 SI NO ES COMITÉ → MOSTRAR MENSAJE BONITO
   if (!comite) {
     document.getElementById("lista").style.display = "none";
     document.getElementById("noComite").style.display = "block";
@@ -172,20 +206,35 @@ async function cargarObras() {
       btn.innerText = "Solo responsable puede aprobar";
     }
 
-    btn.onclick = () => aprobar(o.id);
+    btn.onclick = () => abrirModal(o);
 
     div.appendChild(btn);
     contenedor.appendChild(div);
   });
 }
 
-// ✅ APROBAR
-async function aprobar(id) {
+// 🔥 MODAL
+function abrirModal(obra) {
+  obraSeleccionada = obra;
 
-  if (!esResponsable) return;
+  document.getElementById("textoModal").innerHTML = `
+    ¿Aprobar obra?<br><br>
+    <b>Privada ${obra.privada} - Lote ${obra.casa}</b><br>
+    ${obra.dro_nombre}
+  `;
 
-  const confirmar = confirm("¿Aprobar esta obra?");
-  if (!confirmar) return;
+  document.getElementById("modalConfirmar").style.display = "flex";
+}
+
+function cerrarModal() {
+  obraSeleccionada = null;
+  document.getElementById("modalConfirmar").style.display = "none";
+}
+
+// ✅ CONFIRMAR
+document.getElementById("btnConfirmar").onclick = async () => {
+
+  if (!obraSeleccionada) return;
 
   const { error } = await supabaseClient
     .from("obras")
@@ -194,7 +243,7 @@ async function aprobar(id) {
       fecha_autorizacion: new Date().toISOString(),
       responsable_autorizacion: usuarioNombre
     })
-    .eq("id", id);
+    .eq("id", obraSeleccionada.id);
 
   if (error) {
     alert("Error al aprobar");
@@ -202,10 +251,12 @@ async function aprobar(id) {
     return;
   }
 
+  cerrarModal();
+
   alert("Obra aprobada correctamente");
 
   cargarObras();
-}
+};
 
 </script>
 
