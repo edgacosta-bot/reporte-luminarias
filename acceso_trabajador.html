@@ -330,8 +330,12 @@ btn.addEventListener("click", async () => {
   finalizarBtn.innerText = "Finalizar";
 
   finalizarBtn.onclick = () => {
-    window.location.href = "index.html";
-  };
+  window.close();
+
+  setTimeout(() => {
+    window.location.href = "about:blank";
+  }, 300);
+};
 
   document.querySelector(".container").appendChild(finalizarBtn);
 });
