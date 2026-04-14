@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aprobación de obras</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+}
+
+.container {
+  padding: 20px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #22c55e;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+}
+
+button:disabled {
+  background: #64748b;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Obras pendientes de aprobación</h2>
+
+<div id="lista"></div>
+
+</div>
+
+<script>
+
+let esResponsable = false;
+let usuarioNombre = "";
+
+// 🔐 INICIO
+window.addEventListener("DOMContentLoaded", async () => {
+  await protegerPagina(["admin", "administracion"]);
+
+  await validarComite();
+  await cargarObras();
+});
+
+// 🔎 VALIDAR COMITÉ
+async function validarComite() {
+
+  const { data: userData } = await supabaseClient.auth.getUser();
+  const user = userData.user;
+
+  const { data: comite } = await supabaseClient
+    .from("comite_diseno")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("activo", true)
+    .maybeSingle();
+
+  if (!comite) {
+    alert("No perteneces al comité");
+    window.location.href = "index.html";
+    return;
+  }
+
+  usuarioNombre = comite.nombre;
+
+  if (comite.rol === "responsable") {
+    esResponsable = true;
+  }
+}
+
+// 🔥 CARGAR OBRAS
+async function cargarObras() {
+
+  const { data, error } = await supabaseClient
+    .from("obras")
+    .select("*")
+    .eq("aprobada", false)
+    .eq("estatus", "activa");
+
+  const contenedor = document.getElementById("lista");
+  contenedor.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    contenedor.innerHTML = "<p>No hay obras pendientes</p>";
+    return;
+  }
+
+  data.forEach(o => {
+
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      <b>Privada ${o.privada} - Lote ${o.casa}</b><br>
+      DRO: ${o.dro_nombre}<br>
+      Fecha inicio: ${o.fecha_inicio || "N/A"}
+    `;
+
+    const btn = document.createElement("button");
+    btn.innerText = "Aprobar obra";
+
+    if (!esResponsable) {
+      btn.disabled = true;
+      btn.innerText = "Solo responsable puede aprobar";
+    }
+
+    btn.onclick = () => aprobar(o.id);
+
+    div.appendChild(btn);
+    contenedor.appendChild(div);
+  });
+}
+
+// ✅ APROBAR
+async function aprobar(id) {
+
+  if (!esResponsable) return;
+
+  const confirmar = confirm("¿Aprobar esta obra?");
+  if (!confirmar) return;
+
+  const { error } = await supabaseClient
+    .from("obras")
+    .update({
+      aprobada: true,
+      fecha_autorizacion: new Date().toISOString(),
+      responsable_autorizacion: usuarioNombre
+    })
+    .eq("id", id);
+
+  if (error) {
+    alert("Error al aprobar");
+    return;
+  }
+
+  alert("Obra aprobada correctamente");
+
+  cargarObras();
+}
+
+</script>
+
+</body>
+</html>
