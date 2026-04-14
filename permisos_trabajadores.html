@@ -26,10 +26,7 @@ body {
   padding: 20px;
 }
 
-/* OBRA */
-.obra {
-  margin-top: 25px;
-}
+.obra { margin-top: 25px; }
 
 .obra-titulo {
   font-weight: bold;
@@ -38,7 +35,6 @@ body {
   margin-bottom: 10px;
 }
 
-/* TARJETAS */
 .card {
   background: #1e293b;
   padding: 15px;
@@ -46,15 +42,8 @@ body {
   margin-bottom: 10px;
 }
 
-.nombre {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.estado {
-  font-size: 13px;
-  margin: 6px 0;
-}
+.nombre { font-size: 18px; font-weight: bold; }
+.estado { font-size: 13px; margin: 6px 0; }
 
 input {
   width: 100%;
@@ -64,7 +53,6 @@ input {
   border: none;
   background: #020617;
   color: white;
-  box-sizing: border-box;
 }
 
 button {
@@ -85,7 +73,6 @@ button {
 .estado-rojo { color: #f87171; }
 .estado-amarillo { color: #fbbf24; }
 
-/* 🔥 TOAST */
 #toast {
   position: fixed;
   bottom: 20px;
@@ -95,16 +82,12 @@ button {
   border-radius: 10px;
   display: none;
   z-index: 999;
-  font-size: 14px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-  color: white;
 }
 
 .toast-ok { background: #16a34a; }
 .toast-error { background: #dc2626; }
 .toast-warning { background: #f59e0b; }
 
-/* 🔥 MODAL */
 .modal {
   position: fixed;
   top: 0;
@@ -115,7 +98,6 @@ button {
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
 }
 
 .modal-box {
@@ -127,21 +109,9 @@ button {
   text-align: center;
 }
 
-.modal-box p {
-  margin-bottom: 20px;
-}
-
 .modal-actions {
   display: flex;
   gap: 10px;
-}
-
-.btn-cancel {
-  background: #6b7280;
-}
-
-.btn-confirm {
-  background: #dc2626;
 }
 </style>
 </head>
@@ -159,8 +129,8 @@ button {
   <div class="modal-box">
     <p>¿Cancelar permiso?</p>
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
-      <button class="btn-confirm" onclick="confirmarCancelacion()">Confirmar</button>
+      <button onclick="cerrarModal()">Cancelar</button>
+      <button onclick="confirmarCancelacion()">Confirmar</button>
     </div>
   </div>
 </div>
@@ -169,53 +139,38 @@ button {
 
 const supabaseClient = supabase.createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nz20NjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
 let idCancelar = null;
 
 function toast(msg, tipo="ok") {
   const t = document.getElementById("toast");
-
-  t.className = "";
-  t.classList.add(`toast-${tipo}`);
-
+  t.className = `toast-${tipo}`;
   t.innerText = msg;
   t.style.display = "block";
-
-  setTimeout(() => {
-    t.style.display = "none";
-  }, 2000);
+  setTimeout(() => t.style.display = "none", 2000);
 }
 
 cargar();
 
 async function cargar() {
 
- const { data, error } = await supabaseClient
-  .from("trabajadores_obra")
-  .select("*")
-  .order("created_at", { ascending: false });
+  const { data, error } = await supabaseClient
+    .from("trabajadores_obra")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-if (error) {
-  console.error("Error cargando trabajadores:", error);
-  document.getElementById("lista").innerHTML = `
-    <p style="margin-top:20px; color:#f87171;">
-      Error al cargar trabajadores
-    </p>
-  `;
-  return;
-}
+  if (error) {
+    document.getElementById("lista").innerHTML = "Error al cargar";
+    return;
+  }
 
-if (!data || data.length === 0) {
-  document.getElementById("lista").innerHTML = `
-    <p style="margin-top:20px; color:#94a3b8;">
-      No hay trabajadores registrados
-    </p>
-  `;
-  return;
-}
-  console.log("DATA:", data);
+  if (!data || data.length === 0) {
+    document.getElementById("lista").innerHTML = "Sin registros";
+    return;
+  }
+
   const lista = document.getElementById("lista");
   lista.innerHTML = "";
 
@@ -224,9 +179,9 @@ if (!data || data.length === 0) {
 
   data.forEach(t => {
     const privada = t.privada || "SIN_PRIVADA";
-const casa = t.casa || "SIN_CASA";
+    const casa = t.casa || "SIN_CASA";
+    const clave = `${privada}-${casa}`;
 
-const clave = `${privada}-${casa}`;
     if (!grupos[clave]) grupos[clave] = [];
     grupos[clave].push(t);
   });
@@ -246,8 +201,8 @@ const clave = `${privada}-${casa}`;
 
     grupos[clave].forEach(t => {
 
-      let estado = "";
-      let clase = "";
+      let estado = "🟢 Vigente";
+      let clase = "estado-verde";
 
       if (!t.activo) {
         estado = "⛔ Cancelado";
@@ -261,10 +216,6 @@ const clave = `${privada}-${casa}`;
         estado = "🔴 Vencido";
         clase = "estado-rojo";
       }
-      else {
-        estado = "🟢 Vigente";
-        clase = "estado-verde";
-      }
 
       const card = document.createElement("div");
       card.className = "card";
@@ -276,9 +227,7 @@ const clave = `${privada}-${casa}`;
         <input type="date" id="inicio_${t.id}" value="${t.fecha_inicio || ""}">
         <input type="date" id="fin_${t.id}" value="${t.fecha_fin || ""}">
 
-        <button class="btn-renovar" onclick="renovar('${t.id}')">
-          🔄 Guardar / Renovar
-        </button>
+        <button class="btn-renovar" onclick="renovar('${t.id}')">🔄 Guardar</button>
 
         ${
           t.activo
@@ -295,31 +244,18 @@ const clave = `${privada}-${casa}`;
 }
 
 async function renovar(id) {
-
   const inicio = document.getElementById(`inicio_${id}`).value;
   const fin = document.getElementById(`fin_${id}`).value;
 
-  if (inicio && fin && inicio > fin) {
-    toast("Fecha inválida", "warning");
-    return;
-  }
-
   const { error } = await supabaseClient
     .from("trabajadores_obra")
-    .update({
-      fecha_inicio: inicio || null,
-      fecha_fin: fin || null,
-      activo: true
-    })
+    .update({ fecha_inicio: inicio || null, fecha_fin: fin || null, activo: true })
     .eq("id", id);
 
-  if (error) {
-    toast("Error al actualizar", "error");
-    return;
+  if (!error) {
+    toast("Actualizado");
+    cargar();
   }
-
-  toast("Permiso actualizado ✅", "ok");
-  cargar();
 }
 
 function cancelar(id) {
@@ -329,41 +265,24 @@ function cancelar(id) {
 
 function cerrarModal() {
   document.getElementById("modal").style.display = "none";
-  idCancelar = null;
 }
 
 async function confirmarCancelacion() {
-
-  if (!idCancelar) return;
-
-  const { error } = await supabaseClient
+  await supabaseClient
     .from("trabajadores_obra")
     .update({ activo: false })
     .eq("id", idCancelar);
 
-  if (error) {
-    toast("Error al cancelar", "error");
-    return;
-  }
-
   cerrarModal();
-  toast("Permiso cancelado", "warning");
   cargar();
 }
 
 async function reactivar(id) {
-
-  const { error } = await supabaseClient
+  await supabaseClient
     .from("trabajadores_obra")
     .update({ activo: true })
     .eq("id", id);
 
-  if (error) {
-    toast("Error al reactivar", "error");
-    return;
-  }
-
-  toast("Trabajador reactivado", "ok");
   cargar();
 }
 
