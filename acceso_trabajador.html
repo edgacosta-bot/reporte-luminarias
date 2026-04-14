@@ -361,11 +361,14 @@ function pintar(mensaje, tipo, trabajador = null) {
   btnCerrar.classList.add("btn-cerrar");
 
   btnCerrar.onclick = () => {
-    window.close();
-    setTimeout(() => {
-      window.location.href = "about:blank";
-    }, 300);
-  };
+
+  window.close();
+
+  setTimeout(() => {
+    document.body.innerHTML = "";
+    document.body.style.background = "#020617";
+  }, 300);
+};
 
   document.querySelector(".container").appendChild(btnCerrar);
 }
