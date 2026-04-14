@@ -110,7 +110,7 @@ async function init() {
     return;
   }
 
-  const hoy = new Date().toISOString().split('T')[0];
+  const hoy = new Date().toLocaleDateString('sv-SE');
 
   if (!data.activo) {
     pintar("ACCESO CANCELADO", "error");
@@ -256,7 +256,74 @@ function pintarFinal(texto, color) {
   document.getElementById("pin").style.display = "none";
   document.getElementById("btnConfirmar").style.display = "none";
 
-  document.getElementById("btnSalir").style.display = "block";
+  // 🔥 LIMPIAR BOTONES PREVIOS
+  const existentes = document.querySelectorAll(".btn-wa, .btn-cerrar");
+  existentes.forEach(b => b.remove());
+
+  // 🧠 DEFINIR MENSAJE SEGÚN TIPO
+  let mensaje = "";
+
+  if (texto.includes("ENTRADA")) {
+    mensaje = `Estimado residente, le informamos que su trabajador *${trabajador.nombre}* ha ingresado a su domicilio.`;
+  } else {
+    mensaje = `Estimado residente, le informamos que su trabajador *${trabajador.nombre}* ha salido de su domicilio.`;
+  }
+
+  const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+
+  // 🔘 BOTÓN NOTIFICAR
+  const btnWA = document.createElement("button");
+  btnWA.innerText = "Notificar";
+
+  btnWA.style.marginTop = "12px";
+  btnWA.style.background = color === "ok" ? "#16a34a" : "#f59e0b";
+  btnWA.style.color = "white";
+  btnWA.style.fontWeight = "bold";
+  btnWA.style.borderRadius = "10px";
+  btnWA.style.boxShadow = "0 4px 10px rgba(0,0,0,0.3)";
+  btnWA.style.padding = "14px";
+  btnWA.style.border = "none";
+  btnWA.style.cursor = "pointer";
+
+  btnWA.onclick = () => {
+
+    window.open(url, '_blank');
+
+    btnWA.innerText = "✔ Notificado";
+    btnWA.style.background = "#1e293b";
+    btnWA.disabled = true;
+
+    // 🔒 EVITAR DUPLICADOS
+    const cierreExistente = document.querySelector(".btn-cerrar");
+    if (cierreExistente) cierreExistente.remove();
+
+    // 🔘 BOTÓN FINALIZAR
+    const btnCerrar = document.createElement("button");
+    btnCerrar.innerText = "Finalizar";
+
+    btnCerrar.style.marginTop = "10px";
+    btnCerrar.style.background = "#020617";
+    btnCerrar.style.color = "white";
+    btnCerrar.style.borderRadius = "10px";
+    btnCerrar.style.padding = "14px";
+    btnCerrar.style.fontWeight = "bold";
+    btnCerrar.style.border = "none";
+    btnCerrar.style.cursor = "pointer";
+
+    btnCerrar.classList.add("btn-cerrar");
+
+    btnCerrar.onclick = () => {
+      window.close();
+      setTimeout(() => {
+        window.location.href = "about:blank";
+      }, 300);
+    };
+
+    document.querySelector(".container").appendChild(btnCerrar);
+  };
+
+  btnWA.classList.add("btn-wa");
+  document.querySelector(".container").appendChild(btnWA);
 }
 
 function salir() {
