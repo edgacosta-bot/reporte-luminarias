@@ -29,19 +29,18 @@ body {
 }
 
 button {
-  margin-top: 10px;
+  margin-top: 8px;
   padding: 10px;
   border: none;
   border-radius: 8px;
-  background: #22c55e;
   color: white;
   cursor: pointer;
   width: 100%;
 }
 
-button:disabled {
-  background: #64748b;
-}
+.btn-aprobar { background: #22c55e; }
+.btn-rechazar { background: #ef4444; }
+.btn-cancelar { background: #64748b; }
 
 #noComite {
   display: none;
@@ -52,13 +51,8 @@ button:disabled {
   border-radius: 12px;
 }
 
-#noComite button {
-  margin-top: 15px;
-  background: #2563eb;
-}
-
-/* 🔥 MODAL */
-#modalConfirmar {
+/* MODAL */
+.modal {
   display: none;
   position: fixed;
   top: 0;
@@ -79,8 +73,24 @@ button:disabled {
   text-align: center;
 }
 
-.modal-box button {
+input, textarea {
+  width: 100%;
   margin-top: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+}
+
+/* MENSAJE BONITO */
+#toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #22c55e;
+  padding: 12px 20px;
+  border-radius: 8px;
+  display: none;
 }
 </style>
 
@@ -92,58 +102,53 @@ button:disabled {
 
 <h2>Obras pendientes de aprobación</h2>
 
-<!-- 🔴 ACCESO RESTRINGIDO -->
 <div id="noComite">
   <h3>Acceso restringido</h3>
   <p>Esta sección es exclusiva del comité de diseño</p>
-  <button onclick="window.location.href='index.html'">
-    Regresar
-  </button>
 </div>
 
-<!-- 🔥 LISTA -->
 <div id="lista"></div>
 
 </div>
 
-<!-- 🔥 MODAL -->
-<div id="modalConfirmar">
+<!-- MODAL -->
+<div id="modal" class="modal">
   <div class="modal-box">
-    <h3>Confirmar acción</h3>
-    <p id="textoModal">¿Aprobar esta obra?</p>
+    <h3 id="tituloModal"></h3>
+    <p id="detalleModal"></p>
 
-    <button id="btnConfirmar">Aprobar</button>
-    <button onclick="cerrarModal()" style="background:#64748b;">Cancelar</button>
+    <textarea id="motivo" placeholder="Motivo del rechazo..." style="display:none;"></textarea>
+
+    <button id="btnAccion"></button>
+    <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
   </div>
 </div>
+
+<div id="toast"></div>
 
 <script>
 
 let esResponsable = false;
 let usuarioNombre = "";
 let obraSeleccionada = null;
+let accion = null;
 
-// 🔐 INICIO
+// 🔐 INIT
 window.addEventListener("DOMContentLoaded", async () => {
 
-  await protegerPagina(["admin", "administracion", "residente"]);
+  await protegerPagina(["admin","administracion","residente"]);
 
-  const esValido = await validarComite();
-  if (!esValido) return;
+  const ok = await validarComite();
+  if (!ok) return;
 
   await cargarObras();
 });
 
-// 🔎 VALIDAR COMITÉ
+// VALIDAR COMITÉ
 async function validarComite() {
 
   const { data: userData } = await supabaseClient.auth.getUser();
   const user = userData?.user;
-
-  if (!user) {
-    window.location.href = "login.html";
-    return false;
-  }
 
   const { data: comite } = await supabaseClient
     .from("comite_diseno")
@@ -164,10 +169,10 @@ async function validarComite() {
   return true;
 }
 
-// 🔥 CARGAR OBRAS
+// CARGAR OBRAS
 async function cargarObras() {
 
-  const { data, error } = await supabaseClient
+  const { data } = await supabaseClient
     .from("obras")
     .select("*")
     .eq("aprobada", false)
@@ -176,17 +181,6 @@ async function cargarObras() {
   const contenedor = document.getElementById("lista");
   contenedor.innerHTML = "";
 
-  if (error) {
-    contenedor.innerHTML = "<p>Error cargando obras</p>";
-    console.log(error);
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    contenedor.innerHTML = "<p>No hay obras pendientes</p>";
-    return;
-  }
-
   data.forEach(o => {
 
     const div = document.createElement("div");
@@ -194,69 +188,112 @@ async function cargarObras() {
 
     div.innerHTML = `
       <b>Privada ${o.privada} - Lote ${o.casa}</b><br>
-      DRO: ${o.dro_nombre}<br>
-      Fecha inicio: ${o.fecha_inicio || "N/A"}
+      ${o.dro_nombre}<br>
+      ${o.fecha_inicio || ""}
     `;
 
-    const btn = document.createElement("button");
-    btn.innerText = "Aprobar obra";
-
-    if (!esResponsable) {
-      btn.disabled = true;
-      btn.innerText = "Solo responsable puede aprobar";
+    if (esResponsable) {
+      div.innerHTML += `
+        <button class="btn-aprobar" onclick="abrirModal('aprobar', ${JSON.stringify(o).replace(/"/g, '&quot;')})">Aprobar</button>
+        <button class="btn-rechazar" onclick="abrirModal('rechazar', ${JSON.stringify(o).replace(/"/g, '&quot;')})">Rechazar</button>
+      `;
     }
 
-    btn.onclick = () => abrirModal(o);
-
-    div.appendChild(btn);
     contenedor.appendChild(div);
   });
 }
 
-// 🔥 MODAL
-function abrirModal(obra) {
-  obraSeleccionada = obra;
+// MODAL
+function abrirModal(tipo, obra) {
 
-  document.getElementById("textoModal").innerHTML = `
-    ¿Aprobar obra?<br><br>
-    <b>Privada ${obra.privada} - Lote ${obra.casa}</b><br>
+  obraSeleccionada = obra;
+  accion = tipo;
+
+  const titulo = document.getElementById("tituloModal");
+  const detalle = document.getElementById("detalleModal");
+  const btn = document.getElementById("btnAccion");
+  const motivo = document.getElementById("motivo");
+
+  detalle.innerHTML = `
+    Privada ${obra.privada} - Lote ${obra.casa}<br>
     ${obra.dro_nombre}
   `;
 
-  document.getElementById("modalConfirmar").style.display = "flex";
+  if (tipo === "aprobar") {
+    titulo.innerText = "Aprobar obra";
+    btn.innerText = "Confirmar aprobación";
+    btn.className = "btn-aprobar";
+    motivo.style.display = "none";
+  } else {
+    titulo.innerText = "Rechazar obra";
+    btn.innerText = "Confirmar rechazo";
+    btn.className = "btn-rechazar";
+    motivo.style.display = "block";
+  }
+
+  document.getElementById("modal").style.display = "flex";
 }
 
 function cerrarModal() {
   obraSeleccionada = null;
-  document.getElementById("modalConfirmar").style.display = "none";
+  document.getElementById("modal").style.display = "none";
+  document.getElementById("motivo").value = "";
 }
 
-// ✅ CONFIRMAR
-document.getElementById("btnConfirmar").onclick = async () => {
+// ACCIÓN
+document.getElementById("btnAccion").onclick = async () => {
 
   if (!obraSeleccionada) return;
 
+  const hoy = new Date().toLocaleDateString('sv-SE'); // 🔥 evita desfase
+
+  let updateData = {
+    responsable_autorizacion: usuarioNombre
+  };
+
+  if (accion === "aprobar") {
+    updateData.aprobada = true;
+    updateData.fecha_autorizacion = hoy;
+  } else {
+    const motivo = document.getElementById("motivo").value.trim();
+
+    if (!motivo) {
+      mostrarToast("Debes escribir un motivo", true);
+      return;
+    }
+
+    updateData.estatus = "rechazada";
+    updateData.motivo_rechazo = motivo;
+    updateData.fecha_autorizacion = hoy;
+  }
+
   const { error } = await supabaseClient
     .from("obras")
-    .update({
-      aprobada: true,
-      fecha_autorizacion: new Date().toISOString(),
-      responsable_autorizacion: usuarioNombre
-    })
+    .update(updateData)
     .eq("id", obraSeleccionada.id);
 
   if (error) {
-    alert("Error al aprobar");
-    console.log(error);
+    mostrarToast("Error en la operación", true);
     return;
   }
 
   cerrarModal();
-
-  alert("Obra aprobada correctamente");
+  mostrarToast("Operación realizada correctamente");
 
   cargarObras();
 };
+
+// TOAST BONITO
+function mostrarToast(msg, error=false) {
+  const toast = document.getElementById("toast");
+  toast.innerText = msg;
+  toast.style.background = error ? "#ef4444" : "#22c55e";
+  toast.style.display = "block";
+
+  setTimeout(() => {
+    toast.style.display = "none";
+  }, 2500);
+}
 
 </script>
 
