@@ -7,23 +7,32 @@ const supabaseClient = createClient(
 
 async function protegerPagina(rolesPermitidos) {
 
-  const { data: sessionData } = await supabaseClient.auth.getSession();
+  // 🔹 Intenta obtener sesión (rápido)
+  let { data: sessionData } = await supabaseClient.auth.getSession();
+  let user = sessionData?.session?.user;
 
-const user = sessionData?.session?.user;
+  // 🔹 🔥 Fallback para móvil (clave)
+  if (!user) {
+    const { data: userData } = await supabaseClient.auth.getUser();
+    user = userData?.user;
+  }
 
-if (!user) {
-  window.location.href = "login.html";
-  return;
-}
+  // 🔹 Si no hay usuario → login
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
 
-const userId = user.id;
+  const userId = user.id;
 
+  // 🔹 Obtener rol
   const { data: residente } = await supabaseClient
     .from("residentes")
     .select("tipo")
     .eq("user_id", userId)
     .maybeSingle();
 
+  // 🔹 Validar rol
   if (!residente || !rolesPermitidos.includes(residente.tipo)) {
     window.location.href = "index.html";
   }
