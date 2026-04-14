@@ -132,6 +132,8 @@ async function validar() {
     }
 
     const { data: trabajador, error } = await supabaseClient
+      console.log("ERROR TRABAJADOR:", error);
+      console.log("DATA TRABAJADOR:", trabajador);
       .from("trabajadores_obra")
       .select("*")
       .eq("qr_codigo", qr)
