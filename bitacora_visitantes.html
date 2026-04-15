@@ -1,105 +1,93 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <script src="auth.js"></script>
-  <script>
-    protegerPagina(["colono","admin"]);
-  </script>
-  <meta charset="UTF-8">
-  <title>Bitácora de visitantes</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- 🔥 ORDEN CORRECTO -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 
-  <style>
-    * { box-sizing: border-box; }
+<meta charset="UTF-8">
+<title>Bitácora de visitantes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    body {
-      margin: 0;
-      font-family: Arial;
-      background: #0f172a;
-      color: white;
-    }
+<style>
+* { box-sizing: border-box; }
 
-    .container {
-      max-width: 420px;
-      margin: auto;
-      padding: 20px;
-    }
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+}
 
-    .card {
-      background: #111827;
-      border-radius: 16px;
-      padding: 20px;
-    }
+.container {
+  max-width: 420px;
+  margin: auto;
+  padding: 20px;
+}
 
-    h2 {
-      text-align: center;
-      margin-bottom: 15px;
-    }
+.card {
+  background: #111827;
+  border-radius: 16px;
+  padding: 20px;
+}
 
-    label {
-      font-size: 13px;
-      margin-top: 10px;
-      display: block;
-    }
+h2 {
+  text-align: center;
+  margin-bottom: 15px;
+}
 
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 8px;
-      border: none;
-      background: #1f2937;
-      color: white;
-      font-size: 14px;
-    }
+label {
+  font-size: 13px;
+  margin-top: 10px;
+  display: block;
+}
 
-    input::placeholder {
-      color: #9ca3af;
-    }
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 8px;
+  border: none;
+  background: #1f2937;
+  color: white;
+}
 
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 15px;
-      border-radius: 10px;
-      border: none;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 15px;
-    }
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  border-radius: 10px;
+  border: none;
+  color: white;
+  font-weight: bold;
+}
 
-    .btn-primary { background: #2563eb; }
-    .btn-back { background: #374151; }
+.btn-primary { background: #2563eb; }
+.btn-back { background: #374151; }
 
-    .resultado {
-      margin-top: 20px;
-    }
+.resultado { margin-top: 20px; }
 
-    .item {
-      background: #1e293b;
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-      font-size: 14px;
-      line-height: 1.4;
-    }
+.item {
+  background: #1e293b;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
 
-    .vacio {
-      text-align: center;
-      margin-top: 15px;
-      color: #9ca3af;
-    }
+.vacio {
+  text-align: center;
+  margin-top: 15px;
+  color: #9ca3af;
+}
 
-    .info-user {
-      font-size: 13px;
-      margin-bottom: 10px;
-      color: #9ca3af;
-      text-align: center;
-    }
-  </style>
+.info-user {
+  font-size: 13px;
+  margin-bottom: 10px;
+  color: #9ca3af;
+  text-align: center;
+}
+</style>
 </head>
 
 <body>
@@ -127,67 +115,81 @@
 </div>
 
 <script>
-const client = window.supabase.createClient(
-  'https://prjxmfhahnzosdwljode.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
-);
 
-const privada = localStorage.getItem("privada");
-const casa = localStorage.getItem("casa");
-const rol = localStorage.getItem("rol");
+let rolGlobal = null;
+let userIdGlobal = null;
 
-if (!localStorage.getItem("usuario_valido")) {
-  window.location.href = "login.html";
-}
+// 🔐 CONTROL CORRECTO
+window.addEventListener("DOMContentLoaded", async () => {
 
-if (rol !== "admin") {
-  document.getElementById("infoUsuario").innerText =
-    `Privada ${privada} - Casa ${casa}`;
-} else {
-  document.getElementById("infoUsuario").innerText =
-    `Administrador - Consulta general`;
-}
+  await protegerPagina(["admin","colono","residente"]);
 
+  const { data } = await supabaseClient.auth.getUser();
+  const user = data?.user;
+
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  userIdGlobal = user.id;
+
+  const { data: residente } = await supabaseClient
+    .from("residentes")
+    .select("tipo, privada, casa, id")
+    .eq("user_id", user.id)
+    .single();
+
+  rolGlobal = residente.tipo;
+
+  if (rolGlobal !== "admin") {
+    document.getElementById("infoUsuario").innerText =
+      `Privada ${residente.privada} - Casa ${residente.casa}`;
+  } else {
+    document.getElementById("infoUsuario").innerText =
+      `Administrador - Consulta general`;
+  }
+});
+
+// 🕒 UTC helper
 function toUTC(date, end=false) {
   const d = new Date(date + "T00:00:00");
 
-  if (end) {
-    d.setHours(23,59,59,999);
-  } else {
-    d.setHours(0,0,0,0);
-  }
+  if (end) d.setHours(23,59,59,999);
+  else d.setHours(0,0,0,0);
 
   return d.toISOString();
 }
 
+// 🔍 CONSULTA
 async function consultar() {
 
   const desde = document.getElementById("desde").value;
   const hasta = document.getElementById("hasta").value;
-
   const contenedor = document.getElementById("resultado");
+
   contenedor.innerHTML = "Consultando...";
 
-  let query = client
+  let query = supabaseClient
     .from('visitas_qr')
     .select('*')
     .not('hora_ingreso_utc', 'is', null)
     .order('hora_ingreso_utc', { ascending: false });
 
-  if (rol !== "admin") {
-    const { data: user } = await client
+  if (rolGlobal !== "admin") {
+
+    const { data: residente } = await supabaseClient
       .from('residentes')
-      .select('*')
-      .eq('privada', privada)
-      .eq('casa', casa)
+      .select('id')
+      .eq('user_id', userIdGlobal)
       .single();
 
-    if (!user) {
+    if (!residente) {
       contenedor.innerHTML = "<div class='vacio'>Error de sesión</div>";
       return;
     }
 
-    query = query.eq('residente_id', user.id);
+    query = query.eq('residente_id', residente.id);
   }
 
   if (desde) query = query.gte('hora_ingreso_utc', toUTC(desde));
@@ -196,6 +198,7 @@ async function consultar() {
   const { data, error } = await query;
 
   if (error) {
+    console.error(error);
     contenedor.innerHTML = "<div class='vacio'>Error al consultar</div>";
     return;
   }
@@ -208,6 +211,7 @@ async function consultar() {
   contenedor.innerHTML = "";
 
   data.forEach(v => {
+
     const fecha = new Date(v.hora_ingreso_utc);
 
     const fechaLocal = fecha.toLocaleString('es-MX', {
@@ -232,6 +236,7 @@ async function consultar() {
 function volverInicio() {
   window.location.href = "index.html";
 }
+
 </script>
 
 </body>
