@@ -61,7 +61,7 @@ button {
 
 <div class="card">
 
-<h2>Reimpresión QR</h2>
+<h2>Reimpresión de Código QR</h2>
 
 <select id="filtroPrivada">
   <option value="">Todas las privadas</option>
@@ -141,7 +141,6 @@ function render() {
     lista = lista.filter(t => t.privada === privada);
   }
 
-  // 🔹 limpiar visual SIN cambiar diseño
   document.getElementById("qr").innerHTML = "";
   document.getElementById("nombre").innerText = "";
   document.getElementById("btnWA").style.display = "none";
@@ -205,7 +204,12 @@ document.getElementById("btnWA").addEventListener("click", () => {
 
   const link = `${window.location.origin}/credencial_trabajador.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
 
-  const mensaje = `👷 Credencial\n\nNombre: ${nombre}\nPrivada ${privada} - Lote ${casa}\n\n${link}`;
+  const mensaje =
+`🔁 *REIMPRESIÓN DE CÓDIGO QR*\n\n` +
+`👷 *Credencial de acceso*\n\n` +
+`Nombre: ${nombre}\n` +
+`Ubicación: Privada ${privada} - Lote ${casa}\n\n` +
+`📲 Presenta este código en caseta:\n${link}`;
 
   window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
 });
