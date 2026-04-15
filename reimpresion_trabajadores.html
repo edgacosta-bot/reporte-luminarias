@@ -182,7 +182,8 @@ document.getElementById("trabajador").addEventListener("change", function() {
 
   trabajadorSeleccionado = { codigo, nombre, privada, casa };
 
-  const url = `${window.location.origin}/credencial_trabajador.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
+  // 🔥 CORRECCIÓN AQUÍ
+  const url = `${window.location.origin}/credencial_trabajador.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}&reimpresion=1`;
 
   const qrDiv = document.getElementById("qr");
   qrDiv.innerHTML = "";
@@ -202,7 +203,8 @@ document.getElementById("btnWA").addEventListener("click", () => {
 
   const { codigo, nombre, privada, casa } = trabajadorSeleccionado;
 
-  const link = `${window.location.origin}/credencial_trabajador.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
+  // 🔥 CORRECCIÓN AQUÍ TAMBIÉN
+  const link = `${window.location.origin}/credencial_trabajador.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}&reimpresion=1`;
 
   const mensaje =
 `🔁 *REIMPRESIÓN DE CÓDIGO QR*\n\n` +
