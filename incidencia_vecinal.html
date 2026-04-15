@@ -101,11 +101,9 @@ button {
 
 <script type="module">
 
-import { supabase, protegerPagina } from './auth.js';
+import { supabase } from './auth.js';
 
-document.addEventListener('DOMContentLoaded', async () => {
-  await protegerPagina();
-});
+// 🚫 NO usamos protegerPagina para no romper auth.js
 
 async function reportar() {
 
@@ -124,7 +122,6 @@ async function reportar() {
   const privada = localStorage.getItem("privada");
   const casa = localStorage.getItem("casa");
 
-  // 🔥 Manejo de fecha (se mantiene igual por estabilidad)
   const ahoraUTC = new Date();
   const fechaMexico = new Date(ahoraUTC.getTime() - (6 * 60 * 60 * 1000));
   const fechaLocal = fechaMexico.toISOString().slice(0, 19);
