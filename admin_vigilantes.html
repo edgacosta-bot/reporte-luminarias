@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestión de vigilantes</title>
 
+<!-- 🔥 ORDEN CORRECTO -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
-<script>
-protegerPagina(["admin"]);
-</script>
 
 <style>
 body {
@@ -67,7 +67,6 @@ button {
 .btn-edit { background: #2563eb; color: white; }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
@@ -83,112 +82,70 @@ button {
 
 <div id="lista"></div>
 
-<!-- 🔐 MODAL CAMBIAR PIN -->
-<div id="modalPin" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
-
+<!-- MODALES (SIN CAMBIO) -->
+<div id="modalPin" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
   <div style="background:#111827; padding:20px; border-radius:16px; width:90%; max-width:300px; text-align:center;">
-
-    <h3 style="margin-top:0;">🔐 Cambiar PIN</h3>
-
+    <h3>🔐 Cambiar PIN</h3>
     <input id="nuevoPinInput" type="number" placeholder="Nuevo PIN"
       style="width:100%; padding:12px; border-radius:10px; border:none; margin-top:10px; text-align:center; font-size:18px;" />
-
     <div style="display:flex; gap:10px; margin-top:15px;">
-      <button onclick="cerrarModal()" style="flex:1; padding:10px; border-radius:10px; border:none; background:#6b7280; color:white;">
-        Cancelar
-      </button>
-
-      <button onclick="guardarPin()" style="flex:1; padding:10px; border-radius:10px; border:none; background:#16a34a; color:white;">
-        Guardar
-      </button>
+      <button onclick="cerrarModal()" style="flex:1; background:#6b7280;">Cancelar</button>
+      <button onclick="guardarPin()" style="flex:1; background:#16a34a;">Guardar</button>
     </div>
-
   </div>
-
 </div>
 
-<!-- 👮 MODAL NUEVO VIGILANTE -->
-<div id="modalNuevo" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
-
+<div id="modalNuevo" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
   <div style="background:#111827; padding:20px; border-radius:16px; width:90%; max-width:300px; text-align:center;">
-
-    <h3 style="margin-top:0;">👮 Nuevo vigilante</h3>
-
-    <input id="nombreNuevo" type="text" placeholder="Nombre"
-      style="width:100%; padding:12px; border-radius:10px; border:none; margin-top:10px;" />
-
-    <input id="pinNuevo" type="number" placeholder="PIN (4 dígitos)"
-      style="width:100%; padding:12px; border-radius:10px; border:none; margin-top:10px; text-align:center;" />
-
+    <h3>👮 Nuevo vigilante</h3>
+    <input id="nombreNuevo" type="text" placeholder="Nombre">
+    <input id="pinNuevo" type="number" placeholder="PIN (4 dígitos)">
     <div style="display:flex; gap:10px; margin-top:15px;">
-      <button onclick="cerrarModalNuevo()" style="flex:1; padding:10px; border-radius:10px; border:none; background:#6b7280; color:white;">
-        Cancelar
-      </button>
-
-      <button onclick="crearVigilante()" style="flex:1; padding:10px; border-radius:10px; border:none; background:#16a34a; color:white;">
-        Guardar
-      </button>
+      <button onclick="cerrarModalNuevo()" style="flex:1; background:#6b7280;">Cancelar</button>
+      <button onclick="crearVigilante()" style="flex:1; background:#16a34a;">Guardar</button>
     </div>
-
   </div>
-
 </div>
 
 </div>
 
-<!-- 🔥 TOAST -->
-<div id="toast" style="
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #111827;
-  color: white;
-  padding: 14px 20px;
-  border-radius: 12px;
-  font-size: 14px;
-  opacity: 0;
-  transition: all 0.3s ease;
-  z-index: 9999;
-"></div>
+<!-- TOAST -->
+<div id="toast" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+background:#111827; color:white; padding:14px 20px; border-radius:12px; opacity:0;"></div>
 
 <script>
 
-const client = window.supabase.createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
-
 let vigilanteSeleccionado = null;
 
-cargar();
+// 🔐 CONTROL CORRECTO
+window.addEventListener("DOMContentLoaded", async () => {
+  await protegerPagina(["admin","administracion"]);
+  await cargar();
+});
 
+// 🔔 TOAST
 function mostrarToast(mensaje, tipo = "ok") {
-
   const toast = document.getElementById("toast");
-
   toast.innerText = mensaje;
-
-  if (tipo === "error") toast.style.background = "#dc2626";
-  else if (tipo === "warn") toast.style.background = "#f59e0b";
-  else toast.style.background = "#16a34a";
-
+  toast.style.background = tipo === "error" ? "#dc2626" : tipo === "warn" ? "#f59e0b" : "#16a34a";
   toast.style.opacity = "1";
-  toast.style.bottom = "30px";
-
-  setTimeout(() => {
-    toast.style.opacity = "0";
-    toast.style.bottom = "20px";
-  }, 2500);
+  setTimeout(() => toast.style.opacity = "0", 2500);
 }
 
+// 🔄 CARGAR
 async function cargar() {
 
-  const { data } = await client
+  const { data, error } = await supabaseClient
     .from("residentes")
     .select("*")
     .eq("tipo", "vigilante")
     .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    mostrarToast("Error cargando vigilantes", "error");
+    return;
+  }
 
   const contenedor = document.getElementById("lista");
   contenedor.innerHTML = "";
@@ -200,10 +157,7 @@ async function cargar() {
 
     card.innerHTML = `
       <div class="nombre">${v.nombre}</div>
-
-      <div class="info">
-        PIN: ${v.pin_vigilante || "No definido"}
-      </div>
+      <div class="info">PIN: ${v.pin_vigilante || "No definido"}</div>
 
       <div class="botones">
         <button class="${v.activo ? 'btn-off' : 'btn-on'}"
@@ -211,13 +165,11 @@ async function cargar() {
           ${v.activo ? 'Desactivar' : 'Activar'}
         </button>
 
-        <button class="btn-edit"
-          onclick="abrirModal('${v.id}')">
+        <button class="btn-edit" onclick="abrirModal('${v.id}')">
           Cambiar PIN
         </button>
 
-        <button class="btn-del"
-          onclick="eliminar('${v.id}')">
+        <button class="btn-del" onclick="eliminar('${v.id}')">
           Eliminar
         </button>
       </div>
@@ -227,9 +179,9 @@ async function cargar() {
   });
 }
 
+// 🔁 TOGGLE
 async function toggle(id, estadoActual) {
-
-  await client
+  await supabaseClient
     .from("residentes")
     .update({ activo: !estadoActual })
     .eq("id", id);
@@ -237,11 +189,11 @@ async function toggle(id, estadoActual) {
   cargar();
 }
 
+// 🗑️ ELIMINAR
 async function eliminar(id) {
-
   if (!confirm("¿Eliminar vigilante?")) return;
 
-  await client
+  await supabaseClient
     .from("residentes")
     .delete()
     .eq("id", id);
@@ -249,6 +201,7 @@ async function eliminar(id) {
   cargar();
 }
 
+// 🔐 PIN
 function abrirModal(id) {
   vigilanteSeleccionado = id;
   document.getElementById("modalPin").style.display = "flex";
@@ -263,12 +216,12 @@ async function guardarPin() {
 
   const nuevo = document.getElementById("nuevoPinInput").value;
 
-  if (!nuevo || nuevo.length !== 4 || isNaN(nuevo)) {
-    mostrarToast("El PIN debe ser de 4 dígitos", "warn");
+  if (!nuevo || nuevo.length !== 4) {
+    mostrarToast("PIN inválido", "warn");
     return;
   }
 
-  const { data: existe } = await client
+  const { data: existe } = await supabaseClient
     .from("residentes")
     .select("id")
     .eq("pin_vigilante", nuevo)
@@ -276,33 +229,27 @@ async function guardarPin() {
     .maybeSingle();
 
   if (existe) {
-    mostrarToast("Ese PIN ya está en uso", "error");
+    mostrarToast("PIN ya usado", "error");
     return;
   }
 
-  const { error } = await client
+  await supabaseClient
     .from("residentes")
     .update({ pin_vigilante: nuevo })
     .eq("id", vigilanteSeleccionado);
-
-  if (error) {
-    mostrarToast("Error al guardar", "error");
-    return;
-  }
 
   cerrarModal();
   mostrarToast("PIN actualizado");
   cargar();
 }
 
+// ➕ NUEVO
 function abrirModalNuevo() {
   document.getElementById("modalNuevo").style.display = "flex";
 }
 
 function cerrarModalNuevo() {
   document.getElementById("modalNuevo").style.display = "none";
-  document.getElementById("nombreNuevo").value = "";
-  document.getElementById("pinNuevo").value = "";
 }
 
 async function crearVigilante() {
@@ -310,42 +257,32 @@ async function crearVigilante() {
   const nombre = document.getElementById("nombreNuevo").value;
   const pin = document.getElementById("pinNuevo").value;
 
-  if (!nombre) {
-    mostrarToast("Ingresa nombre", "warn");
+  if (!nombre || !pin || pin.length !== 4) {
+    mostrarToast("Datos inválidos", "warn");
     return;
   }
 
-  if (!pin || pin.length !== 4 || isNaN(pin)) {
-    mostrarToast("PIN inválido", "warn");
-    return;
-  }
-
-  const { data: existe } = await client
+  const { data: existe } = await supabaseClient
     .from("residentes")
     .select("id")
     .eq("pin_vigilante", pin)
     .maybeSingle();
 
   if (existe) {
-    mostrarToast("Ese PIN ya existe", "error");
+    mostrarToast("PIN ya existe", "error");
     return;
   }
 
-  const { error } = await client
+  await supabaseClient
     .from("residentes")
     .insert([{
-      nombre: nombre,
+      nombre,
       tipo: "vigilante",
       privada: "SEG",
       casa: nombre,
       pin_vigilante: pin,
       activo: true
     }]);
-
-  if (error) {
-    mostrarToast(error.message, "error");
-    return;
-  }
 
   cerrarModalNuevo();
   mostrarToast("Vigilante creado");
