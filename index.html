@@ -107,31 +107,36 @@ body {
   <div id="ubicacion"></div>
 </div>
 
+<!-- VISITANTES -->
 <div id="colono-section" class="section">
   <div class="section-title">VISITANTES</div>
   <a href="crear_qr.html" class="button btn-visitas">📱 Generar acceso (QR)</a>
   <a href="bitacora_visitantes.html" class="button btn-visitas">📋 Bitácora de visitantes</a>
 </div>
 
+<!-- HOGAR -->
 <div id="hogar-section" class="section">
   <div class="section-title">TRABAJADORES DEL HOGAR</div>
   <a href="trabajador_hogar_registro.html" class="button btn-hogar">📱 Generar QR para empleados</a>
   <a href="trabajadores_hogar_gestion.html" class="button btn-hogar">👷 Gestionar accesos</a>
 </div>
 
+<!-- REPORTES (DINÁMICO) -->
 <div id="reportes-section" class="section">
   <div class="section-title">REPORTES</div>
-  <a href="#" onclick="irAReportes()" id="btnReportes" class="button btn-reportes">🚨 Generar reportes</a>
+  <div id="reportesContainer"></div>
 </div>
 
+<!-- SERVICIOS -->
 <div id="servicios-section" class="section">
   <div class="section-title">SERVICIOS</div>
-  <a href="agua.html" class="button btn-servicios">💧 Ver reportes de agua </a>
+  <a href="agua.html" class="button btn-servicios">💧 Ver reportes de agua</a>
   <a id="btnPaquetesColono" href="residente_paquetes.html" class="button btn-servicios">📦 Autorizar recepción de paquetes</a>
   <a id="btnServiciosArribo" href="servicios_arribo.html" class="button btn-servicios">🚚 Autorizar acceso de servicios</a>
   <a href="seguridad.html" class="button btn-servicios">🛡️ Seguridad</a>
 </div>
 
+<!-- INFRAESTRUCTURA -->
 <div id="infraestructura-section" class="section">
   <div class="section-title">INFRAESTRUCTURA</div>
   <a href="luminarias.html" class="button btn-infra">💡 Luminarias</a>
@@ -139,6 +144,7 @@ body {
   <a href="cerco_electrico.html" class="button btn-infra">⚡ Cerco eléctrico</a>
 </div>
 
+<!-- VIGILANTE -->
 <div id="vigilante-section" class="section">
   <div class="section-title">CONTROL DE OBRAS</div>
   <a href="trabajadores_dentro.html" class="button btn-obras">👷 Trabajadores dentro</a>
@@ -152,11 +158,11 @@ body {
   <a href="entrega_paquetes.html" class="button btn-paqueteria">📦 Entrega de paquetes</a>
 </div>
 
+<!-- ADMIN -->
 <div id="admin-section" class="section">
   <div class="section-title">PROPIETARIOS NO RESIDENTES</div>
-  <a href="admin_qr_propietarios.html" class="button btn-admin">
-  🔐 Generar códigos QR</a>
-  
+  <a href="admin_qr_propietarios.html" class="button btn-admin">🔐 Generar códigos QR</a>
+
   <div class="section-title">OBRAS EN EJECUCIÓN</div>
   <a href="obras_registro.html" class="button btn-admin">🏗 Alta de obras</a>
   <a href="trabajadores_registro.html" class="button btn-admin">👷 Alta de trabajadores</a>
@@ -209,100 +215,79 @@ if (rol === "residente") rol = "colono";
 if (rol === "administracion") rol = "admin";
 
 if (!rol) {
-    window.location.href = "login.html";
-    return;
-  }
+  window.location.href = "login.html";
+  return;
+}
 
-  aplicarUI(rol);
+aplicarUI(rol);
 
-  // 🔥 UBICACIÓN (MODO DEMO)
-  const privada = residente.privada;
+const privada = residente.privada;
 const casa = residente.casa;
 
-  if (privada && casa) {
-    document.getElementById("ubicacion").innerText =
-      `${privada} - ${casa}`;
-  }
+if (privada && casa) {
+  document.getElementById("ubicacion").innerText =
+    `${privada} - ${casa}`;
+}
 }
 
 function aplicarUI(rol) {
 
-  const rolTexto = document.getElementById("rolTexto");
+const rolTexto = document.getElementById("rolTexto");
 
-  if (rol === "admin") rolTexto.innerText = "Panel de administración";
-  if (rol === "vigilante") rolTexto.innerText = "Panel de vigilancia";
-  if (rol === "colono") rolTexto.innerText = "Panel de colono";
+if (rol === "admin") rolTexto.innerText = "Panel de administración";
+if (rol === "vigilante") rolTexto.innerText = "Panel de vigilancia";
+if (rol === "colono") rolTexto.innerText = "Panel de colono";
 
-  const adminSection = document.getElementById("admin-section");
-  const vigilanteSection = document.getElementById("vigilante-section");
-  const colonoSection = document.getElementById("colono-section");
-  const infraestructuraSection = document.getElementById("infraestructura-section");
-  const serviciosSection = document.getElementById("servicios-section");
-  const hogarSection = document.getElementById("hogar-section");
-  const reportesSection = document.getElementById("reportes-section");
-  const btnReportes = document.getElementById("btnReportes");
-  const btnPaquetesColono = document.getElementById("btnPaquetesColono");
-  const btnServiciosArribo = document.getElementById("btnServiciosArribo");
+const adminSection = document.getElementById("admin-section");
+const vigilanteSection = document.getElementById("vigilante-section");
+const colonoSection = document.getElementById("colono-section");
+const infraestructuraSection = document.getElementById("infraestructura-section");
+const serviciosSection = document.getElementById("servicios-section");
+const hogarSection = document.getElementById("hogar-section");
+const reportesContainer = document.getElementById("reportesContainer");
 
-  if (rol === "vigilante") {
-    adminSection.style.display = "none";
-    colonoSection.style.display = "none";
-    infraestructuraSection.style.display = "none";
-    serviciosSection.style.display = "none";
-    reportesSection.style.display = "none";
-    if (hogarSection) hogarSection.style.display = "none";
-  }
+reportesContainer.innerHTML = "";
 
-  if (rol === "colono") {
-    adminSection.style.display = "none";
-    vigilanteSection.style.display = "none";
-  }
-
-  if (rol === "admin") {
-    btnReportes.innerText = "📊 Reporte general";
-    vigilanteSection.style.display = "none";
-    if (hogarSection) hogarSection.style.display = "none";
-    if (btnPaquetesColono) btnPaquetesColono.style.display = "none";
-    if (btnServiciosArribo) btnServiciosArribo.style.display = "none";
-  }
-
-  if (rol !== "colono") {
-    if (btnPaquetesColono) btnPaquetesColono.style.display = "none";
-  }
+// 🔥 REPORTES DINÁMICOS
+if (rol === "colono") {
+  reportesContainer.innerHTML = `
+    <a href="reporte_vecinal.html" class="button btn-reportes">🚨 Incidencia vecinal</a>
+    <a href="luminarias.html" class="button btn-reportes">💡 Luminarias</a>
+    <a href="agua.html" class="button btn-reportes">💧 Agua</a>
+    <a href="reporte_obras.html" class="button btn-reportes">🏗 Obras</a>
+  `;
 }
 
-async function irAReportes() {
+if (rol === "vigilante") {
+  reportesContainer.innerHTML = `
+    <a href="reporte_obras.html" class="button btn-reportes">🏗 Reporte de obras</a>
+  `;
+}
 
-  const { data: userData } = await supabaseClient.auth.getUser();
+if (rol === "admin") {
+  reportesContainer.innerHTML = `
+    <a href="admin_reporte_general.html" class="button btn-reportes">📊 Reporte general</a>
+  `;
+}
 
-  if (!userData?.user) {
-    window.location.href = "login.html";
-    return;
-  }
+// 🔒 VISIBILIDAD POR ROL
+if (rol === "vigilante") {
+  adminSection.style.display = "none";
+  colonoSection.style.display = "none";
+  infraestructuraSection.style.display = "none";
+  serviciosSection.style.display = "none";
+  if (hogarSection) hogarSection.style.display = "none";
+}
 
-  const userId = userData.user.id;
+if (rol === "colono") {
+  adminSection.style.display = "none";
+  vigilanteSection.style.display = "none";
+}
 
-  const { data: residente } = await supabaseClient
-    .from("residentes")
-    .select("tipo")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (!residente) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  let rol = residente.tipo;
-
-  if (rol === "residente") rol = "colono";
-  if (rol === "administracion") rol = "admin";
-
-  if (rol === "admin") {
-    window.location.href = "admin_reporte_general.html";
-  } else {
-    window.location.href = "reportes.html";
-  }
+if (rol === "admin") {
+  vigilanteSection.style.display = "none";
+  if (hogarSection) hogarSection.style.display = "none";
+}
 }
 
 async function logout() {
