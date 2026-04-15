@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte de Seguridad</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #020617, #0f172a);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.card {
+  background: #111827;
+  padding: 25px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.usuario {
+  text-align: center;
+  font-size: 14px;
+  color: #9ca3af;
+  margin-bottom: 15px;
+}
+
+select, textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #1f2937;
+  color: white;
+}
+
+textarea {
+  min-height: 100px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #dc2626;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.mensaje {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.error { color: #f87171; }
+.ok { color: #34d399; }
+
+.salir {
+  margin-top: 10px;
+  text-align: center;
+  cursor: pointer;
+  color: #9ca3af;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>🛡 Reporte de Seguridad</h2>
+
+<div id="infoVigilante" class="usuario"></div>
+
+<select id="tipo">
+  <option value="">Tipo de incidente</option>
+</select>
+
+<textarea id="descripcion" placeholder="Describe lo ocurrido..."></textarea>
+
+<button onclick="enviarReporte()">Enviar reporte</button>
+
+<div id="mensaje" class="mensaje"></div>
+
+<div class="salir" onclick="cerrarSesion()">Cerrar sesión</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+// 🔥 CONFIG
+const supabaseClient = supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+// 🔐 SESIÓN VIGILANTE
+const vigilante_id = localStorage.getItem("vigilante_id");
+const vigilante_nombre = localStorage.getItem("vigilante_nombre");
+
+if (!vigilante_id) {
+  window.location.href = "login_vigilante.html";
+}
+
+document.getElementById("infoVigilante").innerText =
+  `Vigilante: ${vigilante_nombre}`;
+
+// 🔥 CATÁLOGO DINÁMICO
+async function cargarCatalogo() {
+
+  const select = document.getElementById("tipo");
+
+  const { data, error } = await supabaseClient
+    .from("catalogo_reportes")
+    .select("subtipo")
+    .eq("categoria", "seguridad")
+    .eq("actor_permitido", "vigilante")
+    .eq("activo", true)
+    .order("subtipo");
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  select.innerHTML = '<option value="">Tipo de incidente</option>';
+
+  data.forEach(item => {
+    const option = document.createElement("option");
+    option.value = item.subtipo;
+    option.textContent = item.subtipo.replaceAll("_", " ");
+    select.appendChild(option);
+  });
+}
+
+// 🚀 ENVIAR REPORTE
+async function enviarReporte() {
+
+  const tipo = document.getElementById("tipo").value;
+  const descripcion = document.getElementById("descripcion").value.trim();
+  const mensaje = document.getElementById("mensaje");
+
+  mensaje.className = "mensaje";
+
+  if (!tipo || !descripcion) {
+    mensaje.innerText = "Completa todos los campos";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  try {
+
+    const { error } = await supabaseClient
+      .from("reportes_seguridad")
+      .insert([{
+        categoria: "seguridad",
+        tipo: tipo,
+        descripcion: descripcion,
+        reportado_por_vigilante: vigilante_id,
+        privada: "caseta",
+        fecha: new Date().toISOString()
+      }]);
+
+    if (error) throw error;
+
+    mensaje.innerText = "Reporte enviado correctamente ✅";
+    mensaje.classList.add("ok");
+
+    document.getElementById("descripcion").value = "";
+    document.getElementById("tipo").value = "";
+
+  } catch (err) {
+    console.error(err);
+    mensaje.innerText = "Error al enviar reporte";
+    mensaje.classList.add("error");
+  }
+}
+
+// 🔐 CERRAR SESIÓN
+function cerrarSesion() {
+  localStorage.removeItem("vigilante_id");
+  localStorage.removeItem("vigilante_nombre");
+  window.location.href = "login_vigilante.html";
+}
+
+// INIT
+document.addEventListener("DOMContentLoaded", () => {
+  cargarCatalogo();
+});
+
+</script>
+
+</body>
+</html>
