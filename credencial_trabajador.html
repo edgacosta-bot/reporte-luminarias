@@ -41,6 +41,7 @@ body {
   font-weight: bold;
   font-size: 13px;
   margin-bottom: 6px;
+  letter-spacing: 1px;
 }
 
 .titulo {
@@ -128,21 +129,23 @@ const nombre = params.get("nombre");
 const privada = params.get("privada");
 const casa = params.get("casa");
 
-// 🔥 nuevos params
-const esReimpresion = params.get("reimpresion");
+// 🔥 SOLO REIMPRESIÓN REAL
+const esReimpresion = params.get("reimpresion") === "1";
 const origen = params.get("origen");
 
-// 🔥 etiqueta reimpresión
+// 🔥 etiqueta visible SOLO si es reimpresión
 if (esReimpresion) {
-  document.getElementById("reimpresionLabel").innerText = "⚠️ REIMPRESIÓN";
+  document.getElementById("reimpresionLabel").innerText = "🔁 REIMPRESIÓN DE CÓDIGO QR";
 }
 
-// 🔥 QR apunta al acceso real
+// 🔥 QR apunta al acceso real (NO cambia)
 const urlQR = `${window.location.origin}/acceso_trabajador.html?qr=${codigo}`;
 
 // 🎯 Generar QR
 QRCode.toCanvas(urlQR, { width: 220 }, function (err, canvas) {
-  document.getElementById("qr").appendChild(canvas);
+  if (!err) {
+    document.getElementById("qr").appendChild(canvas);
+  }
 });
 
 // 🧾 Datos
@@ -158,17 +161,22 @@ if (origen === "admin") {
 
   btn.addEventListener("click", () => {
 
-    // 🔥 LINK LIMPIO (SIN origen=admin)
+    // 🔥 LINK LIMPIO (pero conserva reimpresión si aplica)
     const linkCredencial =
-  `${window.location.origin}/credencial_trabajador.html` +
-  `?qr=${codigo}` +
-  `&nombre=${encodeURIComponent(nombre)}` +
-  `&privada=${privada}` +
-  `&casa=${casa}` +
-  (esReimpresion ? `&reimpresion=1` : "");
+      `${window.location.origin}/credencial_trabajador.html` +
+      `?qr=${codigo}` +
+      `&nombre=${encodeURIComponent(nombre)}` +
+      `&privada=${privada}` +
+      `&casa=${casa}` +
+      (esReimpresion ? `&reimpresion=1` : "");
+
+    // 🔥 MENSAJE DIFERENCIADO
+    const titulo = esReimpresion
+      ? "🔁 REIMPRESIÓN DE CÓDIGO QR"
+      : "👷 Credencial de acceso";
 
     const mensaje =
-      `👷 Credencial de acceso\n\n` +
+      `${titulo}\n\n` +
       `Nombre: ${nombre}\n` +
       `Ubicación: Privada ${privada} - Lote ${casa}\n\n` +
       `Presenta este código en caseta:\n${linkCredencial}`;
