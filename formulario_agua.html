@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html>
 <head>
 <meta charset="UTF-8">
@@ -8,7 +7,6 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 </head>
 
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
@@ -27,7 +25,7 @@
 <div id="infoUsuario" class="text-xs text-gray-500 text-center mb-4"></div>
 
 <div class="bg-blue-50 border border-blue-200 text-blue-700 text-sm rounded-lg p-3 mb-5">
-  Si realizaste un reporte a CAASIM, regístralo aquí. Esta información permitirá documentar fallas en el servicio y generar evidencia colectiva.
+  Si realizaste un reporte a CAASIM, regístralo aquí.
 </div>
 
 <h2 class="text-lg font-semibold text-gray-700 mb-4 text-center">
@@ -37,34 +35,17 @@
 <form id="formAgua" class="space-y-4">
 
 <div>
-<label class="block text-sm font-medium text-gray-600">
-Fecha del reporte
-</label>
-
-<input
-type="date"
-id="fecha_reporte"
-required
-class="mt-1 w-full p-3 border rounded-lg">
+<label>Fecha del reporte</label>
+<input type="date" id="fecha_reporte" required class="mt-1 w-full p-3 border rounded-lg">
 </div>
 
 <div>
-<label class="block text-sm font-medium text-gray-600">
-Número de reporte (CAASIM)
-</label>
-
-<input
-type="text"
-id="numero_reporte"
-required
-class="mt-1 w-full p-3 border rounded-lg">
+<label>Número de reporte</label>
+<input type="text" id="numero_reporte" required class="mt-1 w-full p-3 border rounded-lg">
 </div>
 
 <div>
-<label class="block text-sm font-medium text-gray-600">
-¿Cómo realizaste el reporte?
-</label>
-
+<label>¿Cómo realizaste el reporte?</label>
 <select id="medio_reporte" required class="mt-1 w-full p-3 border rounded-lg">
 <option value="">Seleccione una opción</option>
 <option>Teléfono</option>
@@ -75,32 +56,20 @@ class="mt-1 w-full p-3 border rounded-lg">
 </div>
 
 <div>
-<label class="block text-sm font-medium text-gray-600">
-Tipo de falla
-</label>
-
+<label>Tipo de falla</label>
 <select id="tipo_falla" required class="mt-1 w-full p-3 border rounded-lg">
 <option value="">Seleccione una opción</option>
-<option>Sin suministro de agua</option>
-<option>Baja presión</option>
-<option>Servicio intermitente</option>
-<option>Fuga de agua</option>
-<option>Otro</option>
 </select>
 </div>
 
 <div>
-<label class="block text-sm font-medium text-gray-600">
-Calle
-</label>
-
+<label>Calle</label>
 <select id="calle" required class="mt-1 w-full p-3 border rounded-lg">
 <option value="">Selecciona calle</option>
 </select>
 </div>
 
-<button type="submit"
-class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+<button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg">
 Registrar reporte
 </button>
 
@@ -108,47 +77,60 @@ Registrar reporte
 
 </form>
 
-<p class="text-xs text-gray-400 text-center mt-4">
-La información será utilizada como respaldo para documentar incidencias.
-</p>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 
-const SUPABASE_URL = "https://prjxmfhahnzosdwljode.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs";
+const supabaseClient = supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "TU_KEY"
+);
 
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyKWLCyjXmziMIFu_2bQoaawhzE4IUAbRnf71fvNsCjuea5DmH150w93FgLC9WqMIw/exec";
+const APPS_SCRIPT_URL = "TU_SCRIPT";
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// 🔐 SESIÓN
 const privada = localStorage.getItem("privada");
 const casa = localStorage.getItem("casa");
 
-if (!privada || !casa) {
-  window.location.href = "login.html";
-}
-
-// 👤 INFO
 document.getElementById("infoUsuario").innerText =
   `Privada ${privada} - Casa ${casa}`;
 
-// 🔥 CARGAR CALLES
-async function cargarCalles() {
+/* 🔥 NUEVO: CATÁLOGO */
+async function cargarCatalogoAgua() {
+
+  const select = document.getElementById("tipo_falla");
 
   const { data, error } = await supabaseClient
+    .from("catalogo_reportes")
+    .select("subtipo")
+    .eq("categoria", "agua")
+    .eq("actor_permitido", "colono")
+    .eq("activo", true)
+    .order("subtipo");
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  select.innerHTML = '<option value="">Seleccione una opción</option>';
+
+  data.forEach(item => {
+    const option = document.createElement("option");
+    option.value = item.subtipo;
+    option.textContent = item.subtipo.replaceAll("_", " ");
+    select.appendChild(option);
+  });
+}
+
+/* CALLES */
+async function cargarCalles() {
+
+  const { data } = await supabaseClient
     .from("ubicaciones")
     .select("id, calle")
     .eq("privada", privada);
-
-  if (error) {
-    console.log(error);
-    return;
-  }
 
   const select = document.getElementById("calle");
 
@@ -160,33 +142,24 @@ async function cargarCalles() {
   });
 }
 
-cargarCalles();
-
-// 🚀 SUBMIT
+/* SUBMIT */
 document.getElementById("formAgua").addEventListener("submit", async (e) => {
 
   e.preventDefault();
 
   const mensaje = document.getElementById("mensaje");
-  const calle_id = document.getElementById("calle").value;
 
-  if (!calle_id) {
-    mensaje.innerText = "Selecciona la calle";
-    mensaje.className = "text-red-600 text-center";
-    return;
-  }
+  const dataSupabase = {
+    fecha_reporte: document.getElementById("fecha_reporte").value,
+    numero_reporte: document.getElementById("numero_reporte").value.trim(),
+    medio_reporte: document.getElementById("medio_reporte").value,
+    tipo_falla: document.getElementById("tipo_falla").value,
+    calle_id: document.getElementById("calle").value,
+    numero_exterior: casa,
+    privada: privada
+  };
 
   try {
-
-    const dataSupabase = {
-      fecha_reporte: document.getElementById("fecha_reporte").value,
-      numero_reporte: document.getElementById("numero_reporte").value.trim(),
-      medio_reporte: document.getElementById("medio_reporte").value,
-      tipo_falla: document.getElementById("tipo_falla").value,
-      calle_id: calle_id,
-      numero_exterior: casa,
-      privada: privada
-    };
 
     const { error } = await supabaseClient
       .from("reportes_agua_caasim")
@@ -200,22 +173,22 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
       body: "data=" + encodeURIComponent(JSON.stringify(dataSupabase))
     });
 
-    mensaje.innerText = "✅ Reporte registrado correctamente.";
+    mensaje.innerText = "✅ Reporte registrado correctamente";
     mensaje.className = "text-green-600 text-center";
 
     e.target.reset();
 
   } catch (error) {
-
-    if (error.message.includes("unique_reporte_por_casa")) {
-      mensaje.innerText = "⚠️ Ya registraste este número de reporte.";
-    } else {
-      mensaje.innerText = "Error: " + error.message;
-    }
-
+    mensaje.innerText = "Error: " + error.message;
     mensaje.className = "text-red-600 text-center";
   }
 
+});
+
+/* INIT */
+document.addEventListener("DOMContentLoaded", () => {
+  cargarCatalogoAgua();
+  cargarCalles();
 });
 
 </script>
