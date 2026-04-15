@@ -121,7 +121,7 @@ body {
   <a href="trabajadores_hogar_gestion.html" class="button btn-hogar">👷 Gestionar accesos</a>
 </div>
 
-<!-- REPORTES (DINÁMICO) -->
+<!-- REPORTES -->
 <div id="reportes-section" class="section">
   <div class="section-title">REPORTES</div>
   <div id="reportesContainer"></div>
@@ -214,46 +214,25 @@ let rol = residente.tipo;
 if (rol === "residente") rol = "colono";
 if (rol === "administracion") rol = "admin";
 
-if (!rol) {
-  window.location.href = "login.html";
-  return;
-}
-
 aplicarUI(rol);
 
-const privada = residente.privada;
-const casa = residente.casa;
-
-if (privada && casa) {
+if (residente.privada && residente.casa) {
   document.getElementById("ubicacion").innerText =
-    `${privada} - ${casa}`;
+    `${residente.privada} - ${residente.casa}`;
 }
 }
 
 function aplicarUI(rol) {
 
-const rolTexto = document.getElementById("rolTexto");
-
-if (rol === "admin") rolTexto.innerText = "Panel de administración";
-if (rol === "vigilante") rolTexto.innerText = "Panel de vigilancia";
-if (rol === "colono") rolTexto.innerText = "Panel de colono";
-
-const adminSection = document.getElementById("admin-section");
-const vigilanteSection = document.getElementById("vigilante-section");
-const colonoSection = document.getElementById("colono-section");
-const infraestructuraSection = document.getElementById("infraestructura-section");
-const serviciosSection = document.getElementById("servicios-section");
-const hogarSection = document.getElementById("hogar-section");
 const reportesContainer = document.getElementById("reportesContainer");
-
 reportesContainer.innerHTML = "";
 
-// 🔥 REPORTES DINÁMICOS
+// 🔥 CORRECCIÓN DE RUTAS
 if (rol === "colono") {
   reportesContainer.innerHTML = `
-    <a href="reporte_vecinal.html" class="button btn-reportes">🚨 Incidencia vecinal</a>
-    <a href="luminarias.html" class="button btn-reportes">💡 Luminarias</a>
-    <a href="agua.html" class="button btn-reportes">💧 Agua</a>
+    <a href="incidencia_vecinal.html" class="button btn-reportes">🚨 Incidencia vecinal</a>
+    <a href="formulario_luminarias.html" class="button btn-reportes">💡 Luminarias</a>
+    <a href="formulario_agua.html" class="button btn-reportes">💧 Agua</a>
     <a href="reporte_obras.html" class="button btn-reportes">🏗 Obras</a>
   `;
 }
@@ -270,23 +249,20 @@ if (rol === "admin") {
   `;
 }
 
-// 🔒 VISIBILIDAD POR ROL
-if (rol === "vigilante") {
-  adminSection.style.display = "none";
-  colonoSection.style.display = "none";
-  infraestructuraSection.style.display = "none";
-  serviciosSection.style.display = "none";
-  if (hogarSection) hogarSection.style.display = "none";
-}
+const adminSection = document.getElementById("admin-section");
+const vigilanteSection = document.getElementById("vigilante-section");
 
 if (rol === "colono") {
   adminSection.style.display = "none";
   vigilanteSection.style.display = "none";
 }
 
+if (rol === "vigilante") {
+  adminSection.style.display = "none";
+}
+
 if (rol === "admin") {
   vigilanteSection.style.display = "none";
-  if (hogarSection) hogarSection.style.display = "none";
 }
 }
 
@@ -297,10 +273,6 @@ async function logout() {
 }
 
 iniciarSistema();
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js');
-}
 </script>
 
 </body>
