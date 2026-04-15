@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Situación de aportaciones</title>
 
+<!-- 🔥 ORDEN CORRECTO -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 
 <style>
 body {
@@ -26,7 +28,6 @@ body {
   margin-bottom: 15px;
 }
 
-/* 🔥 FILTROS */
 .filtros {
   display: flex;
   gap: 10px;
@@ -40,7 +41,6 @@ body {
   border: none;
 }
 
-/* LOTES */
 .section-title {
   margin: 10px 0;
   font-size: 13px;
@@ -74,7 +74,6 @@ select {
   cursor: pointer;
 }
 
-/* BOTONES */
 .button {
   display: block;
   padding: 14px;
@@ -86,7 +85,6 @@ select {
   text-decoration: none;
 }
 
-/* MODAL */
 .modal {
   position: fixed;
   inset: 0;
@@ -113,7 +111,6 @@ select {
   <h2>💰 Situación de aportaciones</h2>
 </div>
 
-<!-- 🔥 FILTROS -->
 <div class="filtros">
   <input id="busqueda" placeholder="Buscar lote..." oninput="aplicarFiltros()">
   
@@ -141,17 +138,15 @@ select {
 </div>
 
 <script>
-const supabaseClient = supabase.createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
 
 let dataGlobal = [];
 let cambios = {};
 
-if (localStorage.getItem("rol") !== "admin") {
-  window.location.href = "index.html";
-}
+// 🔐 CONTROL CORRECTO
+window.addEventListener("DOMContentLoaded", async () => {
+  await protegerPagina(["admin", "administracion"]);
+  await cargar();
+});
 
 function mostrarModal(t, m) {
   document.getElementById("modalTitulo").innerText = t;
@@ -173,17 +168,29 @@ function mapEstadoFrontend(e) {
   return e === 'atraso_1' ? 'atraso' : e;
 }
 
+// 🔥 CARGA
 async function cargar() {
-  const { data } = await supabaseClient
+
+  const { data, error } = await supabaseClient
     .from('residentes')
     .select('id, privada, casa, estado_pago')
     .eq('tipo', 'residente');
+
+  console.log("DATA:", data);
+  console.log("ERROR:", error);
+
+  if (error) {
+    mostrarModal("Error", "No se pudo cargar la información");
+    return;
+  }
 
   dataGlobal = data;
   aplicarFiltros();
 }
 
+// 🔍 FILTROS
 function aplicarFiltros() {
+
   const texto = document.getElementById("busqueda").value.toLowerCase();
   const estado = document.getElementById("filtroEstado").value;
 
@@ -202,6 +209,7 @@ function aplicarFiltros() {
   render(filtrado);
 }
 
+// 🎯 RENDER
 function render(data) {
 
   const contenedor = document.getElementById("contenedor");
@@ -239,7 +247,7 @@ function render(data) {
       div.innerHTML = `
         <span>Lote ${r.casa}</span>
 
-        <select id="sel_${r.id}">
+        <select id="sel_${r.id}" onchange="registrarCambio('${r.id}')">
           <option value="corriente" ${estadoUI === 'corriente' ? 'selected' : ''}>Corriente</option>
           <option value="atraso" ${estadoUI === 'atraso' ? 'selected' : ''}>Atraso</option>
           <option value="moroso" ${estadoUI === 'moroso' ? 'selected' : ''}>Moroso</option>
@@ -253,7 +261,15 @@ function render(data) {
   }
 }
 
+// 🧠 REGISTRO CAMBIOS
+function registrarCambio(id) {
+  const valor = document.getElementById(`sel_${id}`).value;
+  cambios[id] = valor;
+}
+
+// 💾 GUARDADO INDIVIDUAL
 async function guardarUno(id) {
+
   const estado = document.getElementById(`sel_${id}`).value;
 
   const { error } = await supabaseClient
@@ -272,7 +288,9 @@ async function guardarUno(id) {
   cargar();
 }
 
+// 💾 GUARDADO MASIVO
 async function guardarCambios() {
+
   const lista = Object.keys(cambios).map(id => ({
     id,
     estado: cambios[id]
@@ -283,17 +301,21 @@ async function guardarCambios() {
     return;
   }
 
-  await supabaseClient.rpc(
+  const { error } = await supabaseClient.rpc(
     'actualizar_estado_pago_masivo',
     { cambios: lista }
   );
+
+  if (error) {
+    mostrarModal("Error", "No se pudo actualizar masivamente");
+    return;
+  }
 
   mostrarModal("Listo", "Actualizado correctamente");
   cambios = {};
   cargar();
 }
 
-cargar();
 </script>
 
 </body>
