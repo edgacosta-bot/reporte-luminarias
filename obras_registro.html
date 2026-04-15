@@ -104,6 +104,7 @@ async function cargarLotes() {
     .order("lote");
 
   if (error) {
+    console.error(error);
     select.innerHTML = '<option>Error cargando lotes</option>';
     return;
   }
@@ -145,15 +146,14 @@ async function registrar() {
     if (!loteRaw || !dro) {
       mensaje.innerText = "Completa todos los campos";
       mensaje.classList.add("error");
-      btn.disabled = false;
-      btn.innerText = "Registrar obra";
+      resetBtn();
       return;
     }
 
     const lote = JSON.parse(loteRaw);
 
-    // 🔎 VALIDAR OBRA EXISTENTE
-    const { data: existente } = await supabaseClient
+    // 🔎 VALIDAR OBRA EXISTENTE (CORREGIDO)
+    const { data: existente, error: errorExistente } = await supabaseClient
       .from("obras")
       .select("id")
       .eq("privada", lote.privada)
@@ -161,15 +161,18 @@ async function registrar() {
       .eq("estatus", "activa")
       .maybeSingle();
 
+    if (errorExistente) {
+      console.error("Error validando obra:", errorExistente);
+    }
+
     if (existente) {
       mensaje.innerText = "Ya existe una obra activa en este lote";
       mensaje.classList.add("error");
-      btn.disabled = false;
-      btn.innerText = "Registrar obra";
+      resetBtn();
       return;
     }
 
-    // 🔥 INSERT CORRECTO
+    // 🔥 INSERT
     const { error } = await supabaseClient
       .from("obras")
       .insert([{
@@ -182,11 +185,10 @@ async function registrar() {
       }]);
 
     if (error) {
-      console.error("ERROR REAL:", error);
+      console.error("ERROR INSERT:", error);
       mensaje.innerText = "Error al registrar obra";
       mensaje.classList.add("error");
-      btn.disabled = false;
-      btn.innerText = "Registrar obra";
+      resetBtn();
       return;
     }
 
@@ -202,12 +204,17 @@ async function registrar() {
     document.getElementById("dro").value = "";
     document.getElementById("fecha_inicio").value = "";
 
-    btn.disabled = false;
-    btn.innerText = "Registrar obra";
+    resetBtn();
 
   } catch (err) {
     console.error("ERROR GENERAL:", err);
     alert("Ocurrió un error inesperado");
+    resetBtn();
+  }
+
+  function resetBtn() {
+    btn.disabled = false;
+    btn.innerText = "Registrar obra";
   }
 }
 
