@@ -129,16 +129,24 @@ const nombre = params.get("nombre");
 const privada = params.get("privada");
 const casa = params.get("casa");
 
-// 🔥 SOLO REIMPRESIÓN REAL
-const esReimpresion = params.get("reimpresion") === "1";
-const origen = params.get("origen");
+// 🔥 DETECCIÓN ROBUSTA DE REIMPRESIÓN
+const valorReimpresion = params.get("reimpresion");
 
-// 🔥 etiqueta visible SOLO si es reimpresión
+const esReimpresion =
+  valorReimpresion === "1" ||
+  valorReimpresion === "true" ||
+  valorReimpresion === "si" ||
+  valorReimpresion === "yes";
+
+// 🔥 etiqueta SOLO si aplica
 if (esReimpresion) {
-  document.getElementById("reimpresionLabel").innerText = "🔁 REIMPRESIÓN DE CÓDIGO QR";
+  document.getElementById("reimpresionLabel").innerText =
+    "🔁 REIMPRESIÓN DE CÓDIGO QR";
 }
 
-// 🔥 QR apunta al acceso real (NO cambia)
+const origen = params.get("origen");
+
+// 🔥 QR apunta al acceso real
 const urlQR = `${window.location.origin}/acceso_trabajador.html?qr=${codigo}`;
 
 // 🎯 Generar QR
@@ -161,7 +169,7 @@ if (origen === "admin") {
 
   btn.addEventListener("click", () => {
 
-    // 🔥 LINK LIMPIO (pero conserva reimpresión si aplica)
+    // 🔥 LINK LIMPIO PERO CONSERVA REIMPRESIÓN
     const linkCredencial =
       `${window.location.origin}/credencial_trabajador.html` +
       `?qr=${codigo}` +
@@ -170,7 +178,7 @@ if (origen === "admin") {
       `&casa=${casa}` +
       (esReimpresion ? `&reimpresion=1` : "");
 
-    // 🔥 MENSAJE DIFERENCIADO
+    // 🔥 MENSAJE DINÁMICO
     const titulo = esReimpresion
       ? "🔁 REIMPRESIÓN DE CÓDIGO QR"
       : "👷 Credencial de acceso";
