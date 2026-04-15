@@ -1,4 +1,87 @@
-<!-- SOLO CAMBIO EN JS -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registrar trabajador</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.card {
+  background: #111827;
+  padding: 25px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+}
+
+select, input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #1f2937;
+  color: white;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.mensaje {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.error { color: #f87171; }
+.ok { color: #34d399; }
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>Registrar trabajador</h2>
+
+<select id="obra">
+  <option value="">Cargando obras aprobadas...</option>
+</select>
+
+<input type="text" id="nombre" placeholder="Nombre del trabajador">
+
+<input type="date" id="fecha_inicio">
+<input type="date" id="fecha_fin">
+
+<button id="btnRegistrar">Registrar</button>
+
+<div id="mensaje" class="mensaje"></div>
+
+</div>
 
 <script>
 
@@ -13,7 +96,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   await cargarObras();
 });
 
-// 🔥 CARGAR OBRAS
+// 🔥 CARGAR SOLO OBRAS APROBADAS
 async function cargarObras() {
 
   const select = document.getElementById("obra");
@@ -37,7 +120,7 @@ async function cargarObras() {
 
     data.forEach(o => {
       const option = document.createElement("option");
-      option.value = o.id; // 🔥 CAMBIO IMPORTANTE
+      option.value = o.id; // ✅ CAMBIO SEGURO
       option.textContent = `Privada ${o.privada} - Lote ${o.casa}`;
       select.appendChild(option);
     });
@@ -48,7 +131,7 @@ async function cargarObras() {
   }
 }
 
-// 🚀 REGISTRAR
+// 🚀 REGISTRAR TRABAJADOR
 document.getElementById("btnRegistrar").addEventListener("click", registrar);
 
 async function registrar() {
@@ -71,7 +154,7 @@ async function registrar() {
       throw new Error("Completa todos los campos");
     }
 
-    // 🔥 Obtener obra REAL desde DB
+    // 🔥 Obtener obra real desde BD (NO confiar en frontend)
     const { data: obra, error: errorObra } = await supabaseClient
       .from("obras")
       .select("*")
@@ -86,12 +169,12 @@ async function registrar() {
       throw new Error("La obra no está aprobada");
     }
 
-    // 📅 VALIDACIÓN
+    // 📅 VALIDACIÓN DE FECHAS
     if (fecha_inicio && fecha_fin && fecha_fin < fecha_inicio) {
       throw new Error("La fecha fin no puede ser menor que la de inicio");
     }
 
-    // 🔒 VALIDAR DUPLICADO
+    // 🔒 VALIDAR DUPLICADOS
     const { data: existente } = await supabaseClient
       .from("trabajadores_obra")
       .select("id")
@@ -126,6 +209,7 @@ async function registrar() {
     `;
     mensaje.classList.add("ok");
 
+    // limpiar
     document.getElementById("obra").value = "";
     document.getElementById("nombre").value = "";
     document.getElementById("fecha_inicio").value = "";
@@ -144,3 +228,6 @@ async function registrar() {
 }
 
 </script>
+
+</body>
+</html>
