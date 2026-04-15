@@ -82,11 +82,6 @@ button {
 
 <select id="tipo">
   <option value="">Tipo de incidente</option>
-  <option value="seguridad">Vigilantes omisos</option>
-  <option value="ruido">Ruido excesivo</option>
-  <option value="seguridad">Situación sospechosa</option>
-  <option value="obra">Problema con obra</option>
-  <option value="otro">Otro</option>
 </select>
 
 <textarea id="descripcion" placeholder="Describe el incidente..."></textarea>
@@ -99,12 +94,46 @@ button {
 
 </div>
 
-<!-- 🔥 ORDEN CORRECTO -->
+<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Tu auth existente -->
 <script src="./auth.js"></script>
 
 <script>
 
+// 🔹 Cargar catálogo dinámico
+async function cargarCatalogo() {
+
+  const select = document.getElementById("tipo");
+
+  const { data, error } = await supabaseClient
+    .from("catalogo_reportes")
+    .select("subtipo")
+    .eq("categoria", "vecinal")
+    .eq("actor_permitido", "colono")
+    .eq("activo", true)
+    .order("subtipo");
+
+  if (error) {
+    console.error("Error cargando catálogo:", error);
+    return;
+  }
+
+  // limpiar
+  select.innerHTML = '<option value="">Tipo de incidente</option>';
+
+  data.forEach(item => {
+    const option = document.createElement("option");
+    option.value = item.subtipo;
+    option.textContent = item.subtipo.replaceAll("_", " ");
+    select.appendChild(option);
+  });
+
+}
+
+
+// 🔹 Enviar reporte
 async function reportar() {
 
   const tipo = document.getElementById("tipo").value;
@@ -152,6 +181,12 @@ async function reportar() {
   document.getElementById("descripcion").value = "";
   document.getElementById("tipo").value = "";
 }
+
+
+// 🔹 Ejecutar al cargar
+document.addEventListener("DOMContentLoaded", () => {
+  cargarCatalogo();
+});
 
 </script>
 
