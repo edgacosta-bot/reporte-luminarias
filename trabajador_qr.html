@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QR Trabajador</title>
 
-<!-- 🔥 ORDEN CORRECTO -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 
@@ -36,7 +35,7 @@ body {
 select {
   width: 100%;
   padding: 12px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   border-radius: 10px;
   border: none;
   background: #1f2937;
@@ -72,6 +71,11 @@ button {
 
 <h2>QR Trabajador</h2>
 
+<!-- 🔥 NUEVO FILTRO -->
+<select id="filtroPrivada">
+  <option value="">Todas las privadas</option>
+</select>
+
 <select id="trabajador">
   <option value="">Cargando trabajadores...</option>
 </select>
@@ -92,52 +96,88 @@ button {
 <script>
 
 let trabajadorSeleccionado = null;
+let dataGlobal = [];
 
-// 🔥 SECUENCIA CORRECTA
+// 🔥 SECUENCIA
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["administracion"]);
   await cargarTrabajadores();
 });
 
+// 🔥 CARGA BASE
 async function cargarTrabajadores() {
 
   const select = document.getElementById("trabajador");
+
   select.innerHTML = '<option value="">Cargando trabajadores...</option>';
 
   const { data, error } = await supabaseClient
     .from("trabajadores_obra")
     .select("*")
     .eq("activo", true)
+    .order("privada")
     .order("nombre");
 
   if (error) {
-    console.log("ERROR:", error);
-    select.innerHTML = '<option>Error al cargar trabajadores</option>';
+    console.log(error);
+    select.innerHTML = '<option>Error al cargar</option>';
     return;
   }
 
   if (!data || data.length === 0) {
-    select.innerHTML = '<option>No hay trabajadores activos</option>';
+    select.innerHTML = '<option>No hay trabajadores</option>';
     return;
   }
 
-  // 🔥 FILTRAR SOLO VIGENTES
+  dataGlobal = data;
+
+  cargarFiltroPrivadas(data);
+  renderTrabajadores();
+}
+
+// 🔥 LLENAR FILTRO
+function cargarFiltroPrivadas(data) {
+
+  const filtro = document.getElementById("filtroPrivada");
+
+  const privadas = [...new Set(data.map(t => t.privada))];
+
+  filtro.innerHTML = '<option value="">Todas las privadas</option>';
+
+  privadas.forEach(p => {
+    const option = document.createElement("option");
+    option.value = p;
+    option.textContent = `Privada ${p}`;
+    filtro.appendChild(option);
+  });
+}
+
+// 🔥 RENDER SEGÚN FILTRO
+function renderTrabajadores() {
+
+  const select = document.getElementById("trabajador");
+  const privadaSeleccionada = document.getElementById("filtroPrivada").value;
+
   const hoy = new Date().toLocaleDateString('sv-SE');
 
-  const vigentes = data.filter(t => {
+  let filtrados = dataGlobal.filter(t => {
     if (t.fecha_inicio && hoy < t.fecha_inicio) return false;
     if (t.fecha_fin && hoy > t.fecha_fin) return false;
     return true;
   });
 
-  if (vigentes.length === 0) {
-    select.innerHTML = '<option>No hay trabajadores vigentes</option>';
+  if (privadaSeleccionada) {
+    filtrados = filtrados.filter(t => t.privada === privadaSeleccionada);
+  }
+
+  if (filtrados.length === 0) {
+    select.innerHTML = '<option>No hay trabajadores disponibles</option>';
     return;
   }
 
   select.innerHTML = '<option value="">Selecciona trabajador</option>';
 
-  vigentes.forEach(t => {
+  filtrados.forEach(t => {
     const option = document.createElement("option");
     option.value = t.qr_codigo;
     option.textContent = t.nombre;
@@ -146,6 +186,9 @@ async function cargarTrabajadores() {
     select.appendChild(option);
   });
 }
+
+// 🔁 EVENTO FILTRO
+document.getElementById("filtroPrivada").addEventListener("change", renderTrabajadores);
 
 // 🎯 CAMBIO DE TRABAJADOR
 document.getElementById("trabajador").addEventListener("change", function() {
@@ -177,7 +220,7 @@ document.getElementById("trabajador").addEventListener("change", function() {
 
   QRCode.toCanvas(url, { width: 200 }, function (err, canvas) {
     if (err) {
-      console.error("Error generando QR:", err);
+      console.error(err);
       return;
     }
     qrDiv.appendChild(canvas);
