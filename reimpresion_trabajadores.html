@@ -30,7 +30,7 @@ body {
   text-align: center;
 }
 
-select {
+select, input {
   width: 100%;
   padding: 12px;
   margin-bottom: 10px;
@@ -53,12 +53,6 @@ button {
 }
 
 .btn-wa { background: #25D366; }
-
-.mensaje {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #facc15;
-}
 </style>
 
 </head>
@@ -79,7 +73,6 @@ button {
 
 <div id="qr"></div>
 <div id="nombre"></div>
-<div id="msg" class="mensaje"></div>
 
 <button id="btnWA" class="btn-wa" style="display:none;">
 📲 Enviar por WhatsApp
@@ -108,10 +101,7 @@ async function cargarTrabajadores() {
     .order("privada")
     .order("nombre");
 
-  if (error) {
-    console.log(error);
-    return;
-  }
+  if (error) return console.log(error);
 
   dataGlobal = data;
 
@@ -119,13 +109,12 @@ async function cargarTrabajadores() {
   render();
 }
 
-// 🔹 FILTRO PRIVADAS
 function cargarFiltro(data) {
 
   const filtro = document.getElementById("filtroPrivada");
   const privadas = [...new Set(data.map(t => t.privada))];
 
-  filtro.innerHTML = '<option value="">Todas las privadas</option>';
+  filtro.innerHTML = '<option value="">Todas</option>';
 
   privadas.forEach(p => {
     const o = document.createElement("option");
@@ -135,11 +124,9 @@ function cargarFiltro(data) {
   });
 }
 
-// 🔹 RENDER
 function render() {
 
   const select = document.getElementById("trabajador");
-  const msg = document.getElementById("msg");
   const privada = document.getElementById("filtroPrivada").value;
 
   const hoy = new Date().toLocaleDateString('sv-SE');
@@ -154,18 +141,17 @@ function render() {
     lista = lista.filter(t => t.privada === privada);
   }
 
-  // 🔥 limpiar UI
-  limpiarVista();
+  // 🔹 limpiar visual SIN cambiar diseño
+  document.getElementById("qr").innerHTML = "";
+  document.getElementById("nombre").innerText = "";
+  document.getElementById("btnWA").style.display = "none";
 
   if (lista.length === 0) {
-    select.innerHTML = '<option>No hay trabajadores disponibles</option>';
-    msg.innerText = "No hay trabajadores vigentes";
+    select.innerHTML = '<option>No hay trabajadores</option>';
     return;
   }
 
-  msg.innerText = "";
-
-  select.innerHTML = '<option value="">Selecciona trabajador</option>';
+  select.innerHTML = '<option value="">Selecciona</option>';
 
   lista.forEach(t => {
     const o = document.createElement("option");
@@ -177,24 +163,16 @@ function render() {
   });
 }
 
-// 🔁 LIMPIAR
-function limpiarVista() {
-  document.getElementById("qr").innerHTML = "";
-  document.getElementById("nombre").innerText = "";
-  document.getElementById("btnWA").style.display = "none";
-  trabajadorSeleccionado = null;
-}
-
-// 🔁 EVENTO FILTRO
 document.getElementById("filtroPrivada").addEventListener("change", render);
 
-// 🎯 CAMBIO
 document.getElementById("trabajador").addEventListener("change", function() {
 
   const selected = this.options[this.selectedIndex];
 
   if (!selected.value) {
-    limpiarVista();
+    document.getElementById("qr").innerHTML = "";
+    document.getElementById("nombre").innerText = "";
+    document.getElementById("btnWA").style.display = "none";
     return;
   }
 
@@ -211,10 +189,7 @@ document.getElementById("trabajador").addEventListener("change", function() {
   qrDiv.innerHTML = "";
 
   QRCode.toCanvas(url, { width: 200 }, (err, canvas) => {
-    if (err) {
-      console.error("Error QR:", err);
-      return;
-    }
+    if (err) return console.error(err);
     qrDiv.appendChild(canvas);
   });
 
@@ -222,7 +197,6 @@ document.getElementById("trabajador").addEventListener("change", function() {
   document.getElementById("btnWA").style.display = "block";
 });
 
-// 📲 WHATSAPP
 document.getElementById("btnWA").addEventListener("click", () => {
 
   if (!trabajadorSeleccionado) return;
