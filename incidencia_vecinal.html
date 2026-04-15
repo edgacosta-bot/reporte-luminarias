@@ -99,11 +99,11 @@ button {
 
 </div>
 
-<script type="module">
+<!-- 🔥 ORDEN CORRECTO -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./auth.js"></script>
 
-import { supabase } from './auth.js';
-
-// 🚫 NO usamos protegerPagina para no romper auth.js
+<script>
 
 async function reportar() {
 
@@ -126,7 +126,7 @@ async function reportar() {
   const fechaMexico = new Date(ahoraUTC.getTime() - (6 * 60 * 60 * 1000));
   const fechaLocal = fechaMexico.toISOString().slice(0, 19);
 
-  const { error } = await supabase
+  const { error } = await supabaseClient
     .from("incidencias_vecinales")
     .insert([{
       tipo: tipo,
@@ -152,8 +152,6 @@ async function reportar() {
   document.getElementById("descripcion").value = "";
   document.getElementById("tipo").value = "";
 }
-
-window.reportar = reportar;
 
 </script>
 
