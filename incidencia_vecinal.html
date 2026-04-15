@@ -158,6 +158,7 @@ async function reportar() {
   const { error } = await supabaseClient
     .from("incidencias_vecinales")
     .insert([{
+      categoria: "vecinal", // 🔥 NUEVO (normalización)
       tipo: tipo,
       descripcion: descripcion,
       privada: privada,
