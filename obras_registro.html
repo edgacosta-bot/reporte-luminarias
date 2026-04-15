@@ -87,11 +87,6 @@ button:disabled {
 
 <script>
 
-// 🔥 CONTEXTO DE RECHAZO (nuevo)
-const privadaGuardada = localStorage.getItem("privada_rechazo");
-const casaGuardada = localStorage.getItem("casa_rechazo");
-
-// 🔐 CONTROL
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["administracion"]);
   await cargarLotes();
@@ -122,120 +117,98 @@ async function cargarLotes() {
 
   data.forEach(l => {
     const option = document.createElement("option");
-    option.value = l.id;
+    option.value = JSON.stringify({
+      privada: l.privada,
+      lote: l.lote
+    });
     option.textContent = `Privada ${l.privada} - Lote ${l.lote}`;
     select.appendChild(option);
   });
-
-  // 🔥 AUTORELLENO SI VIENE DE RECHAZO
-  if (privadaGuardada && casaGuardada) {
-
-    [...select.options].forEach(opt => {
-      if (
-        opt.textContent.includes(privadaGuardada) &&
-        opt.textContent.includes(casaGuardada)
-      ) {
-        opt.selected = true;
-      }
-    });
-
-    // limpiar contexto
-    localStorage.removeItem("privada_rechazo");
-    localStorage.removeItem("casa_rechazo");
-  }
 }
 
 // 🚀 REGISTRAR
 async function registrar() {
 
-  const btn = document.getElementById("btnRegistrar");
-  btn.disabled = true;
-  btn.innerText = "Registrando...";
+  try {
 
-  const lote_id = document.getElementById("lote").value;
-  const dro = document.getElementById("dro").value.trim();
-  const fecha_inicio = document.getElementById("fecha_inicio").value;
+    const btn = document.getElementById("btnRegistrar");
+    btn.disabled = true;
+    btn.innerText = "Registrando...";
 
-  const mensaje = document.getElementById("mensaje");
-  mensaje.className = "mensaje";
+    const loteRaw = document.getElementById("lote").value;
+    const dro = document.getElementById("dro").value.trim();
+    const fecha_inicio = document.getElementById("fecha_inicio").value;
 
-  // 🔴 VALIDACIÓN
-  if (!lote_id || !dro) {
-    mensaje.innerText = "Completa todos los campos";
-    mensaje.classList.add("error");
+    const mensaje = document.getElementById("mensaje");
+    mensaje.className = "mensaje";
+
+    if (!loteRaw || !dro) {
+      mensaje.innerText = "Completa todos los campos";
+      mensaje.classList.add("error");
+      btn.disabled = false;
+      btn.innerText = "Registrar obra";
+      return;
+    }
+
+    const lote = JSON.parse(loteRaw);
+
+    // 🔎 VALIDAR OBRA EXISTENTE
+    const { data: existente } = await supabaseClient
+      .from("obras")
+      .select("id")
+      .eq("privada", lote.privada)
+      .eq("casa", lote.lote)
+      .eq("estatus", "activa")
+      .maybeSingle();
+
+    if (existente) {
+      mensaje.innerText = "Ya existe una obra activa en este lote";
+      mensaje.classList.add("error");
+      btn.disabled = false;
+      btn.innerText = "Registrar obra";
+      return;
+    }
+
+    // 🔥 INSERT CORRECTO
+    const { error } = await supabaseClient
+      .from("obras")
+      .insert([{
+        privada: lote.privada,
+        casa: lote.lote,
+        dro_nombre: dro,
+        fecha_inicio: fecha_inicio || null,
+        estatus: "activa",
+        aprobada: false
+      }]);
+
+    if (error) {
+      console.error("ERROR REAL:", error);
+      mensaje.innerText = "Error al registrar obra";
+      mensaje.classList.add("error");
+      btn.disabled = false;
+      btn.innerText = "Registrar obra";
+      return;
+    }
+
+    mensaje.innerHTML = `
+    <b>✅ Obra registrada correctamente</b><br><br>
+    ⚠️ <b>Requiere validación del Comité de Diseño</b><br><br>
+    No podrás registrar trabajadores hasta que sea aprobada.<br><br>
+    📌 Contacta al responsable del comité.
+    `;
+    mensaje.classList.add("ok");
+
+    document.getElementById("lote").value = "";
+    document.getElementById("dro").value = "";
+    document.getElementById("fecha_inicio").value = "";
+
     btn.disabled = false;
     btn.innerText = "Registrar obra";
-    return;
+
+  } catch (err) {
+    console.error("ERROR GENERAL:", err);
+    alert("Ocurrió un error inesperado");
   }
-
-  // 🔎 VALIDAR OBRA EXISTENTE
-  const { data: existente } = await supabaseClient
-    .from("obras")
-    .select("id")
-    .eq("lote_id", lote_id)
-    .eq("estatus", "activa")
-    .maybeSingle();
-
-  if (existente) {
-    mensaje.innerText = "Ya existe una obra activa en este lote";
-    mensaje.classList.add("error");
-    btn.disabled = false;
-    btn.innerText = "Registrar obra";
-    return;
-  }
-
-  // 🔎 Obtener lote
-  const { data: lote, error: errorLote } = await supabaseClient
-    .from("lotes")
-    .select("*")
-    .eq("id", lote_id)
-    .single();
-
-  if (errorLote || !lote) {
-    mensaje.innerText = "Error al obtener lote";
-    mensaje.classList.add("error");
-    btn.disabled = false;
-    btn.innerText = "Registrar obra";
-    return;
-  }
-
-  // 🔥 INSERT
-  const { error } = await supabaseClient
-    .from("obras")
-    .insert([{
-      lote_id: lote_id,
-      privada: lote.privada,
-      casa: lote.lote,
-      dro_nombre: dro,
-      fecha_inicio: fecha_inicio || null,
-      estatus: "activa",
-      aprobada: false
-    }]);
-
-  if (error) {
-    console.log(error);
-    mensaje.innerText = "Error al registrar obra";
-    mensaje.classList.add("error");
-    btn.disabled = false;
-    btn.innerText = "Registrar obra";
-    return;
-  }
-
-  mensaje.innerHTML = `
-  <b>✅ Obra registrada correctamente</b><br><br>
-  ⚠️ <b>Requiere validación del Comité de Diseño</b><br><br>
-  No podrás registrar trabajadores hasta que sea aprobada.<br><br>
-  📌 Contacta al responsable del comité.
-  `;
-  mensaje.classList.add("ok");
-
-  // limpiar
-  document.getElementById("lote").value = "";
-  document.getElementById("dro").value = "";
-  document.getElementById("fecha_inicio").value = "";
-
-  btn.disabled = false;
-  btn.innerText = "Registrar obra";
 }
 
 </script>
