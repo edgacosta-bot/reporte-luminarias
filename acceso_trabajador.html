@@ -6,7 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Acceso Trabajador</title>
 
+<!-- 🔥 ORDEN CORRECTO -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 
 <style>
 * { box-sizing: border-box; }
@@ -84,15 +86,8 @@ button {
 
 <script>
 
-const supabaseClient = window.supabase.createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
-
 const params = new URLSearchParams(window.location.search);
 const qr = params.get("qr");
-
-console.log("QR RECIBIDO:", qr);
 
 let trabajadorGlobal = null;
 let accesoActual = null;
@@ -110,17 +105,33 @@ async function validar() {
       return;
     }
 
-    const { data: trabajador, error } = await supabaseClient
+    const { data: trabajador } = await supabaseClient
       .from("trabajadores_obra")
       .select("*")
       .eq("qr_codigo", qr)
       .maybeSingle();
 
-    console.log("ERROR TRABAJADOR:", error);
-    console.log("DATA TRABAJADOR:", trabajador);
-
     if (!trabajador) {
       pintar("QR INVÁLIDO", "error");
+      return;
+    }
+
+    // 🔒 VALIDACIÓN DE PERMISO
+    if (!trabajador.activo) {
+      pintar("⛔ ACCESO CANCELADO", "error", trabajador);
+      return;
+    }
+
+    // 📅 VALIDACIÓN DE FECHAS (anti desfase horario)
+    const hoy = new Date().toLocaleDateString('sv-SE');
+
+    if (trabajador.fecha_inicio && hoy < trabajador.fecha_inicio) {
+      pintar("🟡 ACCESO AÚN NO INICIA", "warn", trabajador);
+      return;
+    }
+
+    if (trabajador.fecha_fin && hoy > trabajador.fecha_fin) {
+      pintar("🔴 ACCESO VENCIDO", "error", trabajador);
       return;
     }
 
