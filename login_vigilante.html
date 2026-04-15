@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acceso Vigilante</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #020617, #0f172a);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.card {
+  background: #111827;
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 350px;
+  text-align: center;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: none;
+  background: #1f2937;
+  color: white;
+  text-align: center;
+  font-size: 18px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 15px;
+  border-radius: 12px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.mensaje {
+  margin-top: 10px;
+}
+.error { color: #f87171; }
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>🛡 Acceso Vigilante</h2>
+
+<input 
+type="password" 
+id="pin" 
+placeholder="Ingresa tu PIN"
+maxlength="6"
+/>
+
+<button onclick="validarPIN()">Ingresar</button>
+
+<div id="mensaje" class="mensaje"></div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const supabaseClient = supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+async function validarPIN() {
+
+  const pin = document.getElementById("pin").value.trim();
+  const mensaje = document.getElementById("mensaje");
+
+  mensaje.className = "mensaje";
+
+  if (!pin) {
+    mensaje.innerText = "Ingresa el PIN";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("vigilantes")
+    .select("id, nombre, activo")
+    .eq("pin", pin)
+    .maybeSingle();
+
+  if (error || !data) {
+    mensaje.innerText = "PIN incorrecto";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  if (!data.activo) {
+    mensaje.innerText = "Vigilante inactivo";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  // 🔥 GUARDAR SESIÓN
+  localStorage.setItem("vigilante_id", data.id);
+  localStorage.setItem("vigilante_nombre", data.nombre);
+
+  // 🔥 REDIRECCIÓN
+  window.location.href = "reporte_seguridad.html";
+}
+
+</script>
+
+</body>
+</html>
