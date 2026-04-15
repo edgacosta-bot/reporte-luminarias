@@ -11,7 +11,6 @@
 <title>Reporte General</title>
 
 <style>
-/* (tu mismo diseño, sin cambios) */
 body {
   margin: 0;
   font-family: 'Segoe UI', Arial;
@@ -48,6 +47,7 @@ button {
 .agua { background: #f59e0b; color: #111; }
 .luminaria { background: #10b981; }
 .total { background: #0f172a; }
+
 .item {
   background: white;
   padding: 16px;
@@ -59,6 +59,7 @@ button {
 .item.incidencia { border-color: #ef4444; }
 .item.agua { border-color: #f59e0b; }
 .item.luminaria { border-color: #10b981; }
+
 .hora { font-size: 12px; color: #64748b; }
 .extra { font-size: 14px; margin-top: 4px; }
 
@@ -133,16 +134,12 @@ window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["admin","administracion"]);
 });
 
-// 🔥 UTC FIX
-function toUTC(date, end=false) {
-  const d = new Date(date + "T00:00:00-06:00");
-  if (end) d.setHours(23,59,59,999);
-  else d.setHours(0,0,0,0);
-  return d.toISOString();
+function mostrarModal(){
+  document.getElementById("modal").style.display="flex";
 }
-
-function mostrarModal(){ document.getElementById("modal").style.display="flex"; }
-function cerrarModal(){ document.getElementById("modal").style.display="none"; }
+function cerrarModal(){
+  document.getElementById("modal").style.display="none";
+}
 
 async function cargar(){
 
@@ -158,29 +155,108 @@ async function cargar(){
 
   let registros=[];
 
-  // 🔴 INCIDENCIAS VECINALES
-  let queryInc = supabaseClient
-    .from("incidencias_vecinales")
-    .select("*")
-    .gte("fecha_local", toUTC(inicio))
-    .lte("fecha_local", toUTC(fin, true));
+  try {
 
-  if (privada) queryInc = queryInc.eq("privada", privada);
-  if (casa) queryInc = queryInc.eq("casa", casa);
+    // 🔴 INCIDENCIAS VECINALES
+    let {data:inc} = await supabaseClient
+      .from("incidencias_vecinales")
+      .select("*")
+      .gte("fecha_local", inicio+"T00:00:00")
+      .lte("fecha_local", fin+"T23:59:59");
 
-  const {data:inc} = await queryInc;
+    console.log("INC:", inc);
 
-  inc?.forEach(i=>{
-    registros.push({
-      tipo:"incidencia",
-      titulo:"Incidencia vecinal",
-      descripcion:i.descripcion,
-      hora:i.fecha_local,
-      origen:`${i.privada}-${i.casa}`
+    inc?.forEach(i=>{
+      registros.push({
+        tipo:"incidencia",
+        titulo:"Incidencia vecinal",
+        descripcion:i.descripcion,
+        hora:i.fecha_local,
+        origen:`${i.privada}-${i.casa}`
+      });
     });
-  });
 
-  // (EL RESTO IGUAL, SOLO CAMBIO DE FECHAS YA APLICADO)
+    // 🔴 TRABAJADORES
+    let {data:trab} = await supabaseClient
+      .from("incidencias_trabajadores")
+      .select("*")
+      .gte("fecha_local", inicio+"T00:00:00")
+      .lte("fecha_local", fin+"T23:59:59");
+
+    console.log("TRAB:", trab);
+
+    const ids = [...new Set((trab || []).map(i=>i.trabajador_id).filter(Boolean))];
+
+    let mapaTrab = {};
+
+    if(ids.length > 0){
+      const {data:trabajadores} = await supabaseClient
+        .from("trabajadores_obra")
+        .select("id, nombre, privada, casa")
+        .in("id", ids);
+
+      trabajadores?.forEach(t=> mapaTrab[t.id]=t);
+    }
+
+    (trab || []).forEach(i=>{
+      const t = mapaTrab[i.trabajador_id];
+
+      registros.push({
+        tipo:"incidencia",
+        titulo:`Incidencia trabajador (${i.tipo})`,
+        descripcion:i.descripcion,
+        hora:i.fecha_local,
+        trabajador:t?.nombre,
+        obra:t ? `${t.privada}-${t.casa}` : null
+      });
+    });
+
+    // 💧 AGUA (SIN PROBLEMA DE UTC)
+    let {data:agua} = await supabaseClient
+      .from("reportes_agua_caasim")
+      .select("*, ubicaciones(calle)");
+
+    console.log("AGUA:", agua);
+
+    agua?.forEach(i=>{
+      if (i.fecha_registro >= inicio+"T00:00:00" &&
+          i.fecha_registro <= fin+"T23:59:59") {
+
+        registros.push({
+          tipo:"agua",
+          titulo:"Reporte agua",
+          descripcion:i.tipo_falla,
+          hora:i.fecha_registro,
+          origen:`${i.privada}-${i.numero_exterior}`,
+          calle:i.ubicaciones?.calle
+        });
+      }
+    });
+
+    // 💡 LUMINARIAS
+    let {data:luminarias} = await supabaseClient
+      .from("vista_reportes_luminarias")
+      .select("*");
+
+    console.log("LUM:", luminarias);
+
+    luminarias?.forEach(i=>{
+      if (i.fecha_reporte >= inicio+"T00:00:00" &&
+          i.fecha_reporte <= fin+"T23:59:59") {
+
+        registros.push({
+          tipo:"luminaria",
+          titulo:`Luminaria #${i.no_luminaria}`,
+          descripcion:i.descripcion,
+          hora:i.fecha_reporte,
+          calle:i.calle
+        });
+      }
+    });
+
+  } catch (e) {
+    console.error("ERROR GLOBAL:", e);
+  }
 
   // KPIs
   document.getElementById("inc").innerText =
@@ -206,20 +282,25 @@ async function cargar(){
     html+=`<h3>${titulo}</h3>`;
 
     grupo.forEach(r=>{
-
-      const fechaLocal = new Date(r.hora).toLocaleString('es-MX', {
-        timeZone: 'America/Mexico_City'
+      const fechaLocal = new Date(r.hora).toLocaleString("es-MX", {
+        timeZone: "America/Mexico_City"
       });
 
       html+=`<div class="item ${tipo}">
         <b>${r.titulo}</b>
         <div class="hora">${fechaLocal}</div>
-        ${r.descripcion}
+        ${r.trabajador ? `<div class="extra">👷 ${r.trabajador}</div>`:""}
+        ${r.obra ? `<div class="extra">📍 ${r.obra}</div>`:""}
+        ${r.origen ? `<div class="extra">🏠 ${r.origen}</div>`:""}
+        ${r.calle ? `<div class="extra">📍 ${r.calle}</div>`:""}
+        <div class="extra">${r.descripcion}</div>
       </div>`;
     });
   };
 
   render("incidencia","🚨 Incidencias");
+  render("agua","💧 Agua");
+  render("luminaria","💡 Luminarias");
 
   document.getElementById("lista").innerHTML = html || "Sin resultados";
 }
