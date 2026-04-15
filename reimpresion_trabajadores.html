@@ -1,145 +1,240 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reimpresión QR</title>
+<title>Reimpresión QR Trabajador</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
-<script>
-protegerPagina(["admin"]);
-</script>
 
 <style>
 body {
   margin: 0;
   font-family: Arial;
-  background: #0f172a;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
   color: white;
-}
-
-.container {
-  max-width: 500px;
-  margin: auto;
-  padding: 20px;
-}
-
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.grupo {
-  margin-bottom: 20px;
-}
-
-.titulo-grupo {
-  font-weight: bold;
-  margin-bottom: 10px;
-  color: #94a3b8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
 .card {
-  background: #1f2937;
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background: #111827;
+  padding: 20px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 350px;
+  text-align: center;
 }
 
-.nombre {
-  font-size: 14px;
+select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  border: none;
+  background: #1f2937;
+  color: white;
 }
+
+#qr { margin-top: 15px; }
 
 button {
-  padding: 8px 12px;
+  margin-top: 10px;
+  padding: 12px;
   border: none;
-  border-radius: 8px;
-  background: #2563eb;
-  color: white;
-  font-size: 12px;
+  border-radius: 10px;
+  width: 100%;
+  font-weight: bold;
   cursor: pointer;
+}
+
+.btn-wa { background: #25D366; }
+
+.mensaje {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #facc15;
 }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
 
-<div class="container">
+<div class="card">
 
-<h2>🔁 Reimpresión de QR</h2>
+<h2>Reimpresión QR</h2>
 
-<div id="lista"></div>
+<select id="filtroPrivada">
+  <option value="">Todas las privadas</option>
+</select>
+
+<select id="trabajador">
+  <option>Cargando...</option>
+</select>
+
+<div id="qr"></div>
+<div id="nombre"></div>
+<div id="msg" class="mensaje"></div>
+
+<button id="btnWA" class="btn-wa" style="display:none;">
+📲 Enviar por WhatsApp
+</button>
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
 <script>
 
-const client = supabase.createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
+let dataGlobal = [];
+let trabajadorSeleccionado = null;
 
-cargar();
+window.addEventListener("DOMContentLoaded", async () => {
+  await protegerPagina(["admin","administracion"]);
+  await cargarTrabajadores();
+});
 
-async function cargar() {
+async function cargarTrabajadores() {
 
-  const { data } = await client
+  const { data, error } = await supabaseClient
     .from("trabajadores_obra")
     .select("*")
-    .not("qr_codigo", "is", null)
-    .order("privada", { ascending: true })
-    .order("casa", { ascending: true });
+    .eq("activo", true)
+    .order("privada")
+    .order("nombre");
 
-  const contenedor = document.getElementById("lista");
-  contenedor.innerHTML = "";
+  if (error) {
+    console.log(error);
+    return;
+  }
 
-  const grupos = {};
+  dataGlobal = data;
 
-  data.forEach(t => {
+  cargarFiltro(data);
+  render();
+}
 
-    const clave = `Privada ${t.privada} - Casa ${t.casa}`;
+// 🔹 FILTRO PRIVADAS
+function cargarFiltro(data) {
 
-    if (!grupos[clave]) grupos[clave] = [];
+  const filtro = document.getElementById("filtroPrivada");
+  const privadas = [...new Set(data.map(t => t.privada))];
 
-    grupos[clave].push(t);
-  });
+  filtro.innerHTML = '<option value="">Todas las privadas</option>';
 
-  Object.keys(grupos).forEach(grupo => {
-
-    const divGrupo = document.createElement("div");
-    divGrupo.className = "grupo";
-
-    divGrupo.innerHTML = `<div class="titulo-grupo">${grupo}</div>`;
-
-    grupos[grupo].forEach(t => {
-
-      const card = document.createElement("div");
-      card.className = "card";
-
-      card.innerHTML = `
-        <div class="nombre">${t.nombre}</div>
-        <button onclick="reimprimir('${t.qr_codigo}', '${t.nombre}', '${t.privada}', '${t.casa}')">
-          Reimprimir QR
-        </button>
-      `;
-
-      divGrupo.appendChild(card);
-    });
-
-    contenedor.appendChild(divGrupo);
+  privadas.forEach(p => {
+    const o = document.createElement("option");
+    o.value = p;
+    o.textContent = `Privada ${p}`;
+    filtro.appendChild(o);
   });
 }
 
-function reimprimir(qr, nombre, privada, casa) {
+// 🔹 RENDER
+function render() {
 
-  window.location.href =
-    `credencial_trabajador.html?qr=${qr}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}&reimpresion=1&origen=admin`;
+  const select = document.getElementById("trabajador");
+  const msg = document.getElementById("msg");
+  const privada = document.getElementById("filtroPrivada").value;
+
+  const hoy = new Date().toLocaleDateString('sv-SE');
+
+  let lista = dataGlobal.filter(t => {
+    if (t.fecha_inicio && hoy < t.fecha_inicio) return false;
+    if (t.fecha_fin && hoy > t.fecha_fin) return false;
+    return true;
+  });
+
+  if (privada) {
+    lista = lista.filter(t => t.privada === privada);
+  }
+
+  // 🔥 limpiar UI
+  limpiarVista();
+
+  if (lista.length === 0) {
+    select.innerHTML = '<option>No hay trabajadores disponibles</option>';
+    msg.innerText = "No hay trabajadores vigentes";
+    return;
+  }
+
+  msg.innerText = "";
+
+  select.innerHTML = '<option value="">Selecciona trabajador</option>';
+
+  lista.forEach(t => {
+    const o = document.createElement("option");
+    o.value = t.qr_codigo;
+    o.textContent = t.nombre;
+    o.dataset.privada = t.privada;
+    o.dataset.casa = t.casa;
+    select.appendChild(o);
+  });
 }
+
+// 🔁 LIMPIAR
+function limpiarVista() {
+  document.getElementById("qr").innerHTML = "";
+  document.getElementById("nombre").innerText = "";
+  document.getElementById("btnWA").style.display = "none";
+  trabajadorSeleccionado = null;
+}
+
+// 🔁 EVENTO FILTRO
+document.getElementById("filtroPrivada").addEventListener("change", render);
+
+// 🎯 CAMBIO
+document.getElementById("trabajador").addEventListener("change", function() {
+
+  const selected = this.options[this.selectedIndex];
+
+  if (!selected.value) {
+    limpiarVista();
+    return;
+  }
+
+  const codigo = selected.value;
+  const nombre = selected.textContent;
+  const privada = selected.dataset.privada;
+  const casa = selected.dataset.casa;
+
+  trabajadorSeleccionado = { codigo, nombre, privada, casa };
+
+  const url = `${window.location.origin}/credencial_trabajador.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
+
+  const qrDiv = document.getElementById("qr");
+  qrDiv.innerHTML = "";
+
+  QRCode.toCanvas(url, { width: 200 }, (err, canvas) => {
+    if (err) {
+      console.error("Error QR:", err);
+      return;
+    }
+    qrDiv.appendChild(canvas);
+  });
+
+  document.getElementById("nombre").innerText = nombre;
+  document.getElementById("btnWA").style.display = "block";
+});
+
+// 📲 WHATSAPP
+document.getElementById("btnWA").addEventListener("click", () => {
+
+  if (!trabajadorSeleccionado) return;
+
+  const { codigo, nombre, privada, casa } = trabajadorSeleccionado;
+
+  const link = `${window.location.origin}/credencial_trabajador.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
+
+  const mensaje = `👷 Credencial\n\nNombre: ${nombre}\nPrivada ${privada} - Lote ${casa}\n\n${link}`;
+
+  window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
+});
 
 </script>
 
