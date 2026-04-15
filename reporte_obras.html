@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte de Obras</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.card {
+  background: #111827;
+  padding: 25px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 420px;
+}
+
+select, textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #1f2937;
+  color: white;
+}
+
+textarea {
+  min-height: 100px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #f59e0b;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.mensaje {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.error { color: #f87171; }
+.ok { color: #34d399; }
+
+.info {
+  text-align: center;
+  font-size: 13px;
+  color: #9ca3af;
+  margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>🏗 Reporte de Obras</h2>
+
+<div id="actorInfo" class="info"></div>
+
+<select id="tipo">
+  <option value="">Tipo de reporte</option>
+</select>
+
+<!-- 🔥 AJUSTE AQUÍ -->
+<label style="font-size: 13px; color: #9ca3af; display:block; margin-bottom:5px;">
+Trabajador (opcional)
+</label>
+
+<select id="trabajador">
+  <option value="">Selecciona trabajador</option>
+</select>
+
+<textarea id="descripcion" placeholder="Describe el problema..."></textarea>
+
+<button onclick="enviarReporte()">Enviar reporte</button>
+
+<div id="mensaje" class="mensaje"></div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const supabaseClient = supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+// 🔐 IDENTIFICAR ACTOR
+const vigilante_id = localStorage.getItem("vigilante_id");
+const vigilante_nombre = localStorage.getItem("vigilante_nombre");
+
+const privada = localStorage.getItem("privada");
+const casa = localStorage.getItem("casa");
+
+const actorInfo = document.getElementById("actorInfo");
+
+let actor = null;
+
+if (vigilante_id) {
+  actor = "vigilante";
+  actorInfo.innerText = "Vigilante: " + vigilante_nombre;
+} else if (privada && casa) {
+  actor = "colono";
+  actorInfo.innerText = `Privada ${privada} - Casa ${casa}`;
+} else {
+  window.location.href = "login.html";
+}
+
+// 🔥 CATÁLOGO
+async function cargarCatalogo() {
+
+  const select = document.getElementById("tipo");
+
+  const { data } = await supabaseClient
+    .from("catalogo_reportes")
+    .select("subtipo")
+    .eq("categoria", "obras")
+    .eq("actor_permitido", actor)
+    .eq("activo", true)
+    .order("subtipo");
+
+  select.innerHTML = '<option value="">Tipo de reporte</option>';
+
+  data.forEach(item => {
+    const option = document.createElement("option");
+    option.value = item.subtipo;
+    option.textContent = item.subtipo.replaceAll("_", " ");
+    select.appendChild(option);
+  });
+}
+
+// 🔥 TRABAJADORES
+async function cargarTrabajadores() {
+
+  const select = document.getElementById("trabajador");
+
+  const { data } = await supabaseClient
+    .from("trabajadores_obra")
+    .select("id, nombre")
+    .eq("activo", true)
+    .order("nombre");
+
+  data.forEach(item => {
+    const option = document.createElement("option");
+    option.value = item.id;
+    option.textContent = item.nombre;
+    select.appendChild(option);
+  });
+}
+
+// 🚀 ENVIAR
+async function enviarReporte() {
+
+  const tipo = document.getElementById("tipo").value;
+  const descripcion = document.getElementById("descripcion").value.trim();
+  const trabajador_id = document.getElementById("trabajador").value;
+
+  const mensaje = document.getElementById("mensaje");
+
+  mensaje.className = "mensaje";
+
+  if (!tipo || !descripcion) {
+    mensaje.innerText = "Completa los campos obligatorios";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  try {
+
+    const dataInsert = {
+      categoria: "obras",
+      tipo: tipo,
+      descripcion: descripcion,
+      trabajador_id: trabajador_id || null,
+      estatus: "nuevo",
+      observaciones: descripcion,
+      fecha_reporte: new Date().toISOString()
+    };
+
+    if (actor === "colono") {
+      dataInsert.privada = privada;
+      dataInsert.casa = casa;
+    }
+
+    const { error } = await supabaseClient
+      .from("reportes_vecinales")
+      .insert([dataInsert]);
+
+    if (error) throw error;
+
+    mensaje.innerText = "Reporte enviado correctamente ✅";
+    mensaje.classList.add("ok");
+
+    document.getElementById("descripcion").value = "";
+    document.getElementById("tipo").value = "";
+    document.getElementById("trabajador").value = "";
+
+  } catch (err) {
+    console.error(err);
+    mensaje.innerText = "Error al enviar reporte";
+    mensaje.classList.add("error");
+  }
+}
+
+// INIT
+document.addEventListener("DOMContentLoaded", () => {
+  cargarCatalogo();
+  cargarTrabajadores();
+});
+
+</script>
+
+</body>
+</html>
