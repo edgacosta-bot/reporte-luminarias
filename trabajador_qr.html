@@ -102,19 +102,16 @@ window.addEventListener("DOMContentLoaded", async () => {
 async function cargarTrabajadores() {
 
   const select = document.getElementById("trabajador");
-
-  // 🔄 limpiar select
   select.innerHTML = '<option value="">Cargando trabajadores...</option>';
 
   const { data, error } = await supabaseClient
     .from("trabajadores_obra")
     .select("*")
-    .eq("activo", true);
-
-  console.log("DATA:", data);
-  console.log("ERROR:", error);
+    .eq("activo", true)
+    .order("nombre");
 
   if (error) {
+    console.log("ERROR:", error);
     select.innerHTML = '<option>Error al cargar trabajadores</option>';
     return;
   }
@@ -124,9 +121,23 @@ async function cargarTrabajadores() {
     return;
   }
 
+  // 🔥 FILTRAR SOLO VIGENTES
+  const hoy = new Date().toLocaleDateString('sv-SE');
+
+  const vigentes = data.filter(t => {
+    if (t.fecha_inicio && hoy < t.fecha_inicio) return false;
+    if (t.fecha_fin && hoy > t.fecha_fin) return false;
+    return true;
+  });
+
+  if (vigentes.length === 0) {
+    select.innerHTML = '<option>No hay trabajadores vigentes</option>';
+    return;
+  }
+
   select.innerHTML = '<option value="">Selecciona trabajador</option>';
 
-  data.forEach(t => {
+  vigentes.forEach(t => {
     const option = document.createElement("option");
     option.value = t.qr_codigo;
     option.textContent = t.nombre;
