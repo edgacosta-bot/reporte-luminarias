@@ -1,87 +1,4 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js"></script>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Registrar trabajador</title>
-
-<style>
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-}
-
-.card {
-  background: #111827;
-  padding: 25px;
-  border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
-}
-
-select, input {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 12px;
-  border-radius: 10px;
-  border: none;
-  background: #1f2937;
-  color: white;
-}
-
-button {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  background: #2563eb;
-  color: white;
-  cursor: pointer;
-}
-
-.mensaje {
-  margin-top: 10px;
-  text-align: center;
-}
-
-.error { color: #f87171; }
-.ok { color: #34d399; }
-</style>
-
-</head>
-
-<body>
-
-<div class="card">
-
-<h2>Registrar trabajador</h2>
-
-<select id="obra">
-  <option value="">Cargando obras aprobadas...</option>
-</select>
-
-<input type="text" id="nombre" placeholder="Nombre del trabajador">
-
-<input type="date" id="fecha_inicio">
-<input type="date" id="fecha_fin">
-
-<button id="btnRegistrar">Registrar</button>
-
-<div id="mensaje" class="mensaje"></div>
-
-</div>
+<!-- SOLO CAMBIO EN JS -->
 
 <script>
 
@@ -96,7 +13,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   await cargarObras();
 });
 
-// 🔥 CARGAR SOLO OBRAS APROBADAS
+// 🔥 CARGAR OBRAS
 async function cargarObras() {
 
   const select = document.getElementById("obra");
@@ -120,7 +37,7 @@ async function cargarObras() {
 
     data.forEach(o => {
       const option = document.createElement("option");
-      option.value = JSON.stringify(o);
+      option.value = o.id; // 🔥 CAMBIO IMPORTANTE
       option.textContent = `Privada ${o.privada} - Lote ${o.casa}`;
       select.appendChild(option);
     });
@@ -131,7 +48,7 @@ async function cargarObras() {
   }
 }
 
-// 🚀 REGISTRAR TRABAJADOR
+// 🚀 REGISTRAR
 document.getElementById("btnRegistrar").addEventListener("click", registrar);
 
 async function registrar() {
@@ -145,25 +62,45 @@ async function registrar() {
 
   try {
 
-    const obraRaw = document.getElementById("obra").value;
+    const obra_id = document.getElementById("obra").value;
     const nombre = document.getElementById("nombre").value.trim();
     const fecha_inicio = document.getElementById("fecha_inicio").value;
     const fecha_fin = document.getElementById("fecha_fin").value;
 
-    if (!obraRaw || !nombre) {
+    if (!obra_id || !nombre) {
       throw new Error("Completa todos los campos");
     }
 
-    const obra = JSON.parse(obraRaw);
+    // 🔥 Obtener obra REAL desde DB
+    const { data: obra, error: errorObra } = await supabaseClient
+      .from("obras")
+      .select("*")
+      .eq("id", obra_id)
+      .single();
 
-    // 🔒 DOBLE VALIDACIÓN (ANTI TRAMPA)
+    if (errorObra || !obra) {
+      throw new Error("Obra inválida");
+    }
+
     if (!obra.aprobada) {
       throw new Error("La obra no está aprobada");
     }
 
-    // 📅 VALIDACIÓN DE FECHAS
+    // 📅 VALIDACIÓN
     if (fecha_inicio && fecha_fin && fecha_fin < fecha_inicio) {
       throw new Error("La fecha fin no puede ser menor que la de inicio");
+    }
+
+    // 🔒 VALIDAR DUPLICADO
+    const { data: existente } = await supabaseClient
+      .from("trabajadores_obra")
+      .select("id")
+      .eq("nombre", nombre)
+      .eq("obra_id", obra_id)
+      .maybeSingle();
+
+    if (existente) {
+      throw new Error("Este trabajador ya está registrado en esta obra");
     }
 
     const qr_codigo = crypto.randomUUID();
@@ -189,7 +126,6 @@ async function registrar() {
     `;
     mensaje.classList.add("ok");
 
-    // limpiar
     document.getElementById("obra").value = "";
     document.getElementById("nombre").value = "";
     document.getElementById("fecha_inicio").value = "";
@@ -208,6 +144,3 @@ async function registrar() {
 }
 
 </script>
-
-</body>
-</html>
