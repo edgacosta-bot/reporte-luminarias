@@ -2,7 +2,6 @@
 <html lang="es">
 <head>
 
-<!-- 🔥 ORDEN CORRECTO -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 <script>
@@ -22,7 +21,7 @@ body {
 }
 
 .container {
-  max-width: 500px;
+  max-width: 520px;
   margin: auto;
   padding: 20px;
 }
@@ -31,61 +30,72 @@ h2 {
   text-align: center;
 }
 
-/* 🔹 AVISO */
+/* aviso */
 .aviso {
   background: #1f2937;
   padding: 15px;
   border-radius: 12px;
   margin-bottom: 15px;
   font-size: 14px;
-  line-height: 1.4;
   color: #d1d5db;
 }
 
-.aviso b {
-  color: #ffffff;
-}
-
-.input-fecha {
+/* fechas */
+input {
   width: 100%;
   padding: 12px;
-  margin-top: 10px;
   border-radius: 10px;
   border: none;
-  box-sizing: border-box;
+  margin-bottom: 10px;
 }
 
-.label {
-  font-size: 13px;
-  color: #9ca3af;
-  margin-top: 10px;
-}
-
-.card {
+/* cards */
+.item {
   background: #111827;
   padding: 15px;
   border-radius: 12px;
   margin-bottom: 10px;
+  border-left: 6px solid;
 }
 
-.tipo {
-  font-weight: bold;
-}
+.vecinal { border-color: #ef4444; }
+.obra { border-color: #f59e0b; }
 
 .fecha {
   font-size: 12px;
   color: #9ca3af;
 }
 
-.luminaria { border-left: 5px solid #9f1239; }
-.agua { border-left: 5px solid #2563eb; }
-.incidencia { border-left: 5px solid #dc2626; }
+button {
+  margin-top: 8px;
+  padding: 8px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  width: 100%;
+}
 
-.back {
-  display: block;
-  margin-top: 15px;
-  text-align: center;
-  color: #9ca3af;
+.modal {
+  position: fixed;
+  top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,0.7);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.modal-content {
+  background:#111827;
+  padding:20px;
+  border-radius:12px;
+  text-align:center;
+}
+
+.emoji {
+  font-size: 30px;
+  margin: 10px;
+  cursor: pointer;
 }
 </style>
 </head>
@@ -96,159 +106,153 @@ h2 {
 
 <h2>📋 Mis reportes</h2>
 
-<!-- 🔥 AVISO -->
 <div class="aviso">
-  <b>Estimado residente:</b><br><br>
-  Después de 5 días de haber realizado su reporte, podrá evaluar la atención recibida por parte de la administración.<br><br>
-  Su evaluación nos ayuda a mejorar el servicio.<br><br>
-  Gracias por su apoyo.
+Estimado residente:<br><br>
+Después de 5 días de haber realizado su reporte, podrá evaluar la atención recibida por parte de la administración.<br><br>
+Su evaluación nos ayuda a mejorar el servicio.<br><br>
+Gracias por su apoyo.
 </div>
 
-<div class="label">Selecciona una fecha (opcional)</div>
-<input type="date" id="fecha" class="input-fecha" onchange="cargarReportes()">
+<input type="date" id="inicio">
+<input type="date" id="fin">
+
+<button onclick="cargar()">Consultar</button>
 
 <div id="lista"></div>
 
-<a href="reportes.html" class="back">← Volver</a>
+</div>
 
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <h3>¿Cómo fue la atención?</h3>
+    <span class="emoji" onclick="evaluar('feliz')">😊</span>
+    <span class="emoji" onclick="evaluar('neutral')">😐</span>
+    <span class="emoji" onclick="evaluar('triste')">😞</span>
+  </div>
 </div>
 
 <script>
 
-let privada = null;
-let casa = null;
+let privada, casa;
+let seleccionado = null;
 
-async function obtenerDatosUsuario() {
+async function obtenerUsuario(){
+  const { data } = await supabaseClient.auth.getUser();
+  const userId = data.user.id;
 
-  const { data: userData } = await supabaseClient.auth.getUser();
-
-  if (!userData?.user) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  const userId = userData.user.id;
-
-  const { data: residente } = await supabaseClient
+  const { data:res } = await supabaseClient
     .from("residentes")
-    .select("privada, casa")
+    .select("privada,casa")
     .eq("user_id", userId)
-    .maybeSingle();
+    .single();
 
-  if (!residente) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  privada = residente.privada;
-  casa = residente.casa;
+  privada = res.privada;
+  casa = res.casa;
 }
 
-function formatearFechaLocal(fechaISO) {
-  if (!fechaISO) return "";
-
-  const fecha = new Date(fechaISO);
-
-  return fecha.toLocaleString("es-MX", {
-    timeZone: "America/Mexico_City",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+function dias(f){
+  return (new Date() - new Date(f)) / (1000*60*60*24);
 }
 
-async function cargarReportes() {
+async function cargar(){
 
-  const fecha = document.getElementById("fecha").value;
-  const lista = document.getElementById("lista");
+  const inicio = document.getElementById("inicio").value;
+  const fin = document.getElementById("fin").value;
 
-  lista.innerHTML = "Cargando...";
+  let registros=[];
 
-  let html = "";
-
-  // 🔴 INCIDENCIAS
-  let queryInc = supabaseClient
-    .from("incidencias_vecinales")
+  // 🔴 SEGURIDAD (vecinal)
+  let {data:seg} = await supabaseClient
+    .from("reportes_seguridad")
     .select("*")
     .eq("privada", privada)
-    .eq("casa", casa);
+    .gte("fecha", inicio+"T00:00:00")
+    .lte("fecha", fin+"T23:59:59");
 
-  if (fecha) {
-    queryInc = queryInc
-      .gte("fecha_local", fecha + "T00:00:00")
-      .lte("fecha_local", fecha + "T23:59:59");
-  }
-
-  const { data: incidencias } = await queryInc.order("fecha_local", { ascending: false });
-
-  incidencias?.forEach(item => {
-    html += `
-      <div class="card incidencia">
-        <div class="tipo">⚠️ ${item.tipo}</div>
-        <div>${item.descripcion}</div>
-        <div class="fecha">${formatearFechaLocal(item.fecha_local)}</div>
-      </div>
-    `;
+  seg?.forEach(i=>{
+    registros.push({
+      tipo:"vecinal",
+      id:i.id,
+      descripcion:i.descripcion,
+      fecha:i.fecha
+    });
   });
 
-  // 🔵 LUMINARIAS
-  let queryLum = supabaseClient
-    .from("reportes_vecinales")
+  // 🟠 OBRAS
+  let ini = new Date(inicio+"T00:00:00");
+  let fi = new Date(fin+"T23:59:59");
+  fi.setDate(fi.getDate()+1);
+
+  let {data:obras} = await supabaseClient
+    .from("reportes_obras")
     .select("*")
     .eq("privada", privada)
-    .eq("casa", casa);
+    .eq("casa", casa)
+    .gte("fecha_reporte", ini.toISOString())
+    .lt("fecha_reporte", fi.toISOString());
 
-  if (fecha) {
-    queryLum = queryLum
-      .gte("fecha_reporte", fecha + "T00:00:00")
-      .lte("fecha_reporte", fecha + "T23:59:59");
-  }
-
-  const { data: luminarias } = await queryLum.order("fecha_reporte", { ascending: false });
-
-  luminarias?.forEach(item => {
-    html += `
-      <div class="card luminaria">
-        <div class="tipo">💡 Luminaria #${item.no_luminaria}</div>
-        <div>${item.descripcion}</div>
-        <div class="fecha">${formatearFechaLocal(item.fecha_reporte)}</div>
-      </div>
-    `;
+  obras?.forEach(i=>{
+    registros.push({
+      tipo:"obra",
+      id:i.id,
+      descripcion:i.descripcion,
+      fecha:i.fecha_reporte
+    });
   });
 
-  // 💧 AGUA
-  let queryAgua = supabaseClient
-    .from("reportes_agua_caasim")
-    .select("*")
-    .eq("privada", privada)
-    .eq("numero_exterior", casa);
+  // 🔍 evaluaciones existentes
+  let {data:evals} = await supabaseClient
+    .from("evaluaciones_reportes")
+    .select("reporte_id");
 
-  if (fecha) {
-    queryAgua = queryAgua
-      .gte("fecha_registro", fecha + "T00:00:00")
-      .lte("fecha_registro", fecha + "T23:59:59");
-  }
+  const evaluados = new Set(evals?.map(e=>e.reporte_id));
 
-  const { data: agua } = await queryAgua.order("fecha_registro", { ascending: false });
+  // render
+  let html="";
 
-  agua?.forEach(item => {
-    html += `
-      <div class="card agua">
-        <div class="tipo">💧 ${item.tipo_falla}</div>
-        <div>Folio: ${item.numero_reporte}</div>
-        <div class="fecha">${formatearFechaLocal(item.fecha_registro)}</div>
+  registros
+    .sort((a,b)=> new Date(b.fecha)-new Date(a.fecha))
+    .forEach(r=>{
+
+      let puede = (r.tipo !== "luminaria" && r.tipo !== "agua")
+        && dias(r.fecha) >= 5
+        && !evaluados.has(r.id);
+
+      html+=`
+      <div class="item ${r.tipo}">
+        <b>${r.tipo.toUpperCase()}</b>
+        <div>${r.descripcion}</div>
+        <div class="fecha">${new Date(r.fecha).toLocaleString("es-MX")}</div>
+
+        ${puede ? `<button onclick="abrir('${r.id}')">Evaluar atención</button>`:""}
       </div>
-    `;
-  });
+      `;
+    });
 
-  lista.innerHTML = html || "No hay reportes";
+  document.getElementById("lista").innerHTML = html || "Sin resultados";
 }
 
-async function iniciar() {
-  await obtenerDatosUsuario();
-  await cargarReportes();
+function abrir(id){
+  seleccionado = id;
+  document.getElementById("modal").style.display="flex";
+}
+
+async function evaluar(tipo){
+  await supabaseClient.from("evaluaciones_reportes").insert([{
+    reporte_id: seleccionado,
+    tipo_reporte: "general",
+    calificacion: tipo,
+    privada,
+    casa
+  }]);
+
+  document.getElementById("modal").style.display="none";
+  cargar();
+}
+
+async function iniciar(){
+  await obtenerUsuario();
+  cargar();
 }
 
 iniciar();
