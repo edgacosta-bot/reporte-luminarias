@@ -221,15 +221,15 @@ async function enviarReporte() {
   }
 
   const dataInsert = {
-    categoria: "obras",
-    tipo,
-    descripcion,
-    trabajador_id: trabajador_id || null,
-    obra_id,
-    estatus: "nuevo",
-    observaciones: descripcion,
-    fecha_reporte: new Date().toISOString()
-  };
+  tipo: tipo,
+  descripcion: descripcion,
+  trabajador_id: trabajador_id || null,
+  obra_id: obra_id,
+  privada: privada || null,
+  casa: casa || null,
+  fecha_reporte: new Date().toISOString(),
+  estatus: "nuevo"
+};
 
   if (actor === "colono") {
     dataInsert.privada = privada;
