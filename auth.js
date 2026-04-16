@@ -65,3 +65,42 @@ yaValidado = true;
     window.location.href = "login.html";
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// 🔥 NUEVO BLOQUE — UTILIDADES DE FECHA (NO ROMPE NADA)
+////////////////////////////////////////////////////////////////////////////////
+
+// 🔹 Inicio del día en UTC
+function fechaInicioUTC(fecha){
+  const d = new Date(fecha);
+  d.setHours(0,0,0,0);
+  return d.toISOString();
+}
+
+// 🔹 Fin del día en UTC
+function fechaFinUTC(fecha){
+  const d = new Date(fecha);
+  d.setHours(23,59,59,999);
+  return d.toISOString();
+}
+
+// 🔹 Formato visual México
+function formatoMX(fecha){
+  if(!fecha) return "";
+  return new Date(fecha).toLocaleString("es-MX");
+}
+
+// 🔹 TEMPORAL: ajuste especial para tablas mal guardadas (ej: reportes_obras)
+function fechaInicioAjustada(fecha){
+  const d = new Date(fecha);
+  d.setHours(0,0,0,0);
+  d.setHours(d.getHours() + 6);
+  return d.toISOString();
+}
+
+function fechaFinAjustada(fecha){
+  const d = new Date(fecha);
+  d.setHours(23,59,59,999);
+  d.setHours(d.getHours() + 6);
+  return d.toISOString();
+}
