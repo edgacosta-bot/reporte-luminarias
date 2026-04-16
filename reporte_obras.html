@@ -79,7 +79,6 @@ button {
   <option value="">Tipo de reporte</option>
 </select>
 
-<!-- 🔥 NUEVO: OBRA -->
 <label style="font-size: 13px; color: #9ca3af; display:block; margin-bottom:5px;">
 Obra
 </label>
@@ -139,7 +138,7 @@ async function cargarCatalogo() {
 
   const select = document.getElementById("tipo");
 
-  const { data } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("catalogo_reportes")
     .select("subtipo")
     .eq("categoria", "obras")
@@ -147,38 +146,52 @@ async function cargarCatalogo() {
     .eq("activo", true)
     .order("subtipo");
 
+  if (error) {
+    console.error("Error catálogo:", error);
+    return;
+  }
+
   select.innerHTML = '<option value="">Tipo de reporte</option>';
 
-  data.forEach(item => {
-    const option = document.createElement("option");
-    option.value = item.subtipo;
-    option.textContent = item.subtipo.replaceAll("_", " ");
-    select.appendChild(option);
-  });
+  if (data) {
+    data.forEach(item => {
+      const option = document.createElement("option");
+      option.value = item.subtipo;
+      option.textContent = item.subtipo.replaceAll("_", " ");
+      select.appendChild(option);
+    });
+  }
 }
 
-// 🔥 OBRAS
+// 🔥 OBRAS (CORREGIDO)
 async function cargarObras() {
 
   const select = document.getElementById("obra");
 
-  const { data } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("obras")
-    .select("id, nombre")
-    .eq("activo", true)
-    .order("nombre");
+    .select("id, dro_nombre")
+    .eq("estatus", "activa")
+    .order("dro_nombre");
+
+  if (error) {
+    console.error("Error cargando obras:", error);
+    return;
+  }
 
   select.innerHTML = '<option value="">Selecciona obra</option>';
 
-  data.forEach(item => {
-    const option = document.createElement("option");
-    option.value = item.id;
-    option.textContent = item.nombre;
-    select.appendChild(option);
-  });
+  if (data) {
+    data.forEach(item => {
+      const option = document.createElement("option");
+      option.value = item.id;
+      option.textContent = item.dro_nombre;
+      select.appendChild(option);
+    });
+  }
 }
 
-// 🔥 FILTRAR TRABAJADORES POR OBRA
+// 🔥 FILTRAR TRABAJADORES
 document.getElementById("obra").addEventListener("change", async (e) => {
 
   const obra_id = e.target.value;
@@ -188,19 +201,26 @@ document.getElementById("obra").addEventListener("change", async (e) => {
 
   if (!obra_id) return;
 
-  const { data } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("trabajadores_obra")
     .select("id, nombre")
     .eq("obra_id", obra_id)
     .eq("activo", true)
     .order("nombre");
 
-  data.forEach(item => {
-    const option = document.createElement("option");
-    option.value = item.id;
-    option.textContent = item.nombre;
-    select.appendChild(option);
-  });
+  if (error) {
+    console.error("Error trabajadores:", error);
+    return;
+  }
+
+  if (data) {
+    data.forEach(item => {
+      const option = document.createElement("option");
+      option.value = item.id;
+      option.textContent = item.nombre;
+      select.appendChild(option);
+    });
+  }
 });
 
 // 🚀 ENVIAR
