@@ -46,14 +46,7 @@ button {
   margin: 25px 0;
 }
 
-.kpi {
-  padding: 18px;
-  border-radius: 18px;
-  color: white;
-  text-align: center;
-  font-weight: bold;
-}
-
+.kpi { padding: 18px; border-radius: 18px; color: white; text-align: center; font-weight: bold; }
 .incidencia { background: #ef4444; }
 .agua { background: #f59e0b; color: #111; }
 .luminaria { background: #10b981; }
@@ -74,23 +67,6 @@ button {
 
 .hora { font-size: 12px; color: #64748b; }
 .extra { font-size: 14px; margin-top: 4px; }
-
-.modal-bg {
-  position: fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background: rgba(0,0,0,0.6);
-  display:none;
-  align-items:center;
-  justify-content:center;
-}
-
-.modal {
-  background:white;
-  padding:20px;
-  border-radius:16px;
-  text-align:center;
-}
 </style>
 </head>
 
@@ -110,16 +86,6 @@ button {
   <input type="date" id="fin">
 </div>
 
-<div class="input-group">
-  <div class="label">Privada (opcional)</div>
-  <input type="text" id="privada">
-</div>
-
-<div class="input-group">
-  <div class="label">Casa (opcional)</div>
-  <input type="text" id="casa">
-</div>
-
 <button onclick="cargar()">Consultar</button>
 
 <div class="kpis">
@@ -133,26 +99,11 @@ button {
 
 </div>
 
-<div id="modal" class="modal-bg">
-  <div class="modal">
-    <h3>Selecciona fechas</h3>
-    <button onclick="cerrarModal()">OK</button>
-  </div>
-</div>
-
 <script>
 
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["admin","administracion"]);
 });
-
-function mostrarModal(){
-  document.getElementById("modal").style.display="flex";
-}
-
-function cerrarModal(){
-  document.getElementById("modal").style.display="none";
-}
 
 async function cargar(){
 
@@ -160,13 +111,30 @@ async function cargar(){
   const fin = document.getElementById("fin").value;
 
   if(!inicio || !fin){
-    mostrarModal();
+    alert("Selecciona fechas");
     return;
   }
 
   let registros=[];
 
   try {
+
+    // 🔴 INCIDENCIAS VECINALES
+    let {data:inc} = await supabaseClient
+      .from("incidencias_vecinales")
+      .select("*")
+      .gte("fecha_local", inicio+"T00:00:00")
+      .lte("fecha_local", fin+"T23:59:59");
+
+    inc?.forEach(i=>{
+      registros.push({
+        tipo:"incidencia",
+        titulo:"Incidencia vecinal",
+        descripcion:i.descripcion,
+        hora:i.fecha_local,
+        origen:`${i.privada}-${i.casa}`
+      });
+    });
 
     // 🔴 INCIDENCIAS TRABAJADORES (MEJORADO)
     let {data:trab} = await supabaseClient
@@ -191,18 +159,49 @@ async function cargar(){
     (trab || []).forEach(i=>{
       const t = mapaTrab[i.trabajador_id];
 
-      const obraTexto = t
-        ? `Privada ${t.privada || "-"} - Casa ${t.casa || "-"}`
-        : null;
-
       registros.push({
         tipo:"incidencia",
         titulo:`Incidencia trabajador (${i.tipo})`,
         descripcion:i.descripcion,
         hora:i.fecha_local,
         trabajador:t?.nombre || null,
-        obra: obraTexto
+        obra: t ? `Privada ${t.privada} - Casa ${t.casa}` : null
       });
+    });
+
+    // 💧 AGUA
+    let {data:agua} = await supabaseClient
+      .from("reportes_agua_caasim")
+      .select("*");
+
+    agua?.forEach(i=>{
+      if(i.fecha_registro >= inicio+"T00:00:00" &&
+         i.fecha_registro <= fin+"T23:59:59"){
+        registros.push({
+          tipo:"agua",
+          titulo:"Reporte agua",
+          descripcion:i.tipo_falla,
+          hora:i.fecha_registro,
+          origen:`${i.privada}-${i.numero_exterior}`
+        });
+      }
+    });
+
+    // 💡 LUMINARIAS
+    let {data:luminarias} = await supabaseClient
+      .from("vista_reportes_luminarias")
+      .select("*");
+
+    luminarias?.forEach(i=>{
+      if(i.fecha_reporte >= inicio+"T00:00:00" &&
+         i.fecha_reporte <= fin+"T23:59:59"){
+        registros.push({
+          tipo:"luminaria",
+          titulo:`Luminaria #${i.no_luminaria}`,
+          descripcion:i.descripcion,
+          hora:i.fecha_reporte
+        });
+      }
     });
 
   } catch (e) {
@@ -210,7 +209,13 @@ async function cargar(){
   }
 
   document.getElementById("inc").innerText =
-    registros.length+" Incidencias";
+    registros.filter(r=>r.tipo==="incidencia").length+" Incidencias";
+
+  document.getElementById("agua").innerText =
+    registros.filter(r=>r.tipo==="agua").length+" Agua";
+
+  document.getElementById("lum").innerText =
+    registros.filter(r=>r.tipo==="luminaria").length+" Luminarias";
 
   document.getElementById("total").innerText =
     registros.length+" Total";
@@ -222,11 +227,12 @@ async function cargar(){
   registros.forEach(r=>{
     const fechaLocal = new Date(r.hora).toLocaleString("es-MX");
 
-    html+=`<div class="item incidencia">
+    html+=`<div class="item ${r.tipo}">
       <b>${r.titulo}</b>
       <div class="hora">${fechaLocal}</div>
       ${r.trabajador ? `<div class="extra">👷 ${r.trabajador}</div>`:""}
       ${r.obra ? `<div class="extra">📍 ${r.obra}</div>`:""}
+      ${r.origen ? `<div class="extra">🏠 ${r.origen}</div>`:""}
       <div class="extra">${r.descripcion}</div>
     </div>`;
   });
