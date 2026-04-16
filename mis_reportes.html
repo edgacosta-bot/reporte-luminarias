@@ -13,6 +13,7 @@ protegerPagina(["colono","residente"]);
 <title>Mis reportes</title>
 
 <style>
+
 body {
   margin: 0;
   font-family: Arial;
@@ -23,9 +24,14 @@ body {
 .container {
   max-width: 520px;
   margin: auto;
-  padding: 20px;
+  padding: 20px 16px;
 }
 
+h2 {
+  text-align: center;
+}
+
+/* AVISO */
 .aviso {
   background: #1f2937;
   padding: 15px;
@@ -35,24 +41,58 @@ body {
   color: #d1d5db;
 }
 
-input {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: none;
-  margin-bottom: 10px;
+/* CAMPOS */
+.campo {
+  margin-bottom: 12px;
 }
 
-button {
-  padding: 10px;
+.campo label {
+  font-size: 13px;
+  color: #9ca3af;
+  display: block;
+  margin-bottom: 5px;
+}
+
+input[type="date"] {
   width: 100%;
-  border-radius: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: none;
+  box-sizing: border-box;
+}
+
+/* CHIPS */
+.chips {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: 8px 12px;
+  background: #1f2937;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.chip.active {
+  background: #2563eb;
+}
+
+/* BOTÓN */
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
   border: none;
   background: #2563eb;
   color: white;
-  margin-top: 8px;
+  margin-bottom: 10px;
 }
 
+/* ITEMS */
 .item {
   background: #111827;
   padding: 15px;
@@ -98,6 +138,7 @@ button {
   font-size: 14px;
   color: #d1d5db;
 }
+
 </style>
 </head>
 
@@ -114,8 +155,23 @@ Su evaluación nos ayuda a mejorar el servicio.<br><br>
 Gracias por su apoyo.
 </div>
 
-<input type="date" id="inicio">
-<input type="date" id="fin">
+<!-- CHIPS -->
+<div class="chips">
+  <div class="chip" onclick="rangoRapido(0)">Hoy</div>
+  <div class="chip" onclick="rangoRapido(7)">7 días</div>
+  <div class="chip" onclick="rangoRapido(30)">30 días</div>
+</div>
+
+<!-- FECHAS -->
+<div class="campo">
+  <label>Fecha inicio</label>
+  <input type="date" id="inicio">
+</div>
+
+<div class="campo">
+  <label>Fecha fin</label>
+  <input type="date" id="fin">
+</div>
 
 <button onclick="cargar()">Consultar</button>
 
@@ -125,7 +181,7 @@ Gracias por su apoyo.
 
 <!-- MODAL -->
 <div id="modal" class="modal">
-  <div class="modal-content" id="contenidoModal">
+  <div class="modal-content">
     
     <div id="pregunta">
       <h3>¿Cómo evalúas la atención que ha dado el administrador a tu reporte?</h3>
@@ -166,6 +222,20 @@ async function obtenerUsuario(){
   casa = res?.casa;
 }
 
+/* 🔥 RANGOS RÁPIDOS */
+function rangoRapido(dias){
+
+  let hoy = new Date();
+  let inicio = new Date();
+
+  inicio.setDate(hoy.getDate() - dias);
+
+  document.getElementById("inicio").value = inicio.toISOString().split("T")[0];
+  document.getElementById("fin").value = hoy.toISOString().split("T")[0];
+
+  cargar();
+}
+
 async function cargar(){
 
   document.getElementById("lista").innerHTML = "Cargando...";
@@ -175,7 +245,7 @@ async function cargar(){
 
   let registros = [];
 
-  // 🔴 VECINAL
+  /* VECINAL */
   let querySeg = supabaseClient
     .from("reportes_seguridad")
     .select("*")
@@ -198,7 +268,7 @@ async function cargar(){
     });
   });
 
-  // 🟠 OBRAS
+  /* OBRAS */
   let queryObras = supabaseClient
     .from("reportes_obras")
     .select("*")
@@ -226,14 +296,13 @@ async function cargar(){
     });
   });
 
-  // 🔍 evaluaciones existentes
+  /* EVALUACIONES */
   const { data: evals } = await supabaseClient
     .from("evaluaciones_reportes")
     .select("reporte_id");
 
   const evaluados = new Set(evals?.map(e=>e.reporte_id));
 
-  // 🎯 render
   let html="";
 
   registros
