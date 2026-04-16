@@ -18,7 +18,6 @@ body {
 }
 .container { max-width: 520px; margin: auto; padding: 20px; }
 h2 { text-align: center; }
-
 .section-title { margin-top: 25px; margin-bottom: 10px; font-size: 16px; }
 .label { font-size: 13px; color: #475569; }
 .input-group { margin-bottom: 15px; }
@@ -102,13 +101,6 @@ button {
 
 <script>
 
-function toUTC(date, end=false){
-  const d = new Date(date);
-  if(end){ d.setHours(23,59,59,999); }
-  else { d.setHours(0,0,0,0); }
-  return new Date(d.getTime() + (6 * 60 * 60 * 1000)).toISOString();
-}
-
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["admin","administracion"]);
 });
@@ -123,14 +115,11 @@ async function cargar(){
     return;
   }
 
-  const inicioUTC = toUTC(inicio);
-  const finUTC = toUTC(fin, true);
-
   let registros=[];
 
   try {
 
-    // ✅ INCIDENCIAS VECINALES (RESTAURADO)
+    // 🔴 INCIDENCIAS VECINALES (SIN CAMBIO)
     let {data:inc} = await supabaseClient
       .from("incidencias_vecinales")
       .select("*")
@@ -148,12 +137,12 @@ async function cargar(){
       });
     });
 
-    // ✅ REPORTES DE OBRA (AQUÍ VA TU FIX)
+    // 🔴 REPORTES OBRA (USANDO AJUSTE)
     let {data:obras} = await supabaseClient
       .from("reportes_obras")
       .select("*")
-      .gte("fecha_reporte", inicio + " 00:00:00")
-      .lte("fecha_reporte", fin + " 23:59:59");
+      .gte("fecha_reporte", fechaInicioAjustada(inicio))
+      .lte("fecha_reporte", fechaFinAjustada(fin));
 
     obras?.forEach(i=>{
       registros.push({
@@ -165,12 +154,12 @@ async function cargar(){
       });
     });
 
-    // 🔴 TRABAJADORES
+    // 🔴 TRABAJADORES (UTC)
     let {data:trab} = await supabaseClient
       .from("incidencias_trabajadores")
       .select("*")
-      .gte("fecha", inicioUTC)
-      .lte("fecha", finUTC);
+      .gte("fecha", fechaInicioUTC(inicio))
+      .lte("fecha", fechaFinUTC(fin));
 
     const ids = [...new Set((trab || []).map(i=>i.trabajador_id).filter(Boolean))];
 
@@ -199,12 +188,12 @@ async function cargar(){
       });
     });
 
-    // 💧 AGUA
+    // 💧 AGUA (UTC)
     let {data:agua} = await supabaseClient
       .from("reportes_agua_caasim")
       .select("*")
-      .gte("fecha_registro", inicioUTC)
-      .lte("fecha_registro", finUTC);
+      .gte("fecha_registro", fechaInicioUTC(inicio))
+      .lte("fecha_registro", fechaFinUTC(fin));
 
     agua?.forEach(i=>{
       registros.push({
@@ -217,12 +206,12 @@ async function cargar(){
       });
     });
 
-    // 💡 LUMINARIAS
+    // 💡 LUMINARIAS (UTC)
     let {data:luminarias} = await supabaseClient
       .from("vista_reportes_luminarias")
       .select("*")
-      .gte("fecha_reporte", inicioUTC)
-      .lte("fecha_reporte", finUTC);
+      .gte("fecha_reporte", fechaInicioUTC(inicio))
+      .lte("fecha_reporte", fechaFinUTC(fin));
 
     luminarias?.forEach(i=>{
       registros.push({
@@ -262,14 +251,14 @@ async function cargar(){
     html += `<div class="section-title">${titulo}</div>`;
 
     datos.forEach(r=>{
-      const fechaLocal = new Date(r.hora).toLocaleString("es-MX");
-
       html+=`<div class="item ${r.tipo}">
         <b>${r.titulo}</b>
-        <div class="hora">${fechaLocal}</div>
+        <div class="hora">${formatoMX(r.hora)}</div>
+
         ${r.trabajador ? `<div class="extra">👷 ${r.trabajador}</div>`:""}
         ${r.obra ? `<div class="extra">📍 ${r.obra}</div>`:""}
         ${r.origen ? `<div class="extra">🏠 ${r.origen}</div>`:""}
+
         <div class="extra">${r.descripcion}</div>
       </div>`;
     });
