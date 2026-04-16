@@ -237,7 +237,7 @@ async function enviarReporte() {
   }
 
   const { error } = await supabaseClient
-    .from("reportes_vecinales")
+    .from("reportes_obras")
     .insert([dataInsert]);
 
   if (error) {
