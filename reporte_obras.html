@@ -79,6 +79,15 @@ button {
   <option value="">Tipo de reporte</option>
 </select>
 
+<!-- 🔥 NUEVO: OBRA -->
+<label style="font-size: 13px; color: #9ca3af; display:block; margin-bottom:5px;">
+Obra
+</label>
+
+<select id="obra">
+  <option value="">Selecciona obra</option>
+</select>
+
 <label style="font-size: 13px; color: #9ca3af; display:block; margin-bottom:5px;">
 Trabajador (opcional)
 </label>
@@ -104,7 +113,7 @@ const supabaseClient = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-// 🔐 IDENTIFICAR ACTOR (CORREGIDO)
+// 🔐 IDENTIFICAR ACTOR
 const vigilante_id = localStorage.getItem("vigilante_id");
 const vigilante_nombre = localStorage.getItem("vigilante_nombre");
 
@@ -115,7 +124,6 @@ const actorInfo = document.getElementById("actorInfo");
 
 let actor = null;
 
-// 🔥 PRIORIDAD: COLONO
 if (privada && casa) {
   actor = "colono";
   actorInfo.innerText = `Privada ${privada} - Casa ${casa}`;
@@ -149,16 +157,18 @@ async function cargarCatalogo() {
   });
 }
 
-// 🔥 TRABAJADORES
-async function cargarTrabajadores() {
+// 🔥 OBRAS
+async function cargarObras() {
 
-  const select = document.getElementById("trabajador");
+  const select = document.getElementById("obra");
 
   const { data } = await supabaseClient
-    .from("trabajadores_obra")
+    .from("obras")
     .select("id, nombre")
     .eq("activo", true)
     .order("nombre");
+
+  select.innerHTML = '<option value="">Selecciona obra</option>';
 
   data.forEach(item => {
     const option = document.createElement("option");
@@ -168,18 +178,44 @@ async function cargarTrabajadores() {
   });
 }
 
+// 🔥 FILTRAR TRABAJADORES POR OBRA
+document.getElementById("obra").addEventListener("change", async (e) => {
+
+  const obra_id = e.target.value;
+  const select = document.getElementById("trabajador");
+
+  select.innerHTML = '<option value="">Selecciona trabajador</option>';
+
+  if (!obra_id) return;
+
+  const { data } = await supabaseClient
+    .from("trabajadores_obra")
+    .select("id, nombre")
+    .eq("obra_id", obra_id)
+    .eq("activo", true)
+    .order("nombre");
+
+  data.forEach(item => {
+    const option = document.createElement("option");
+    option.value = item.id;
+    option.textContent = item.nombre;
+    select.appendChild(option);
+  });
+});
+
 // 🚀 ENVIAR
 async function enviarReporte() {
 
   const tipo = document.getElementById("tipo").value;
   const descripcion = document.getElementById("descripcion").value.trim();
   const trabajador_id = document.getElementById("trabajador").value;
+  const obra_id = document.getElementById("obra").value;
 
   const mensaje = document.getElementById("mensaje");
 
   mensaje.className = "mensaje";
 
-  if (!tipo || !descripcion) {
+  if (!tipo || !descripcion || !obra_id) {
     mensaje.innerText = "Completa los campos obligatorios";
     mensaje.classList.add("error");
     return;
@@ -192,6 +228,7 @@ async function enviarReporte() {
       tipo: tipo,
       descripcion: descripcion,
       trabajador_id: trabajador_id || null,
+      obra_id: obra_id,
       estatus: "nuevo",
       observaciones: descripcion,
       fecha_reporte: new Date().toISOString()
@@ -214,6 +251,7 @@ async function enviarReporte() {
     document.getElementById("descripcion").value = "";
     document.getElementById("tipo").value = "";
     document.getElementById("trabajador").value = "";
+    document.getElementById("obra").value = "";
 
   } catch (err) {
     console.error(err);
@@ -225,7 +263,7 @@ async function enviarReporte() {
 // INIT
 document.addEventListener("DOMContentLoaded", () => {
   cargarCatalogo();
-  cargarTrabajadores();
+  cargarObras();
 });
 
 </script>
