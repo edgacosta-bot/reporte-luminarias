@@ -70,6 +70,7 @@ button {
 .item.incidencia { border-color: #ef4444; }
 .item.agua { border-color: #f59e0b; }
 .item.luminaria { border-color: #10b981; }
+.item.vigilante { border-color: #3b82f6; }
 
 .hora { font-size: 12px; color: #64748b; }
 .extra { font-size: 14px; margin-top: 4px; }
@@ -155,84 +156,72 @@ async function cargar(){
       });
     });
 
-    // 🔴 REPORTES DE OBRA (FIX DEFINITIVO UTC)
+    // 🔵 REPORTES VIGILANTES
+    let {data:rv} = await supabaseClient
+      .from("reportes_vigilantes")
+      .select("*")
+      .gte("fecha", fechaInicioUTC(inicio))
+      .lte("fecha", fechaFinUTC(fin));
+
+    let mapaVigilantes = {};
+
+    if(rv?.length){
+      const ids = [...new Set(rv.map(r=>r.vigilante_id))];
+
+      const {data:vig} = await supabaseClient
+        .from("vigilantes")
+        .select("id,nombre")
+        .in("id", ids);
+
+      vig?.forEach(v=> mapaVigilantes[v.id]=v.nombre);
+    }
+
+    rv?.forEach(r=>{
+      registros.push({
+        tipo:"vigilante",
+        grupo:"vigilante",
+        titulo:"Reporte a vigilante",
+        descripcion:r.descripcion,
+        hora:r.fecha,
+        vigilante: mapaVigilantes[r.vigilante_id],
+        origen:`${r.privada}-${r.casa}`,
+        subtipo:r.tipo
+      });
+    });
+
+    // 🔴 REPORTES DE OBRA
     let inicioObra = new Date(inicio + "T00:00:00");
     let finObra = new Date(fin + "T23:59:59");
-
-    // 🔥 clave: extender rango 1 día
     finObra.setDate(finObra.getDate() + 1);
 
-    let {data:obras, error:errObras} = await supabaseClient
+    let {data:obras} = await supabaseClient
       .from("reportes_obras")
       .select("*")
       .gte("fecha_reporte", inicioObra.toISOString())
       .lt("fecha_reporte", finObra.toISOString());
 
-    console.log("OBRAS:", obras);
-    console.log("ERROR OBRAS:", errObras);
+    let mapaTrabObra = {};
 
-    if(obras && obras.length > 0){
+    if(obras?.length){
+      const ids = [...new Set(obras.map(o=>o.trabajador_id).filter(Boolean))];
 
-      const idsObra = [...new Set(
-        obras.map(o => o.trabajador_id).filter(Boolean)
-      )];
-
-      let mapaTrabObra = {};
-
-      if(idsObra.length > 0){
-        const {data:trabajadores} = await supabaseClient
-          .from("trabajadores_obra")
-          .select("id, nombre, privada, casa")
-          .in("id", idsObra);
-
-        trabajadores?.forEach(t => mapaTrabObra[t.id]=t);
-      }
-
-      obras.forEach(i=>{
-        const t = mapaTrabObra[i.trabajador_id];
-
-        registros.push({
-          tipo:"incidencia",
-          grupo:"trabajador",
-          titulo:"Reporte de obra",
-          descripcion:i.descripcion,
-          hora:i.fecha_reporte,
-          trabajador: t?.nombre || null,
-          obra: t ? `Privada ${t.privada} - Casa ${t.casa}` : null
-        });
-      });
-
-    }
-
-    // 🔴 INCIDENCIAS TRABAJADORES
-    let {data:trab} = await supabaseClient
-      .from("incidencias_trabajadores")
-      .select("*")
-      .gte("fecha", fechaInicioUTC(inicio))
-      .lte("fecha", fechaFinUTC(fin));
-
-    const ids = [...new Set((trab || []).map(i=>i.trabajador_id).filter(Boolean))];
-
-    let mapaTrab = {};
-
-    if(ids.length > 0){
       const {data:trabajadores} = await supabaseClient
         .from("trabajadores_obra")
-        .select("id, nombre, privada, casa")
+        .select("id,nombre,privada,casa")
         .in("id", ids);
 
-      trabajadores?.forEach(t=> mapaTrab[t.id]=t);
+      trabajadores?.forEach(t=> mapaTrabObra[t.id]=t);
     }
 
-    (trab || []).forEach(i=>{
-      const t = mapaTrab[i.trabajador_id];
+    obras?.forEach(i=>{
+      const t = mapaTrabObra[i.trabajador_id];
 
       registros.push({
         tipo:"incidencia",
         grupo:"trabajador",
-        titulo:"Incidencia trabajador",
+        titulo:"Reporte de obra",
         descripcion:i.descripcion,
-        hora: i.fecha_local || i.fecha,
+        hora:i.fecha_reporte,
         trabajador:t?.nombre,
         obra: t ? `Privada ${t.privada} - Casa ${t.casa}` : null
       });
@@ -305,6 +294,8 @@ async function cargar(){
         <b>${r.titulo}</b>
         <div class="hora">${formatoMX(r.hora)}</div>
 
+        ${r.vigilante ? `<div class="extra">👮 ${r.vigilante}</div>`:""}
+        ${r.subtipo ? `<div class="extra">⚠️ ${r.subtipo.replaceAll("_"," ")}</div>`:""}
         ${r.trabajador ? `<div class="extra">👷 ${r.trabajador}</div>`:""}
         ${r.obra ? `<div class="extra">📍 ${r.obra}</div>`:""}
         ${r.origen ? `<div class="extra">🏠 ${r.origen}</div>`:""}
@@ -316,6 +307,7 @@ async function cargar(){
 
   renderGrupo("vecinal","🚨 Incidencias vecinales");
   renderGrupo("trabajador","👷 Incidencias trabajadores / obras");
+  renderGrupo("vigilante","👮 Reportes a vigilantes");
   renderGrupo("agua","💧 Reportes de agua");
   renderGrupo("luminaria","💡 Luminarias");
 
