@@ -142,11 +142,11 @@ async function cargar(){
   try {
 
     // 🔴 INCIDENCIAS VECINALES
-    let {data:inc} = await supabaseClient
-      .from("incidencias_vecinales")
-      .select("*")
-      .gte("fecha_local", inicio+"T00:00:00")
-      .lte("fecha_local", fin+"T23:59:59");
+   let {data: obras} = await supabaseClient
+  .from("reportes_obras")
+  .select("*")
+  .gte("fecha_reporte", inicio + " 00:00:00")
+  .lte("fecha_reporte", fin + " 23:59:59");
 
     inc?.forEach(i=>{
       registros.push({
