@@ -28,6 +28,7 @@ h1 {
   text-align: center;
 }
 
+/* KPIs */
 .kpis {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -52,6 +53,7 @@ h1 {
   margin: 0;
 }
 
+/* Filtros */
 select {
   width: 100%;
   padding: 12px;
@@ -62,6 +64,7 @@ select {
   margin-bottom: 15px;
 }
 
+/* Tabla */
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -78,6 +81,18 @@ select {
   border-bottom: 1px solid #374151;
 }
 
+/* Tipo visual */
+.tipo {
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.sin_servicio { background: #dc2626; }
+.fuga { background: #2563eb; }
+.baja_presion { background: #d97706; }
+
+/* Botón */
 .back {
   display: block;
   margin-top: 20px;
@@ -97,6 +112,7 @@ select {
 
 <h1>💧 Reportes de agua</h1>
 
+<!-- KPIs -->
 <div class="kpis">
   <div class="card">
     <h3>Total</h3>
@@ -107,18 +123,20 @@ select {
     <p id="sinServicio">0</p>
   </div>
   <div class="card">
-    <h3>Fuga</h3>
+    <h3>Fugas</h3>
     <p id="fugas">0</p>
   </div>
 </div>
 
+<!-- FILTRO -->
 <select id="filtroTipo">
   <option value="">Todos</option>
-  <option value="sin servicio">Sin servicio</option>
+  <option value="sin_servicio">Sin servicio</option>
   <option value="fuga">Fuga</option>
-  <option value="baja presion">Baja presión</option>
+  <option value="baja_presion">Baja presión</option>
 </select>
 
+<!-- TABLA -->
 <table class="table">
   <thead>
     <tr>
@@ -147,7 +165,7 @@ const supabaseClient = supabase.createClient(
 
 let datosGlobal = [];
 
-// 🔥 CARGAR
+// 🔥 CARGAR DATOS
 async function cargarDatos() {
 
   const { data, error } = await supabaseClient
@@ -172,7 +190,7 @@ function renderTodo(data) {
   document.getElementById("total").innerText = data.length;
 
   document.getElementById("sinServicio").innerText =
-    data.filter(r => normalizar(r.tipo_falla) === "sin servicio").length;
+    data.filter(r => normalizar(r.tipo_falla) === "sin_servicio").length;
 
   document.getElementById("fugas").innerText =
     data.filter(r => normalizar(r.tipo_falla) === "fuga").length;
@@ -193,13 +211,20 @@ function renderTabla(data) {
 
   data.forEach(r => {
 
+    const tipo = r.tipo_falla || "";
+    const clase = tipo;
+
     const row = `
       <tr>
         <td>${formatearFecha(r.fecha_reporte)}</td>
         <td>${r.numero_reporte || "-"}</td>
         <td>${r.privada || "-"}</td>
         <td>${r.casa || "-"}</td>
-        <td>${r.tipo_falla || "-"}</td>
+        <td>
+          <span class="tipo ${clase}">
+            ${formatearTipo(tipo)}
+          </span>
+        </td>
       </tr>
     `;
 
@@ -224,9 +249,16 @@ document.getElementById("filtroTipo").addEventListener("change", (e) => {
   renderTodo(filtrados);
 });
 
-// 🔥 NORMALIZADOR
+// 🔥 NORMALIZAR
 function normalizar(texto) {
   return (texto || "").toLowerCase().trim();
+}
+
+// 🔥 FORMATEAR TIPO
+function formatearTipo(tipo) {
+  return (tipo || "")
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, l => l.toUpperCase());
 }
 
 // 🔥 FECHA
