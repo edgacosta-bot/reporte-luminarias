@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión de servicios</title>
+
+<style>
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI';
+  background: linear-gradient(135deg,#020617,#0f172a);
+  color: white;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
+
+h2 {
+  text-align: center;
+}
+
+/* 🔥 FORM */
+.form {
+  background: #111827;
+  padding: 16px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #1f2937;
+  color: white;
+  margin-bottom: 10px;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-add {
+  background: #2563eb;
+}
+
+/* 🔥 CARDS */
+.card {
+  background: #111827;
+  padding: 16px;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  border-left: 6px solid;
+}
+
+.activo { border-color: #16a34a; }
+.inactivo { border-color: #dc2626; }
+
+.nombre {
+  font-weight: bold;
+}
+
+.estado {
+  font-size: 13px;
+  margin-top: 4px;
+  color: #94a3b8;
+}
+
+.fecha {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* 🔥 BOTONES */
+.btn-des {
+  background: #dc2626;
+  margin-top: 10px;
+}
+
+.btn-act {
+  background: #16a34a;
+  margin-top: 10px;
+}
+
+.msg {
+  text-align: center;
+  margin-top: 10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>⚙️ Servicios recurrentes</h2>
+
+<div class="form">
+  <input id="nombre" placeholder="Nombre del servicio">
+  <input id="tipo" placeholder="Tipo (opcional)">
+  <button class="btn-add" onclick="crear()">Agregar servicio</button>
+  <div id="msg" class="msg"></div>
+</div>
+
+<div id="lista">Cargando...</div>
+
+</div>
+
+<script>
+
+window.addEventListener("DOMContentLoaded", async ()=>{
+  await protegerPagina(["admin","administracion"]);
+  cargar();
+});
+
+function formatoMX(f){
+  return new Date(f).toLocaleString("es-MX");
+}
+
+// 🔹 CREAR
+async function crear(){
+
+  const nombre = document.getElementById("nombre").value.trim();
+  const tipo = document.getElementById("tipo").value.trim();
+
+  if(!nombre){
+    alert("Nombre requerido");
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("catalogo_servicios")
+    .insert([{
+      nombre,
+      tipo,
+      created_at: new Date().toISOString()
+    }]);
+
+  if(error){
+    document.getElementById("msg").innerText = "Ya existe o error";
+    return;
+  }
+
+  document.getElementById("nombre").value = "";
+  document.getElementById("tipo").value = "";
+
+  cargar();
+}
+
+// 🔹 CARGAR
+async function cargar(){
+
+  const { data } = await supabaseClient
+    .from("catalogo_servicios")
+    .select("*")
+    .order("created_at",{ascending:false});
+
+  let html="";
+
+  data.forEach(s=>{
+
+    html += `
+    <div class="card ${s.activo ? "activo":"inactivo"}">
+
+      <div class="nombre">${s.nombre}</div>
+
+      <div class="estado">
+        ${s.activo ? "🟢 Activo":"🔴 Inactivo"}
+      </div>
+
+      <div class="fecha">
+        Alta: ${formatoMX(s.created_at)}
+      </div>
+
+      ${
+        s.desactivado_at
+        ? `<div class="fecha">Baja: ${formatoMX(s.desactivado_at)}</div>`
+        : ""
+      }
+
+      ${
+        s.activo
+        ? `<button class="btn-des" onclick="desactivar('${s.id}')">Desactivar</button>`
+        : `<button class="btn-act" onclick="activar('${s.id}')">Activar</button>`
+      }
+
+    </div>`;
+  });
+
+  document.getElementById("lista").innerHTML = html;
+}
+
+// 🔹 DESACTIVAR
+async function desactivar(id){
+
+  await supabaseClient
+    .from("catalogo_servicios")
+    .update({
+      activo:false,
+      desactivado_at:new Date().toISOString()
+    })
+    .eq("id",id);
+
+  cargar();
+}
+
+// 🔹 ACTIVAR
+async function activar(id){
+
+  await supabaseClient
+    .from("catalogo_servicios")
+    .update({
+      activo:true,
+      desactivado_at:null
+    })
+    .eq("id",id);
+
+  cargar();
+}
+
+</script>
+
+</body>
+</html>
