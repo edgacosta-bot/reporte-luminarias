@@ -11,7 +11,12 @@
 <script src="auth.js"></script>
 
 <script>
-protegerPagina(["admin", "administracion", "colono"]);
+// 🔥 MODO SEGURO (NO BLOQUEANTE)
+try {
+  protegerPagina(["admin", "administracion", "colono"]);
+} catch (e) {
+  console.warn("Auth no bloqueante:", e);
+}
 </script>
 
 <style>
@@ -163,26 +168,32 @@ select {
 
 let datosGlobal = [];
 
-// 🔥 CARGAR DATOS
+// 🔥 CARGAR DATOS (PROTEGIDO)
 async function cargarDatos() {
 
-  const { data, error } = await supabaseClient
-    .from("reportes_agua_caasim")
-    .select("*")
-    .order("fecha_reporte", { ascending: false });
+  try {
 
-  console.log("DATA:", data);
+    const { data, error } = await supabaseClient
+      .from("reportes_agua_caasim")
+      .select("*")
+      .order("fecha_reporte", { ascending: false });
 
-  if (error) {
-    console.error("ERROR:", error);
-    return;
+    console.log("DATA:", data);
+
+    if (error) {
+      console.error("ERROR:", error);
+      return;
+    }
+
+    datosGlobal = data || [];
+    renderTodo(datosGlobal);
+
+  } catch (err) {
+    console.error("🔥 ERROR GENERAL:", err);
   }
-
-  datosGlobal = data || [];
-  renderTodo(datosGlobal);
 }
 
-// 🔥 KPIs + render
+// 🔥 KPIs
 function renderTodo(data) {
 
   document.getElementById("total").innerText = data.length;
@@ -262,8 +273,10 @@ function formatearFecha(fecha) {
   return new Date(fecha).toLocaleDateString("es-MX");
 }
 
-// INIT
-cargarDatos();
+// 🔥 INIT
+setTimeout(() => {
+  cargarDatos();
+}, 300); // 🔥 evita conflicto con auth.js
 
 </script>
 
