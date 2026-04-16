@@ -19,6 +19,12 @@ body {
 .container { max-width: 520px; margin: auto; padding: 20px; }
 h2 { text-align: center; }
 
+.section-title {
+  margin-top: 25px;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
 .label { font-size: 13px; color: #475569; }
 .input-group { margin-bottom: 15px; }
 
@@ -101,6 +107,19 @@ button {
 
 <script>
 
+// 🔥 FUNCIÓN CLAVE (UTC FIX)
+function toUTC(date, end=false){
+  const d = new Date(date);
+
+  if(end){
+    d.setHours(23,59,59,999);
+  } else {
+    d.setHours(0,0,0,0);
+  }
+
+  return new Date(d.getTime() + (6 * 60 * 60 * 1000)).toISOString();
+}
+
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["admin","administracion"]);
 });
@@ -114,6 +133,9 @@ async function cargar(){
     alert("Selecciona fechas");
     return;
   }
+
+  const inicioUTC = toUTC(inicio);
+  const finUTC = toUTC(fin, true);
 
   let registros=[];
 
@@ -129,6 +151,7 @@ async function cargar(){
     inc?.forEach(i=>{
       registros.push({
         tipo:"incidencia",
+        grupo:"vecinal",
         titulo:"Incidencia vecinal",
         descripcion:i.descripcion,
         hora:i.fecha_local,
@@ -136,12 +159,12 @@ async function cargar(){
       });
     });
 
-    // 🔴 INCIDENCIAS TRABAJADORES (MEJORADO)
+    // 🔴 TRABAJADORES (FIX UTC)
     let {data:trab} = await supabaseClient
       .from("incidencias_trabajadores")
       .select("*")
-      .gte("fecha", inicio+"T00:00:00")
-      .lte("fecha", fin+"T23:59:59");
+      .gte("fecha", inicioUTC)
+      .lte("fecha", finUTC);
 
     const ids = [...new Set((trab || []).map(i=>i.trabajador_id).filter(Boolean))];
 
@@ -161,52 +184,53 @@ async function cargar(){
 
       registros.push({
         tipo:"incidencia",
+        grupo:"trabajador",
         titulo:"Incidencia trabajador",
-        subtipo: i.tipo,
+        subtipo:i.tipo,
         descripcion:i.descripcion,
         hora: i.fecha_local || i.fecha,
-        trabajador: t?.nombre || "Sin identificar",
-        obra: t ? `Privada ${t.privada} - Casa ${t.casa}` : "Sin obra"
+        trabajador:t?.nombre,
+        obra: t ? `Privada ${t.privada} - Casa ${t.casa}` : null
       });
     });
 
-    // 💧 AGUA
+    // 💧 AGUA (FIX UTC)
     let {data:agua} = await supabaseClient
       .from("reportes_agua_caasim")
-      .select("*");
+      .select("*")
+      .gte("fecha_registro", inicioUTC)
+      .lte("fecha_registro", finUTC);
 
     agua?.forEach(i=>{
-      if(i.fecha_registro >= inicio+"T00:00:00" &&
-         i.fecha_registro <= fin+"T23:59:59"){
-        registros.push({
-          tipo:"agua",
-          titulo:"Reporte agua",
-          descripcion:i.tipo_falla,
-          hora:i.fecha_registro,
-          origen:`${i.privada}-${i.numero_exterior}`
-        });
-      }
+      registros.push({
+        tipo:"agua",
+        grupo:"agua",
+        titulo:"Reporte agua",
+        descripcion:i.tipo_falla,
+        hora:i.fecha_registro,
+        origen:`${i.privada}-${i.numero_exterior}`
+      });
     });
 
-    // 💡 LUMINARIAS
+    // 💡 LUMINARIAS (FIX UTC)
     let {data:luminarias} = await supabaseClient
       .from("vista_reportes_luminarias")
-      .select("*");
+      .select("*")
+      .gte("fecha_reporte", inicioUTC)
+      .lte("fecha_reporte", finUTC);
 
     luminarias?.forEach(i=>{
-      if(i.fecha_reporte >= inicio+"T00:00:00" &&
-         i.fecha_reporte <= fin+"T23:59:59"){
-        registros.push({
-          tipo:"luminaria",
-          titulo:`Luminaria #${i.no_luminaria}`,
-          descripcion:i.descripcion,
-          hora:i.fecha_reporte
-        });
-      }
+      registros.push({
+        tipo:"luminaria",
+        grupo:"luminaria",
+        titulo:`Luminaria #${i.no_luminaria}`,
+        descripcion:i.descripcion,
+        hora:i.fecha_reporte
+      });
     });
 
   } catch (e) {
-    console.error("ERROR GLOBAL:", e);
+    console.error(e);
   }
 
   // KPIs
@@ -222,27 +246,39 @@ async function cargar(){
   document.getElementById("total").innerText =
     registros.length+" Total";
 
-  registros.sort((a,b)=> new Date(b.hora)-new Date(a.hora));
-
   let html="";
 
-  registros.forEach(r=>{
-    const fechaLocal = new Date(r.hora).toLocaleString("es-MX");
+  function renderGrupo(grupo, titulo){
 
-    html+=`<div class="item ${r.tipo}">
-      <b>${r.titulo}</b>
-      <div class="hora">${fechaLocal}</div>
+    const datos = registros
+      .filter(r=>r.grupo===grupo)
+      .sort((a,b)=> new Date(b.hora)-new Date(a.hora));
 
-      ${r.trabajador ? `<div class="extra">👷 ${r.trabajador}</div>`:""}
-      ${r.obra ? `<div class="extra">📍 ${r.obra}</div>`:""}
-      ${r.subtipo ? `<div class="extra">⚠️ ${r.subtipo}</div>`:""}
+    if(!datos.length) return;
 
-      ${r.origen ? `<div class="extra">🏠 ${r.origen}</div>`:""}
-      ${r.calle ? `<div class="extra">📍 ${r.calle}</div>`:""}
+    html += `<div class="section-title">${titulo}</div>`;
 
-      <div class="extra">${r.descripcion}</div>
-    </div>`;
-  });
+    datos.forEach(r=>{
+      const fechaLocal = new Date(r.hora).toLocaleString("es-MX");
+
+      html+=`<div class="item ${r.tipo}">
+        <b>${r.titulo}</b>
+        <div class="hora">${fechaLocal}</div>
+
+        ${r.trabajador ? `<div class="extra">👷 ${r.trabajador}</div>`:""}
+        ${r.obra ? `<div class="extra">📍 ${r.obra}</div>`:""}
+        ${r.subtipo ? `<div class="extra">⚠️ ${r.subtipo}</div>`:""}
+        ${r.origen ? `<div class="extra">🏠 ${r.origen}</div>`:""}
+
+        <div class="extra">${r.descripcion}</div>
+      </div>`;
+    });
+  }
+
+  renderGrupo("vecinal","🚨 Incidencias vecinales");
+  renderGrupo("trabajador","👷 Incidencias trabajadores");
+  renderGrupo("agua","💧 Reportes de agua");
+  renderGrupo("luminaria","💡 Luminarias");
 
   document.getElementById("lista").innerHTML = html || "Sin resultados";
 }
