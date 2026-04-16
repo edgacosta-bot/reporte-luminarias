@@ -222,12 +222,9 @@ async function obtenerUsuario(){
   casa = res?.casa;
 }
 
-/* 🔥 RANGOS RÁPIDOS */
 function rangoRapido(dias){
-
   let hoy = new Date();
   let inicio = new Date();
-
   inicio.setDate(hoy.getDate() - dias);
 
   document.getElementById("inicio").value = inicio.toISOString().split("T")[0];
@@ -268,7 +265,7 @@ async function cargar(){
     });
   });
 
-  /* OBRAS */
+  /* OBRAS + TRABAJADOR */
   let queryObras = supabaseClient
     .from("reportes_obras")
     .select("*")
@@ -287,12 +284,40 @@ async function cargar(){
 
   const { data: obras } = await queryObras;
 
-  obras?.forEach(i=>{
+  let trabajadoresMap = {};
+
+  if (obras && obras.length > 0) {
+    const ids = obras.map(o => o.trabajador_id).filter(Boolean);
+
+    if (ids.length > 0) {
+      const { data: trabajadores } = await supabaseClient
+        .from("trabajadores_obra")
+        .select("id,nombre,privada,casa")
+        .in("id", ids);
+
+      trabajadores?.forEach(t => {
+        trabajadoresMap[t.id] = t;
+      });
+    }
+  }
+
+  obras?.forEach(i => {
+
+    const trabajador = trabajadoresMap[i.trabajador_id];
+
+    let nombreTrabajador = trabajador?.nombre || null;
+
+    let obraTexto = trabajador
+      ? `${trabajador.privada || ""} - ${trabajador.casa || ""}`
+      : `${i.privada || ""} - ${i.casa || ""}`;
+
     registros.push({
       tipo:"obra",
       id:i.id,
       descripcion:i.descripcion,
-      fecha:i.fecha_reporte
+      fecha:i.fecha_reporte,
+      trabajador: nombreTrabajador,
+      obra: obraTexto
     });
   });
 
@@ -317,6 +342,14 @@ async function cargar(){
       <div class="item ${r.tipo}">
         <b>${r.tipo.toUpperCase()}</b>
         <div>${r.descripcion}</div>
+
+        ${r.tipo === "obra" ? `
+        <div style="font-size:13px;color:#9ca3af;margin-top:5px;line-height:1.4;">
+        🏠 ${r.obra}<br>
+        ${r.trabajador ? `👷 ${r.trabajador}` : ""}
+        </div>
+        ` : ""}
+
         <div class="fecha">${new Date(r.fecha).toLocaleString("es-MX")}</div>
 
         ${puedeEvaluar ? `<button onclick="abrir('${r.id}')">Evaluar atención</button>`:""}
