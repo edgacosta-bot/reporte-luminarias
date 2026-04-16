@@ -140,8 +140,8 @@ async function cargar(){
     let {data:trab} = await supabaseClient
       .from("incidencias_trabajadores")
       .select("*")
-      .gte("fecha_local", inicio+"T00:00:00")
-      .lte("fecha_local", fin+"T23:59:59");
+      .gte("fecha", inicio+"T00:00:00")
+      .lte("fecha", fin+"T23:59:59");
 
     const ids = [...new Set((trab || []).map(i=>i.trabajador_id).filter(Boolean))];
 
@@ -161,11 +161,12 @@ async function cargar(){
 
       registros.push({
         tipo:"incidencia",
-        titulo:`Incidencia trabajador (${i.tipo})`,
+        titulo:"Incidencia trabajador",
+        subtipo: i.tipo,
         descripcion:i.descripcion,
-        hora:i.fecha_local,
-        trabajador:t?.nombre || null,
-        obra: t ? `Privada ${t.privada} - Casa ${t.casa}` : null
+        hora: i.fecha_local || i.fecha,
+        trabajador: t?.nombre || "Sin identificar",
+        obra: t ? `Privada ${t.privada} - Casa ${t.casa}` : "Sin obra"
       });
     });
 
@@ -205,9 +206,10 @@ async function cargar(){
     });
 
   } catch (e) {
-    console.error(e);
+    console.error("ERROR GLOBAL:", e);
   }
 
+  // KPIs
   document.getElementById("inc").innerText =
     registros.filter(r=>r.tipo==="incidencia").length+" Incidencias";
 
@@ -230,9 +232,14 @@ async function cargar(){
     html+=`<div class="item ${r.tipo}">
       <b>${r.titulo}</b>
       <div class="hora">${fechaLocal}</div>
+
       ${r.trabajador ? `<div class="extra">👷 ${r.trabajador}</div>`:""}
       ${r.obra ? `<div class="extra">📍 ${r.obra}</div>`:""}
+      ${r.subtipo ? `<div class="extra">⚠️ ${r.subtipo}</div>`:""}
+
       ${r.origen ? `<div class="extra">🏠 ${r.origen}</div>`:""}
+      ${r.calle ? `<div class="extra">📍 ${r.calle}</div>`:""}
+
       <div class="extra">${r.descripcion}</div>
     </div>`;
   });
