@@ -119,7 +119,7 @@ async function cargar(){
 
   try {
 
-    // 🔴 INCIDENCIAS VECINALES (SIN CAMBIO)
+    // 🔴 INCIDENCIAS VECINALES
     let {data:inc} = await supabaseClient
       .from("incidencias_vecinales")
       .select("*")
@@ -137,12 +137,18 @@ async function cargar(){
       });
     });
 
-    // 🔴 REPORTES OBRA (USANDO AJUSTE)
-    let {data:obras} = await supabaseClient
+    // 🔴 REPORTES DE OBRA (FIX DEFINITIVO)
+    let inicioObra = inicio + " 00:00:00";
+    let finObra = fin + " 23:59:59";
+
+    let {data:obras, error:errObras} = await supabaseClient
       .from("reportes_obras")
       .select("*")
-      .gte("fecha_reporte", fechaInicioAjustada(inicio))
-      .lte("fecha_reporte", fechaFinAjustada(fin));
+      .gte("fecha_reporte", inicioObra)
+      .lte("fecha_reporte", finObra);
+
+    console.log("OBRAS:", obras);
+    console.log("ERROR OBRAS:", errObras);
 
     obras?.forEach(i=>{
       registros.push({
@@ -154,7 +160,7 @@ async function cargar(){
       });
     });
 
-    // 🔴 TRABAJADORES (UTC)
+    // 🔴 TRABAJADORES
     let {data:trab} = await supabaseClient
       .from("incidencias_trabajadores")
       .select("*")
@@ -188,7 +194,7 @@ async function cargar(){
       });
     });
 
-    // 💧 AGUA (UTC)
+    // 💧 AGUA
     let {data:agua} = await supabaseClient
       .from("reportes_agua_caasim")
       .select("*")
@@ -206,7 +212,7 @@ async function cargar(){
       });
     });
 
-    // 💡 LUMINARIAS (UTC)
+    // 💡 LUMINARIAS
     let {data:luminarias} = await supabaseClient
       .from("vista_reportes_luminarias")
       .select("*")
