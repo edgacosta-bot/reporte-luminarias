@@ -23,6 +23,21 @@ h2 {
   text-align: center;
 }
 
+/* 🔹 AVISO */
+.aviso {
+  background: #1f2937;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #d1d5db;
+}
+
+.aviso b {
+  color: #ffffff;
+}
+
 .input-fecha {
   width: 100%;
   padding: 12px;
@@ -73,6 +88,14 @@ h2 {
 
 <h2>📋 Mis reportes</h2>
 
+<!-- 🔥 AVISO INTEGRADO -->
+<div class="aviso">
+  <b>Estimado residente:</b><br><br>
+  Después de 5 días de haber realizado su reporte, podrá evaluar la atención recibida por parte de la administración.<br><br>
+  Su evaluación nos ayuda a mejorar el servicio.<br><br>
+  Gracias por su apoyo.
+</div>
+
 <div class="label">Selecciona una fecha (opcional)</div>
 <input type="date" id="fecha" class="input-fecha" onchange="cargarReportes()">
 
@@ -88,7 +111,7 @@ h2 {
 
 const supabaseClient = supabase.createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
 let privada = null;
@@ -118,7 +141,8 @@ async function obtenerDatosUsuario() {
 
   privada = residente.privada;
   casa = residente.casa;
-}  
+}
+
 function formatearFechaLocal(fechaISO) {
   if (!fechaISO) return "";
 
