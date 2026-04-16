@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script>
+protegerPagina(["colono","residente"]);
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte a Vigilante</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.card {
+  background: #111827;
+  padding: 25px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+}
+
+h2 {
+  text-align: center;
+}
+
+select, textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: none;
+  background: #1f2937;
+  color: white;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 15px;
+  border-radius: 12px;
+  border: none;
+  background: #dc2626;
+  color: white;
+}
+
+.mensaje {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.error { color: #f87171; }
+.ok { color: #34d399; }
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>👮 Reportar Vigilante</h2>
+
+<select id="vigilante">
+  <option value="">Selecciona vigilante</option>
+</select>
+
+<select id="tipo">
+  <option value="">Tipo de reporte</option>
+</select>
+
+<textarea id="descripcion" placeholder="Describe lo ocurrido..."></textarea>
+
+<button onclick="enviar()">Enviar reporte</button>
+
+<div id="mensaje" class="mensaje"></div>
+
+</div>
+
+<script>
+
+let privada, casa;
+
+/* 🔐 OBTENER RESIDENTE */
+async function obtenerUsuario(){
+
+  const { data } = await supabaseClient.auth.getUser();
+  const userId = data.user.id;
+
+  const { data:res } = await supabaseClient
+    .from("residentes")
+    .select("privada,casa")
+    .eq("user_id", userId)
+    .single();
+
+  privada = res?.privada;
+  casa = res?.casa;
+}
+
+/* 🔥 CATÁLOGO */
+async function cargarCatalogo(){
+
+  const { data } = await supabaseClient
+    .from("catalogo_reportes")
+    .select("subtipo")
+    .eq("categoria","seguridad")
+    .eq("actor_permitido","colono")
+    .eq("activo", true);
+
+  const select = document.getElementById("tipo");
+
+  data?.forEach(i=>{
+    const opt = document.createElement("option");
+    opt.value = i.subtipo;
+    opt.textContent = i.subtipo.replaceAll("_"," ");
+    select.appendChild(opt);
+  });
+}
+
+/* 👮 VIGILANTES */
+async function cargarVigilantes(){
+
+  const { data } = await supabaseClient
+    .from("vigilantes")
+    .select("id,nombre")
+    .eq("activo", true);
+
+  const select = document.getElementById("vigilante");
+
+  data?.forEach(v=>{
+    const opt = document.createElement("option");
+    opt.value = v.id;
+    opt.textContent = v.nombre;
+    select.appendChild(opt);
+  });
+}
+
+/* 🧠 FECHA */
+function fechaMexico(){
+  const now = new Date();
+  return new Date(now.getTime() - (6*60*60*1000));
+}
+
+/* 🚀 ENVIAR */
+async function enviar(){
+
+  const vigilante_id = document.getElementById("vigilante").value;
+  const tipo = document.getElementById("tipo").value;
+  const descripcion = document.getElementById("descripcion").value.trim();
+  const msg = document.getElementById("mensaje");
+
+  msg.className = "mensaje";
+
+  if(!vigilante_id || !tipo || !descripcion){
+    msg.innerText = "Completa todos los campos";
+    msg.classList.add("error");
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("reportes_vigilantes")
+    .insert([{
+      vigilante_id,
+      tipo,
+      descripcion,
+      privada,
+      casa,
+      fecha: fechaMexico().toISOString()
+    }]);
+
+  if(error){
+    msg.innerText = "Error al enviar";
+    msg.classList.add("error");
+    return;
+  }
+
+  msg.innerText = "Reporte enviado correctamente ✅";
+  msg.classList.add("ok");
+
+  document.getElementById("descripcion").value = "";
+}
+
+/* INIT */
+async function init(){
+  await obtenerUsuario();
+  await cargarCatalogo();
+  await cargarVigilantes();
+}
+
+init();
+
+</script>
+
+</body>
+</html>
