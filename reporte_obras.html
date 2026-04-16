@@ -79,7 +79,7 @@ button {
   <option value="">Tipo de reporte</option>
 </select>
 
-<label style="font-size: 13px; color: #9ca3af; display:block; margin-bottom:5px;">
+<label style="font-size: 13px; color: #9ca3af;">
 Obra
 </label>
 
@@ -87,7 +87,7 @@ Obra
   <option value="">Selecciona obra</option>
 </select>
 
-<label style="font-size: 13px; color: #9ca3af; display:block; margin-bottom:5px;">
+<label style="font-size: 13px; color: #9ca3af;">
 Trabajador (opcional)
 </label>
 
@@ -112,7 +112,7 @@ const supabaseClient = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-// 🔐 IDENTIFICAR ACTOR
+// 🔐 ACTOR
 const vigilante_id = localStorage.getItem("vigilante_id");
 const vigilante_nombre = localStorage.getItem("vigilante_nombre");
 
@@ -135,21 +135,14 @@ if (privada && casa) {
 
 // 🔥 CATÁLOGO
 async function cargarCatalogo() {
-
   const select = document.getElementById("tipo");
 
-  const { data, error } = await supabaseClient
+  const { data } = await supabaseClient
     .from("catalogo_reportes")
     .select("subtipo")
     .eq("categoria", "obras")
     .eq("actor_permitido", actor)
-    .eq("activo", true)
-    .order("subtipo");
-
-  if (error) {
-    console.error("Error catálogo:", error);
-    return;
-  }
+    .eq("activo", true);
 
   select.innerHTML = '<option value="">Tipo de reporte</option>';
 
@@ -163,21 +156,15 @@ async function cargarCatalogo() {
   }
 }
 
-// 🔥 OBRAS (CORREGIDO)
+// 🔥 OBRAS (CORRECTO)
 async function cargarObras() {
 
   const select = document.getElementById("obra");
 
-  const { data, error } = await supabaseClient
+  const { data } = await supabaseClient
     .from("obras")
-    .select("id, dro_nombre")
-    .eq("estatus", "activa")
-    .order("dro_nombre");
-
-  if (error) {
-    console.error("Error cargando obras:", error);
-    return;
-  }
+    .select("id, privada, casa")
+    .eq("estatus", "activa");
 
   select.innerHTML = '<option value="">Selecciona obra</option>';
 
@@ -185,7 +172,7 @@ async function cargarObras() {
     data.forEach(item => {
       const option = document.createElement("option");
       option.value = item.id;
-      option.textContent = item.dro_nombre;
+      option.textContent = `Privada ${item.privada} - Casa ${item.casa}`;
       select.appendChild(option);
     });
   }
@@ -201,17 +188,11 @@ document.getElementById("obra").addEventListener("change", async (e) => {
 
   if (!obra_id) return;
 
-  const { data, error } = await supabaseClient
+  const { data } = await supabaseClient
     .from("trabajadores_obra")
     .select("id, nombre")
     .eq("obra_id", obra_id)
-    .eq("activo", true)
-    .order("nombre");
-
-  if (error) {
-    console.error("Error trabajadores:", error);
-    return;
-  }
+    .eq("activo", true);
 
   if (data) {
     data.forEach(item => {
@@ -233,51 +214,40 @@ async function enviarReporte() {
 
   const mensaje = document.getElementById("mensaje");
 
-  mensaje.className = "mensaje";
-
   if (!tipo || !descripcion || !obra_id) {
     mensaje.innerText = "Completa los campos obligatorios";
-    mensaje.classList.add("error");
+    mensaje.className = "mensaje error";
     return;
   }
 
-  try {
+  const dataInsert = {
+    categoria: "obras",
+    tipo,
+    descripcion,
+    trabajador_id: trabajador_id || null,
+    obra_id,
+    estatus: "nuevo",
+    observaciones: descripcion,
+    fecha_reporte: new Date().toISOString()
+  };
 
-    const dataInsert = {
-      categoria: "obras",
-      tipo: tipo,
-      descripcion: descripcion,
-      trabajador_id: trabajador_id || null,
-      obra_id: obra_id,
-      estatus: "nuevo",
-      observaciones: descripcion,
-      fecha_reporte: new Date().toISOString()
-    };
-
-    if (actor === "colono") {
-      dataInsert.privada = privada;
-      dataInsert.casa = casa;
-    }
-
-    const { error } = await supabaseClient
-      .from("reportes_vecinales")
-      .insert([dataInsert]);
-
-    if (error) throw error;
-
-    mensaje.innerText = "Reporte enviado correctamente ✅";
-    mensaje.classList.add("ok");
-
-    document.getElementById("descripcion").value = "";
-    document.getElementById("tipo").value = "";
-    document.getElementById("trabajador").value = "";
-    document.getElementById("obra").value = "";
-
-  } catch (err) {
-    console.error(err);
-    mensaje.innerText = "Error al enviar reporte";
-    mensaje.classList.add("error");
+  if (actor === "colono") {
+    dataInsert.privada = privada;
+    dataInsert.casa = casa;
   }
+
+  const { error } = await supabaseClient
+    .from("reportes_vecinales")
+    .insert([dataInsert]);
+
+  if (error) {
+    mensaje.innerText = "Error al enviar";
+    mensaje.className = "mensaje error";
+    return;
+  }
+
+  mensaje.innerText = "Reporte enviado correctamente ✅";
+  mensaje.className = "mensaje ok";
 }
 
 // INIT
