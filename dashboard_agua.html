@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Agua</title>
+
+<script src="auth.js"></script>
+<script>
+protegerPagina(["admin", "administracion", "colono"]);
+</script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #020617, #0f172a);
+  color: white;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.sub {
+  text-align: center;
+  font-size: 13px;
+  color: #9ca3af;
+  margin-bottom: 20px;
+}
+
+/* KPIs */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: #111827;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.card h3 {
+  font-size: 14px;
+  margin-bottom: 5px;
+  color: #9ca3af;
+}
+
+.card p {
+  font-size: 24px;
+  margin: 0;
+}
+
+/* Filtros */
+.filtros {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+select {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #1f2937;
+  color: white;
+}
+
+/* Tabla */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.table th {
+  background: #1e3a8a;
+  padding: 12px;
+  font-size: 13px;
+}
+
+.table td {
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #374151;
+}
+
+.table tr:hover {
+  background: #1f2937;
+}
+
+/* Tipos */
+.tipo {
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.sin_servicio { background: #dc2626; }
+.fuga { background: #2563eb; }
+.baja_presion { background: #d97706; }
+
+/* Botón */
+.back {
+  display: block;
+  margin-top: 20px;
+  text-align: center;
+  background: #374151;
+  padding: 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: white;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>💧 Reportes de agua</h1>
+<div class="sub">Seguimiento de reportes CAASIM</div>
+
+<!-- KPIs -->
+<div class="kpis">
+  <div class="card">
+    <h3>Total</h3>
+    <p id="total">0</p>
+  </div>
+  <div class="card">
+    <h3>Sin servicio</h3>
+    <p id="sinServicio">0</p>
+  </div>
+  <div class="card">
+    <h3>Fugas</h3>
+    <p id="fugas">0</p>
+  </div>
+</div>
+
+<!-- Filtros -->
+<div class="filtros">
+  <select id="filtroTipo">
+    <option value="">Todos</option>
+    <option value="sin_servicio">Sin servicio</option>
+    <option value="fuga">Fuga</option>
+    <option value="baja_presion">Baja presión</option>
+  </select>
+</div>
+
+<!-- Tabla -->
+<table class="table">
+  <thead>
+    <tr>
+      <th>Fecha</th>
+      <th>No. Reporte</th>
+      <th>Calle</th>
+      <th>Lote</th>
+      <th>Falla</th>
+    </tr>
+  </thead>
+  <tbody id="tabla"></tbody>
+</table>
+
+<a href="index.html" class="back">← Volver</a>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const supabaseClient = supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+);
+
+let datosGlobal = [];
+
+// 🔥 CARGAR DATOS
+async function cargarDatos() {
+
+  const { data, error } = await supabaseClient
+    .from("reportes_agua_caasim")
+    .select("*")
+    .order("fecha_reporte", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  datosGlobal = data;
+  renderTodo(data);
+}
+
+// 🔥 KPIs + TABLA
+function renderTodo(data) {
+
+  document.getElementById("total").innerText = data.length;
+
+  document.getElementById("sinServicio").innerText =
+    data.filter(r => r.tipo_falla === "sin_servicio").length;
+
+  document.getElementById("fugas").innerText =
+    data.filter(r => r.tipo_falla === "fuga").length;
+
+  renderTabla(data);
+}
+
+// 🔥 TABLA
+function renderTabla(data) {
+
+  const tabla = document.getElementById("tabla");
+  tabla.innerHTML = "";
+
+  data.forEach(r => {
+
+    const tipoClase = r.tipo_falla;
+
+    const row = `
+      <tr>
+        <td>${formatearFecha(r.fecha_reporte)}</td>
+        <td>${r.numero_reporte || "-"}</td>
+        <td>${r.calle_id || "-"}</td>
+        <td>${r.numero_exterior || "-"}</td>
+        <td>
+          <span class="tipo ${tipoClase}">
+            ${r.tipo_falla.replace("_"," ")}
+          </span>
+        </td>
+      </tr>
+    `;
+
+    tabla.innerHTML += row;
+  });
+}
+
+// 🔥 FILTRO
+document.getElementById("filtroTipo").addEventListener("change", (e) => {
+
+  const tipo = e.target.value;
+
+  if (!tipo) {
+    renderTodo(datosGlobal);
+    return;
+  }
+
+  const filtrados = datosGlobal.filter(r => r.tipo_falla === tipo);
+  renderTodo(filtrados);
+});
+
+// 🔥 FECHA BONITA
+function formatearFecha(fecha) {
+  const f = new Date(fecha);
+  return f.toLocaleDateString("es-MX", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
+}
+
+// INIT
+cargarDatos();
+
+</script>
+
+</body>
+</html>
