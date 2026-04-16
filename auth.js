@@ -67,7 +67,7 @@ yaValidado = true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 🔥 NUEVO BLOQUE — UTILIDADES DE FECHA (NO ROMPE NADA)
+// 🔥 UTILIDADES DE FECHA (ESTANDARIZADAS)
 ////////////////////////////////////////////////////////////////////////////////
 
 // 🔹 Inicio del día en UTC
@@ -90,17 +90,24 @@ function formatoMX(fecha){
   return new Date(fecha).toLocaleString("es-MX");
 }
 
-// 🔹 TEMPORAL: ajuste especial para tablas mal guardadas (ej: reportes_obras)
+////////////////////////////////////////////////////////////////////////////////
+// 🔥 AJUSTE TEMPORAL PARA reportes_obras (CORREGIDO)
+////////////////////////////////////////////////////////////////////////////////
+
+// ⚠️ NOTA:
+// Esta tabla guarda fechas desplazadas +6h
+// Aquí las regresamos correctamente al día real
+
 function fechaInicioAjustada(fecha){
   const d = new Date(fecha);
   d.setHours(0,0,0,0);
-  d.setHours(d.getHours() + 6);
+  d.setHours(d.getHours() - 6); // 🔥 CORRECCIÓN
   return d.toISOString();
 }
 
 function fechaFinAjustada(fecha){
   const d = new Date(fecha);
   d.setHours(23,59,59,999);
-  d.setHours(d.getHours() + 6);
+  d.setHours(d.getHours() - 6); // 🔥 CORRECCIÓN
   return d.toISOString();
 }
