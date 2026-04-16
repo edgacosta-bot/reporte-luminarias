@@ -6,12 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reportes de agua</title>
 
-<!-- 🔥 ORDEN CORRECTO -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 
 <script>
-// ✅ SOLO AGREGAMOS "residente"
 try {
   protegerPagina(["admin", "administracion", "colono", "residente"]);
 } catch (e) {
@@ -62,16 +60,40 @@ h1 {
   margin: 0;
 }
 
-/* Filtro */
-select {
+/* Filtros */
+.filtros {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+input, select {
   width: 100%;
   padding: 12px;
   border-radius: 10px;
   border: none;
   background: #1f2937;
   color: white;
+}
+
+/* Botones */
+.botones {
+  display: flex;
+  gap: 10px;
   margin-bottom: 15px;
 }
+
+.btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.filtrar { background: #2563eb; color: white; }
+.limpiar { background: #374151; color: white; }
 
 /* Tabla */
 .table {
@@ -101,7 +123,6 @@ select {
 .fuga { background: #2563eb; }
 .baja_presion { background: #d97706; }
 
-/* Botón */
 .back {
   display: block;
   margin-top: 20px;
@@ -138,7 +159,18 @@ select {
   </div>
 </div>
 
-<!-- FILTRO -->
+<!-- 🔥 FILTRO POR FECHA -->
+<div class="filtros">
+  <input type="date" id="fechaInicio">
+  <input type="date" id="fechaFin">
+</div>
+
+<div class="botones">
+  <button class="btn filtrar" onclick="filtrarPorFecha()">Filtrar</button>
+  <button class="btn limpiar" onclick="limpiarFiltro()">Limpiar</button>
+</div>
+
+<!-- FILTRO POR TIPO -->
 <select id="filtroTipo">
   <option value="">Todos</option>
   <option value="sin_servicio">Sin servicio</option>
@@ -167,31 +199,71 @@ select {
 <script>
 
 let datosGlobal = [];
+let datosFiltrados = [];
 
-// 🔥 CARGAR DATOS
 async function cargarDatos() {
 
-  try {
+  const { data, error } = await supabaseClient
+    .from("reportes_agua_caasim")
+    .select("*")
+    .order("fecha_reporte", { ascending: false });
 
-    const { data, error } = await supabaseClient
-      .from("reportes_agua_caasim")
-      .select("*")
-      .order("fecha_reporte", { ascending: false });
-
-    console.log("DATA:", data);
-
-    if (error) {
-      console.error("ERROR:", error);
-      return;
-    }
-
-    datosGlobal = data || [];
-    renderTodo(datosGlobal);
-
-  } catch (err) {
-    console.error("🔥 ERROR GENERAL:", err);
+  if (error) {
+    console.error(error);
+    return;
   }
+
+  datosGlobal = data || [];
+  datosFiltrados = [...datosGlobal];
+
+  renderTodo(datosFiltrados);
 }
+
+// 🔥 FILTRO POR FECHA
+function filtrarPorFecha() {
+
+  const inicio = document.getElementById("fechaInicio").value;
+  const fin = document.getElementById("fechaFin").value;
+
+  datosFiltrados = datosGlobal.filter(r => {
+
+    if (!r.fecha_reporte) return false;
+
+    const fecha = r.fecha_reporte;
+
+    if (inicio && fecha < inicio) return false;
+    if (fin && fecha > fin) return false;
+
+    return true;
+  });
+
+  aplicarFiltroTipo();
+}
+
+// 🔥 LIMPIAR
+function limpiarFiltro() {
+  document.getElementById("fechaInicio").value = "";
+  document.getElementById("fechaFin").value = "";
+  datosFiltrados = [...datosGlobal];
+  aplicarFiltroTipo();
+}
+
+// 🔥 FILTRO TIPO + FECHA
+function aplicarFiltroTipo() {
+
+  const tipo = document.getElementById("filtroTipo").value;
+
+  let data = [...datosFiltrados];
+
+  if (tipo) {
+    data = data.filter(r => normalizar(r.tipo_falla) === tipo);
+  }
+
+  renderTodo(data);
+}
+
+// 🔥 EVENTO TIPO
+document.getElementById("filtroTipo").addEventListener("change", aplicarFiltroTipo);
 
 // 🔥 KPIs
 function renderTodo(data) {
@@ -213,7 +285,7 @@ function renderTabla(data) {
   const tabla = document.getElementById("tabla");
   tabla.innerHTML = "";
 
-  if (!data || data.length === 0) {
+  if (!data.length) {
     tabla.innerHTML = `<tr><td colspan="5">Sin registros</td></tr>`;
     return;
   }
@@ -222,42 +294,19 @@ function renderTabla(data) {
 
     const tipo = r.tipo_falla || "";
 
-    const row = `
+    tabla.innerHTML += `
       <tr>
         <td>${formatearFecha(r.fecha_reporte)}</td>
         <td>${r.numero_reporte || "-"}</td>
         <td>${r.privada || "-"}</td>
-        <td>${r.casa || "-"}</td>
-        <td>
-          <span class="tipo ${tipo}">
-            ${formatearTipo(tipo)}
-          </span>
-        </td>
+        <td>${r.numero_exterior || "-"}</td>
+        <td><span class="tipo ${tipo}">${formatearTipo(tipo)}</span></td>
       </tr>
     `;
-
-    tabla.innerHTML += row;
   });
 }
 
-// 🔥 FILTRO
-document.getElementById("filtroTipo").addEventListener("change", (e) => {
-
-  const tipo = e.target.value;
-
-  if (!tipo) {
-    renderTodo(datosGlobal);
-    return;
-  }
-
-  const filtrados = datosGlobal.filter(r =>
-    normalizar(r.tipo_falla) === tipo
-  );
-
-  renderTodo(filtrados);
-});
-
-// 🔥 HELPERS
+// HELPERS
 function normalizar(texto) {
   return (texto || "").toLowerCase().trim();
 }
@@ -269,14 +318,11 @@ function formatearTipo(tipo) {
 }
 
 function formatearFecha(fecha) {
-  if (!fecha) return "-";
   return new Date(fecha).toLocaleDateString("es-MX");
 }
 
 // INIT
-setTimeout(() => {
-  cargarDatos();
-}, 300);
+setTimeout(cargarDatos, 300);
 
 </script>
 
