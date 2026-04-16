@@ -19,6 +19,12 @@ body {
 .container { max-width: 520px; margin: auto; padding: 20px; }
 h2 { text-align: center; }
 
+.section-title {
+  margin-top: 25px;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
 .label { font-size: 13px; color: #475569; }
 .input-group { margin-bottom: 15px; }
 
@@ -119,7 +125,7 @@ async function cargar(){
 
   try {
 
-    // 🔴 INCIDENCIAS VECINALES
+    // 🔴 VECINAL
     let {data:inc} = await supabaseClient
       .from("incidencias_vecinales")
       .select("*")
@@ -129,6 +135,7 @@ async function cargar(){
     inc?.forEach(i=>{
       registros.push({
         tipo:"incidencia",
+        grupo:"vecinal",
         titulo:"Incidencia vecinal",
         descripcion:i.descripcion,
         hora:i.fecha_local,
@@ -136,7 +143,7 @@ async function cargar(){
       });
     });
 
-    // 🔴 INCIDENCIAS TRABAJADORES (CORRECTO)
+    // 🔴 TRABAJADORES
     let {data:trab} = await supabaseClient
       .from("incidencias_trabajadores")
       .select("*")
@@ -161,12 +168,13 @@ async function cargar(){
 
       registros.push({
         tipo:"incidencia",
+        grupo:"trabajador",
         titulo:"Incidencia trabajador",
-        subtipo: i.tipo,
+        subtipo:i.tipo,
         descripcion:i.descripcion,
-        hora: i.fecha_local || i.fecha,
-        trabajador: t?.nombre || "Sin identificar",
-        obra: t ? `Privada ${t.privada} - Casa ${t.casa}` : "Sin obra"
+        hora:i.fecha_local || i.fecha,
+        trabajador:t?.nombre,
+        obra: t ? `Privada ${t.privada} - Casa ${t.casa}` : null
       });
     });
 
@@ -180,6 +188,7 @@ async function cargar(){
          i.fecha_registro <= fin+"T23:59:59"){
         registros.push({
           tipo:"agua",
+          grupo:"agua",
           titulo:"Reporte agua",
           descripcion:i.tipo_falla,
           hora:i.fecha_registro,
@@ -198,6 +207,7 @@ async function cargar(){
          i.fecha_reporte <= fin+"T23:59:59"){
         registros.push({
           tipo:"luminaria",
+          grupo:"luminaria",
           titulo:`Luminaria #${i.no_luminaria}`,
           descripcion:i.descripcion,
           hora:i.fecha_reporte
@@ -206,7 +216,7 @@ async function cargar(){
     });
 
   } catch (e) {
-    console.error("ERROR GLOBAL:", e);
+    console.error(e);
   }
 
   // KPIs
@@ -222,26 +232,39 @@ async function cargar(){
   document.getElementById("total").innerText =
     registros.length+" Total";
 
-  registros.sort((a,b)=> new Date(b.hora)-new Date(a.hora));
-
   let html="";
 
-  registros.forEach(r=>{
-    const fechaLocal = new Date(r.hora).toLocaleString("es-MX");
+  function renderGrupo(grupo, titulo){
 
-    html+=`<div class="item ${r.tipo}">
-      <b>${r.titulo}</b>
-      <div class="hora">${fechaLocal}</div>
+    const datos = registros
+      .filter(r=>r.grupo===grupo)
+      .sort((a,b)=> new Date(b.hora)-new Date(a.hora));
 
-      ${r.trabajador ? `<div class="extra">👷 ${r.trabajador}</div>`:""}
-      ${r.obra ? `<div class="extra">📍 ${r.obra}</div>`:""}
-      ${r.subtipo ? `<div class="extra">⚠️ ${r.subtipo}</div>`:""}
+    if(!datos.length) return;
 
-      ${r.origen ? `<div class="extra">🏠 ${r.origen}</div>`:""}
+    html += `<div class="section-title">${titulo}</div>`;
 
-      <div class="extra">${r.descripcion}</div>
-    </div>`;
-  });
+    datos.forEach(r=>{
+      const fechaLocal = new Date(r.hora).toLocaleString("es-MX");
+
+      html+=`<div class="item ${r.tipo}">
+        <b>${r.titulo}</b>
+        <div class="hora">${fechaLocal}</div>
+
+        ${r.trabajador ? `<div class="extra">👷 ${r.trabajador}</div>`:""}
+        ${r.obra ? `<div class="extra">📍 ${r.obra}</div>`:""}
+        ${r.subtipo ? `<div class="extra">⚠️ ${r.subtipo}</div>`:""}
+        ${r.origen ? `<div class="extra">🏠 ${r.origen}</div>`:""}
+
+        <div class="extra">${r.descripcion}</div>
+      </div>`;
+    });
+  }
+
+  renderGrupo("vecinal","🚨 Incidencias vecinales");
+  renderGrupo("trabajador","👷 Incidencias trabajadores");
+  renderGrupo("agua","💧 Reportes de agua");
+  renderGrupo("luminaria","💡 Luminarias");
 
   document.getElementById("lista").innerHTML = html || "Sin resultados";
 }
