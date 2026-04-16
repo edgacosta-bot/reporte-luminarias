@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
+<!-- 🔥 USAR CLIENTE GLOBAL -->
+<script src="auth.js"></script>
+<script>
+protegerPagina(["colono","residente"]);
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mis reportes</title>
@@ -88,7 +95,7 @@ h2 {
 
 <h2>📋 Mis reportes</h2>
 
-<!-- 🔥 AVISO INTEGRADO -->
+<!-- 🔥 AVISO -->
 <div class="aviso">
   <b>Estimado residente:</b><br><br>
   Después de 5 días de haber realizado su reporte, podrá evaluar la atención recibida por parte de la administración.<br><br>
@@ -105,14 +112,7 @@ h2 {
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
-
-const supabaseClient = supabase.createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
 
 let privada = null;
 let casa = null;
