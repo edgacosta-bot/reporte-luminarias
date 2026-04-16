@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accesos recurrentes</title>
+
+<style>
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI';
+  background: linear-gradient(135deg,#020617,#0f172a);
+  color: white;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+/* 🔥 CARD */
+.card {
+  background: #111827;
+  padding: 16px;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  border-left: 6px solid #3b82f6;
+}
+
+.nombre {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.estado {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* 🔥 INPUT */
+input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  margin-top: 10px;
+  background: #1f2937;
+  color: white;
+}
+
+/* 🔥 BOTONES */
+.btn {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  width: 100%;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.entrada { background: #16a34a; }
+.salida { background: #dc2626; }
+
+.msg {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🚧 Accesos recurrentes</h2>
+
+<div id="lista">Cargando...</div>
+
+</div>
+
+<script>
+
+window.addEventListener("DOMContentLoaded", async ()=>{
+  await protegerPagina(["vigilante","admin"]);
+  cargarServicios();
+});
+
+// 🔹 CARGAR SERVICIOS
+async function cargarServicios(){
+
+  const { data } = await supabaseClient
+    .from("catalogo_servicios")
+    .select("*")
+    .eq("activo", true)
+    .order("nombre");
+
+  let html="";
+
+  for(const s of data){
+
+    // verificar si hay registro abierto
+    const { data: abierto } = await supabaseClient
+      .from("accesos_servicios")
+      .select("*")
+      .eq("servicio_id", s.id)
+      .is("fecha_salida", null)
+      .limit(1);
+
+    html += `
+    <div class="card">
+
+      <div class="nombre">${s.nombre}</div>
+
+      ${
+        abierto?.length
+        ? `
+          <div class="estado">
+            🟢 Entrada: ${new Date(abierto[0].fecha_entrada).toLocaleString("es-MX")}
+          </div>
+
+          <button class="btn salida"
+            onclick="registrarSalida('${abierto[0].id}')">
+            Registrar salida
+          </button>
+        `
+        : `
+          <input id="persona_${s.id}" placeholder="Nombre de quien ingresa">
+
+          <button class="btn entrada"
+            onclick="registrarEntrada('${s.id}')">
+            Registrar entrada
+          </button>
+        `
+      }
+
+    </div>`;
+  }
+
+  document.getElementById("lista").innerHTML = html || "Sin servicios";
+}
+
+// 🔹 ENTRADA
+async function registrarEntrada(servicio_id){
+
+  const nombre = document.getElementById("persona_"+servicio_id).value;
+
+  if(!nombre){
+    alert("Ingresa nombre");
+    return;
+  }
+
+  const { data:userData } = await supabaseClient.auth.getUser();
+
+  await supabaseClient
+    .from("accesos_servicios")
+    .insert([{
+      servicio_id,
+      nombre_persona: nombre,
+      fecha_entrada: new Date().toISOString(),
+      registrado_por: userData.user.id
+    }]);
+
+  cargarServicios();
+}
+
+// 🔹 SALIDA
+async function registrarSalida(id){
+
+  await supabaseClient
+    .from("accesos_servicios")
+    .update({
+      fecha_salida: new Date().toISOString()
+    })
+    .eq("id", id);
+
+  cargarServicios();
+}
+
+</script>
+
+</body>
+</html>
