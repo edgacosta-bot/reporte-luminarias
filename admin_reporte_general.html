@@ -155,15 +155,18 @@ async function cargar(){
       });
     });
 
-    // 🔴 REPORTES DE OBRA (ROBUSTO)
-    let inicioObra = inicio + " 00:00:00";
-    let finObra = fin + " 23:59:59";
+    // 🔴 REPORTES DE OBRA (FIX DEFINITIVO UTC)
+    let inicioObra = new Date(inicio + "T00:00:00");
+    let finObra = new Date(fin + "T23:59:59");
+
+    // 🔥 clave: extender rango 1 día
+    finObra.setDate(finObra.getDate() + 1);
 
     let {data:obras, error:errObras} = await supabaseClient
       .from("reportes_obras")
       .select("*")
-      .gte("fecha_reporte", inicioObra)
-      .lte("fecha_reporte", finObra);
+      .gte("fecha_reporte", inicioObra.toISOString())
+      .lt("fecha_reporte", finObra.toISOString());
 
     console.log("OBRAS:", obras);
     console.log("ERROR OBRAS:", errObras);
@@ -177,17 +180,12 @@ async function cargar(){
       let mapaTrabObra = {};
 
       if(idsObra.length > 0){
-        const {data:trabajadores, error:errTrab} = await supabaseClient
+        const {data:trabajadores} = await supabaseClient
           .from("trabajadores_obra")
           .select("id, nombre, privada, casa")
           .in("id", idsObra);
 
-        console.log("TRABAJADORES:", trabajadores);
-        console.log("ERROR TRAB:", errTrab);
-
-        if(trabajadores){
-          trabajadores.forEach(t => mapaTrabObra[t.id]=t);
-        }
+        trabajadores?.forEach(t => mapaTrabObra[t.id]=t);
       }
 
       obras.forEach(i=>{
