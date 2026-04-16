@@ -155,42 +155,56 @@ async function cargar(){
       });
     });
 
-    // 🔴 REPORTES DE OBRA (COMPLETO)
+    // 🔴 REPORTES DE OBRA (ROBUSTO)
     let inicioObra = inicio + " 00:00:00";
     let finObra = fin + " 23:59:59";
 
-    let {data:obras} = await supabaseClient
+    let {data:obras, error:errObras} = await supabaseClient
       .from("reportes_obras")
       .select("*")
       .gte("fecha_reporte", inicioObra)
       .lte("fecha_reporte", finObra);
 
-    const idsObra = [...new Set((obras || []).map(o => o.trabajador_id).filter(Boolean))];
+    console.log("OBRAS:", obras);
+    console.log("ERROR OBRAS:", errObras);
 
-    let mapaTrabObra = {};
+    if(obras && obras.length > 0){
 
-    if(idsObra.length > 0){
-      const {data:trabajadores} = await supabaseClient
-        .from("trabajadores_obra")
-        .select("id, nombre, privada, casa")
-        .in("id", idsObra);
+      const idsObra = [...new Set(
+        obras.map(o => o.trabajador_id).filter(Boolean)
+      )];
 
-      trabajadores?.forEach(t => mapaTrabObra[t.id]=t);
-    }
+      let mapaTrabObra = {};
 
-    (obras || []).forEach(i=>{
-      const t = mapaTrabObra[i.trabajador_id];
+      if(idsObra.length > 0){
+        const {data:trabajadores, error:errTrab} = await supabaseClient
+          .from("trabajadores_obra")
+          .select("id, nombre, privada, casa")
+          .in("id", idsObra);
 
-      registros.push({
-        tipo:"incidencia",
-        grupo:"trabajador",
-        titulo:"Reporte de obra",
-        descripcion:i.descripcion,
-        hora:i.fecha_reporte,
-        trabajador: t?.nombre || null,
-        obra: t ? `Privada ${t.privada} - Casa ${t.casa}` : null
+        console.log("TRABAJADORES:", trabajadores);
+        console.log("ERROR TRAB:", errTrab);
+
+        if(trabajadores){
+          trabajadores.forEach(t => mapaTrabObra[t.id]=t);
+        }
+      }
+
+      obras.forEach(i=>{
+        const t = mapaTrabObra[i.trabajador_id];
+
+        registros.push({
+          tipo:"incidencia",
+          grupo:"trabajador",
+          titulo:"Reporte de obra",
+          descripcion:i.descripcion,
+          hora:i.fecha_reporte,
+          trabajador: t?.nombre || null,
+          obra: t ? `Privada ${t.privada} - Casa ${t.casa}` : null
+        });
       });
-    });
+
+    }
 
     // 🔴 INCIDENCIAS TRABAJADORES
     let {data:trab} = await supabaseClient
