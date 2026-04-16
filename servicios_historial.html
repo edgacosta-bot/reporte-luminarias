@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Servicios del fraccionamiento</title>
+
+<style>
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI';
+  background: linear-gradient(135deg,#020617,#0f172a);
+  color: white;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
+
+/* 🔥 INFO */
+.info {
+  background: #111827;
+  padding: 15px;
+  border-radius: 14px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #cbd5f5;
+}
+
+/* 🔥 INPUTS */
+input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: #1f2937;
+  color: white;
+  margin-bottom: 10px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* 🔥 CARD */
+.card {
+  background: #111827;
+  padding: 15px;
+  border-radius: 14px;
+  margin-top: 12px;
+  border-left: 6px solid #3b82f6;
+}
+
+.nombre {
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.detalle {
+  font-size: 13px;
+  margin-top: 4px;
+  color: #cbd5f5;
+}
+
+.hora {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.estado {
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="info">
+Consulta los servicios que han ingresado al fraccionamiento.<br>
+Puede verificar horarios y personal que realizó el acceso.
+</div>
+
+<input type="date" id="inicio">
+<input type="date" id="fin">
+
+<button onclick="cargar()">Consultar</button>
+
+<div id="lista"></div>
+
+</div>
+
+<script>
+
+window.addEventListener("DOMContentLoaded", async ()=>{
+  await protegerPagina(["residente","colono"]);
+});
+
+function formatoMX(f){
+  return new Date(f).toLocaleString("es-MX");
+}
+
+function inicioUTC(f){
+  return new Date(f+"T00:00:00").toISOString();
+}
+
+function finUTC(f){
+  return new Date(f+"T23:59:59").toISOString();
+}
+
+// 🔹 CARGAR
+async function cargar(){
+
+  const inicio = document.getElementById("inicio").value;
+  const fin = document.getElementById("fin").value;
+
+  if(!inicio || !fin){
+    alert("Selecciona fechas");
+    return;
+  }
+
+  const { data } = await supabaseClient
+    .from("accesos_servicios")
+    .select(`
+      *,
+      catalogo_servicios(nombre)
+    `)
+    .gte("fecha_entrada", inicioUTC(inicio))
+    .lte("fecha_entrada", finUTC(fin))
+    .order("fecha_entrada",{ascending:false});
+
+  let html="";
+
+  data.forEach(r=>{
+
+    html += `
+    <div class="card">
+
+      <div class="nombre">
+        🚛 ${r.catalogo_servicios.nombre}
+      </div>
+
+      <div class="detalle">
+        👤 ${r.nombre_persona || "Sin nombre"}
+      </div>
+
+      <div class="hora">
+        🟢 Entrada: ${formatoMX(r.fecha_entrada)}
+      </div>
+
+      <div class="hora">
+        ${
+          r.fecha_salida
+          ? `🔴 Salida: ${formatoMX(r.fecha_salida)}`
+          : "⚠️ En sitio"
+        }
+      </div>
+
+    </div>`;
+  });
+
+  document.getElementById("lista").innerHTML =
+    html || "Sin registros";
+
+}
+
+</script>
+
+</body>
+</html>
