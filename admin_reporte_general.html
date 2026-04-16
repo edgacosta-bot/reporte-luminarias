@@ -19,12 +19,7 @@ body {
 .container { max-width: 520px; margin: auto; padding: 20px; }
 h2 { text-align: center; }
 
-.section-title {
-  margin-top: 25px;
-  margin-bottom: 10px;
-  font-size: 16px;
-}
-
+.section-title { margin-top: 25px; margin-bottom: 10px; font-size: 16px; }
 .label { font-size: 13px; color: #475569; }
 .input-group { margin-bottom: 15px; }
 
@@ -107,16 +102,10 @@ button {
 
 <script>
 
-// 🔥 FUNCIÓN CLAVE (UTC FIX)
 function toUTC(date, end=false){
   const d = new Date(date);
-
-  if(end){
-    d.setHours(23,59,59,999);
-  } else {
-    d.setHours(0,0,0,0);
-  }
-
+  if(end){ d.setHours(23,59,59,999); }
+  else { d.setHours(0,0,0,0); }
   return new Date(d.getTime() + (6 * 60 * 60 * 1000)).toISOString();
 }
 
@@ -141,12 +130,12 @@ async function cargar(){
 
   try {
 
-    // 🔴 INCIDENCIAS VECINALES
-   let {data: obras} = await supabaseClient
-  .from("reportes_obras")
-  .select("*")
-  .gte("fecha_reporte", inicio + " 00:00:00")
-  .lte("fecha_reporte", fin + " 23:59:59");
+    // ✅ INCIDENCIAS VECINALES (RESTAURADO)
+    let {data:inc} = await supabaseClient
+      .from("incidencias_vecinales")
+      .select("*")
+      .gte("fecha_local", inicio+"T00:00:00")
+      .lte("fecha_local", fin+"T23:59:59");
 
     inc?.forEach(i=>{
       registros.push({
@@ -159,7 +148,24 @@ async function cargar(){
       });
     });
 
-    // 🔴 TRABAJADORES (FIX UTC)
+    // ✅ REPORTES DE OBRA (AQUÍ VA TU FIX)
+    let {data:obras} = await supabaseClient
+      .from("reportes_obras")
+      .select("*")
+      .gte("fecha_reporte", inicio + " 00:00:00")
+      .lte("fecha_reporte", fin + " 23:59:59");
+
+    obras?.forEach(i=>{
+      registros.push({
+        tipo:"incidencia",
+        grupo:"trabajador",
+        titulo:"Reporte de obra",
+        descripcion:i.descripcion,
+        hora:i.fecha_reporte
+      });
+    });
+
+    // 🔴 TRABAJADORES
     let {data:trab} = await supabaseClient
       .from("incidencias_trabajadores")
       .select("*")
@@ -186,7 +192,6 @@ async function cargar(){
         tipo:"incidencia",
         grupo:"trabajador",
         titulo:"Incidencia trabajador",
-        subtipo:i.tipo,
         descripcion:i.descripcion,
         hora: i.fecha_local || i.fecha,
         trabajador:t?.nombre,
@@ -194,7 +199,7 @@ async function cargar(){
       });
     });
 
-    // 💧 AGUA (FIX UTC)
+    // 💧 AGUA
     let {data:agua} = await supabaseClient
       .from("reportes_agua_caasim")
       .select("*")
@@ -212,7 +217,7 @@ async function cargar(){
       });
     });
 
-    // 💡 LUMINARIAS (FIX UTC)
+    // 💡 LUMINARIAS
     let {data:luminarias} = await supabaseClient
       .from("vista_reportes_luminarias")
       .select("*")
@@ -233,7 +238,6 @@ async function cargar(){
     console.error(e);
   }
 
-  // KPIs
   document.getElementById("inc").innerText =
     registros.filter(r=>r.tipo==="incidencia").length+" Incidencias";
 
@@ -249,7 +253,6 @@ async function cargar(){
   let html="";
 
   function renderGrupo(grupo, titulo){
-
     const datos = registros
       .filter(r=>r.grupo===grupo)
       .sort((a,b)=> new Date(b.hora)-new Date(a.hora));
@@ -264,19 +267,16 @@ async function cargar(){
       html+=`<div class="item ${r.tipo}">
         <b>${r.titulo}</b>
         <div class="hora">${fechaLocal}</div>
-
         ${r.trabajador ? `<div class="extra">👷 ${r.trabajador}</div>`:""}
         ${r.obra ? `<div class="extra">📍 ${r.obra}</div>`:""}
-        ${r.subtipo ? `<div class="extra">⚠️ ${r.subtipo}</div>`:""}
         ${r.origen ? `<div class="extra">🏠 ${r.origen}</div>`:""}
-
         <div class="extra">${r.descripcion}</div>
       </div>`;
     });
   }
 
   renderGrupo("vecinal","🚨 Incidencias vecinales");
-  renderGrupo("trabajador","👷 Incidencias trabajadores");
+  renderGrupo("trabajador","👷 Incidencias trabajadores / obras");
   renderGrupo("agua","💧 Reportes de agua");
   renderGrupo("luminaria","💡 Luminarias");
 
