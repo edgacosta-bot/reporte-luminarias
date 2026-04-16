@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Agua</title>
+<title>Reportes de agua</title>
 
+<!-- 🔥 ORDEN CORRECTO -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
+
 <script>
 protegerPagina(["admin", "administracion", "colono"]);
 </script>
@@ -53,7 +57,7 @@ h1 {
   margin: 0;
 }
 
-/* Filtros */
+/* Filtro */
 select {
   width: 100%;
   padding: 12px;
@@ -81,7 +85,7 @@ select {
   border-bottom: 1px solid #374151;
 }
 
-/* Tipo visual */
+/* Tipo */
 .tipo {
   padding: 5px 10px;
   border-radius: 8px;
@@ -104,6 +108,7 @@ select {
   color: white;
 }
 </style>
+
 </head>
 
 <body>
@@ -154,14 +159,7 @@ select {
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
-
-const supabaseClient = supabase.createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
 
 let datosGlobal = [];
 
@@ -176,7 +174,7 @@ async function cargarDatos() {
   console.log("DATA:", data);
 
   if (error) {
-    console.error(error);
+    console.error("ERROR:", error);
     return;
   }
 
@@ -184,7 +182,7 @@ async function cargarDatos() {
   renderTodo(datosGlobal);
 }
 
-// 🔥 KPIs
+// 🔥 KPIs + render
 function renderTodo(data) {
 
   document.getElementById("total").innerText = data.length;
@@ -212,7 +210,6 @@ function renderTabla(data) {
   data.forEach(r => {
 
     const tipo = r.tipo_falla || "";
-    const clase = tipo;
 
     const row = `
       <tr>
@@ -221,7 +218,7 @@ function renderTabla(data) {
         <td>${r.privada || "-"}</td>
         <td>${r.casa || "-"}</td>
         <td>
-          <span class="tipo ${clase}">
+          <span class="tipo ${tipo}">
             ${formatearTipo(tipo)}
           </span>
         </td>
@@ -249,19 +246,17 @@ document.getElementById("filtroTipo").addEventListener("change", (e) => {
   renderTodo(filtrados);
 });
 
-// 🔥 NORMALIZAR
+// 🔥 HELPERS
 function normalizar(texto) {
   return (texto || "").toLowerCase().trim();
 }
 
-// 🔥 FORMATEAR TIPO
 function formatearTipo(tipo) {
   return (tipo || "")
     .replaceAll("_", " ")
     .replace(/\b\w/g, l => l.toUpperCase());
 }
 
-// 🔥 FECHA
 function formatearFecha(fecha) {
   if (!fecha) return "-";
   return new Date(fecha).toLocaleDateString("es-MX");
