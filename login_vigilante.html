@@ -87,7 +87,7 @@ const supabaseClient = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-// 🔐 VALIDACIÓN DE PIN (CORREGIDA)
+// 🔐 VALIDACIÓN DE PIN
 async function validarPIN() {
 
   const pinInput = document.getElementById("pin").value.trim();
@@ -114,7 +114,6 @@ async function validarPIN() {
       return;
     }
 
-    // 🔥 comparación robusta (clave del fix)
     const vigilante = data.find(v => String(v.pin) === pinInput);
 
     if (!vigilante) {
@@ -129,7 +128,11 @@ async function validarPIN() {
       return;
     }
 
-    // 🔥 guardar sesión
+    // 🧹 LIMPIAR SESIÓN DE COLONO (FIX CLAVE)
+    localStorage.removeItem("privada");
+    localStorage.removeItem("casa");
+
+    // 🔥 guardar sesión de vigilante
     localStorage.setItem("vigilante_id", vigilante.id);
     localStorage.setItem("vigilante_nombre", vigilante.nombre);
 
