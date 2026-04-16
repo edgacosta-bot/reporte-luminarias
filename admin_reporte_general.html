@@ -10,60 +10,109 @@
 <title>Reporte General</title>
 
 <style>
+
 body {
   margin: 0;
   font-family: 'Segoe UI', Arial;
-  background: linear-gradient(135deg, #e0f2fe, #f8fafc);
-  color: #0f172a;
-}
-.container { max-width: 520px; margin: auto; padding: 20px; }
-h2 { text-align: center; }
-
-.section-title {
-  margin-top: 25px;
-  margin-bottom: 10px;
-  font-size: 16px;
+  background: linear-gradient(135deg, #020617, #0f172a);
+  color: white;
 }
 
-.label { font-size: 13px; color: #475569; }
-.input-group { margin-bottom: 15px; }
+.container {
+  max-width: 520px;
+  margin: auto;
+  padding: 20px;
+}
 
-input {
+/* 🔥 TARJETA INFO */
+.info {
+  background: #111827;
+  padding: 18px;
+  border-radius: 18px;
+  margin-bottom: 20px;
+  line-height: 1.5;
+  font-size: 14px;
+  color: #cbd5f5;
+}
+
+.info b {
+  color: white;
+}
+
+/* 🔥 FORM */
+.form-group {
+  margin-bottom: 14px;
+}
+
+.label {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 6px;
+  display: block;
+}
+
+input[type="date"] {
   width: 100%;
   padding: 14px;
   border-radius: 14px;
-  border: 1px solid #cbd5e1;
+  border: none;
+  background: #1e293b;
+  color: white;
+  font-size: 15px;
+  outline: none;
 }
 
+input[type="date"]:focus {
+  border: 1px solid #3b82f6;
+}
+
+/* 🔥 BOTÓN */
 button {
   width: 100%;
   padding: 15px;
   border-radius: 16px;
   border: none;
-  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
   color: white;
   font-weight: bold;
+  font-size: 16px;
+  margin-top: 10px;
+  cursor: pointer;
 }
 
+/* 🔥 KPIs */
 .kpis {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin: 25px 0;
+  margin: 20px 0;
 }
 
-.kpi { padding: 18px; border-radius: 18px; color: white; text-align: center; font-weight: bold; }
+.kpi {
+  padding: 18px;
+  border-radius: 18px;
+  text-align: center;
+  font-weight: bold;
+}
+
 .incidencia { background: #ef4444; }
 .agua { background: #f59e0b; color: #111; }
 .luminaria { background: #10b981; }
 .total { background: #0f172a; }
 
+/* 🔥 LISTA */
+.section-title {
+  margin-top: 25px;
+  margin-bottom: 10px;
+  font-size: 15px;
+  color: #cbd5f5;
+}
+
 .item {
-  background: white;
+  background: #111827;
   padding: 16px;
-  border-radius: 18px;
-  margin-bottom: 12px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  border-radius: 16px;
+  margin-bottom: 10px;
   border-left: 6px solid;
 }
 
@@ -72,8 +121,16 @@ button {
 .item.luminaria { border-color: #10b981; }
 .item.vigilante { border-color: #3b82f6; }
 
-.hora { font-size: 12px; color: #64748b; }
-.extra { font-size: 14px; margin-top: 4px; }
+.hora {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.extra {
+  font-size: 14px;
+  margin-top: 4px;
+}
+
 </style>
 </head>
 
@@ -81,14 +138,20 @@ button {
 
 <div class="container">
 
-<h2>📊 Reporte General</h2>
+<div class="info">
+<b>Estimado administrador:</b><br><br>
+Se recomienda informar a los residentes sobre las acciones realizadas en atención a sus reportes dentro de un plazo no mayor a 5 días.<br><br>
+Una vez transcurrido este periodo, los residentes podrán evaluar la calidad de la atención recibida.<br><br>
+Su seguimiento oportuno fortalece la confianza y mejora la gestión del fraccionamiento.<br><br>
+Gracias por su compromiso.
+</div>
 
-<div class="input-group">
+<div class="form-group">
   <div class="label">Fecha inicio</div>
   <input type="date" id="inicio">
 </div>
 
-<div class="input-group">
+<div class="form-group">
   <div class="label">Fecha fin</div>
   <input type="date" id="fin">
 </div>
@@ -112,8 +175,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["admin","administracion"]);
 });
 
-function formatoMX(fecha){
-  return new Date(fecha).toLocaleString("es-MX");
+function formatoMX(f){
+  return new Date(f).toLocaleString("es-MX");
 }
 
 function fechaInicioUTC(f){
@@ -138,7 +201,7 @@ async function cargar(){
 
   try {
 
-    // 🔴 INCIDENCIAS VECINALES
+    // 🔴 VECINAL
     let {data:inc} = await supabaseClient
       .from("incidencias_vecinales")
       .select("*")
@@ -156,24 +219,23 @@ async function cargar(){
       });
     });
 
-    // 🔵 REPORTES VIGILANTES
+    // 🔵 VIGILANTES
     let {data:rv} = await supabaseClient
       .from("reportes_vigilantes")
       .select("*")
       .gte("fecha", fechaInicioUTC(inicio))
       .lte("fecha", fechaFinUTC(fin));
 
-    let mapaVigilantes = {};
+    let mapaV = {};
 
     if(rv?.length){
       const ids = [...new Set(rv.map(r=>r.vigilante_id))];
-
-      const {data:vig} = await supabaseClient
+      const {data:v} = await supabaseClient
         .from("vigilantes")
         .select("id,nombre")
         .in("id", ids);
 
-      vig?.forEach(v=> mapaVigilantes[v.id]=v.nombre);
+      v?.forEach(x=> mapaV[x.id]=x.nombre);
     }
 
     rv?.forEach(r=>{
@@ -183,47 +245,9 @@ async function cargar(){
         titulo:"Reporte a vigilante",
         descripcion:r.descripcion,
         hora:r.fecha,
-        vigilante: mapaVigilantes[r.vigilante_id],
+        vigilante: mapaV[r.vigilante_id],
         origen:`${r.privada}-${r.casa}`,
         subtipo:r.tipo
-      });
-    });
-
-    // 🔴 REPORTES DE OBRA
-    let inicioObra = new Date(inicio + "T00:00:00");
-    let finObra = new Date(fin + "T23:59:59");
-    finObra.setDate(finObra.getDate() + 1);
-
-    let {data:obras} = await supabaseClient
-      .from("reportes_obras")
-      .select("*")
-      .gte("fecha_reporte", inicioObra.toISOString())
-      .lt("fecha_reporte", finObra.toISOString());
-
-    let mapaTrabObra = {};
-
-    if(obras?.length){
-      const ids = [...new Set(obras.map(o=>o.trabajador_id).filter(Boolean))];
-
-      const {data:trabajadores} = await supabaseClient
-        .from("trabajadores_obra")
-        .select("id,nombre,privada,casa")
-        .in("id", ids);
-
-      trabajadores?.forEach(t=> mapaTrabObra[t.id]=t);
-    }
-
-    obras?.forEach(i=>{
-      const t = mapaTrabObra[i.trabajador_id];
-
-      registros.push({
-        tipo:"incidencia",
-        grupo:"trabajador",
-        titulo:"Reporte de obra",
-        descripcion:i.descripcion,
-        hora:i.fecha_reporte,
-        trabajador:t?.nombre,
-        obra: t ? `Privada ${t.privada} - Casa ${t.casa}` : null
       });
     });
 
@@ -262,30 +286,27 @@ async function cargar(){
       });
     });
 
-  } catch (e) {
+  } catch(e){
     console.error(e);
   }
 
-  // 🔥 KPI CORREGIDO
+  // 🔥 KPI
   document.getElementById("inc").innerText =
-    registros.filter(r =>
-      ["incidencia","vigilante"].includes(r.tipo)
-    ).length + " Incidencias";
+    registros.filter(r=>["incidencia","vigilante"].includes(r.tipo)).length + " Incidencias";
 
   document.getElementById("agua").innerText =
-    registros.filter(r=>r.tipo==="agua").length+" Agua";
+    registros.filter(r=>r.tipo==="agua").length + " Agua";
 
   document.getElementById("lum").innerText =
-    registros.filter(r=>r.tipo==="luminaria").length+" Luminarias";
+    registros.filter(r=>r.tipo==="luminaria").length + " Luminarias";
 
   document.getElementById("total").innerText =
-    registros.length+" Total";
+    registros.length + " Total";
 
   let html="";
 
-  function renderGrupo(grupo, titulo){
-    const datos = registros
-      .filter(r=>r.grupo===grupo)
+  function renderGrupo(grupo,titulo){
+    const datos = registros.filter(r=>r.grupo===grupo)
       .sort((a,b)=> new Date(b.hora)-new Date(a.hora));
 
     if(!datos.length) return;
@@ -293,14 +314,12 @@ async function cargar(){
     html += `<div class="section-title">${titulo}</div>`;
 
     datos.forEach(r=>{
-      html+=`<div class="item ${r.tipo}">
+      html += `<div class="item ${r.tipo}">
         <b>${r.titulo}</b>
         <div class="hora">${formatoMX(r.hora)}</div>
 
         ${r.vigilante ? `<div class="extra">👮 ${r.vigilante}</div>`:""}
         ${r.subtipo ? `<div class="extra">⚠️ ${r.subtipo.replaceAll("_"," ")}</div>`:""}
-        ${r.trabajador ? `<div class="extra">👷 ${r.trabajador}</div>`:""}
-        ${r.obra ? `<div class="extra">📍 ${r.obra}</div>`:""}
         ${r.origen ? `<div class="extra">🏠 ${r.origen}</div>`:""}
 
         <div class="extra">${r.descripcion}</div>
@@ -309,7 +328,6 @@ async function cargar(){
   }
 
   renderGrupo("vecinal","🚨 Incidencias vecinales");
-  renderGrupo("trabajador","👷 Incidencias trabajadores / obras");
   renderGrupo("vigilante","👮 Reportes a vigilantes");
   renderGrupo("agua","💧 Reportes de agua");
   renderGrupo("luminaria","💡 Luminarias");
