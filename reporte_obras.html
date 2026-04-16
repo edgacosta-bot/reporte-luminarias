@@ -79,7 +79,6 @@ button {
   <option value="">Tipo de reporte</option>
 </select>
 
-<!-- 🔥 AJUSTE AQUÍ -->
 <label style="font-size: 13px; color: #9ca3af; display:block; margin-bottom:5px;">
 Trabajador (opcional)
 </label>
@@ -102,10 +101,10 @@ Trabajador (opcional)
 
 const supabaseClient = supabase.createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 );
 
-// 🔐 IDENTIFICAR ACTOR
+// 🔐 IDENTIFICAR ACTOR (CORREGIDO)
 const vigilante_id = localStorage.getItem("vigilante_id");
 const vigilante_nombre = localStorage.getItem("vigilante_nombre");
 
@@ -116,12 +115,13 @@ const actorInfo = document.getElementById("actorInfo");
 
 let actor = null;
 
-if (vigilante_id) {
-  actor = "vigilante";
-  actorInfo.innerText = "Vigilante: " + vigilante_nombre;
-} else if (privada && casa) {
+// 🔥 PRIORIDAD: COLONO
+if (privada && casa) {
   actor = "colono";
   actorInfo.innerText = `Privada ${privada} - Casa ${casa}`;
+} else if (vigilante_id) {
+  actor = "vigilante";
+  actorInfo.innerText = "Vigilante: " + vigilante_nombre;
 } else {
   window.location.href = "login.html";
 }
