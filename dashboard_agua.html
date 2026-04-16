@@ -11,9 +11,9 @@
 <script src="auth.js"></script>
 
 <script>
-// 🔥 MODO SEGURO (NO BLOQUEANTE)
+// ✅ SOLO AGREGAMOS "residente"
 try {
-  protegerPagina(["admin", "administracion", "colono"]);
+  protegerPagina(["admin", "administracion", "colono", "residente"]);
 } catch (e) {
   console.warn("Auth no bloqueante:", e);
 }
@@ -168,7 +168,7 @@ select {
 
 let datosGlobal = [];
 
-// 🔥 CARGAR DATOS (PROTEGIDO)
+// 🔥 CARGAR DATOS
 async function cargarDatos() {
 
   try {
@@ -273,10 +273,10 @@ function formatearFecha(fecha) {
   return new Date(fecha).toLocaleDateString("es-MX");
 }
 
-// 🔥 INIT
+// INIT
 setTimeout(() => {
   cargarDatos();
-}, 300); // 🔥 evita conflicto con auth.js
+}, 300);
 
 </script>
 
