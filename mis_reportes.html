@@ -26,10 +26,6 @@ body {
   padding: 20px;
 }
 
-h2 {
-  text-align: center;
-}
-
 .aviso {
   background: #1f2937;
   padding: 15px;
@@ -54,6 +50,7 @@ button {
   border: none;
   background: #2563eb;
   color: white;
+  margin-top: 5px;
 }
 
 .item {
@@ -114,7 +111,7 @@ Gracias por su apoyo.
 
 <button onclick="cargar()">Consultar</button>
 
-<div id="lista"></div>
+<div id="lista">Cargando...</div>
 
 </div>
 
@@ -142,8 +139,8 @@ async function obtenerUsuario(){
     .eq("user_id", userId)
     .single();
 
-  privada = res.privada;
-  casa = res.casa;
+  privada = res?.privada;
+  casa = res?.casa;
 }
 
 function dias(fecha){
@@ -152,16 +149,18 @@ function dias(fecha){
 
 async function cargar(){
 
+  document.getElementById("lista").innerHTML = "Cargando...";
+
   const inicio = document.getElementById("inicio").value;
   const fin = document.getElementById("fin").value;
 
   let registros = [];
 
-  // 🔴 SEGURIDAD (vecinal)
+  // 🔴 VECINAL (modo seguro corregido)
   let querySeg = supabaseClient
     .from("reportes_seguridad")
     .select("*")
-    .eq("privada", privada);
+    .or(`privada.eq.${privada},privada.eq.caseta`);
 
   if (inicio && fin) {
     querySeg = querySeg
@@ -169,7 +168,9 @@ async function cargar(){
       .lte("fecha", fin + "T23:59:59");
   }
 
-  let { data: seg } = await querySeg;
+  const { data: seg, error: errSeg } = await querySeg;
+
+  console.log("SEG:", seg, errSeg);
 
   seg?.forEach(i=>{
     registros.push({
@@ -197,7 +198,9 @@ async function cargar(){
       .lt("fecha_reporte", fi.toISOString());
   }
 
-  let { data: obras } = await queryObras;
+  const { data: obras, error: errObras } = await queryObras;
+
+  console.log("OBRAS:", obras, errObras);
 
   obras?.forEach(i=>{
     registros.push({
@@ -209,13 +212,13 @@ async function cargar(){
   });
 
   // 🔍 evaluaciones
-  let { data: evals } = await supabaseClient
+  const { data: evals } = await supabaseClient
     .from("evaluaciones_reportes")
     .select("reporte_id");
 
   const evaluados = new Set(evals?.map(e=>e.reporte_id));
 
-  // render
+  // 🎯 render
   let html="";
 
   registros
