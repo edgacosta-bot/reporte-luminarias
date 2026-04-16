@@ -50,7 +50,7 @@ button {
   border: none;
   background: #2563eb;
   color: white;
-  margin-top: 5px;
+  margin-top: 8px;
 }
 
 .item {
@@ -69,6 +69,7 @@ button {
   color: #9ca3af;
 }
 
+/* MODAL */
 .modal {
   position: fixed;
   top:0; left:0; right:0; bottom:0;
@@ -83,12 +84,19 @@ button {
   padding:20px;
   border-radius:12px;
   text-align:center;
+  max-width:300px;
 }
 
 .emoji {
-  font-size: 30px;
+  font-size: 35px;
   margin: 10px;
   cursor: pointer;
+}
+
+.mensaje-final {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #d1d5db;
 }
 </style>
 </head>
@@ -115,12 +123,27 @@ Gracias por su apoyo.
 
 </div>
 
+<!-- MODAL -->
 <div id="modal" class="modal">
-  <div class="modal-content">
-    <h3>¿Cómo fue la atención?</h3>
-    <span class="emoji" onclick="evaluar('feliz')">😊</span>
-    <span class="emoji" onclick="evaluar('neutral')">😐</span>
-    <span class="emoji" onclick="evaluar('triste')">😞</span>
+  <div class="modal-content" id="contenidoModal">
+    
+    <div id="pregunta">
+      <h3>¿Cómo evalúas la atención que ha dado el administrador a tu reporte?</h3>
+      <div>
+        <span class="emoji" onclick="evaluar('feliz')">😊</span>
+        <span class="emoji" onclick="evaluar('neutral')">😐</span>
+        <span class="emoji" onclick="evaluar('triste')">😞</span>
+      </div>
+    </div>
+
+    <div id="respuesta" style="display:none;">
+      <div class="mensaje-final">
+        Gracias por tu evaluación.<br>
+        Nos ayuda a mejorar en nuestro fraccionamiento.
+      </div>
+      <button onclick="cerrarModal()">Cerrar</button>
+    </div>
+
   </div>
 </div>
 
@@ -143,10 +166,6 @@ async function obtenerUsuario(){
   casa = res?.casa;
 }
 
-function dias(fecha){
-  return (new Date() - new Date(fecha)) / (1000*60*60*24);
-}
-
 async function cargar(){
 
   document.getElementById("lista").innerHTML = "Cargando...";
@@ -156,7 +175,7 @@ async function cargar(){
 
   let registros = [];
 
-  // 🔴 VECINAL (modo seguro corregido)
+  // 🔴 VECINAL
   let querySeg = supabaseClient
     .from("reportes_seguridad")
     .select("*")
@@ -168,9 +187,7 @@ async function cargar(){
       .lte("fecha", fin + "T23:59:59");
   }
 
-  const { data: seg, error: errSeg } = await querySeg;
-
-  console.log("SEG:", seg, errSeg);
+  const { data: seg } = await querySeg;
 
   seg?.forEach(i=>{
     registros.push({
@@ -198,9 +215,7 @@ async function cargar(){
       .lt("fecha_reporte", fi.toISOString());
   }
 
-  const { data: obras, error: errObras } = await queryObras;
-
-  console.log("OBRAS:", obras, errObras);
+  const { data: obras } = await queryObras;
 
   obras?.forEach(i=>{
     registros.push({
@@ -211,7 +226,7 @@ async function cargar(){
     });
   });
 
-  // 🔍 evaluaciones
+  // 🔍 evaluaciones existentes
   const { data: evals } = await supabaseClient
     .from("evaluaciones_reportes")
     .select("reporte_id");
@@ -227,7 +242,6 @@ async function cargar(){
 
       let puedeEvaluar =
         (r.tipo === "vecinal" || r.tipo === "obra") &&
-        dias(r.fecha) >= 5 &&
         !evaluados.has(r.id);
 
       html+=`
@@ -246,10 +260,14 @@ async function cargar(){
 
 function abrir(id){
   seleccionado = id;
+
   document.getElementById("modal").style.display="flex";
+  document.getElementById("pregunta").style.display="block";
+  document.getElementById("respuesta").style.display="none";
 }
 
 async function evaluar(tipo){
+
   await supabaseClient.from("evaluaciones_reportes").insert([{
     reporte_id: seleccionado,
     tipo_reporte: "general",
@@ -258,6 +276,11 @@ async function evaluar(tipo){
     casa
   }]);
 
+  document.getElementById("pregunta").style.display="none";
+  document.getElementById("respuesta").style.display="block";
+}
+
+function cerrarModal(){
   document.getElementById("modal").style.display="none";
   cargar();
 }
