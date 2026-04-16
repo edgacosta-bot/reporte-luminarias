@@ -266,8 +266,11 @@ async function cargar(){
     console.error(e);
   }
 
+  // 🔥 KPI CORREGIDO
   document.getElementById("inc").innerText =
-    registros.filter(r=>r.tipo==="incidencia").length+" Incidencias";
+    registros.filter(r =>
+      ["incidencia","vigilante"].includes(r.tipo)
+    ).length + " Incidencias";
 
   document.getElementById("agua").innerText =
     registros.filter(r=>r.tipo==="agua").length+" Agua";
