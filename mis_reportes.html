@@ -30,7 +30,6 @@ h2 {
   text-align: center;
 }
 
-/* aviso */
 .aviso {
   background: #1f2937;
   padding: 15px;
@@ -40,7 +39,6 @@ h2 {
   color: #d1d5db;
 }
 
-/* fechas */
 input {
   width: 100%;
   padding: 12px;
@@ -49,12 +47,20 @@ input {
   margin-bottom: 10px;
 }
 
-/* cards */
+button {
+  padding: 10px;
+  width: 100%;
+  border-radius: 10px;
+  border: none;
+  background: #2563eb;
+  color: white;
+}
+
 .item {
   background: #111827;
   padding: 15px;
   border-radius: 12px;
-  margin-bottom: 10px;
+  margin-top: 10px;
   border-left: 6px solid;
 }
 
@@ -64,16 +70,6 @@ input {
 .fecha {
   font-size: 12px;
   color: #9ca3af;
-}
-
-button {
-  margin-top: 8px;
-  padding: 8px;
-  border: none;
-  border-radius: 8px;
-  background: #2563eb;
-  color: white;
-  width: 100%;
 }
 
 .modal {
@@ -150,8 +146,8 @@ async function obtenerUsuario(){
   casa = res.casa;
 }
 
-function dias(f){
-  return (new Date() - new Date(f)) / (1000*60*60*24);
+function dias(fecha){
+  return (new Date() - new Date(fecha)) / (1000*60*60*24);
 }
 
 async function cargar(){
@@ -159,15 +155,21 @@ async function cargar(){
   const inicio = document.getElementById("inicio").value;
   const fin = document.getElementById("fin").value;
 
-  let registros=[];
+  let registros = [];
 
   // 🔴 SEGURIDAD (vecinal)
-  let {data:seg} = await supabaseClient
+  let querySeg = supabaseClient
     .from("reportes_seguridad")
     .select("*")
-    .eq("privada", privada)
-    .gte("fecha", inicio+"T00:00:00")
-    .lte("fecha", fin+"T23:59:59");
+    .eq("privada", privada);
+
+  if (inicio && fin) {
+    querySeg = querySeg
+      .gte("fecha", inicio + "T00:00:00")
+      .lte("fecha", fin + "T23:59:59");
+  }
+
+  let { data: seg } = await querySeg;
 
   seg?.forEach(i=>{
     registros.push({
@@ -179,17 +181,23 @@ async function cargar(){
   });
 
   // 🟠 OBRAS
-  let ini = new Date(inicio+"T00:00:00");
-  let fi = new Date(fin+"T23:59:59");
-  fi.setDate(fi.getDate()+1);
-
-  let {data:obras} = await supabaseClient
+  let queryObras = supabaseClient
     .from("reportes_obras")
     .select("*")
     .eq("privada", privada)
-    .eq("casa", casa)
-    .gte("fecha_reporte", ini.toISOString())
-    .lt("fecha_reporte", fi.toISOString());
+    .eq("casa", casa);
+
+  if (inicio && fin) {
+    let ini = new Date(inicio + "T00:00:00");
+    let fi = new Date(fin + "T23:59:59");
+    fi.setDate(fi.getDate() + 1);
+
+    queryObras = queryObras
+      .gte("fecha_reporte", ini.toISOString())
+      .lt("fecha_reporte", fi.toISOString());
+  }
+
+  let { data: obras } = await queryObras;
 
   obras?.forEach(i=>{
     registros.push({
@@ -200,8 +208,8 @@ async function cargar(){
     });
   });
 
-  // 🔍 evaluaciones existentes
-  let {data:evals} = await supabaseClient
+  // 🔍 evaluaciones
+  let { data: evals } = await supabaseClient
     .from("evaluaciones_reportes")
     .select("reporte_id");
 
@@ -214,9 +222,10 @@ async function cargar(){
     .sort((a,b)=> new Date(b.fecha)-new Date(a.fecha))
     .forEach(r=>{
 
-      let puede = (r.tipo !== "luminaria" && r.tipo !== "agua")
-        && dias(r.fecha) >= 5
-        && !evaluados.has(r.id);
+      let puedeEvaluar =
+        (r.tipo === "vecinal" || r.tipo === "obra") &&
+        dias(r.fecha) >= 5 &&
+        !evaluados.has(r.id);
 
       html+=`
       <div class="item ${r.tipo}">
@@ -224,7 +233,7 @@ async function cargar(){
         <div>${r.descripcion}</div>
         <div class="fecha">${new Date(r.fecha).toLocaleString("es-MX")}</div>
 
-        ${puede ? `<button onclick="abrir('${r.id}')">Evaluar atención</button>`:""}
+        ${puedeEvaluar ? `<button onclick="abrir('${r.id}')">Evaluar atención</button>`:""}
       </div>
       `;
     });
