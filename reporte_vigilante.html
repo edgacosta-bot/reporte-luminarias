@@ -63,6 +63,13 @@ button {
 
 .error { color: #f87171; }
 .ok { color: #34d399; }
+
+.back {
+  margin-top: 10px;
+  text-align: center;
+  color: #9ca3af;
+  cursor: pointer;
+}
 </style>
 
 </head>
@@ -87,13 +94,15 @@ button {
 
 <div id="mensaje" class="mensaje"></div>
 
+<div class="back" onclick="history.back()">← Volver</div>
+
 </div>
 
 <script>
 
 let privada, casa;
 
-/* 🔐 OBTENER RESIDENTE */
+/* 🔐 USUARIO */
 async function obtenerUsuario(){
 
   const { data } = await supabaseClient.auth.getUser();
@@ -109,33 +118,50 @@ async function obtenerUsuario(){
   casa = res?.casa;
 }
 
-/* 🔥 CATÁLOGO */
+/* 🔥 CATÁLOGO DINÁMICO */
 async function cargarCatalogo(){
 
-  const { data } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("catalogo_reportes")
     .select("subtipo")
     .eq("categoria","seguridad")
     .eq("actor_permitido","colono")
-    .eq("activo", true);
+    .eq("activo", true)
+    .order("subtipo");
+
+  if(error){
+    console.error(error);
+    return;
+  }
 
   const select = document.getElementById("tipo");
 
   data?.forEach(i=>{
     const opt = document.createElement("option");
     opt.value = i.subtipo;
-    opt.textContent = i.subtipo.replaceAll("_"," ");
+
+    // 🔥 formato bonito
+    opt.textContent = i.subtipo
+      .replaceAll("_"," ")
+      .replace(/\b\w/g, l => l.toUpperCase());
+
     select.appendChild(opt);
   });
 }
 
-/* 👮 VIGILANTES */
+/* 👮 LISTA DE VIGILANTES */
 async function cargarVigilantes(){
 
-  const { data } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("vigilantes")
     .select("id,nombre")
-    .eq("activo", true);
+    .eq("activo", true)
+    .order("nombre");
+
+  if(error){
+    console.error(error);
+    return;
+  }
 
   const select = document.getElementById("vigilante");
 
@@ -147,10 +173,10 @@ async function cargarVigilantes(){
   });
 }
 
-/* 🧠 FECHA */
+/* 🧠 FECHA MÉXICO */
 function fechaMexico(){
   const now = new Date();
-  return new Date(now.getTime() - (6*60*60*1000));
+  return new Date(now.getTime() - (6 * 60 * 60 * 1000));
 }
 
 /* 🚀 ENVIAR */
@@ -177,11 +203,13 @@ async function enviar(){
       descripcion,
       privada,
       casa,
-      fecha: fechaMexico().toISOString()
+      fecha: fechaMexico().toISOString(),
+      estatus: "nuevo"
     }]);
 
   if(error){
-    msg.innerText = "Error al enviar";
+    console.error(error);
+    msg.innerText = "Error al enviar reporte";
     msg.classList.add("error");
     return;
   }
@@ -190,6 +218,8 @@ async function enviar(){
   msg.classList.add("ok");
 
   document.getElementById("descripcion").value = "";
+  document.getElementById("tipo").value = "";
+  document.getElementById("vigilante").value = "";
 }
 
 /* INIT */
