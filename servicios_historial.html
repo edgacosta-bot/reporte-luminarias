@@ -34,6 +34,24 @@ body {
   color: #cbd5f5;
 }
 
+/* 🔥 FILTROS */
+.filtros {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.filtros button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: #1f2937;
+  color: white;
+  font-size: 13px;
+  cursor: pointer;
+}
+
 /* 🔥 INPUTS */
 input {
   width: 100%;
@@ -45,7 +63,7 @@ input {
   margin-bottom: 10px;
 }
 
-button {
+button.consultar {
   width: 100%;
   padding: 14px;
   border-radius: 12px;
@@ -81,11 +99,6 @@ button {
   color: #94a3b8;
 }
 
-.estado {
-  margin-top: 6px;
-  font-size: 13px;
-}
-
 </style>
 </head>
 
@@ -98,10 +111,18 @@ Consulta los servicios que han ingresado al fraccionamiento.<br>
 Puede verificar horarios y personal que realizó el acceso.
 </div>
 
+<!-- 🔥 FILTROS RÁPIDOS -->
+<div class="filtros">
+  <button onclick="filtroRapido('hoy')">Hoy</button>
+  <button onclick="filtroRapido('ayer')">Ayer</button>
+  <button onclick="filtroRapido('semana')">7 días</button>
+  <button onclick="filtroRapido('custom')">Personalizado</button>
+</div>
+
 <input type="date" id="inicio">
 <input type="date" id="fin">
 
-<button onclick="cargar()">Consultar</button>
+<button class="consultar" onclick="cargar()">Consultar</button>
 
 <div id="lista"></div>
 
@@ -123,6 +144,48 @@ function inicioUTC(f){
 
 function finUTC(f){
   return new Date(f+"T23:59:59").toISOString();
+}
+
+/* 🔥 FILTROS RÁPIDOS */
+function setFechaInputs(inicio, fin){
+  document.getElementById("inicio").value = inicio;
+  document.getElementById("fin").value = fin;
+}
+
+function formatoInput(fecha){
+  return fecha.toISOString().split("T")[0];
+}
+
+function filtroRapido(tipo){
+
+  const hoy = new Date();
+
+  let inicio, fin;
+
+  if(tipo === "hoy"){
+    inicio = new Date(hoy);
+    fin = new Date(hoy);
+  }
+
+  if(tipo === "ayer"){
+    inicio = new Date(hoy);
+    inicio.setDate(inicio.getDate() - 1);
+    fin = new Date(inicio);
+  }
+
+  if(tipo === "semana"){
+    inicio = new Date(hoy);
+    inicio.setDate(inicio.getDate() - 7);
+    fin = new Date(hoy);
+  }
+
+  if(tipo === "custom"){
+    return;
+  }
+
+  setFechaInputs(formatoInput(inicio), formatoInput(fin));
+
+  cargar(); // 🔥 AUTO CONSULTA
 }
 
 // 🔹 CARGAR
@@ -148,13 +211,13 @@ async function cargar(){
 
   let html="";
 
-  data.forEach(r=>{
+  data?.forEach(r=>{
 
     html += `
     <div class="card">
 
       <div class="nombre">
-        🚛 ${r.catalogo_servicios.nombre}
+        🚛 ${r.catalogo_servicios?.nombre || "Servicio"}
       </div>
 
       <div class="detalle">
@@ -178,7 +241,6 @@ async function cargar(){
 
   document.getElementById("lista").innerHTML =
     html || "Sin registros";
-
 }
 
 </script>
