@@ -7,212 +7,243 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Registrar obra</title>
+<title>Reporte General</title>
 
 <style>
-* { box-sizing: border-box; }
-
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
+  font-family: 'Segoe UI', Arial;
+  background: linear-gradient(135deg, #e0f2fe, #f8fafc);
+  color: #0f172a;
 }
+.container { max-width: 520px; margin: auto; padding: 20px; }
+h2 { text-align: center; }
 
-.card {
-  background: #111827;
-  padding: 25px;
-  border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-}
+.label { font-size: 13px; color: #475569; }
+.input-group { margin-bottom: 15px; }
 
-select, input {
+input {
   width: 100%;
-  padding: 12px;
-  margin-bottom: 12px;
-  border-radius: 10px;
-  border: none;
-  background: #1f2937;
-  color: white;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid #cbd5e1;
 }
 
 button {
   width: 100%;
-  padding: 14px;
+  padding: 15px;
+  border-radius: 16px;
   border: none;
-  border-radius: 12px;
-  background: #2563eb;
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
   color: white;
-  font-size: 16px;
-  cursor: pointer;
+  font-weight: bold;
 }
 
-button:disabled {
-  background: #6b7280;
-  cursor: not-allowed;
+.kpis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 25px 0;
 }
 
-.mensaje {
-  margin-top: 10px;
-  text-align: center;
+.kpi { padding: 18px; border-radius: 18px; color: white; text-align: center; font-weight: bold; }
+.incidencia { background: #ef4444; }
+.agua { background: #f59e0b; color: #111; }
+.luminaria { background: #10b981; }
+.total { background: #0f172a; }
+
+.item {
+  background: white;
+  padding: 16px;
+  border-radius: 18px;
+  margin-bottom: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  border-left: 6px solid;
 }
 
-.error { color: #f87171; }
-.ok { color: #34d399; }
+.item.incidencia { border-color: #ef4444; }
+.item.agua { border-color: #f59e0b; }
+.item.luminaria { border-color: #10b981; }
+
+.hora { font-size: 12px; color: #64748b; }
+.extra { font-size: 14px; margin-top: 4px; }
 </style>
-
 </head>
 
 <body>
 
-<div class="card">
+<div class="container">
 
-<h2>Registrar obra</h2>
+<h2>📊 Reporte General</h2>
 
-<select id="lote">
-  <option value="">Cargando lotes...</option>
-</select>
+<div class="input-group">
+  <div class="label">Fecha inicio</div>
+  <input type="date" id="inicio">
+</div>
 
-<input type="text" id="dro" placeholder="Director Responsable de Obra">
+<div class="input-group">
+  <div class="label">Fecha fin</div>
+  <input type="date" id="fin">
+</div>
 
-<input type="date" id="fecha_inicio">
+<button onclick="cargar()">Consultar</button>
 
-<button id="btnRegistrar">Registrar obra</button>
+<div class="kpis">
+  <div class="kpi incidencia" id="inc">0 Incidencias</div>
+  <div class="kpi agua" id="agua">0 Agua</div>
+  <div class="kpi luminaria" id="lum">0 Luminarias</div>
+  <div class="kpi total" id="total">0 Total</div>
+</div>
 
-<div id="mensaje" class="mensaje"></div>
+<div id="lista"></div>
 
 </div>
 
 <script>
 
-// 🔐 CONTROL (puedes comentarlo si estorba)
 window.addEventListener("DOMContentLoaded", async () => {
-  try {
-    await protegerPagina(["administracion"]);
-  } catch (e) {
-    console.warn("Auth no bloqueante:", e);
-  }
-
-  await cargarLotes();
+  await protegerPagina(["admin","administracion"]);
 });
 
-// 🔥 CARGAR LOTES
-async function cargarLotes() {
+async function cargar(){
 
-  const select = document.getElementById("lote");
+  const inicio = document.getElementById("inicio").value;
+  const fin = document.getElementById("fin").value;
+
+  if(!inicio || !fin){
+    alert("Selecciona fechas");
+    return;
+  }
+
+  let registros=[];
 
   try {
 
-    const { data, error } = await supabaseClient
-      .from("lotes")
-      .select("privada, lote")
-      .order("privada")
-      .order("lote");
+    // 🔴 INCIDENCIAS VECINALES
+    let {data:inc} = await supabaseClient
+      .from("incidencias_vecinales")
+      .select("*")
+      .gte("fecha_local", inicio+"T00:00:00")
+      .lte("fecha_local", fin+"T23:59:59");
 
-    if (error) throw error;
-
-    if (!data || data.length === 0) {
-      select.innerHTML = '<option>No hay lotes</option>';
-      return;
-    }
-
-    select.innerHTML = '<option value="">Selecciona lote</option>';
-
-    data.forEach(l => {
-      const option = document.createElement("option");
-      option.value = JSON.stringify(l);
-      option.textContent = `Privada ${l.privada} - Lote ${l.lote}`;
-      select.appendChild(option);
+    inc?.forEach(i=>{
+      registros.push({
+        tipo:"incidencia",
+        titulo:"Incidencia vecinal",
+        descripcion:i.descripcion,
+        hora:i.fecha_local,
+        origen:`${i.privada}-${i.casa}`
+      });
     });
 
-  } catch (err) {
-    console.error("Error cargando lotes:", err);
-    select.innerHTML = '<option>Error cargando lotes</option>';
-  }
-}
+    // 🔴 INCIDENCIAS TRABAJADORES (CORRECTO)
+    let {data:trab} = await supabaseClient
+      .from("incidencias_trabajadores")
+      .select("*")
+      .gte("fecha", inicio+"T00:00:00")
+      .lte("fecha", fin+"T23:59:59");
 
-// 🚀 REGISTRAR OBRA
-document.getElementById("btnRegistrar").addEventListener("click", registrar);
+    const ids = [...new Set((trab || []).map(i=>i.trabajador_id).filter(Boolean))];
 
-async function registrar() {
+    let mapaTrab = {};
 
-  const btn = document.getElementById("btnRegistrar");
-  const mensaje = document.getElementById("mensaje");
+    if(ids.length > 0){
+      const {data:trabajadores} = await supabaseClient
+        .from("trabajadores_obra")
+        .select("id, nombre, privada, casa")
+        .in("id", ids);
 
-  btn.disabled = true;
-  btn.innerText = "Registrando...";
-  mensaje.className = "mensaje";
-
-  try {
-
-    const loteRaw = document.getElementById("lote").value;
-    const dro = document.getElementById("dro").value.trim();
-    const fecha_inicio = document.getElementById("fecha_inicio").value;
-
-    if (!loteRaw || !dro) {
-      throw new Error("Completa todos los campos");
+      trabajadores?.forEach(t=> mapaTrab[t.id]=t);
     }
 
-    const lote = JSON.parse(loteRaw);
+    (trab || []).forEach(i=>{
+      const t = mapaTrab[i.trabajador_id];
 
-    // 🔎 VALIDAR DUPLICADO
-    const { data: existente, error: errorExistente } = await supabaseClient
-      .from("obras")
-      .select("id")
-      .eq("privada", lote.privada)
-      .eq("casa", lote.lote)
-      .eq("estatus", "activa")
-      .maybeSingle();
+      registros.push({
+        tipo:"incidencia",
+        titulo:"Incidencia trabajador",
+        subtipo: i.tipo,
+        descripcion:i.descripcion,
+        hora: i.fecha_local || i.fecha,
+        trabajador: t?.nombre || "Sin identificar",
+        obra: t ? `Privada ${t.privada} - Casa ${t.casa}` : "Sin obra"
+      });
+    });
 
-    if (errorExistente) throw errorExistente;
+    // 💧 AGUA
+    let {data:agua} = await supabaseClient
+      .from("reportes_agua_caasim")
+      .select("*");
 
-    if (existente) {
-      throw new Error("Ya existe una obra activa en este lote");
-    }
+    agua?.forEach(i=>{
+      if(i.fecha_registro >= inicio+"T00:00:00" &&
+         i.fecha_registro <= fin+"T23:59:59"){
+        registros.push({
+          tipo:"agua",
+          titulo:"Reporte agua",
+          descripcion:i.tipo_falla,
+          hora:i.fecha_registro,
+          origen:`${i.privada}-${i.numero_exterior}`
+        });
+      }
+    });
 
-    // 🔥 INSERT
-    const { error } = await supabaseClient
-      .from("obras")
-      .insert([{
-        privada: lote.privada,
-        casa: lote.lote,
-        dro_nombre: dro,
-        fecha_inicio: fecha_inicio || null,
-        estatus: "activa",
-        aprobada: false
-      }]);
+    // 💡 LUMINARIAS
+    let {data:luminarias} = await supabaseClient
+      .from("vista_reportes_luminarias")
+      .select("*");
 
-    if (error) throw error;
+    luminarias?.forEach(i=>{
+      if(i.fecha_reporte >= inicio+"T00:00:00" &&
+         i.fecha_reporte <= fin+"T23:59:59"){
+        registros.push({
+          tipo:"luminaria",
+          titulo:`Luminaria #${i.no_luminaria}`,
+          descripcion:i.descripcion,
+          hora:i.fecha_reporte
+        });
+      }
+    });
 
-    mensaje.innerHTML = `
-      <b>✅ Obra registrada correctamente</b><br><br>
-      ⚠️ Requiere validación del Comité de Diseño<br><br>
-      No podrás registrar trabajadores hasta su aprobación
-    `;
-    mensaje.classList.add("ok");
-
-    // limpiar
-    document.getElementById("lote").value = "";
-    document.getElementById("dro").value = "";
-    document.getElementById("fecha_inicio").value = "";
-
-  } catch (err) {
-
-    console.error("ERROR:", err);
-
-    mensaje.innerText = err.message || "Error al registrar obra";
-    mensaje.classList.add("error");
-
+  } catch (e) {
+    console.error("ERROR GLOBAL:", e);
   }
 
-  btn.disabled = false;
-  btn.innerText = "Registrar obra";
+  // KPIs
+  document.getElementById("inc").innerText =
+    registros.filter(r=>r.tipo==="incidencia").length+" Incidencias";
+
+  document.getElementById("agua").innerText =
+    registros.filter(r=>r.tipo==="agua").length+" Agua";
+
+  document.getElementById("lum").innerText =
+    registros.filter(r=>r.tipo==="luminaria").length+" Luminarias";
+
+  document.getElementById("total").innerText =
+    registros.length+" Total";
+
+  registros.sort((a,b)=> new Date(b.hora)-new Date(a.hora));
+
+  let html="";
+
+  registros.forEach(r=>{
+    const fechaLocal = new Date(r.hora).toLocaleString("es-MX");
+
+    html+=`<div class="item ${r.tipo}">
+      <b>${r.titulo}</b>
+      <div class="hora">${fechaLocal}</div>
+
+      ${r.trabajador ? `<div class="extra">👷 ${r.trabajador}</div>`:""}
+      ${r.obra ? `<div class="extra">📍 ${r.obra}</div>`:""}
+      ${r.subtipo ? `<div class="extra">⚠️ ${r.subtipo}</div>`:""}
+
+      ${r.origen ? `<div class="extra">🏠 ${r.origen}</div>`:""}
+
+      <div class="extra">${r.descripcion}</div>
+    </div>`;
+  });
+
+  document.getElementById("lista").innerHTML = html || "Sin resultados";
 }
 
 </script>
