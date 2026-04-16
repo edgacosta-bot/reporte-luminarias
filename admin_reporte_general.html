@@ -18,7 +18,13 @@ body {
 }
 .container { max-width: 520px; margin: auto; padding: 20px; }
 h2 { text-align: center; }
-.section-title { margin-top: 25px; margin-bottom: 10px; font-size: 16px; }
+
+.section-title {
+  margin-top: 25px;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
 .label { font-size: 13px; color: #475569; }
 .input-group { margin-bottom: 15px; }
 
@@ -105,6 +111,18 @@ window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["admin","administracion"]);
 });
 
+function formatoMX(fecha){
+  return new Date(fecha).toLocaleString("es-MX");
+}
+
+function fechaInicioUTC(f){
+  return new Date(f+"T00:00:00").toISOString();
+}
+
+function fechaFinUTC(f){
+  return new Date(f+"T23:59:59").toISOString();
+}
+
 async function cargar(){
 
   const inicio = document.getElementById("inicio").value;
@@ -137,30 +155,44 @@ async function cargar(){
       });
     });
 
-    // 🔴 REPORTES DE OBRA (FIX DEFINITIVO)
+    // 🔴 REPORTES DE OBRA (COMPLETO)
     let inicioObra = inicio + " 00:00:00";
     let finObra = fin + " 23:59:59";
 
-    let {data:obras, error:errObras} = await supabaseClient
+    let {data:obras} = await supabaseClient
       .from("reportes_obras")
       .select("*")
       .gte("fecha_reporte", inicioObra)
       .lte("fecha_reporte", finObra);
 
-    console.log("OBRAS:", obras);
-    console.log("ERROR OBRAS:", errObras);
+    const idsObra = [...new Set((obras || []).map(o => o.trabajador_id).filter(Boolean))];
 
-    obras?.forEach(i=>{
+    let mapaTrabObra = {};
+
+    if(idsObra.length > 0){
+      const {data:trabajadores} = await supabaseClient
+        .from("trabajadores_obra")
+        .select("id, nombre, privada, casa")
+        .in("id", idsObra);
+
+      trabajadores?.forEach(t => mapaTrabObra[t.id]=t);
+    }
+
+    (obras || []).forEach(i=>{
+      const t = mapaTrabObra[i.trabajador_id];
+
       registros.push({
         tipo:"incidencia",
         grupo:"trabajador",
         titulo:"Reporte de obra",
         descripcion:i.descripcion,
-        hora:i.fecha_reporte
+        hora:i.fecha_reporte,
+        trabajador: t?.nombre || null,
+        obra: t ? `Privada ${t.privada} - Casa ${t.casa}` : null
       });
     });
 
-    // 🔴 TRABAJADORES
+    // 🔴 INCIDENCIAS TRABAJADORES
     let {data:trab} = await supabaseClient
       .from("incidencias_trabajadores")
       .select("*")
