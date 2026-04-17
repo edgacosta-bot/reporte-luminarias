@@ -132,12 +132,12 @@ async function validar() {
 
     residente = res;
 
-    // 🔥 FIX REAL: USAR fecha_hora_salida
+    // 🔥 LÓGICA CORRECTA
     const { data: abiertos } = await client
       .from("accesos_registro_propietarios")
-      .select("id, fecha_hora_salida")
+      .select("id")
       .eq("acceso_id", acceso.id)
-      .is("fecha_hora_salida", null) // 👈 ESTE ES EL FIX
+      .is("fecha_hora_salida", null)
       .limit(1);
 
     const abierto = abiertos?.[0];
@@ -179,8 +179,7 @@ document.getElementById("btnRegistrar").onclick = async () => {
 
     if (!pin) {
       alert("Ingresa el PIN");
-      btn.disabled = false;
-      btn.innerText = "Registrar";
+      resetBtn(btn);
       return;
     }
 
@@ -191,15 +190,13 @@ document.getElementById("btnRegistrar").onclick = async () => {
 
     if (error) {
       alert("Error técnico: " + error.message);
-      btn.disabled = false;
-      btn.innerText = "Registrar";
+      resetBtn(btn);
       return;
     }
 
     if (!data?.ok) {
       alert(data?.mensaje || "Error");
-      btn.disabled = false;
-      btn.innerText = "Registrar";
+      resetBtn(btn);
       return;
     }
 
@@ -209,11 +206,21 @@ document.getElementById("btnRegistrar").onclick = async () => {
         : "ENTRADA REGISTRADA"
     );
 
+    // 🔥 RESET BOTÓN
+    resetBtn(btn);
+
   } catch (err) {
     console.error(err);
     alert("Error inesperado");
+    resetBtn(btn);
   }
 };
+
+// 🔹 RESET BOTÓN (modo seguro)
+function resetBtn(btn) {
+  btn.disabled = false;
+  btn.innerText = "Registrar";
+}
 
 // 🔹 RESULTADO
 function mostrarResultado(texto) {
