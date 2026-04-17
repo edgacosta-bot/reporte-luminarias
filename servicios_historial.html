@@ -18,6 +18,22 @@ body {
   color: white;
 }
 
+/* 🔥 HEADER APP */
+.header-app {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.logo-app {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  opacity: 0.95;
+}
+
 .container {
   max-width: 500px;
   margin: auto;
@@ -100,6 +116,11 @@ button.consultar {
 
 <body>
 
+<!-- 🔥 HEADER UX PRO -->
+<div class="header-app">
+  <img src="/icono-512.png" class="logo-app">
+</div>
+
 <div class="container">
 
 <div class="info">
@@ -133,7 +154,7 @@ window.addEventListener("DOMContentLoaded", async ()=>{
   await protegerPagina(["residente","colono"]);
 });
 
-// 🔹 PARSE LOCAL (FIX CRÍTICO)
+// 🔹 PARSE LOCAL (FIX ZONA HORARIA)
 function parseLocalDate(dateString) {
   const [year, month, day] = dateString.split("-");
   return new Date(year, month - 1, day);
@@ -181,7 +202,7 @@ function filtroRapido(tipo){
   cargar();
 }
 
-// 🔹 CARGAR (YA CORREGIDO)
+// 🔹 CARGAR DATOS
 async function cargar(){
 
   const inicio = document.getElementById("inicio").value;
