@@ -123,14 +123,21 @@ Puede verificar horarios y personal que realizó el acceso.
 
 </div>
 
-<!-- 🔥 IMPORTANTE: NO usamos module para evitar romper auth.js -->
+<!-- 🔥 FECHAS GLOBAL -->
 <script src="/utils/dates.js"></script>
 
 <script>
 
+// 🔹 PROTEGER
 window.addEventListener("DOMContentLoaded", async ()=>{
   await protegerPagina(["residente","colono"]);
 });
+
+// 🔹 PARSE LOCAL (FIX CRÍTICO)
+function parseLocalDate(dateString) {
+  const [year, month, day] = dateString.split("-");
+  return new Date(year, month - 1, day);
+}
 
 // 🔹 FORMATO INPUT
 function formatoInput(fecha){
@@ -174,7 +181,7 @@ function filtroRapido(tipo){
   cargar();
 }
 
-// 🔹 CARGAR DATOS (CORREGIDO)
+// 🔹 CARGAR (YA CORREGIDO)
 async function cargar(){
 
   const inicio = document.getElementById("inicio").value;
@@ -185,8 +192,11 @@ async function cargar(){
     return;
   }
 
-  const rangoInicio = window.getUTCDayRange(new Date(inicio));
-  const rangoFin = window.getUTCDayRange(new Date(fin));
+  const fechaInicioLocal = parseLocalDate(inicio);
+  const fechaFinLocal = parseLocalDate(fin);
+
+  const rangoInicio = window.getUTCDayRange(fechaInicioLocal);
+  const rangoFin = window.getUTCDayRange(fechaFinLocal);
 
   const { data, error } = await supabaseClient
     .from("accesos_servicios")
