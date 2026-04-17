@@ -132,18 +132,17 @@ async function validar() {
 
     residente = res;
 
-    // 🔥 FIX CLAVE: BUSCAR REGISTRO ABIERTO
+    // 🔥 FIX REAL: USAR fecha_hora_salida
     const { data: abiertos } = await client
       .from("accesos_registro_propietarios")
-      .select("id")
+      .select("id, fecha_hora_salida")
       .eq("acceso_id", acceso.id)
-      .eq("estatus", "dentro")
+      .is("fecha_hora_salida", null) // 👈 ESTE ES EL FIX
       .limit(1);
 
     const abierto = abiertos?.[0];
 
     accionActual = abierto ? "salida" : "entrada";
-
     colorActual = abierto ? "warn" : "ok";
 
     pintar(
