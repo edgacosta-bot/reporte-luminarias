@@ -88,16 +88,23 @@ button {
 
 <script>
 
-// 🔥 CLIENTE ORIGINAL (SE MANTIENE)
+// 🔥 CLIENTE ORIGINAL (NO TOCAR)
 const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nz20NjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
-// 🔹 QR
-const params = new URLSearchParams(window.location.search);
-const qr = params.get("qr");
+// 🔹 QR NORMALIZADO (🔥 FIX CLAVE)
+let qr = new URLSearchParams(window.location.search).get("qr");
 
+if (qr) {
+  qr = qr.trim().toLowerCase();
+  qr = qr.match(/[0-9a-f-]{36}/)?.[0]; // extrae UUID limpio
+}
+
+console.log("QR limpio:", qr);
+
+// 🔹 VARIABLES
 let acceso = null;
 let residente = null;
 let accionActual = null;
@@ -120,17 +127,15 @@ async function validar() {
 
     acceso = data;
 
-    const { data: res, error: errRes } = await client
+    const { data: res } = await client
       .from("residentes")
       .select("*")
       .eq("id", acceso.residente_id)
       .single();
 
-    if (errRes || !res) return pintar("Residente no encontrado", "error");
-
     residente = res;
 
-    const { data: movimientos, error: errMov } = await client
+    const { data: movimientos } = await client
       .from("accesos_registro_propietarios")
       .select("*")
       .eq("acceso_id", acceso.id)
@@ -212,7 +217,7 @@ function pintar(mensaje, tipo, data = null) {
     detalle.innerHTML = `
       <p><b>PROPIETARIO</b></p>
       <p><b>${acceso?.nombre || "SIN NOMBRE"}</b></p>
-      <p>${data.privada}-${data.casa}</p>
+      <p>${data?.privada || ""}-${data?.casa || ""}</p>
     `;
   } else {
     detalle.innerHTML = "";
