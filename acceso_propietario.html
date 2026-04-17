@@ -25,9 +25,7 @@ body {
   background: linear-gradient(135deg,#020617,#0f172a);
 }
 
-.header-app {
-  margin-bottom: 10px;
-}
+.header-app { margin-bottom: 10px; }
 
 .logo-app {
   width: 70px;
@@ -90,10 +88,10 @@ button {
 
 <script>
 
-// 🔥 CLIENTE ORIGINAL (FUNCIONAL)
+// 🔥 CLIENTE ORIGINAL (SE MANTIENE)
 const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs' // 👈 tu clave real
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nz20NjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
 // 🔹 QR
@@ -108,42 +106,51 @@ let colorActual = "";
 // 🔹 VALIDAR
 async function validar() {
 
-  if (!qr) return pintar("QR inválido", "error");
+  try {
 
-  const { data } = await client
-    .from("accesos_propietarios")
-    .select("*")
-    .eq("identificador", qr)
-    .single();
+    if (!qr) return pintar("QR inválido", "error");
 
-  if (!data) return pintar("QR inválido", "error");
+    const { data, error } = await client
+      .from("accesos_propietarios")
+      .select("*")
+      .eq("identificador", qr)
+      .single();
 
-  acceso = data;
+    if (error || !data) return pintar("QR inválido", "error");
 
-  const { data: res } = await client
-    .from("residentes")
-    .select("*")
-    .eq("id", acceso.residente_id)
-    .single();
+    acceso = data;
 
-  residente = res;
+    const { data: res, error: errRes } = await client
+      .from("residentes")
+      .select("*")
+      .eq("id", acceso.residente_id)
+      .single();
 
-  const { data: movimientos } = await client
-    .from("accesos_registro_propietarios")
-    .select("*")
-    .eq("acceso_id", acceso.id)
-    .order("fecha_hora_entrada", { ascending: false })
-    .limit(1);
+    if (errRes || !res) return pintar("Residente no encontrado", "error");
 
-  const ultimo = movimientos?.[0];
+    residente = res;
 
-  accionActual = (ultimo && ultimo.estatus === "dentro") ? "salida" : "entrada";
+    const { data: movimientos, error: errMov } = await client
+      .from("accesos_registro_propietarios")
+      .select("*")
+      .eq("acceso_id", acceso.id)
+      .order("fecha_hora_entrada", { ascending: false })
+      .limit(1);
 
-  colorActual = "ok";
+    const ultimo = movimientos?.[0];
 
-  pintar("VALIDADO", "ok", residente);
+    accionActual = (ultimo && ultimo.estatus === "dentro") ? "salida" : "entrada";
 
-  document.getElementById("btnAccion").style.display = "block";
+    colorActual = "ok";
+
+    pintar("VALIDADO", "ok", residente);
+
+    document.getElementById("btnAccion").style.display = "block";
+
+  } catch (err) {
+    console.error(err);
+    pintar("Error en validación", "error");
+  }
 }
 
 validar();
@@ -153,26 +160,38 @@ document.getElementById("btnAccion").onclick = () => {
   document.getElementById("control").style.display = "block";
 };
 
-// 🔹 REGISTRAR (🔥 COMO FUNCIONABA)
+// 🔹 REGISTRAR
 document.getElementById("btnRegistrar").onclick = async () => {
 
-  const pin = document.getElementById("pin").value;
+  try {
 
-  const { data, error } = await client.rpc('registrar_acceso_propietario', {
-    p_qr: qr,
-    p_pin: pin
-  });
+    const pin = document.getElementById("pin").value.trim();
 
-  if (error || !data?.ok) {
-    alert(data?.mensaje || "PIN incorrecto");
-    return;
+    if (!pin) {
+      alert("Ingresa el PIN");
+      return;
+    }
+
+    const { data, error } = await client.rpc('registrar_acceso_propietario', {
+      p_qr: qr,
+      p_pin: pin
+    });
+
+    if (error || !data?.ok) {
+      alert(data?.mensaje || "PIN incorrecto");
+      return;
+    }
+
+    mostrarResultado(
+      data.accion === "salida"
+        ? "SALIDA REGISTRADA"
+        : "ENTRADA REGISTRADA"
+    );
+
+  } catch (err) {
+    console.error(err);
+    alert("Error al registrar");
   }
-
-  mostrarResultado(
-    data.accion === "salida"
-      ? "SALIDA REGISTRADA"
-      : "ENTRADA REGISTRADA"
-  );
 };
 
 // 🔹 RESULTADO
@@ -192,7 +211,7 @@ function pintar(mensaje, tipo, data = null) {
   if (data) {
     detalle.innerHTML = `
       <p><b>PROPIETARIO</b></p>
-      <p><b>${(acceso && acceso.nombre) || "SIN NOMBRE"}</b></p>
+      <p><b>${acceso?.nombre || "SIN NOMBRE"}</b></p>
       <p>${data.privada}-${data.casa}</p>
     `;
   } else {
