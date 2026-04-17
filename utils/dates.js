@@ -1,9 +1,8 @@
 // ===============================
-// 🌐 FECHAS - ESTÁNDAR GLOBAL
+// 🌐 FECHAS - GLOBAL (SIN MODULE)
 // ===============================
 
-// 🔹 Obtener rango UTC de un día (HOY, AYER, etc)
-export function getUTCDayRange(date = new Date()) {
+window.getUTCDayRange = function(date = new Date()) {
   const start = new Date(date)
   start.setHours(0, 0, 0, 0)
 
@@ -16,8 +15,7 @@ export function getUTCDayRange(date = new Date()) {
   }
 }
 
-// 🔹 Últimos N días (ej: 7 días)
-export function getLastDaysRange(days = 7) {
+window.getLastDaysRange = function(days = 7) {
   const end = new Date()
   end.setHours(23, 59, 59, 999)
 
@@ -31,8 +29,7 @@ export function getLastDaysRange(days = 7) {
   }
 }
 
-// 🔹 Formatear fecha a México (visualización)
-export function formatMXDate(dateString) {
+window.formatMXDate = function(dateString) {
   if (!dateString) return ''
 
   return new Date(dateString).toLocaleString('es-MX', {
@@ -45,8 +42,7 @@ export function formatMXDate(dateString) {
   })
 }
 
-// 🔹 Solo fecha (sin hora)
-export function formatMXDateOnly(dateString) {
+window.formatMXDateOnly = function(dateString) {
   if (!dateString) return ''
 
   return new Date(dateString).toLocaleDateString('es-MX', {
