@@ -90,12 +90,6 @@ input {
 .entrada { background: #16a34a; }
 .salida { background: #dc2626; }
 
-.msg {
-  text-align: center;
-  margin-top: 10px;
-  font-size: 13px;
-}
-
 </style>
 </head>
 
@@ -137,7 +131,6 @@ async function cargarServicios(){
 
   for(const s of data){
 
-    // 🔹 verificar si hay registro abierto
     const { data: abierto } = await supabaseClient
       .from("accesos_servicios")
       .select("*")
@@ -178,7 +171,7 @@ async function cargarServicios(){
   document.getElementById("lista").innerHTML = html || "Sin servicios";
 }
 
-// 🔹 REGISTRAR ENTRADA
+// 🔹 ENTRADA (UTC CORRECTO)
 async function registrarEntrada(servicio_id){
 
   const nombre = document.getElementById("persona_"+servicio_id).value;
@@ -195,7 +188,7 @@ async function registrarEntrada(servicio_id){
     .insert([{
       servicio_id,
       nombre_persona: nombre,
-      fecha_entrada: new Date().toISOString(),
+      fecha_entrada: new Date().toISOString(), // ✅ UTC correcto
       registrado_por: userData.user.id
     }]);
 
@@ -208,13 +201,13 @@ async function registrarEntrada(servicio_id){
   cargarServicios();
 }
 
-// 🔹 REGISTRAR SALIDA
+// 🔹 SALIDA (UTC CORRECTO)
 async function registrarSalida(id){
 
   const { error } = await supabaseClient
     .from("accesos_servicios")
     .update({
-      fecha_salida: new Date().toISOString()
+      fecha_salida: new Date().toISOString() // ✅ UTC correcto
     })
     .eq("id", id);
 
