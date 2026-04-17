@@ -18,6 +18,22 @@ body {
   color: white;
 }
 
+/* 🔥 HEADER APP */
+.header-app {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.logo-app {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  opacity: 0.95;
+}
+
 .container {
   max-width: 500px;
   margin: auto;
@@ -85,6 +101,11 @@ input {
 
 <body>
 
+<!-- 🔥 HEADER UX PRO -->
+<div class="header-app">
+  <img src="/icono-512.png" class="logo-app">
+</div>
+
 <div class="container">
 
 <h2>🚧 Accesos recurrentes</h2>
@@ -92,6 +113,9 @@ input {
 <div id="lista">Cargando...</div>
 
 </div>
+
+<!-- 🔥 FECHAS GLOBAL -->
+<script src="/utils/dates.js"></script>
 
 <script>
 
@@ -113,7 +137,7 @@ async function cargarServicios(){
 
   for(const s of data){
 
-    // verificar si hay registro abierto
+    // 🔹 verificar si hay registro abierto
     const { data: abierto } = await supabaseClient
       .from("accesos_servicios")
       .select("*")
@@ -130,7 +154,7 @@ async function cargarServicios(){
         abierto?.length
         ? `
           <div class="estado">
-            🟢 Entrada: ${new Date(abierto[0].fecha_entrada).toLocaleString("es-MX")}
+            🟢 Entrada: ${window.formatMXDate(abierto[0].fecha_entrada)}
           </div>
 
           <button class="btn salida"
@@ -154,7 +178,7 @@ async function cargarServicios(){
   document.getElementById("lista").innerHTML = html || "Sin servicios";
 }
 
-// 🔹 ENTRADA
+// 🔹 REGISTRAR ENTRADA
 async function registrarEntrada(servicio_id){
 
   const nombre = document.getElementById("persona_"+servicio_id).value;
@@ -166,7 +190,7 @@ async function registrarEntrada(servicio_id){
 
   const { data:userData } = await supabaseClient.auth.getUser();
 
-  await supabaseClient
+  const { error } = await supabaseClient
     .from("accesos_servicios")
     .insert([{
       servicio_id,
@@ -175,18 +199,30 @@ async function registrarEntrada(servicio_id){
       registrado_por: userData.user.id
     }]);
 
+  if(error){
+    console.error(error);
+    alert("Error al registrar entrada");
+    return;
+  }
+
   cargarServicios();
 }
 
-// 🔹 SALIDA
+// 🔹 REGISTRAR SALIDA
 async function registrarSalida(id){
 
-  await supabaseClient
+  const { error } = await supabaseClient
     .from("accesos_servicios")
     .update({
       fecha_salida: new Date().toISOString()
     })
     .eq("id", id);
+
+  if(error){
+    console.error(error);
+    alert("Error al registrar salida");
+    return;
+  }
 
   cargarServicios();
 }
