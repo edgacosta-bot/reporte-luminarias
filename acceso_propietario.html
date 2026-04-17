@@ -23,6 +23,7 @@ body {
   color: white;
   text-align: center;
   background: linear-gradient(135deg,#020617,#0f172a);
+  transition: 0.3s;
 }
 
 .header-app { margin-bottom: 10px; }
@@ -65,6 +66,11 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 </style>
 </head>
 
@@ -82,24 +88,29 @@ button {
 
   <div id="control" style="display:none;">
     <input type="password" id="pin" placeholder="Ingrese PIN">
+    
+    <p style="font-size:12px;color:#9ca3af;">
+      Presione una sola vez y espere confirmación
+    </p>
+
     <button id="btnRegistrar">Registrar</button>
   </div>
 </div>
 
 <script>
 
-// 🔥 CLIENTE ORIGINAL (NO TOCAR)
+// 🔥 CLIENTE
 const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
+  'eyJhbGciOiJIUzI1NiIsInT5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
-// 🔹 QR NORMALIZADO (🔥 FIX CLAVE)
+// 🔹 QR LIMPIO
 let qr = new URLSearchParams(window.location.search).get("qr");
 
 if (qr) {
   qr = qr.trim().toLowerCase();
-  qr = qr.match(/[0-9a-f-]{36}/)?.[0]; // extrae UUID limpio
+  qr = qr.match(/[0-9a-f-]{36}/)?.[0];
 }
 
 console.log("QR limpio:", qr);
@@ -107,8 +118,8 @@ console.log("QR limpio:", qr);
 // 🔹 VARIABLES
 let acceso = null;
 let residente = null;
-let accionActual = null;
-let colorActual = "";
+let colorActual = "ok";
+let bloqueado = false;
 
 // 🔹 VALIDAR
 async function validar() {
@@ -135,19 +146,6 @@ async function validar() {
 
     residente = res;
 
-    const { data: movimientos } = await client
-      .from("accesos_registro_propietarios")
-      .select("*")
-      .eq("acceso_id", acceso.id)
-      .order("fecha_hora_entrada", { ascending: false })
-      .limit(1);
-
-    const ultimo = movimientos?.[0];
-
-    accionActual = (ultimo && ultimo.estatus === "dentro") ? "salida" : "entrada";
-
-    colorActual = "ok";
-
     pintar("VALIDADO", "ok", residente);
 
     document.getElementById("btnAccion").style.display = "block";
@@ -168,6 +166,12 @@ document.getElementById("btnAccion").onclick = () => {
 // 🔹 REGISTRAR
 document.getElementById("btnRegistrar").onclick = async () => {
 
+  if (bloqueado) return;
+  bloqueado = true;
+
+  const boton = document.getElementById("btnRegistrar");
+  boton.disabled = true;
+
   try {
 
     const pin = document.getElementById("pin").value.trim();
@@ -182,8 +186,15 @@ document.getElementById("btnRegistrar").onclick = async () => {
       p_pin: pin
     });
 
-    if (error || !data?.ok) {
-      alert(data?.mensaje || "PIN incorrecto");
+    console.log("RPC RESPONSE:", { data, error });
+
+    if (error) {
+      alert("Error técnico: " + error.message);
+      return;
+    }
+
+    if (!data?.ok) {
+      alert(data?.mensaje || "Operación no válida");
       return;
     }
 
@@ -195,14 +206,27 @@ document.getElementById("btnRegistrar").onclick = async () => {
 
   } catch (err) {
     console.error(err);
-    alert("Error al registrar");
+    alert("Error inesperado");
+  } finally {
+    setTimeout(() => {
+      bloqueado = false;
+      boton.disabled = false;
+    }, 2000);
   }
 };
 
-// 🔹 RESULTADO
+// 🔹 RESULTADO PRO
 function mostrarResultado(texto) {
+
   document.getElementById("estado").innerText = texto;
-  document.body.className = colorActual;
+  document.body.className = "ok";
+
+  // 🔒 BLOQUEAR UI
+  document.getElementById("btnRegistrar").style.display = "none";
+  document.getElementById("btnAccion").style.display = "none";
+  document.getElementById("control").style.display = "none";
+
+  alert(texto);
 }
 
 // 🔹 UI
