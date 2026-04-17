@@ -87,13 +87,13 @@ button {
 
 <script>
 
-// 🔥 CLIENTE PÚBLICO (OBLIGATORIO PARA QR)
+// 🔥 CLIENTE PÚBLICO (QR)
 const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs' // 👈 PON TU ANON KEY REAL
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs' // 👈 tu anon key real
 );
 
-// 🔹 PARAMETRO QR ROBUSTO
+// 🔹 PARAMETRO QR
 const params = new URLSearchParams(window.location.search);
 const qr =
   params.get("qr") ||
@@ -103,36 +103,10 @@ const qr =
 
 console.log("QR recibido:", qr);
 
-let PIN_CORRECTO = null;
-
 let acceso = null;
 let residente = null;
 let accionActual = null;
 let colorActual = "";
-
-cargarConfiguracion();
-
-// 🔹 CONFIG
-async function cargarConfiguracion() {
-
-  const { data, error } = await client
-    .from("seguridad_config")
-    .select("pin_acceso")
-    .limit(1)
-    .maybeSingle();
-
-  console.log("CONFIG:", data, error);
-
-  if (error) {
-    console.error("Error config:", error);
-  }
-
-  if (data) {
-    PIN_CORRECTO = data.pin_acceso;
-  }
-
-  validar();
-}
 
 // 🔹 VALIDAR QR
 async function validar() {
@@ -153,12 +127,7 @@ async function validar() {
     console.log("DATA acceso:", data);
     console.log("ERROR acceso:", error);
 
-    if (error) {
-      pintar("Error de consulta", "error");
-      return;
-    }
-
-    if (!data) {
+    if (error || !data) {
       pintar("QR inválido", "error");
       return;
     }
@@ -172,7 +141,6 @@ async function validar() {
       .maybeSingle();
 
     if (errRes || !res) {
-      console.error("Error residente:", errRes);
       pintar("Error de residente", "error");
       return;
     }
@@ -197,10 +165,12 @@ async function validar() {
     document.getElementById("btnAccion").style.display = "block";
 
   } catch (e) {
-    console.error("ERROR VALIDAR:", e);
+    console.error(e);
     pintar("ERROR DE SISTEMA", "error");
   }
 }
+
+validar();
 
 // 🔹 MOSTRAR INPUT PIN
 document.getElementById("btnAccion").onclick = () => {
@@ -210,28 +180,35 @@ document.getElementById("btnAccion").onclick = () => {
 // 🔹 REGISTRAR ACCESO
 document.getElementById("btnRegistrar").onclick = async () => {
 
-  const pinIngresado = document.getElementById("pin").value.trim();
-  const pinSistema = String(PIN_CORRECTO).trim();
+  const pin = document.getElementById("pin").value.trim();
 
-  console.log("PIN ingresado:", pinIngresado);
-  console.log("PIN sistema:", pinSistema);
-
-  if (!PIN_CORRECTO) {
-    alert("Error de configuración");
+  if (!pin) {
+    alert("Ingrese PIN");
     return;
   }
 
-  if (pinIngresado !== pinSistema) {
+  // 🔥 VALIDAR CONTRA TABLA VIGILANTES
+  const { data: vigilante, error: errorVig } = await client
+    .from("vigilantes")
+    .select("*")
+    .eq("pin", pin)
+    .eq("activo", true)
+    .maybeSingle();
+
+  console.log("VIGILANTE:", vigilante, errorVig);
+
+  if (errorVig || !vigilante) {
     alert("PIN incorrecto");
     return;
   }
 
+  // 🔥 EJECUTAR RPC
   const { data, error } = await client.rpc('registrar_acceso_propietario', {
     p_qr: qr,
-    p_pin: pinIngresado
+    p_pin: pin
   });
 
-  console.log("RPC respuesta:", data, error);
+  console.log("RPC:", data, error);
 
   if (error || !data?.ok) {
     alert(data?.mensaje || "Error");
@@ -245,7 +222,7 @@ document.getElementById("btnRegistrar").onclick = async () => {
   );
 };
 
-// 🔹 RESULTADO FINAL
+// 🔹 RESULTADO
 function mostrarResultado(texto) {
   document.getElementById("estado").innerText = texto;
   document.body.className = colorActual;
