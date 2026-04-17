@@ -200,11 +200,11 @@ document.getElementById("btnRegistrar").onclick = async () => {
       return;
     }
 
-    mostrarResultado(
-      data.accion === "salida"
-        ? "SALIDA REGISTRADA"
-        : "ENTRADA REGISTRADA"
-    );
+    if (data.accion === "salida") {
+  mostrarResultado("SALIDA REGISTRADA", "warn");
+} else {
+  mostrarResultado("ACCESO AUTORIZADO", "ok");
+}
 
     // 🔥 RESET BOTÓN
     resetBtn(btn);
@@ -223,10 +223,21 @@ function resetBtn(btn) {
 }
 
 // 🔹 RESULTADO
-function mostrarResultado(texto) {
-  document.getElementById("estado").innerText = texto;
-}
+function mostrarResultado(texto, tipo) {
 
+  // 🎨 color de fondo
+  document.body.className = tipo;
+
+  // 🧾 texto principal
+  document.getElementById("estado").innerText = texto;
+
+  // 🧼 limpiar detalle
+  document.getElementById("detalle").innerHTML = "";
+
+  // ❌ ocultar todo lo interactivo
+  document.getElementById("btnAccion").style.display = "none";
+  document.getElementById("control").style.display = "none";
+}
 // 🔹 UI
 function pintar(mensaje, tipo, data = null) {
 
