@@ -123,15 +123,16 @@ Puede verificar horarios y personal que realizó el acceso.
 
 </div>
 
-<script type="module">
+<!-- 🔥 IMPORTANTE: NO usamos module para evitar romper auth.js -->
+<script src="/utils/dates.js"></script>
 
-import { getUTCDayRange, formatMXDate } from './utils/dates.js';
+<script>
 
 window.addEventListener("DOMContentLoaded", async ()=>{
   await protegerPagina(["residente","colono"]);
 });
 
-// 🔹 FORMATO INPUT YYYY-MM-DD
+// 🔹 FORMATO INPUT
 function formatoInput(fecha){
   return fecha.toISOString().split("T")[0];
 }
@@ -142,7 +143,7 @@ function setFechaInputs(inicio, fin){
   document.getElementById("fin").value = fin;
 }
 
-// 🔹 FILTROS RÁPIDOS CORREGIDOS
+// 🔹 FILTROS RÁPIDOS
 function filtroRapido(tipo){
 
   const hoy = new Date();
@@ -173,7 +174,7 @@ function filtroRapido(tipo){
   cargar();
 }
 
-// 🔹 CARGAR DATOS (YA CORREGIDO)
+// 🔹 CARGAR DATOS (CORREGIDO)
 async function cargar(){
 
   const inicio = document.getElementById("inicio").value;
@@ -184,10 +185,10 @@ async function cargar(){
     return;
   }
 
-  const rangoInicio = getUTCDayRange(new Date(inicio));
-  const rangoFin = getUTCDayRange(new Date(fin));
+  const rangoInicio = window.getUTCDayRange(new Date(inicio));
+  const rangoFin = window.getUTCDayRange(new Date(fin));
 
-  const { data } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("accesos_servicios")
     .select(`
       *,
@@ -196,6 +197,12 @@ async function cargar(){
     .gte("fecha_entrada", rangoInicio.start)
     .lte("fecha_entrada", rangoFin.end)
     .order("fecha_entrada",{ascending:false});
+
+  if(error){
+    console.error("ERROR SUPABASE:", error);
+    alert("Error al cargar datos");
+    return;
+  }
 
   let html="";
 
@@ -213,13 +220,13 @@ async function cargar(){
       </div>
 
       <div class="hora">
-        🟢 Entrada: ${formatMXDate(r.fecha_entrada)}
+        🟢 Entrada: ${window.formatMXDate(r.fecha_entrada)}
       </div>
 
       <div class="hora">
         ${
           r.fecha_salida
-          ? `🔴 Salida: ${formatMXDate(r.fecha_salida)}`
+          ? `🔴 Salida: ${window.formatMXDate(r.fecha_salida)}`
           : "⚠️ En sitio"
         }
       </div>
