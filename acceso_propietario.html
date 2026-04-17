@@ -87,16 +87,23 @@ button {
 
 <script>
 
-// 🔥 CLIENTE PÚBLICO (CORRECTO PARA QR)
+// 🔥 CLIENTE PÚBLICO (SOLO PARA QR)
 const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
   'TU_ANON_KEY_AQUI'
 );
 
-let PIN_CORRECTO = null;
-
+// 🔹 PARAMETRO QR (ROBUSTO)
 const params = new URLSearchParams(window.location.search);
-const qr = params.get("qr");
+const qr =
+  params.get("qr") ||
+  params.get("id") ||
+  params.get("token") ||
+  params.get("v");
+
+console.log("QR recibido:", qr);
+
+let PIN_CORRECTO = null;
 
 let acceso = null;
 let residente = null;
@@ -105,73 +112,121 @@ let colorActual = "";
 
 cargarConfiguracion();
 
+// 🔹 CONFIG
 async function cargarConfiguracion() {
-  const { data } = await client
+  const { data, error } = await client
     .from("seguridad_config")
     .select("pin_acceso")
     .limit(1)
-    .single();
+    .maybeSingle();
 
-  if (data) PIN_CORRECTO = data.pin_acceso;
+  if (error) {
+    console.error("Error config:", error);
+  }
+
+  if (data) {
+    PIN_CORRECTO = data.pin_acceso;
+  }
 
   validar();
 }
 
+// 🔹 VALIDAR
 async function validar() {
 
-  if (!qr) return pintar("QR inválido", "error");
+  try {
 
-  const { data } = await client
-    .from("accesos_propietarios")
-    .select("*")
-    .eq("identificador", qr)
-    .single();
+    if (!qr) {
+      pintar("QR inválido", "error");
+      return;
+    }
 
-  if (!data) return pintar("QR inválido", "error");
+    const { data, error } = await client
+      .from("accesos_propietarios")
+      .select("*")
+      .eq("identificador", qr)
+      .maybeSingle();
 
-  acceso = data;
+    console.log("DATA acceso:", data);
+    console.log("ERROR acceso:", error);
 
-  const { data: res } = await client
-    .from("residentes")
-    .select("*")
-    .eq("id", acceso.residente_id)
-    .single();
+    if (error) {
+      console.error(error);
+      pintar("Error de consulta", "error");
+      return;
+    }
 
-  residente = res;
+    if (!data) {
+      pintar("QR inválido", "error");
+      return;
+    }
 
-  const { data: movimientos } = await client
-    .from("accesos_registro_propietarios")
-    .select("*")
-    .eq("acceso_id", acceso.id)
-    .order("fecha_hora_entrada", { ascending: false })
-    .limit(1);
+    acceso = data;
 
-  const ultimo = movimientos?.[0];
+    const { data: res, error: errRes } = await client
+      .from("residentes")
+      .select("*")
+      .eq("id", acceso.residente_id)
+      .maybeSingle();
 
-  accionActual = (ultimo && ultimo.estatus === "dentro") ? "salida" : "entrada";
+    if (errRes || !res) {
+      console.error("Error residente:", errRes);
+      pintar("Error de residente", "error");
+      return;
+    }
 
-  pintar("VALIDADO", "ok", residente);
+    residente = res;
 
-  document.getElementById("btnAccion").style.display = "block";
+    const { data: movimientos } = await client
+      .from("accesos_registro_propietarios")
+      .select("*")
+      .eq("acceso_id", acceso.id)
+      .order("fecha_hora_entrada", { ascending: false })
+      .limit(1);
+
+    const ultimo = movimientos?.[0];
+
+    accionActual = (ultimo && ultimo.estatus === "dentro") ? "salida" : "entrada";
+
+    pintar("VALIDADO", "ok", residente);
+
+    document.getElementById("btnAccion").style.display = "block";
+
+  } catch (e) {
+    console.error("ERROR VALIDAR:", e);
+    pintar("ERROR DE SISTEMA", "error");
+  }
 }
 
+// 🔹 ACCIÓN
 document.getElementById("btnAccion").onclick = () => {
   document.getElementById("control").style.display = "block";
 };
 
+// 🔹 REGISTRAR
 document.getElementById("btnRegistrar").onclick = async () => {
 
   const pin = document.getElementById("pin").value;
 
-  if (pin !== PIN_CORRECTO) return;
+  if (!PIN_CORRECTO) {
+    alert("Error de configuración");
+    return;
+  }
 
-  const { data } = await client.rpc('registrar_acceso_propietario', {
+  if (pin !== PIN_CORRECTO) {
+    alert("PIN incorrecto");
+    return;
+  }
+
+  const { data, error } = await client.rpc('registrar_acceso_propietario', {
     p_qr: qr,
     p_pin: pin
   });
 
-  if (!data?.ok) {
-    alert("Error");
+  console.log("RPC respuesta:", data, error);
+
+  if (error || !data?.ok) {
+    alert(data?.mensaje || "Error");
     return;
   }
 
@@ -182,14 +237,29 @@ document.getElementById("btnRegistrar").onclick = async () => {
   );
 };
 
+// 🔹 RESULTADO
 function mostrarResultado(texto) {
   document.getElementById("estado").innerText = texto;
   document.body.className = colorActual;
 }
 
+// 🔹 UI
 function pintar(mensaje, tipo, data = null) {
+
   document.body.className = tipo;
   document.getElementById("estado").innerText = mensaje;
+
+  const detalle = document.getElementById("detalle");
+
+  if (data) {
+    detalle.innerHTML = `
+      <p><b>PROPIETARIO</b></p>
+      <p><b>${(acceso && acceso.nombre) || "SIN NOMBRE"}</b></p>
+      <p>${data.privada}-${data.casa}</p>
+    `;
+  } else {
+    detalle.innerHTML = "";
+  }
 }
 
 </script>
