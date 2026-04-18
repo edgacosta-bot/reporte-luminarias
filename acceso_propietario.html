@@ -44,8 +44,8 @@ button {
   color: white;
   font-weight: bold;
 }
-
 </style>
+
 </head>
 
 <body>
@@ -110,7 +110,7 @@ async function init(){
     <p>${residente.privada}-${residente.casa}</p>
   `;
 
-  // 🔍 detectar acceso abierto (SIN mostrar nada aún)
+  // 🔍 detectar acceso abierto
   const { data: abiertos } = await client
     .from("accesos_registro_propietarios")
     .select("*")
@@ -136,11 +136,12 @@ document.getElementById("btnConfirmar").onclick = async () => {
     return;
   }
 
-  // 🔐 validar vigilante
+  // 🔐 VALIDACIÓN CORRECTA (ALINEADA A TU SISTEMA)
   const { data: vigilante } = await client
-    .from("vigilantes")
+    .from("residentes")
     .select("*")
-    .eq("pin", pin)
+    .eq("pin_vigilante", pin)
+    .eq("tipo", "vigilante")
     .eq("activo", true)
     .maybeSingle();
 
@@ -167,7 +168,7 @@ document.getElementById("btnConfirmar").onclick = async () => {
     return;
   }
 
-  // 🔥 AQUÍ YA ES ENTRADA → evaluar estado_pago
+  // 🔥 ENTRADA → evaluar estado_pago
   const estado = (residente.estado_pago || "").toLowerCase();
 
   let color = "ok";
