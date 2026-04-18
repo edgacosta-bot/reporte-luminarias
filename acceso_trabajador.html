@@ -8,6 +8,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
+<script src="/utils/ui.js"></script>
 
 <style>
 body {
@@ -38,10 +39,21 @@ input, button {
   border: none;
 }
 
+input {
+  background: #020617;
+  color: white;
+  text-align: center;
+  font-size: 18px;
+}
+
 button {
   background: #2563eb;
   color: white;
   font-weight: bold;
+}
+
+.hidden {
+  display: none;
 }
 </style>
 </head>
@@ -50,13 +62,16 @@ button {
 
 <div class="container">
 
+  <h2>🚧 Acceso trabajador</h2>
+
   <h1 id="estado">Validando...</h1>
   <div id="detalle"></div>
 
-  <input type="password" id="pin" placeholder="PIN vigilante">
+  <input type="password" id="pin" placeholder="Ingrese PIN del vigilante">
   <button id="btnValidar">Validar</button>
 
-  <button id="btnRegistrar" style="display:none;">Registrar</button>
+  <button id="btnRegistrar" class="hidden">Registrar</button>
+  <button id="btnAceptar" class="hidden">Aceptar</button>
 
 </div>
 
@@ -70,12 +85,12 @@ let accesoActual = null;
 let tipoAccion = "";
 let vigilante = null;
 
-validar();
+init();
 
-async function validar(){
+async function init(){
 
-  if (!qr) {
-    pintar("QR inválido","error");
+  if (!qr){
+    pintarErrorFinal("QR inválido");
     return;
   }
 
@@ -86,29 +101,28 @@ async function validar(){
     .maybeSingle();
 
   if (!trabajador){
-    pintar("QR inválido","error");
+    pintarErrorFinal("QR inválido");
     return;
   }
 
   trabajadorGlobal = trabajador;
-
   renderDetalle();
 
-  // VALIDACIONES
+  // 🔴 ACCESO CANCELADO (BLOQUEANTE)
   if (!trabajador.activo){
-    pintar("ACCESO CANCELADO","error");
+    pintarErrorFinal("Acceso cancelado");
     return;
   }
 
   const hoy = new Date().toLocaleDateString('sv-SE');
 
   if (trabajador.fecha_inicio && hoy < trabajador.fecha_inicio){
-    pintar("ACCESO AÚN NO INICIA","warn");
+    pintarErrorFinal("Acceso aún no inicia");
     return;
   }
 
   if (trabajador.fecha_fin && hoy > trabajador.fecha_fin){
-    pintar("ACCESO VENCIDO","error");
+    pintarErrorFinal("Acceso vencido");
     return;
   }
 
@@ -138,7 +152,7 @@ document.getElementById("btnValidar").onclick = async () => {
   const pin = document.getElementById("pin").value.trim();
 
   if(!pin){
-    alert("Ingresa PIN");
+    ui.warn("Ingrese PIN");
     return;
   }
 
@@ -151,7 +165,7 @@ document.getElementById("btnValidar").onclick = async () => {
     .maybeSingle();
 
   if(!data){
-    pintar("PIN incorrecto","error");
+    ui.error("PIN incorrecto");
     return;
   }
 
@@ -164,7 +178,7 @@ document.getElementById("btnValidar").onclick = async () => {
   }
 
   ocultarValidacion();
-  document.getElementById("btnRegistrar").style.display = "block";
+  document.getElementById("btnRegistrar").classList.remove("hidden");
 
 };
 
@@ -184,7 +198,7 @@ document.getElementById("btnRegistrar").onclick = async () => {
         vigilante_id: vigilante.id
       }]);
 
-    pintar("ENTRADA REGISTRADA","ok");
+    pintarFinal("ENTRADA REGISTRADA","ok");
   }
 
   if(tipoAccion === "salida"){
@@ -198,20 +212,36 @@ document.getElementById("btnRegistrar").onclick = async () => {
       })
       .eq("id", accesoActual.id);
 
-    pintar("SALIDA REGISTRADA","warn");
+    pintarFinal("SALIDA REGISTRADA","warn");
   }
 
 };
 
-// 🔹 UI FINAL LIMPIA
-function pintar(texto,color){
+// 🔴 ERROR FINAL (SIN PIN)
+function pintarErrorFinal(msg){
+
+  document.body.className = "error";
+  document.getElementById("estado").innerText = msg;
+
+  ocultarValidacion();
+  document.getElementById("btnAceptar").classList.remove("hidden");
+
+}
+
+// 🔹 ACEPTAR
+document.getElementById("btnAceptar").onclick = () => {
+  window.close();
+};
+
+// 🔹 UI FINAL
+function pintarFinal(texto,color){
 
   document.body.className = color;
   document.getElementById("estado").innerText = texto;
 
   renderDetalle();
 
-  document.getElementById("btnRegistrar").style.display = "none";
+  document.getElementById("btnRegistrar").classList.add("hidden");
 }
 
 function renderDetalle(){
