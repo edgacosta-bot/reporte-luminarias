@@ -114,9 +114,8 @@ button {
 
 <div class="form">
   <input id="nombre" placeholder="Nombre del servicio">
-  <select id="tipo">
-    <option value="">Selecciona tipo (opcional)</option>
-  </select>
+  <input id="tipo" list="tipos" placeholder="Tipo (opcional)">
+  <datalist id="tipos"></datalist>
   <button class="btn-add" onclick="crear()">Agregar servicio</button>
   <div id="msg" class="msg"></div>
 </div>
@@ -140,15 +139,14 @@ button {
     return;
   }
 
-  const select = document.getElementById("tipo");
-  select.innerHTML = `<option value="">Selecciona tipo (opcional)</option>`;
+  const lista = document.getElementById("tipos");
+  lista.innerHTML = "";
 
-  data.forEach(t=>{
-    const option = document.createElement("option");
-    option.value = t.nombre;
-    option.textContent = t.nombre;
-    select.appendChild(option);
-  });
+ data.forEach(t=>{
+  const option = document.createElement("option");
+  option.value = t.nombre;
+  lista.appendChild(option);
+});
 }
 
 window.addEventListener("DOMContentLoaded", async ()=>{
