@@ -7,6 +7,7 @@
 <title>Validación acceso propietario</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 <script src="/utils/ui.js"></script>
 
 <style>
@@ -17,9 +18,23 @@ body {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  color: white;
   text-align: center;
-  background: #020617;
+}
+
+/* 🔥 COLORES CORRECTOS */
+body.ok {
+  background: #16a34a;
+  color: white;
+}
+
+body.error {
+  background: #dc2626;
+  color: white;
+}
+
+body.warn {
+  background: #f59e0b;
+  color: #111827;
 }
 
 .container {
@@ -27,16 +42,19 @@ body {
   width: 90%;
 }
 
-.ok { background: #16a34a; }
-.warn { background: #f59e0b; }
-.error { background: #dc2626; }
-
 input, button {
   width: 100%;
   padding: 14px;
   margin-top: 10px;
   border-radius: 10px;
   border: none;
+}
+
+input {
+  background: #020617;
+  color: white;
+  text-align: center;
+  font-size: 18px;
 }
 
 button {
@@ -52,10 +70,12 @@ button {
 
 <div class="container">
 
+  <h2>🏠 Acceso propietario</h2>
+
   <h1 id="estado">Validar acceso</h1>
   <div id="detalle"></div>
 
-  <input type="password" id="pin" placeholder="Ingrese PIN">
+  <input type="password" id="pin" placeholder="Ingrese PIN del vigilante">
   <button id="btnValidar">Validar</button>
 
   <button id="btnRegistrar" style="display:none;">Registrar</button>
@@ -63,11 +83,6 @@ button {
 </div>
 
 <script>
-
-const client = supabase.createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
 
 const qr = new URLSearchParams(window.location.search).get("qr");
 
@@ -87,7 +102,7 @@ async function init(){
     return;
   }
 
-  const { data } = await client
+  const { data } = await supabaseClient
     .from("accesos_propietarios")
     .select("*")
     .eq("identificador", qr)
@@ -100,7 +115,7 @@ async function init(){
 
   acceso = data;
 
-  const { data: res } = await client
+  const { data: res } = await supabaseClient
     .from("residentes")
     .select("id, privada, casa, estado_pago")
     .eq("id", acceso.residente_id)
@@ -110,7 +125,7 @@ async function init(){
 
   renderDetalle();
 
-  const { data: abiertos } = await client
+  const { data: abiertos } = await supabaseClient
     .from("accesos_registro_propietarios")
     .select("*")
     .eq("acceso_id", acceso.id)
@@ -135,11 +150,11 @@ document.getElementById("btnValidar").onclick = async () => {
   const pin = document.getElementById("pin").value.trim();
 
   if(!pin){
-    ui.warn("Ingresa PIN");
+    ui.warn("Ingrese PIN");
     return;
   }
 
-  const { data } = await client
+  const { data } = await supabaseClient
     .from("residentes")
     .select("*")
     .eq("pin_vigilante", pin)
@@ -165,7 +180,7 @@ document.getElementById("btnValidar").onclick = async () => {
     return;
   }
 
-  // 🔹 ENTRADA → evaluar estado
+  // 🔹 ENTRADA → estado_pago
   const estado = (residente.estado_pago || "").toLowerCase();
 
   let color = "ok";
@@ -208,7 +223,7 @@ document.getElementById("btnRegistrar").onclick = async () => {
 
   if(tipoOperacion === "salida"){
 
-    await client
+    await supabaseClient
       .from("accesos_registro_propietarios")
       .update({
         fecha_hora_salida: ahora,
@@ -223,7 +238,7 @@ document.getElementById("btnRegistrar").onclick = async () => {
 
   if(tipoOperacion === "entrada"){
 
-    await client
+    await supabaseClient
       .from("accesos_registro_propietarios")
       .insert([{
         acceso_id: acceso.id,
@@ -237,19 +252,18 @@ document.getElementById("btnRegistrar").onclick = async () => {
 
 };
 
-// 🔹 UI LIMPIA FINAL
+// 🔹 UI FINAL LIMPIA
 function pintar(texto,color){
 
   document.body.className = color;
   document.getElementById("estado").innerText = texto;
 
-  // 🔥 LIMPIA MENSAJES (CLAVE)
   renderDetalle();
 
   document.getElementById("btnRegistrar").style.display = "none";
 }
 
-// 🔹 UTIL
+// 🔹 DETALLE
 function renderDetalle(){
   document.getElementById("detalle").innerHTML = `
     <p><b>PROPIETARIO</b></p>
