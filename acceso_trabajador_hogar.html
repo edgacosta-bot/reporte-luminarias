@@ -234,12 +234,20 @@ await supabaseClient
 
 estado.innerText = "Acceso registrado";
 
+// 🔥 LIMPIAR UI COMPLETAMENTE
 btnRegistrar.classList.add("hidden");
+btnNotificar.classList.add("hidden");
 
-// 🔥 SOLO mostrar NOTIFICAR si NO es moroso
-if(estadoPago !== "moroso"){
-  btnNotificar.classList.remove("hidden");
+// 🔴 CASO MOROSO → TERMINAR FLUJO
+if(estadoPago === "moroso"){
+  setTimeout(() => {
+    window.close();
+  }, 1500);
+  return;
 }
+
+// 🟢 / 🟡 flujo normal
+btnNotificar.classList.remove("hidden");
 };
 
 // 🔹 NOTIFICAR (ENTRADA)
