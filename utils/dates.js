@@ -31,17 +31,18 @@ window.getLastDaysRange = function(days = 7) {
   };
 };
 
-// 🔹 FORMATO MÉXICO (FIX DEFINITIVO)
+// ===============================
+// 🔥 FORMATO FECHAS (CORREGIDO)
+// ===============================
+
+// 🔹 Formato México (interpretando correctamente UTC)
 window.formatMXDate = function(dateString) {
   if (!dateString) return '';
 
-  const date = new Date(dateString);
+  // 🔥 FORZAR interpretación como UTC
+  const date = new Date(dateString + 'Z');
 
-  // 🔥 Convertir UTC → México (UTC -6)
-  const mexicoOffset = -6;
-  const mexicoTime = new Date(date.getTime() + (mexicoOffset * 60 * 60 * 1000));
-
-  return mexicoTime.toLocaleString('es-MX', {
+  return date.toLocaleString('es-MX', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -54,12 +55,9 @@ window.formatMXDate = function(dateString) {
 window.formatMXDateOnly = function(dateString) {
   if (!dateString) return '';
 
-  const date = new Date(dateString);
+  const date = new Date(dateString + 'Z');
 
-  const mexicoOffset = -6;
-  const mexicoTime = new Date(date.getTime() + (mexicoOffset * 60 * 60 * 1000));
-
-  return mexicoTime.toLocaleDateString('es-MX', {
+  return date.toLocaleDateString('es-MX', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit'
