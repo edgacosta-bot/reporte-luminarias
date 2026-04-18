@@ -5,7 +5,7 @@
 <script src="utils/dates.js"></script>  
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
-
+  
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestión de servicios</title>
@@ -114,7 +114,9 @@ button {
 
 <div class="form">
   <input id="nombre" placeholder="Nombre del servicio">
-  <input id="tipo" placeholder="Tipo (opcional)">
+  <select id="tipo">
+    <option value="">Selecciona tipo (opcional)</option>
+  </select>
   <button class="btn-add" onclick="crear()">Agregar servicio</button>
   <div id="msg" class="msg"></div>
 </div>
@@ -125,8 +127,33 @@ button {
 
 <script>
 
+  async function cargarTipos(){
+
+  const { data, error } = await supabaseClient
+    .from("catalogo_tipos_servicio")
+    .select("nombre")
+    .eq("activo", true)
+    .order("nombre");
+
+  if(error){
+    console.error("Error cargando tipos:", error);
+    return;
+  }
+
+  const select = document.getElementById("tipo");
+  select.innerHTML = `<option value="">Selecciona tipo (opcional)</option>`;
+
+  data.forEach(t=>{
+    const option = document.createElement("option");
+    option.value = t.nombre;
+    option.textContent = t.nombre;
+    select.appendChild(option);
+  });
+}
+
 window.addEventListener("DOMContentLoaded", async ()=>{
   await protegerPagina(["admin","administracion"]);
+  await cargarTipos(); // 🔥 NUEVO
   cargar();
 });
 
@@ -180,6 +207,7 @@ async function cargar(){
     <div class="card ${s.activo ? "activo":"inactivo"}">
 
       <div class="nombre">${s.nombre}</div>
+      ${s.tipo ? `<div class="estado">📂 ${s.tipo}</div>` : ""}
 
       <div class="estado">
         ${s.activo ? "🟢 Activo":"🔴 Inactivo"}
