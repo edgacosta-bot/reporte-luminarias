@@ -3,6 +3,7 @@
 <head>
 
 <!-- 🔥 ORDEN CORRECTO -->
+<script src="utils/dates.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 
@@ -118,8 +119,9 @@ button {
 
 let rolGlobal = null;
 let userIdGlobal = null;
+let residenteIdGlobal = null;
 
-// 🔐 CONTROL CORRECTO
+// 🔐 CONTROL
 window.addEventListener("DOMContentLoaded", async () => {
 
   await protegerPagina(["admin","colono","residente"]);
@@ -141,6 +143,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     .single();
 
   rolGlobal = residente.tipo;
+  residenteIdGlobal = residente.id;
 
   if (rolGlobal !== "admin") {
     document.getElementById("infoUsuario").innerText =
@@ -151,7 +154,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// 🕒 UTC helper
+// 🕒 UTC helper (se mantiene)
 function toUTC(date, end=false) {
   const d = new Date(date + "T00:00:00");
 
@@ -177,19 +180,7 @@ async function consultar() {
     .order('hora_ingreso_utc', { ascending: false });
 
   if (rolGlobal !== "admin") {
-
-    const { data: residente } = await supabaseClient
-      .from('residentes')
-      .select('id')
-      .eq('user_id', userIdGlobal)
-      .single();
-
-    if (!residente) {
-      contenedor.innerHTML = "<div class='vacio'>Error de sesión</div>";
-      return;
-    }
-
-    query = query.eq('residente_id', residente.id);
+    query = query.eq('residente_id', residenteIdGlobal); // 🔥 ya no consulta otra vez
   }
 
   if (desde) query = query.gte('hora_ingreso_utc', toUTC(desde));
@@ -212,16 +203,9 @@ async function consultar() {
 
   data.forEach(v => {
 
-    const fecha = new Date(v.hora_ingreso_utc);
+    if (!v.hora_ingreso_utc) return; // 🔥 protección
 
-    const fechaLocal = fecha.toLocaleString('es-MX', {
-      timeZone: 'America/Mexico_City',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const fechaLocal = formatMXDate(v.hora_ingreso_utc); // 🔥 ESTANDAR
 
     contenedor.innerHTML += `
       <div class="item">
