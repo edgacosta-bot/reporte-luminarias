@@ -168,17 +168,21 @@ btnValidar.onclick = async () => {
 // 🔹 ENTRADA (NO MODIFICADO)
 function evaluarEstadoEntrada(){
 
-  if(estadoPago === "moroso"){
+ if(estadoPago === "moroso"){
 
-    document.body.className = "error";
-    estado.innerText = "Acceso NO permitido por irregularidad en cuotas";
+  document.body.className = "error";
+  estado.innerText = "Acceso NO permitido por irregularidad en cuotas";
 
-    btnRegistrar.innerText = "Registrar acceso con presencia del residente";
-    btnRegistrar.classList.remove("hidden");
-    btnNotificar.classList.remove("hidden");
+  btnRegistrar.innerText = "Registrar acceso con presencia del residente";
 
-    return;
-  }
+  btnRegistrar.classList.remove("hidden");
+  btnNotificar.classList.remove("hidden");
+
+  // 🔥 ORDEN CORRECTO: primero Notificar
+  btnNotificar.parentNode.insertBefore(btnNotificar, btnRegistrar);
+
+  return;
+}
 
   if(estadoPago === "atraso_1"){
     document.body.className = "warn";
