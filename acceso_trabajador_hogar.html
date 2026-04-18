@@ -197,13 +197,13 @@ btnNotificar.onclick = () => {
   let mensaje = "";
 
   if(estadoPago === "moroso"){
-    mensaje = `Estimado residente, su trabajador ${trabajador.nombre} se encuentra en caseta...`;
+    mensaje = `Estimado residente, su empleado ${trabajador.nombre} se encuentra en caseta, le solicitamos su asistencia para permitírsele el acceso; asimismo, lo invitamos a regularizar sus pagos para el acceso controlado a sus empleados sin generarle molestias. Gracias;
   }
   else if(estadoPago === "atraso_1"){
-    mensaje = `Estimado residente, su trabajador ${trabajador.nombre} ingresó... recuerde regularizar...`;
+    mensaje = `Estimado residente, su empleado doméstico ${trabajador.nombre} ingresó en este momento al fraccionamiento. Lo invitamos a regularizar el atraso en su cuota para evitar molestias en el acceso a sus empleados. Gracias`;
   }
   else{
-    mensaje = `Estimado residente, su trabajador ${trabajador.nombre} ingresó...`;
+    mensaje = `Estimado residente, su empleado doméstico ${trabajador.nombre} ingresó en este momento al fraccionamiento. Gracias`;
   }
 
   window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
