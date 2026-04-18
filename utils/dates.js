@@ -37,17 +37,26 @@ window.getLastDaysRange = function(days = 7) {
 
 // 🔹 Formato México (interpretando correctamente UTC)
 window.formatMXDate = function(dateString) {
-  if (!dateString) return '';
+  if (!dateString) return "";
 
-  // 🔥 FORZAR interpretación como UTC
-  const date = new Date(dateString + 'Z');
+  let fecha;
 
-  return date.toLocaleString('es-MX', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
+  // 🔥 Si ya tiene zona horaria, NO agregar Z
+  if (dateString.includes("+") || dateString.includes("Z")) {
+    fecha = new Date(dateString);
+  } else {
+    // 🔥 Si NO tiene zona, forzar UTC
+    fecha = new Date(dateString + "Z");
+  }
+
+  if (isNaN(fecha.getTime())) return "";
+
+  return fecha.toLocaleString("es-MX", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
   });
 };
 
