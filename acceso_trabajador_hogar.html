@@ -223,19 +223,23 @@ btnRegistrar.onclick = async () => {
   }
 
   // 🔹 ENTRADA
-  await supabaseClient
-    .from("accesos_trabajadores_hogar")
-    .insert([{
-      trabajador_id: trabajador.id,
-      fecha_hora_entrada: ahora,
-      estatus: "dentro",
-      vigilante_id: vigilante.id
-    }]);
+await supabaseClient
+  .from("accesos_trabajadores_hogar")
+  .insert([{
+    trabajador_id: trabajador.id,
+    fecha_hora_entrada: ahora,
+    estatus: "dentro",
+    vigilante_id: vigilante.id
+  }]);
 
-  estado.innerText = "Acceso registrado";
+estado.innerText = "Acceso registrado";
 
-  btnRegistrar.classList.add("hidden");
+btnRegistrar.classList.add("hidden");
+
+// 🔥 SOLO mostrar NOTIFICAR si NO es moroso
+if(estadoPago !== "moroso"){
   btnNotificar.classList.remove("hidden");
+}
 };
 
 // 🔹 NOTIFICAR (ENTRADA)
