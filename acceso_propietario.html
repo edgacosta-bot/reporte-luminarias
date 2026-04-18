@@ -92,7 +92,7 @@ const client = window.supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
 );
 
-// 🔹 QR LIMPIO
+// 🔹 QR limpio
 let qr = new URLSearchParams(window.location.search).get("qr");
 
 if (qr) {
@@ -136,6 +136,37 @@ async function validar() {
 
     residente = res;
 
+    // 🔥 ESTADO DE PAGO
+    const estado = (residente.estado_pago || "").toLowerCase();
+    let mensajeExtra = "";
+
+    if (estado === "atraso_1") {
+      colorActual = "warn";
+
+      mensajeExtra = `
+        <p style="margin-top:10px;">
+          ⚠️ Aviso<br><br>
+          El residente presenta un atraso en su pago.<br><br>
+          Se permite el acceso.<br>
+          Favor de recordarle que puede regularizar su situación en administración.
+        </p>
+      `;
+    }
+
+    if (estado === "moroso") {
+      colorActual = "error";
+
+      mensajeExtra = `
+        <p style="margin-top:10px;">
+          ⚠️ Aviso importante<br><br>
+          El residente presenta adeudo.<br><br>
+          Por políticas del fraccionamiento, el personal de vigilancia no puede realizar la apertura.<br><br>
+          Se solicita amablemente que el acceso sea realizado directamente por el residente.
+        </p>
+      `;
+    }
+
+    // 🔥 LÓGICA DE ENTRADA/SALIDA
     const { data: abiertos } = await client
       .from("accesos_registro_propietarios")
       .select("id")
@@ -146,12 +177,17 @@ async function validar() {
     const abierto = abiertos?.[0];
 
     accionActual = abierto ? "salida" : "entrada";
-    colorActual = abierto ? "warn" : "ok";
+
+    // si no se definió por estado_pago → normal
+    if (!colorActual) {
+      colorActual = abierto ? "warn" : "ok";
+    }
 
     pintar(
       abierto ? "REGISTRAR SALIDA" : "REGISTRAR ENTRADA",
       colorActual,
-      residente
+      residente,
+      mensajeExtra
     );
 
     document.getElementById("btnAccion").style.display = "block";
@@ -221,7 +257,7 @@ document.getElementById("btnRegistrar").onclick = async () => {
   }
 };
 
-// 🔹 RESET BOTÓN
+// 🔹 RESET
 function resetBtn(btn) {
   btn.disabled = false;
   btn.innerText = "Registrar";
@@ -237,7 +273,7 @@ function mostrarResultado(texto, tipo) {
 }
 
 // 🔹 UI
-function pintar(mensaje, tipo, data = null) {
+function pintar(mensaje, tipo, data = null, extra = "") {
 
   document.body.className = tipo;
   document.getElementById("estado").innerText = mensaje;
@@ -249,6 +285,7 @@ function pintar(mensaje, tipo, data = null) {
       <p><b>PROPIETARIO</b></p>
       <p><b>${acceso?.nombre || "SIN NOMBRE"}</b></p>
       <p>${data?.privada || ""}-${data?.casa || ""}</p>
+      ${extra}
     `;
   } else {
     detalle.innerHTML = "";
