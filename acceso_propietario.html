@@ -111,12 +111,13 @@ async function init(){
   `;
 
   // 🔍 detectar acceso abierto
-  const { data: abiertos } = await client
-    .from("accesos_registro_propietarios")
-    .select("*")
-    .eq("acceso_id", acceso.id)
-    .is("fecha_hora_salida", null)
-    .limit(1);
+ const { data: abiertos } = await client
+  .from("accesos_registro_propietarios")
+  .select("*")
+  .eq("acceso_id", acceso.id)
+  .is("fecha_hora_salida", null)
+  .order("fecha_hora_entrada", { ascending: false })
+  .limit(1);
 
   accesoAbierto = abiertos && abiertos.length ? abiertos[0] : null;
 
