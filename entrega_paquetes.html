@@ -6,6 +6,7 @@
 <title>Entrega de paquetes</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 
 <style>
 body {
@@ -118,20 +119,12 @@ input {
 </div>
 
 <script>
-const { createClient } = supabase;
 
-const supabaseClient = createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
-
-if (!localStorage.getItem("usuario_valido")) {
-  window.location.href = "login.html";
-}
-
-if (localStorage.getItem("rol") !== "vigilante") {
-  window.location.href = "index.html";
-}
+// 🔐 PROTECCIÓN REAL
+window.addEventListener("DOMContentLoaded", async () => {
+  await protegerPagina(["vigilante"]);
+  cargar();
+});
 
 let paqueteId = null;
 
@@ -218,11 +211,16 @@ function prepararEntrega(id) {
 
 async function confirmarEntrega() {
 
+  // 🔥 OBTENER USUARIO REAL
+  const { data: userData } = await supabaseClient.auth.getUser();
+  const user = userData?.user;
+
   const { error } = await supabaseClient
     .from('paquetes')
     .update({
       entregado: true,
-      fecha_entrega: new Date().toISOString()
+      fecha_entrega: new Date().toISOString(),
+      entregado_por: user?.id || null
     })
     .eq('id', paqueteId);
 
@@ -245,9 +243,9 @@ function filtrar() {
   });
 }
 
+// 🔄 AUTO REFRESH
 setInterval(cargar, 10000);
 
-cargar();
 </script>
 
 </body>
