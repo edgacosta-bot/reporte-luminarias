@@ -1,27 +1,29 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Acceso Hogar</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script src="/utils/ui.js"></script>
 
 <style>
 body {
   margin: 0;
-  font-family: Arial;
+  font-family: 'Segoe UI';
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100vh;
-  color: white;
   text-align: center;
 }
 
-.ok { background: #16a34a; }
-.warn { background: #f59e0b; }
-.error { background: #dc2626; }
+body.ok { background: #16a34a; color: white; }
+body.warn { background: #f59e0b; color: #111827; }
+body.error { background: #dc2626; color: white; }
 
 .container {
   max-width: 320px;
@@ -33,301 +35,196 @@ input, button {
   padding: 14px;
   margin-top: 10px;
   border-radius: 10px;
-  box-sizing: border-box;
+  border: none;
 }
 
-#btnSalir {
-  display: none;
-  background: #1f2937;
+input {
+  background: #020617;
   color: white;
+  text-align: center;
+  font-size: 18px;
 }
 
-#errorMsg {
-  display: none;
-  color: #fecaca;
-  font-size: 14px;
-  margin-top: 8px;
+button {
+  background: #2563eb;
+  color: white;
+  font-weight: bold;
 }
+
+.hidden { display:none; }
 </style>
+
 </head>
 
 <body>
 
 <div class="container">
-  <h1 id="estado">Validando...</h1>
-  <div id="nombre"></div>
 
-  <input type="password" id="pin" placeholder="PIN">
-  <button id="btnConfirmar" onclick="confirmar()">Confirmar</button>
+<h2>🏠 Acceso hogar</h2>
 
-  <div id="errorMsg">PIN incorrecto</div>
+<h1 id="estado">Validando...</h1>
+<div id="detalle"></div>
 
-  <button id="btnSalir" onclick="salir()">Aceptar</button>
+<input type="password" id="pin" placeholder="Ingrese PIN del vigilante">
+<button id="btnValidar">Validar</button>
+
+<button id="btnRegistrar" class="hidden">Registrar</button>
+<button id="btnNotificar" class="hidden">Notificar</button>
+
 </div>
 
 <script>
 
-const client = supabase.createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
-
 const qr = new URLSearchParams(window.location.search).get("qr");
 
 let trabajador = null;
-let tipo = "";
-let puedeConfirmar = false;
+let residente = null;
+let estadoPago = "";
+let tipoAccion = "";
+let vigilante = null;
 
 init();
 
-async function init() {
+async function init(){
 
-  const { data } = await client
+  const { data } = await supabaseClient
     .from("trabajadores_hogar")
     .select("*")
     .eq("qr_codigo", qr)
     .maybeSingle();
 
-  if (!data) {
-    pintar("QR INVÁLIDO", "error");
-    puedeConfirmar = false;
+  if(!data){
+    pintar("QR inválido","error");
     return;
   }
 
   trabajador = data;
 
-  const { data: residente } = await client
+  const { data: res } = await supabaseClient
     .from("residentes")
-    .select("estado_pago")
+    .select("estado_pago, privada, casa")
     .eq("id", trabajador.residente_id)
     .single();
 
-  const estado = (residente?.estado_pago || "").toLowerCase();
+  residente = res;
+  estadoPago = (res.estado_pago || "").toLowerCase();
 
-  if (estado === "moroso") {
-    pintar("ACCESO BLOQUEADO POR ADEUDO", "error");
-    puedeConfirmar = false;
-    return;
-  }
+  renderDetalle();
 
-  const hoy = new Date().toLocaleDateString('sv-SE');
-
-  if (!data.activo) {
-    pintar("ACCESO CANCELADO", "error");
-    puedeConfirmar = false;
-    return;
-  }
-
-  if (data.fecha_inicio && hoy < data.fecha_inicio) {
-    pintar("AÚN NO VÁLIDO", "warn");
-    puedeConfirmar = false;
-    return;
-  }
-
-  if (data.fecha_fin && hoy > data.fecha_fin) {
-    pintar("ACCESO VENCIDO", "error");
-    puedeConfirmar = false;
-    return;
-  }
-
-  document.getElementById("nombre").innerText = data.nombre;
-
-  const { data: acceso } = await client
-    .from("accesos_trabajadores_hogar")
-    .select("*")
-    .eq("trabajador_id", data.id)
-    .is("fecha_hora_salida", null)
-    .maybeSingle();
-
-  if (!acceso) {
-    tipo = "entrada";
-    puedeConfirmar = true;
-    pintar("PERMITIR ENTRADA", "ok");
-  } else {
-    tipo = "salida";
-    puedeConfirmar = true;
-    pintar("REGISTRAR SALIDA", "warn");
-  }
+  document.getElementById("estado").innerText = "Validar acceso";
 }
 
-function pintar(texto, color) {
-  document.body.className = color;
-  document.getElementById("estado").innerText = texto;
+// 🔹 VALIDAR PIN
+btnValidar.onclick = async () => {
 
-  const mostrar = (color === "ok" || texto === "REGISTRAR SALIDA");
+  const pin = document.getElementById("pin").value.trim();
 
-  document.getElementById("pin").style.display = mostrar ? "block" : "none";
-  document.getElementById("btnConfirmar").style.display = mostrar ? "block" : "none";
-
-  document.getElementById("errorMsg").style.display = "none";
-}
-
-async function confirmar() {
-  const btn = document.getElementById("btnConfirmar");
-  btn.disabled = true;
-
-  if (!puedeConfirmar) {
-    btn.disabled = false;
+  if(!pin){
+    ui.warn("Ingrese PIN");
     return;
   }
 
-  const pin = document.getElementById("pin").value;
-
-  // 🔐 VALIDACIÓN DE VIGILANTE (PIN INDIVIDUAL)
-  const { data: vigilante } = await client
+  const { data } = await supabaseClient
     .from("residentes")
-    .select("id, nombre")
+    .select("id")
     .eq("pin_vigilante", pin)
-    .eq("tipo", "vigilante")
+    .eq("tipo","vigilante")
     .eq("activo", true)
     .maybeSingle();
 
-  if (!vigilante) {
-    const error = document.getElementById("errorMsg");
-    error.style.display = "block";
-    document.getElementById("pin").value = "";
-    btn.disabled = false;
+  if(!data){
+    ui.error("PIN incorrecto");
     return;
   }
 
-  // 🔥 GUARDAMOS VIGILANTE
-  localStorage.setItem("vigilante_id", vigilante.id);
+  vigilante = data;
+
+  evaluarEstado();
+};
+
+// 🔹 EVALUAR ESTADO
+function evaluarEstado(){
+
+  ocultarValidacion();
+
+  if(estadoPago === "moroso"){
+
+    document.body.className = "error";
+    estado.innerText = "Acceso NO permitido";
+
+    btnRegistrar.innerText = "Registrar acceso con residente";
+    btnRegistrar.classList.remove("hidden");
+
+    btnNotificar.classList.remove("hidden");
+
+    return;
+  }
+
+  if(estadoPago === "atraso_1"){
+    document.body.className = "warn";
+    estado.innerText = "Acceso permitido (con atraso)";
+  } else {
+    document.body.className = "ok";
+    estado.innerText = "Acceso permitido";
+  }
+
+  btnRegistrar.classList.remove("hidden");
+}
+
+// 🔹 REGISTRAR
+btnRegistrar.onclick = async () => {
 
   const ahora = new Date().toISOString();
 
-  // 🔍 BUSCAR ACCESO ABIERTO
-  const { data: accesosAbiertos } = await client
+  await supabaseClient
     .from("accesos_trabajadores_hogar")
-    .select("*")
-    .eq("trabajador_id", trabajador.id)
-    .is("fecha_hora_salida", null)
-    .limit(1);
+    .insert([{
+      trabajador_id: trabajador.id,
+      fecha_hora_entrada: ahora,
+      estatus: "dentro",
+      vigilante_id: vigilante.id
+    }]);
 
-  const accesoAbierto = accesosAbiertos && accesosAbiertos.length > 0
-    ? accesosAbiertos[0]
-    : null;
+  estado.innerText = "Acceso registrado";
 
-  if (!accesoAbierto) {
+  btnRegistrar.classList.add("hidden");
+  btnNotificar.classList.remove("hidden");
+};
 
-    // 👉 ENTRADA
-    const { error } = await client
-      .from("accesos_trabajadores_hogar")
-      .insert([{
-        trabajador_id: trabajador.id,
-        fecha_hora_entrada: ahora,
-        estatus: "dentro",
-        vigilante_id: vigilante.id
-      }]);
+// 🔹 NOTIFICAR
+btnNotificar.onclick = () => {
 
-    if (error) {
-      alert("Error al registrar entrada");
-      btn.disabled = false;
-      return;
-    }
-
-    pintarFinal("ENTRADA REGISTRADA", "ok");
-
-  } else {
-
-    // 👉 SALIDA SEGURA (POR ID)
-    const { error } = await client
-      .from("accesos_trabajadores_hogar")
-      .update({
-  fecha_hora_salida: ahora,
-  estatus: "fuera",
-  vigilante_salida_id: vigilante.id
-})
-.eq("id", accesoAbierto.id);
-
-    if (error) {
-      alert("Error al registrar salida");
-      btn.disabled = false;
-      return;
-    }
-
-    pintarFinal("SALIDA REGISTRADA", "warn");
-  }
-}
-
-function pintarFinal(texto, color) {
-  document.body.className = color;
-  document.getElementById("estado").innerText = texto;
-
-  document.getElementById("pin").style.display = "none";
-  document.getElementById("btnConfirmar").style.display = "none";
-
-  // 🔥 LIMPIAR BOTONES PREVIOS
-  const existentes = document.querySelectorAll(".btn-wa, .btn-cerrar");
-  existentes.forEach(b => b.remove());
-
-  // 🧠 DEFINIR MENSAJE SEGÚN TIPO
   let mensaje = "";
 
-  if (texto.includes("ENTRADA")) {
-    mensaje = `Estimado residente, le informamos que su trabajador *${trabajador.nombre}* ha ingresado en este momento al fraccionamiento.`;
-  } else {
-    mensaje = `Estimado residente, le informamos que su trabajador *${trabajador.nombre}* ha salido del fraccionamiento`;
+  if(estadoPago === "moroso"){
+    mensaje = `Estimado residente, su trabajador ${trabajador.nombre} se encuentra en caseta...`;
+  }
+  else if(estadoPago === "atraso_1"){
+    mensaje = `Estimado residente, su trabajador ${trabajador.nombre} ingresó... recuerde regularizar...`;
+  }
+  else{
+    mensaje = `Estimado residente, su trabajador ${trabajador.nombre} ingresó...`;
   }
 
-  const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
+};
 
-  // 🔘 BOTÓN NOTIFICAR
-  const btnWA = document.createElement("button");
-  btnWA.innerText = "Notificar";
-
-  btnWA.style.marginTop = "12px";
-  btnWA.style.background = color === "ok" ? "#16a34a" : "#f59e0b";
-  btnWA.style.color = "white";
-  btnWA.style.fontWeight = "bold";
-  btnWA.style.borderRadius = "10px";
-  btnWA.style.boxShadow = "0 4px 10px rgba(0,0,0,0.3)";
-  btnWA.style.padding = "14px";
-  btnWA.style.border = "none";
-  btnWA.style.cursor = "pointer";
-
-  btnWA.onclick = () => {
-
-    window.open(url, '_blank');
-
-    btnWA.innerText = "✔ Notificado";
-    btnWA.style.background = "#1e293b";
-    btnWA.disabled = true;
-
-    // 🔒 EVITAR DUPLICADOS
-    const cierreExistente = document.querySelector(".btn-cerrar");
-    if (cierreExistente) cierreExistente.remove();
-
-    // 🔘 BOTÓN FINALIZAR
-    const btnCerrar = document.createElement("button");
-    btnCerrar.innerText = "Finalizar";
-
-    btnCerrar.style.marginTop = "10px";
-    btnCerrar.style.background = "#020617";
-    btnCerrar.style.color = "white";
-    btnCerrar.style.borderRadius = "10px";
-    btnCerrar.style.padding = "14px";
-    btnCerrar.style.fontWeight = "bold";
-    btnCerrar.style.border = "none";
-    btnCerrar.style.cursor = "pointer";
-
-    btnCerrar.classList.add("btn-cerrar");
-
-    btnCerrar.onclick = () => {
-      window.close();
-      setTimeout(() => {
-        window.location.href = "about:blank";
-      }, 300);
-    };
-
-    document.querySelector(".container").appendChild(btnCerrar);
-  };
-
-  btnWA.classList.add("btn-wa");
-  document.querySelector(".container").appendChild(btnWA);
+// 🔹 UI
+function renderDetalle(){
+  detalle.innerHTML = `
+    <p><b>${trabajador.nombre}</b></p>
+    <p>${residente.privada}-${residente.casa}</p>
+  `;
 }
 
-function salir() {
-  window.location.href = "index.html";
+function pintar(texto,color){
+  document.body.className = color;
+  estado.innerText = texto;
+}
+
+function ocultarValidacion(){
+  pin.style.display = "none";
+  btnValidar.style.display = "none";
 }
 
 </script>
