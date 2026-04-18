@@ -109,6 +109,12 @@ const privada = params.get("privada");
 const casa = params.get("casa");
 const origen = params.get("origen");
 
+// 🔐 VALIDACIÓN BÁSICA
+if (!codigo) {
+  document.body.innerHTML = "QR inválido";
+  throw new Error("QR inválido");
+}
+
 // 🔐 URL REAL DE ACCESO
 const urlQR = `${window.location.origin}/acceso_propietario.html?qr=${codigo}`;
 
