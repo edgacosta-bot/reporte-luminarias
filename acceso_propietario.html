@@ -136,11 +136,23 @@ async function validar() {
 
     residente = res;
 
-    // 🔥 ESTADO DE PAGO
     const estado = (residente.estado_pago || "").toLowerCase();
     let mensajeExtra = "";
 
-    if (estado === "atraso_1") {
+    // 🔥 PRIORIDAD POR ESTADO DE PAGO
+    if (estado === "moroso") {
+      colorActual = "error";
+
+      mensajeExtra = `
+        <p style="margin-top:10px;">
+          ⚠️ Aviso importante<br><br>
+          El residente presenta adeudo.<br><br>
+          Por políticas del fraccionamiento, el personal de vigilancia no puede realizar la apertura.<br><br>
+          Se solicita amablemente que el acceso sea realizado directamente por el residente.
+        </p>
+      `;
+    } 
+    else if (estado === "atraso_1") {
       colorActual = "warn";
 
       mensajeExtra = `
@@ -153,20 +165,7 @@ async function validar() {
       `;
     }
 
-    if (estado === "moroso") {
-      colorActual = "error";
-
-      mensajeExtra = `
-        <p style="margin-top:10px;">
-          ⚠️ Aviso importante<br><br>
-          El residente presenta adeudo.<br><br>
-          Por políticas del fraccionamiento, el personal de vigilancia no puede realizar la apertura.<br><br>
-          Se solicita amablemente que el acceso sea realizado directamente por el residente.
-        </p>
-      `;
-    }
-
-    // 🔥 LÓGICA DE ENTRADA/SALIDA
+    // 🔥 LÓGICA ENTRADA / SALIDA
     const { data: abiertos } = await client
       .from("accesos_registro_propietarios")
       .select("id")
@@ -178,7 +177,7 @@ async function validar() {
 
     accionActual = abierto ? "salida" : "entrada";
 
-    // si no se definió por estado_pago → normal
+    // 🔥 SOLO SI NO ES MOROSO NI ATRASO
     if (!colorActual) {
       colorActual = abierto ? "warn" : "ok";
     }
