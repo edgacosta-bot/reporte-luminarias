@@ -311,6 +311,9 @@ obras?.forEach(i=>{
       });
     });
 
+    console.log("LUMINARIAS RAW:", luminarias);
+    console.log("LUMINARIAS EN REGISTROS:", registros.filter(r => r.tipo === "luminaria"));
+
   } catch(e){
     console.error(e);
   }
