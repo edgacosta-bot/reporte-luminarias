@@ -10,286 +10,218 @@
 <script src="/utils/ui.js"></script>
 
 <style>
-* { box-sizing: border-box; }
-
 body {
   margin: 0;
   font-family: 'Segoe UI';
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100vh;
   color: white;
   text-align: center;
-  background: linear-gradient(135deg,#020617,#0f172a);
-}
-
-.header-app { margin-bottom: 10px; }
-
-.logo-app {
-  width: 70px;
-  height: 70px;
-  opacity: 0.95;
+  background: #020617;
 }
 
 .container {
   max-width: 320px;
-  width: 100%;
-  padding: 20px;
+  width: 90%;
 }
 
 .ok { background: #16a34a; }
 .warn { background: #f59e0b; }
 .error { background: #dc2626; }
 
-input {
+input, button {
   width: 100%;
   padding: 14px;
   margin-top: 10px;
   border-radius: 10px;
-  border: 1px solid #334155;
-  font-size: 18px;
-  text-align: center;
-  background: #020617;
-  color: white;
+  border: none;
 }
 
 button {
-  width: 100%;
-  padding: 14px;
-  margin-top: 12px;
-  border-radius: 10px;
-  border: none;
+  background: #2563eb;
+  color: white;
   font-weight: bold;
-  cursor: pointer;
 }
+
 </style>
 </head>
 
 <body>
 
-<div class="header-app">
-  <img src="/icono-512.png" class="logo-app">
-</div>
-
 <div class="container">
-  <h1 id="estado">Validando...</h1>
+
+  <h1 id="estado">Validar acceso</h1>
   <div id="detalle"></div>
 
-  <button id="btnAccion" style="display:none;">Continuar</button>
+  <input type="password" id="pin" placeholder="Ingrese PIN">
+  <button id="btnConfirmar">Confirmar</button>
 
-  <div id="control" style="display:none;">
-    <input type="password" id="pin" placeholder="Ingrese PIN">
-    <button id="btnRegistrar">Registrar</button>
-  </div>
 </div>
 
 <script>
 
-const client = window.supabase.createClient(
-  'https://prjxmfhahnzosdwljode.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
+const client = supabase.createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-// 🔹 QR limpio
-let qr = new URLSearchParams(window.location.search).get("qr");
-
-if (qr) {
-  qr = qr.trim().toLowerCase();
-  qr = qr.match(/[0-9a-f-]{36}/)?.[0];
-}
+const qr = new URLSearchParams(window.location.search).get("qr");
 
 let acceso = null;
 let residente = null;
-let accionActual = null;
-let colorActual = "";
+let accesoAbierto = null;
 
-// 🔹 VALIDAR
-async function validar() {
+// 🔹 INICIO
+init();
 
-  try {
+async function init(){
 
-    if (!qr) {
-      ui.error("QR inválido");
-      return pintar("QR inválido", "error");
-    }
+  if(!qr){
+    pintar("QR inválido","error");
+    return;
+  }
 
-    const { data, error } = await client
-      .from("accesos_propietarios")
-      .select("*")
-      .eq("identificador", qr)
-      .single();
+  const { data } = await client
+    .from("accesos_propietarios")
+    .select("*")
+    .eq("identificador", qr)
+    .maybeSingle();
 
-    if (error || !data) {
-      ui.error("No se encontró el acceso");
-      return pintar("QR inválido", "error");
-    }
+  if(!data){
+    pintar("QR inválido","error");
+    return;
+  }
 
-    acceso = data;
+  acceso = data;
 
-    const { data: res } = await client
-      .from("residentes")
-     .select("id, privada, casa, estado_pago")
-      .eq("id", acceso.residente_id)
-      .single();
+  const { data: res } = await client
+    .from("residentes")
+    .select("id, privada, casa, estado_pago")
+    .eq("id", acceso.residente_id)
+    .single();
 
-    residente = res;
-    console.log("RESIDENTE COMPLETO:", res);
+  residente = res;
 
-    const estado = (residente.estado_pago || "").toLowerCase();
-    let mensajeExtra = "";
+  document.getElementById("detalle").innerHTML = `
+    <p><b>PROPIETARIO</b></p>
+    <p>${acceso.nombre || ""}</p>
+    <p>${residente.privada}-${residente.casa}</p>
+  `;
 
-    // 🔥 PRIORIDAD POR ESTADO DE PAGO
-    if (estado === "moroso") {
-      colorActual = "error";
+  // 🔍 detectar acceso abierto (SIN mostrar nada aún)
+  const { data: abiertos } = await client
+    .from("accesos_registro_propietarios")
+    .select("*")
+    .eq("acceso_id", acceso.id)
+    .is("fecha_hora_salida", null)
+    .limit(1);
 
-      mensajeExtra = `
-        <p style="margin-top:10px;">
-          ⚠️ Aviso importante<br><br>
-          El residente presenta adeudo.<br><br>
-          Por políticas del fraccionamiento, el personal de vigilancia no puede realizar la apertura.<br><br>
-          Se solicita amablemente que el acceso sea realizado directamente por el residente.
-        </p>
-      `;
-    } 
-    else if (estado === "atraso_1") {
-      colorActual = "warn";
+  accesoAbierto = abiertos && abiertos.length ? abiertos[0] : null;
 
-      mensajeExtra = `
-        <p style="margin-top:10px;">
-          ⚠️ Aviso<br><br>
-          El residente presenta un atraso en su pago.<br><br>
-          Se permite el acceso.<br>
-          Favor de recordarle que puede regularizar su situación en administración.
-        </p>
-      `;
-    }
+  if(accesoAbierto){
+    document.getElementById("estado").innerText = "Registrar salida";
+  }
 
-    // 🔥 LÓGICA ENTRADA / SALIDA
-    const { data: abiertos } = await client
+}
+
+// 🔹 CONFIRMAR
+document.getElementById("btnConfirmar").onclick = async () => {
+
+  const pin = document.getElementById("pin").value.trim();
+
+  if(!pin){
+    ui.warn("Ingresa PIN");
+    return;
+  }
+
+  // 🔐 validar vigilante
+  const { data: vigilante } = await client
+    .from("vigilantes")
+    .select("*")
+    .eq("pin", pin)
+    .eq("activo", true)
+    .maybeSingle();
+
+  if(!vigilante){
+    ui.error("PIN incorrecto");
+    return;
+  }
+
+  const ahora = new Date().toISOString();
+
+  // 🔴 SALIDA
+  if(accesoAbierto){
+
+    await client
       .from("accesos_registro_propietarios")
-      .select("id")
-      .eq("acceso_id", acceso.id)
-      .is("fecha_hora_salida", null)
-      .limit(1);
+      .update({
+        fecha_hora_salida: ahora,
+        estatus: "fuera",
+        vigilante_salida_id: vigilante.id
+      })
+      .eq("id", accesoAbierto.id);
 
-    const abierto = abiertos?.[0];
-
-    accionActual = abierto ? "salida" : "entrada";
-
-    // 🔥 SOLO SI NO ES MOROSO NI ATRASO
-    if (!colorActual) {
-      colorActual = abierto ? "warn" : "ok";
-    }
-
-    pintar(
-      abierto ? "REGISTRAR SALIDA" : "REGISTRAR ENTRADA",
-      colorActual,
-      residente,
-      mensajeExtra
-    );
-
-    document.getElementById("btnAccion").style.display = "block";
-
-  } catch (err) {
-    console.error(err);
-    ui.error("Error en validación");
-    pintar("Error en validación", "error");
+    pintar("SALIDA REGISTRADA","warn");
+    return;
   }
-}
 
-validar();
+  // 🔥 AQUÍ YA ES ENTRADA → evaluar estado_pago
+  const estado = (residente.estado_pago || "").toLowerCase();
 
-// 🔹 MOSTRAR PIN
-document.getElementById("btnAccion").onclick = () => {
-  document.getElementById("control").style.display = "block";
-};
+  let color = "ok";
+  let mensaje = "";
 
-// 🔹 REGISTRAR
-document.getElementById("btnRegistrar").onclick = async () => {
+  if(estado === "moroso"){
+    color = "error";
 
-  const btn = document.getElementById("btnRegistrar");
-  btn.disabled = true;
-  btn.innerText = "Procesando...";
-
-  try {
-
-    const pin = document.getElementById("pin").value.trim();
-
-    if (!pin) {
-      ui.warn("Ingresa el PIN");
-      resetBtn(btn);
-      return;
-    }
-
-    const { data, error } = await client.rpc('registrar_acceso_propietario', {
-      p_qr: qr,
-      p_pin: pin
-    });
-
-    if (error) {
-      ui.error("Error técnico: " + error.message);
-      resetBtn(btn);
-      return;
-    }
-
-    if (!data?.ok) {
-      ui.warn(data?.mensaje || "Operación no válida");
-      resetBtn(btn);
-      return;
-    }
-
-    if (data.accion === "salida") {
-      ui.success("Salida registrada");
-      mostrarResultado("SALIDA REGISTRADA", "warn");
-    } else {
-      ui.success("Acceso autorizado");
-      mostrarResultado("ACCESO AUTORIZADO", "ok");
-    }
-
-    resetBtn(btn);
-
-  } catch (err) {
-    console.error(err);
-    ui.error("Error inesperado");
-    resetBtn(btn);
+    mensaje = `
+      ⚠️ Aviso importante<br><br>
+      El residente presenta adeudo.<br><br>
+      El vigilante no puede realizar la apertura.<br><br>
+      El residente debe abrir directamente.
+    `;
   }
+
+  else if(estado === "atraso_1"){
+    color = "warn";
+
+    mensaje = `
+      ⚠️ Aviso<br><br>
+      El residente presenta atraso.<br><br>
+      Se permite el acceso, recordarle regularizar.
+    `;
+  }
+
+  // 🔥 REGISTRAR ENTRADA
+  await client
+    .from("accesos_registro_propietarios")
+    .insert([{
+      acceso_id: acceso.id,
+      fecha_hora_entrada: ahora,
+      estatus: "dentro",
+      vigilante_id: vigilante.id
+    }]);
+
+  pintarFinal("ACCESO REGISTRADO", color, mensaje);
+
 };
-
-// 🔹 RESET
-function resetBtn(btn) {
-  btn.disabled = false;
-  btn.innerText = "Registrar";
-}
-
-// 🔹 RESULTADO
-function mostrarResultado(texto, tipo) {
-  document.body.className = tipo;
-  document.getElementById("estado").innerText = texto;
-  document.getElementById("detalle").innerHTML = "";
-  document.getElementById("btnAccion").style.display = "none";
-  document.getElementById("control").style.display = "none";
-}
 
 // 🔹 UI
-function pintar(mensaje, tipo, data = null, extra = "") {
+function pintar(texto,color){
+  document.body.className = color;
+  document.getElementById("estado").innerText = texto;
+}
 
-  document.body.className = tipo;
-  document.getElementById("estado").innerText = mensaje;
+function pintarFinal(texto,color,mensaje){
+  document.body.className = color;
+  document.getElementById("estado").innerText = texto;
 
-  const detalle = document.getElementById("detalle");
+  document.getElementById("detalle").innerHTML += `<div style="margin-top:10px">${mensaje}</div>`;
 
-  if (data) {
-    detalle.innerHTML = `
-      <p><b>PROPIETARIO</b></p>
-      <p><b>${acceso?.nombre || "SIN NOMBRE"}</b></p>
-      <p>${data?.privada || ""}-${data?.casa || ""}</p>
-      ${extra}
-    `;
-  } else {
-    detalle.innerHTML = "";
-  }
+  document.getElementById("pin").style.display = "none";
+  document.getElementById("btnConfirmar").style.display = "none";
 }
 
 </script>
