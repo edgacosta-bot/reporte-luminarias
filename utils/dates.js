@@ -63,3 +63,17 @@ window.formatMXDateOnly = function(dateString) {
     day: '2-digit'
   });
 };
+
+// 🔹 Inicio del día UTC
+window.fechaInicioUTC = function(fecha){
+  const d = new Date(fecha);
+  d.setHours(0,0,0,0);
+  return d.toISOString();
+};
+
+// 🔹 Fin del día UTC
+window.fechaFinUTC = function(fecha){
+  const d = new Date(fecha);
+  d.setHours(23,59,59,999);
+  return d.toISOString();
+};
