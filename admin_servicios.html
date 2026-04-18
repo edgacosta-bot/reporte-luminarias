@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 
+<script src="utils/dates.js"></script>  
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 
@@ -129,9 +130,6 @@ window.addEventListener("DOMContentLoaded", async ()=>{
   cargar();
 });
 
-function formatoMX(f){
-  return new Date(f).toLocaleString("es-MX");
-}
 
 // 🔹 CREAR
 async function crear(){
@@ -185,7 +183,7 @@ async function cargar(){
       </div>
 
       <div class="fecha">
-        Alta: ${formatoMX(s.created_at)}
+        Alta: ${formatMXDate(s.created_at)}
       </div>
 
       ${
