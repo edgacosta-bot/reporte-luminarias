@@ -130,11 +130,12 @@ async function validar() {
 
     const { data: res } = await client
       .from("residentes")
-      .select("*")
+     .select("id, privada, casa, estado_pago")
       .eq("id", acceso.residente_id)
       .single();
 
     residente = res;
+    console.log("RESIDENTE COMPLETO:", res);
 
     const estado = (residente.estado_pago || "").toLowerCase();
     let mensajeExtra = "";
