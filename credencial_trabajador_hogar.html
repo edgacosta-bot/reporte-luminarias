@@ -94,14 +94,22 @@ const codigo = params.get("qr");
 const nombre = params.get("nombre");
 const privada = params.get("privada");
 const casa = params.get("casa");
-const origen = params.get("origen"); // 🔥 NUEVO
+const origen = params.get("origen");
 
-// 🔥 URL REAL DE ACCESO (QR interno)
+// 🔐 VALIDACIÓN
+if (!codigo) {
+  document.body.innerHTML = "QR inválido";
+  throw new Error("QR inválido");
+}
+
+// 🔥 URL REAL DE ACCESO
 const urlQR = `${window.location.origin}/acceso_trabajador_hogar.html?qr=${codigo}`;
 
 // 🎯 GENERAR QR
 QRCode.toCanvas(urlQR, { width: 220 }, function (err, canvas) {
-  document.getElementById("qr").appendChild(canvas);
+  if (!err) {
+    document.getElementById("qr").appendChild(canvas);
+  }
 });
 
 // 🧾 DATOS
@@ -109,12 +117,10 @@ document.getElementById("nombre").innerText = nombre || "";
 document.getElementById("detalle").innerText =
   `Privada ${privada || ""} - Lote ${casa || ""}`;
 
-
-// 🔥 CONTROL DE VISIBILIDAD BOTÓN
+// 🔥 CONTROL BOTÓN WA
 if (origen !== "admin") {
   document.getElementById("btnWA").style.display = "none";
 }
-
 
 // 📲 WHATSAPP
 document.getElementById("btnWA").addEventListener("click", () => {
