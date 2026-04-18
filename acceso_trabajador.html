@@ -6,68 +6,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Acceso Trabajador</title>
 
-<!-- 🔥 ORDEN CORRECTO -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 
 <style>
-* { box-sizing: border-box; }
-
 body {
   margin: 0;
-  font-family: Arial;
+  font-family: 'Segoe UI';
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100vh;
   color: white;
   text-align: center;
-  transition: background 0.3s ease;
 }
 
 .container {
-  padding: 20px;
   max-width: 320px;
-  width: 100%;
-}
-
-h1 {
-  font-size: 28px;
-  margin-bottom: 10px;
-  font-weight: bold;
+  width: 90%;
 }
 
 .ok { background: #16a34a; }
 .warn { background: #f59e0b; }
 .error { background: #dc2626; }
 
-.control {
-  margin-top: 25px;
-  display: none;
-}
-
-input {
+input, button {
   width: 100%;
   padding: 14px;
-  border-radius: 10px;
-  border: 1px solid #334155;
   margin-top: 10px;
-  font-size: 18px;
-  text-align: center;
-  background: #020617;
-  color: white;
-  font-weight: bold;
+  border-radius: 10px;
+  border: none;
 }
 
 button {
-  width: 100%;
-  padding: 14px;
-  margin-top: 12px;
-  border-radius: 10px;
-  border: none;
+  background: #2563eb;
+  color: white;
   font-weight: bold;
-  font-size: 18px;
-  cursor: pointer;
 }
 </style>
 </head>
@@ -75,13 +49,15 @@ button {
 <body>
 
 <div class="container">
+
   <h1 id="estado">Validando...</h1>
   <div id="detalle"></div>
 
-  <div id="control" class="control">
-    <input type="password" id="pin" placeholder="PIN vigilante">
-    <button id="btnConfirmar" disabled>Confirmar</button>
-  </div>
+  <input type="password" id="pin" placeholder="PIN vigilante">
+  <button id="btnValidar">Validar</button>
+
+  <button id="btnRegistrar" style="display:none;">Registrar</button>
+
 </div>
 
 <script>
@@ -92,101 +68,112 @@ const qr = params.get("qr");
 let trabajadorGlobal = null;
 let accesoActual = null;
 let tipoAccion = "";
+let vigilante = null;
 
-// 🚀 INICIO
 validar();
 
-async function validar() {
+async function validar(){
 
-  try {
-
-    if (!qr || qr.length < 10) {
-      pintar("QR INVÁLIDO", "error");
-      return;
-    }
-
-    const { data: trabajador } = await supabaseClient
-      .from("trabajadores_obra")
-      .select("*")
-      .eq("qr_codigo", qr)
-      .maybeSingle();
-
-    if (!trabajador) {
-      pintar("QR INVÁLIDO", "error");
-      return;
-    }
-
-    // 🔒 VALIDACIÓN DE PERMISO
-    if (!trabajador.activo) {
-      pintar("⛔ ACCESO CANCELADO", "error", trabajador);
-      return;
-    }
-
-    // 📅 VALIDACIÓN DE FECHAS (anti desfase horario)
-    const hoy = new Date().toLocaleDateString('sv-SE');
-
-    if (trabajador.fecha_inicio && hoy < trabajador.fecha_inicio) {
-      pintar("🟡 ACCESO AÚN NO INICIA", "warn", trabajador);
-      return;
-    }
-
-    if (trabajador.fecha_fin && hoy > trabajador.fecha_fin) {
-      pintar("🔴 ACCESO VENCIDO", "error", trabajador);
-      return;
-    }
-
-    trabajadorGlobal = trabajador;
-
-    const { data: acceso } = await supabaseClient
-      .from("accesos_trabajadores")
-      .select("*")
-      .eq("trabajador_id", trabajador.id)
-      .is("fecha_hora_salida", null)
-      .maybeSingle();
-
-    accesoActual = acceso;
-
-    if (!acceso) {
-      tipoAccion = "entrada";
-      pintar("REGISTRAR ENTRADA", "ok", trabajador);
-    } else {
-      tipoAccion = "salida";
-      pintar("REGISTRAR SALIDA", "warn", trabajador);
-    }
-
-    document.getElementById("control").style.display = "block";
-
-  } catch (e) {
-    console.error(e);
-    pintar("ERROR DE SISTEMA", "error");
-  }
-}
-
-const pinInput = document.getElementById("pin");
-const btn = document.getElementById("btnConfirmar");
-
-pinInput.addEventListener("input", () => {
-  btn.disabled = pinInput.value.length < 4;
-});
-
-btn.addEventListener("click", async () => {
-
-  const pin = pinInput.value;
-
-  const { data: vigilante } = await supabaseClient
-    .from("residentes")
-    .select("id")
-    .eq("pin_vigilante", pin)
-    .maybeSingle();
-
-  if (!vigilante) {
-    pintar("PIN INCORRECTO", "error", trabajadorGlobal);
+  if (!qr) {
+    pintar("QR inválido","error");
     return;
   }
 
+  const { data: trabajador } = await supabaseClient
+    .from("trabajadores_obra")
+    .select("*")
+    .eq("qr_codigo", qr)
+    .maybeSingle();
+
+  if (!trabajador){
+    pintar("QR inválido","error");
+    return;
+  }
+
+  trabajadorGlobal = trabajador;
+
+  renderDetalle();
+
+  // VALIDACIONES
+  if (!trabajador.activo){
+    pintar("ACCESO CANCELADO","error");
+    return;
+  }
+
+  const hoy = new Date().toLocaleDateString('sv-SE');
+
+  if (trabajador.fecha_inicio && hoy < trabajador.fecha_inicio){
+    pintar("ACCESO AÚN NO INICIA","warn");
+    return;
+  }
+
+  if (trabajador.fecha_fin && hoy > trabajador.fecha_fin){
+    pintar("ACCESO VENCIDO","error");
+    return;
+  }
+
+  const { data: acceso } = await supabaseClient
+    .from("accesos_trabajadores")
+    .select("*")
+    .eq("trabajador_id", trabajador.id)
+    .is("fecha_hora_salida", null)
+    .order("fecha_hora_entrada", { ascending:false })
+    .limit(1);
+
+  accesoActual = acceso && acceso.length ? acceso[0] : null;
+
+  if(accesoActual){
+    tipoAccion = "salida";
+    document.getElementById("estado").innerText = "Registrar salida";
+  } else {
+    tipoAccion = "entrada";
+    document.getElementById("estado").innerText = "Validar acceso";
+  }
+
+}
+
+// 🔹 VALIDAR PIN
+document.getElementById("btnValidar").onclick = async () => {
+
+  const pin = document.getElementById("pin").value.trim();
+
+  if(!pin){
+    alert("Ingresa PIN");
+    return;
+  }
+
+  const { data } = await supabaseClient
+    .from("residentes")
+    .select("id")
+    .eq("pin_vigilante", pin)
+    .eq("tipo","vigilante")
+    .eq("activo", true)
+    .maybeSingle();
+
+  if(!data){
+    pintar("PIN incorrecto","error");
+    return;
+  }
+
+  vigilante = data;
+
+  if(tipoAccion === "entrada"){
+    document.getElementById("estado").innerText = "Registrar entrada";
+  } else {
+    document.getElementById("estado").innerText = "Confirmar salida";
+  }
+
+  ocultarValidacion();
+  document.getElementById("btnRegistrar").style.display = "block";
+
+};
+
+// 🔹 REGISTRAR
+document.getElementById("btnRegistrar").onclick = async () => {
+
   const ahora = new Date().toISOString();
 
-  if (tipoAccion === "entrada") {
+  if(tipoAccion === "entrada"){
 
     await supabaseClient
       .from("accesos_trabajadores")
@@ -197,9 +184,10 @@ btn.addEventListener("click", async () => {
         vigilante_id: vigilante.id
       }]);
 
-    pintar("ENTRADA REGISTRADA", "ok", trabajadorGlobal);
+    pintar("ENTRADA REGISTRADA","ok");
+  }
 
-  } else {
+  if(tipoAccion === "salida"){
 
     await supabaseClient
       .from("accesos_trabajadores")
@@ -210,20 +198,30 @@ btn.addEventListener("click", async () => {
       })
       .eq("id", accesoActual.id);
 
-    pintar("SALIDA REGISTRADA", "warn", trabajadorGlobal);
+    pintar("SALIDA REGISTRADA","warn");
   }
 
-  document.getElementById("control").style.display = "none";
-});
+};
 
-function pintar(mensaje, tipo, trabajador = null) {
-  document.getElementById("estado").innerText = mensaje;
-  document.body.className = tipo;
+// 🔹 UI FINAL LIMPIA
+function pintar(texto,color){
 
-  if (trabajador) {
-    document.getElementById("detalle").innerHTML =
-      `<p><b>${trabajador.nombre}</b></p>`;
-  }
+  document.body.className = color;
+  document.getElementById("estado").innerText = texto;
+
+  renderDetalle();
+
+  document.getElementById("btnRegistrar").style.display = "none";
+}
+
+function renderDetalle(){
+  document.getElementById("detalle").innerHTML =
+    `<p><b>${trabajadorGlobal?.nombre || ""}</b></p>`;
+}
+
+function ocultarValidacion(){
+  document.getElementById("pin").style.display = "none";
+  document.getElementById("btnValidar").style.display = "none";
 }
 
 </script>
