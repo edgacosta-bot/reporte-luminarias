@@ -303,7 +303,7 @@ obras?.forEach(i=>{
 
   // 🔥 KPI
   document.getElementById("inc").innerText =
-    registros.filter(r=>["incidencia","vigilante"].includes(r.tipo)).length + " Incidencias";
+    registros.filter(r=>["incidencia","vigilante","obra"].includes(r.tipo)).length + " Incidencias";
 
   document.getElementById("agua").innerText =
     registros.filter(r=>r.tipo==="agua").length + " Agua";
