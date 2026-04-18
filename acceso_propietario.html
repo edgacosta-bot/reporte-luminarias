@@ -75,7 +75,8 @@ let acceso = null;
 let residente = null;
 let accesoAbierto = null;
 let vigilante = null;
-let tipoOperacion = ""; // entrada / salida
+let tipoOperacion = "";
+let mensajeEstado = "";
 
 init();
 
@@ -107,11 +108,7 @@ async function init(){
 
   residente = res;
 
-  document.getElementById("detalle").innerHTML = `
-    <p><b>PROPIETARIO</b></p>
-    <p>${acceso.nombre}</p>
-    <p>${residente.privada}-${residente.casa}</p>
-  `;
+  renderDetalle();
 
   const { data: abiertos } = await client
     .from("accesos_registro_propietarios")
@@ -132,7 +129,7 @@ async function init(){
 
 }
 
-// 🔹 VALIDAR PIN (AMBOS CASOS)
+// 🔹 VALIDAR PIN
 document.getElementById("btnValidar").onclick = async () => {
 
   const pin = document.getElementById("pin").value.trim();
@@ -157,53 +154,54 @@ document.getElementById("btnValidar").onclick = async () => {
 
   vigilante = data;
 
-  // 🔹 SI ES SALIDA → NO evaluar estado_pago
+  // 🔹 SALIDA
   if(tipoOperacion === "salida"){
 
     document.getElementById("estado").innerText = "Confirmar salida";
-    document.getElementById("btnRegistrar").style.display = "block";
 
-    document.getElementById("btnValidar").style.display = "none";
-    document.getElementById("pin").style.display = "none";
+    ocultarValidacion();
+    document.getElementById("btnRegistrar").style.display = "block";
 
     return;
   }
 
-  // 🔹 ENTRADA → evaluar estado_pago
+  // 🔹 ENTRADA → evaluar estado
   const estado = (residente.estado_pago || "").toLowerCase();
 
   let color = "ok";
-  let mensaje = "";
+  mensajeEstado = "";
 
   if(estado === "moroso"){
     color = "error";
-    mensaje = `
+    mensajeEstado = `
       ⚠️ Aviso importante<br><br>
       Residente moroso.<br><br>
-      El vigilante no debe abrir.<br>
-      El residente debe hacerlo directamente.
+      El vigilante no debe abrir la puerta.<br>
+      El residente debe hacerlo directamente y se le invita a regularizar su situación para evitar problemas en el acceso.
     `;
   }
   else if(estado === "atraso_1"){
     color = "warn";
-    mensaje = `
+    mensajeEstado = `
       ⚠️ Aviso<br><br>
       Residente con atraso.<br>
-      Se permite el acceso.
+      Se permite el acceso y se invita a que pase a regularizar su situación para evitar problemas en el acceso.
     `;
   }
 
   document.body.className = color;
   document.getElementById("estado").innerText = "Registrar acceso";
-  document.getElementById("detalle").innerHTML += `<div>${mensaje}</div>`;
 
+  if(mensajeEstado){
+    document.getElementById("detalle").innerHTML += `<div style="margin-top:10px">${mensajeEstado}</div>`;
+  }
+
+  ocultarValidacion();
   document.getElementById("btnRegistrar").style.display = "block";
-  document.getElementById("btnValidar").style.display = "none";
-  document.getElementById("pin").style.display = "none";
 
 };
 
-// 🔹 REGISTRAR (AMBOS CASOS)
+// 🔹 REGISTRAR
 document.getElementById("btnRegistrar").onclick = async () => {
 
   const ahora = new Date().toISOString();
@@ -239,10 +237,30 @@ document.getElementById("btnRegistrar").onclick = async () => {
 
 };
 
+// 🔹 UI LIMPIA FINAL
 function pintar(texto,color){
+
   document.body.className = color;
   document.getElementById("estado").innerText = texto;
+
+  // 🔥 LIMPIA MENSAJES (CLAVE)
+  renderDetalle();
+
   document.getElementById("btnRegistrar").style.display = "none";
+}
+
+// 🔹 UTIL
+function renderDetalle(){
+  document.getElementById("detalle").innerHTML = `
+    <p><b>PROPIETARIO</b></p>
+    <p>${acceso.nombre}</p>
+    <p>${residente.privada}-${residente.casa}</p>
+  `;
+}
+
+function ocultarValidacion(){
+  document.getElementById("pin").style.display = "none";
+  document.getElementById("btnValidar").style.display = "none";
 }
 
 </script>
