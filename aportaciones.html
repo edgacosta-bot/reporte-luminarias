@@ -137,12 +137,13 @@ select {
   </div>
 </div>
 
+<!-- SOLO TE PONGO SCRIPT MODIFICADO -->
 <script>
 
 let dataGlobal = [];
 let cambios = {};
 
-// 🔐 CONTROL CORRECTO
+// 🔐 CONTROL
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["admin", "administracion"]);
   await cargar();
@@ -162,9 +163,11 @@ function obtenerColor(e) {
   if (e === 'corriente') return '#16a34a';
   if (e === 'atraso_1') return '#f59e0b';
   if (e === 'moroso') return '#dc2626';
+  return '#16a34a'; // 🔥 fallback
 }
 
 function mapEstadoFrontend(e) {
+  if (!e) return 'corriente'; // 🔥 fallback
   return e === 'atraso_1' ? 'atraso' : e;
 }
 
@@ -173,18 +176,21 @@ async function cargar() {
 
   const { data, error } = await supabaseClient
     .from('residentes')
-    .select('id, privada, casa, estado_pago')
-    .eq('tipo', 'residente');
-
-  console.log("DATA:", data);
-  console.log("ERROR:", error);
+    .select('id, privada, casa, estado_pago, activo')
+    .eq('tipo', 'residente')
+    .eq('activo', true); // 🔥 NUEVO
 
   if (error) {
     mostrarModal("Error", "No se pudo cargar la información");
     return;
   }
 
-  dataGlobal = data;
+  // 🔥 NORMALIZAR DATOS
+  dataGlobal = data.map(r => ({
+    ...r,
+    estado_pago: r.estado_pago || 'corriente'
+  }));
+
   aplicarFiltros();
 }
 
@@ -253,7 +259,7 @@ function render(data) {
           <option value="moroso" ${estadoUI === 'moroso' ? 'selected' : ''}>Moroso</option>
         </select>
 
-        <button class="btn-save" onclick="guardarUno('${r.id}')">💾</button>
+        <button id="btn_${r.id}" class="btn-save" onclick="guardarUno('${r.id}')">💾</button>
       `;
 
       contenedor.appendChild(div);
@@ -270,6 +276,9 @@ function registrarCambio(id) {
 // 💾 GUARDADO INDIVIDUAL
 async function guardarUno(id) {
 
+  const btn = document.getElementById(`btn_${id}`);
+  btn.disabled = true; // 🔥 evita doble click
+
   const estado = document.getElementById(`sel_${id}`).value;
 
   const { error } = await supabaseClient
@@ -281,6 +290,7 @@ async function guardarUno(id) {
 
   if (error) {
     mostrarModal("Error", "No se pudo actualizar");
+    btn.disabled = false;
     return;
   }
 
@@ -288,7 +298,7 @@ async function guardarUno(id) {
   cargar();
 }
 
-// 💾 GUARDADO MASIVO
+// 💾 MASIVO
 async function guardarCambios() {
 
   const lista = Object.keys(cambios).map(id => ({
