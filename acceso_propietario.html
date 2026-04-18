@@ -7,9 +7,9 @@
 <title>Validación acceso propietario</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/utils/ui.js"></script>
 
 <style>
-
 * { box-sizing: border-box; }
 
 body {
@@ -64,7 +64,6 @@ button {
   font-weight: bold;
   cursor: pointer;
 }
-
 </style>
 </head>
 
@@ -88,7 +87,6 @@ button {
 
 <script>
 
-// 🔥 CLIENTE
 const client = window.supabase.createClient(
   'https://prjxmfhahnzosdwljode.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
@@ -112,7 +110,10 @@ async function validar() {
 
   try {
 
-    if (!qr) return pintar("QR inválido", "error");
+    if (!qr) {
+      ui.error("QR inválido");
+      return pintar("QR inválido", "error");
+    }
 
     const { data, error } = await client
       .from("accesos_propietarios")
@@ -120,7 +121,10 @@ async function validar() {
       .eq("identificador", qr)
       .single();
 
-    if (error || !data) return pintar("QR inválido", "error");
+    if (error || !data) {
+      ui.error("No se encontró el acceso");
+      return pintar("QR inválido", "error");
+    }
 
     acceso = data;
 
@@ -132,7 +136,6 @@ async function validar() {
 
     residente = res;
 
-    // 🔥 LÓGICA CORRECTA
     const { data: abiertos } = await client
       .from("accesos_registro_propietarios")
       .select("id")
@@ -155,6 +158,7 @@ async function validar() {
 
   } catch (err) {
     console.error(err);
+    ui.error("Error en validación");
     pintar("Error en validación", "error");
   }
 }
@@ -178,7 +182,7 @@ document.getElementById("btnRegistrar").onclick = async () => {
     const pin = document.getElementById("pin").value.trim();
 
     if (!pin) {
-      alert("Ingresa el PIN");
+      ui.warn("Ingresa el PIN");
       resetBtn(btn);
       return;
     }
@@ -189,34 +193,35 @@ document.getElementById("btnRegistrar").onclick = async () => {
     });
 
     if (error) {
-      alert("Error técnico: " + error.message);
+      ui.error("Error técnico: " + error.message);
       resetBtn(btn);
       return;
     }
 
     if (!data?.ok) {
-      alert(data?.mensaje || "Error");
+      ui.warn(data?.mensaje || "Operación no válida");
       resetBtn(btn);
       return;
     }
 
     if (data.accion === "salida") {
-  mostrarResultado("SALIDA REGISTRADA", "warn");
-} else {
-  mostrarResultado("ACCESO AUTORIZADO", "ok");
-}
+      ui.success("Salida registrada");
+      mostrarResultado("SALIDA REGISTRADA", "warn");
+    } else {
+      ui.success("Acceso autorizado");
+      mostrarResultado("ACCESO AUTORIZADO", "ok");
+    }
 
-    // 🔥 RESET BOTÓN
     resetBtn(btn);
 
   } catch (err) {
     console.error(err);
-    alert("Error inesperado");
+    ui.error("Error inesperado");
     resetBtn(btn);
   }
 };
 
-// 🔹 RESET BOTÓN (modo seguro)
+// 🔹 RESET BOTÓN
 function resetBtn(btn) {
   btn.disabled = false;
   btn.innerText = "Registrar";
@@ -224,20 +229,13 @@ function resetBtn(btn) {
 
 // 🔹 RESULTADO
 function mostrarResultado(texto, tipo) {
-
-  // 🎨 color de fondo
   document.body.className = tipo;
-
-  // 🧾 texto principal
   document.getElementById("estado").innerText = texto;
-
-  // 🧼 limpiar detalle
   document.getElementById("detalle").innerHTML = "";
-
-  // ❌ ocultar todo lo interactivo
   document.getElementById("btnAccion").style.display = "none";
   document.getElementById("control").style.display = "none";
 }
+
 // 🔹 UI
 function pintar(mensaje, tipo, data = null) {
 
