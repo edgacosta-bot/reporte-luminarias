@@ -18,6 +18,12 @@ try {
 </script>
 
 <style>
+
+/* 🔥 FIX GLOBAL */
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: Arial;
@@ -66,6 +72,19 @@ h1 {
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-bottom: 10px;
+  width: 100%;
+}
+
+/* 🔥 NUEVO UX */
+.campo {
+  display: flex;
+  flex-direction: column;
+}
+
+.campo label {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 4px;
 }
 
 input, select {
@@ -77,15 +96,16 @@ input, select {
   color: white;
 }
 
-/* 🔥 FIX INPUT DATE (UX PRO) */
+/* 🔥 FIX DATE */
 input[type="date"] {
   color-scheme: dark;
+  cursor: pointer;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
-  
+
 /* Botones */
 .botones {
   display: flex;
@@ -142,6 +162,14 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   text-decoration: none;
   color: white;
 }
+
+/* 🔥 RESPONSIVE */
+@media (max-width: 600px) {
+  .filtros {
+    grid-template-columns: 1fr;
+  }
+}
+
 </style>
 
 </head>
@@ -168,10 +196,17 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   </div>
 </div>
 
-<!-- 🔥 FILTRO POR FECHA -->
+<!-- 🔥 FILTROS MEJORADOS -->
 <div class="filtros">
-  <input type="date" id="fechaInicio">
-  <input type="date" id="fechaFin">
+  <div class="campo">
+    <label>Fecha inicio</label>
+    <input type="date" id="fechaInicio">
+  </div>
+
+  <div class="campo">
+    <label>Fecha fin</label>
+    <input type="date" id="fechaFin">
+  </div>
 </div>
 
 <div class="botones">
