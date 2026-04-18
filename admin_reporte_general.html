@@ -175,17 +175,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["admin","administracion"]);
 });
 
-function formatoMX(f){
-  return new Date(f).toLocaleString("es-MX");
-}
-
-function fechaInicioUTC(f){
-  return new Date(f+"T00:00:00").toISOString();
-}
-
-function fechaFinUTC(f){
-  return new Date(f+"T23:59:59").toISOString();
-}
 
 async function cargar(){
 
@@ -202,11 +191,11 @@ async function cargar(){
   try {
 
     // 🔴 VECINAL
-    let {data:inc} = await supabaseClient
-      .from("incidencias_vecinales")
-      .select("*")
-      .gte("fecha_local", inicio+"T00:00:00")
-      .lte("fecha_local", fin+"T23:59:59");
+   let {data:inc} = await supabaseClient
+  .from("incidencias_vecinales")
+  .select("*")
+  .gte("fecha", fechaInicioUTC(inicio))
+  .lte("fecha", fechaFinUTC(fin));
 
     inc?.forEach(i=>{
       registros.push({
@@ -214,7 +203,7 @@ async function cargar(){
         grupo:"vecinal",
         titulo:"Incidencia vecinal",
         descripcion:i.descripcion,
-        hora:i.fecha_local,
+        hora:i.fecha,
         origen:`${i.privada}-${i.casa}`
       });
     });
