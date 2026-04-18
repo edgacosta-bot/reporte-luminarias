@@ -170,6 +170,8 @@ Gracias por tu compromiso.
 
 </div>
 
+<script src="dates.js"></script>
+  
 <script>
 
 window.addEventListener("DOMContentLoaded", async () => {
@@ -325,7 +327,7 @@ obras?.forEach(i=>{
     datos.forEach(r=>{
       html += `<div class="item ${r.tipo}">
         <b>${r.titulo}</b>
-        <div class="hora">${formatoMX(r.hora)}</div>
+        <div class="hora">${formatMXDate(r.hora)}</div>
 
         ${r.vigilante ? `<div class="extra">👮 ${r.vigilante}</div>`:""}
         ${r.subtipo ? `<div class="extra">⚠️ ${r.subtipo.replaceAll("_"," ")}</div>`:""}
