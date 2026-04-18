@@ -159,6 +159,20 @@ Gracias por tu compromiso.
 
 <button onclick="cargar()">Consultar</button>
 
+<div class="form-group">
+  <div class="label">Privada</div>
+  <input type="text" id="filtroPrivada" placeholder="Ej: I">
+</div>
+
+<div class="form-group">
+  <div class="label">Casa</div>
+  <input type="text" id="filtroCasa" placeholder="Ej: 10">
+</div>
+
+<button onclick="limpiarFiltros()" style="background:#334155;margin-top:5px;">
+  Limpiar filtros
+</button>  
+
 <div class="kpis">
   <div class="kpi incidencia" id="inc">0 Incidencias</div>
   <div class="kpi agua" id="agua">0 Agua</div>
@@ -301,6 +315,26 @@ obras?.forEach(i=>{
     console.error(e);
   }
 
+  // 🔥 FILTRO POR PRIVADA Y CASA
+const privadaFiltro = document.getElementById("filtroPrivada")?.value.trim().toLowerCase();
+const casaFiltro = document.getElementById("filtroCasa")?.value.trim().toLowerCase();
+
+if (privadaFiltro || casaFiltro) {
+  registros = registros.filter(r => {
+
+    if (!r.origen) return false;
+
+    const partes = r.origen.split("-");
+    const privada = partes[0]?.toLowerCase();
+    const casa = partes[1]?.toLowerCase();
+
+    const coincidePrivada = privadaFiltro ? privada === privadaFiltro : true;
+    const coincideCasa = casaFiltro ? casa === casaFiltro : true;
+
+    return coincidePrivada && coincideCasa;
+  });
+}
+
   // 🔥 KPI
   document.getElementById("inc").innerText =
     registros.filter(r=>["incidencia","vigilante","obra"].includes(r.tipo)).length + " Incidencias";
@@ -347,6 +381,10 @@ obras?.forEach(i=>{
   document.getElementById("lista").innerHTML = html || "Sin resultados";
 }
 
+function limpiarFiltros(){
+  document.getElementById("filtroPrivada").value = "";
+  document.getElementById("filtroCasa").value = "";
+}  
 </script>
 
 </body>
