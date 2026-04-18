@@ -121,6 +121,7 @@ button {
 .item.agua { border-color: #f59e0b; }
 .item.luminaria { border-color: #10b981; }
 .item.vigilante { border-color: #3b82f6; }
+.item.obra { border-color: #a855f7; }
 
 .hora {
   font-size: 12px;
@@ -240,6 +241,25 @@ async function cargar(){
       });
     });
 
+// 🏗️ REPORTES DE OBRA
+let {data:obras} = await supabaseClient
+  .from("reportes_obras")
+  .select("*")
+  .gte("fecha_reporte", fechaInicioUTC(inicio))
+  .lte("fecha_reporte", fechaFinUTC(fin));
+
+obras?.forEach(i=>{
+  registros.push({
+    tipo:"obra",
+    grupo:"obra",
+    titulo:"Reporte de obra",
+    descripcion:i.descripcion,
+    hora:i.fecha_reporte,
+    origen:`${i.privada}-${i.casa}`,
+    subtipo:i.tipo
+  });
+});
+    
     // 💧 AGUA
     let {data:agua} = await supabaseClient
       .from("reportes_agua_caasim")
@@ -318,6 +338,7 @@ async function cargar(){
 
   renderGrupo("vecinal","🚨 Incidencias vecinales");
   renderGrupo("vigilante","👮 Reportes a vigilantes");
+  renderGrupo("obra","🏗️ Reportes de obra");
   renderGrupo("agua","💧 Reportes de agua");
   renderGrupo("luminaria","💡 Luminarias");
 
