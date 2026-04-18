@@ -134,8 +134,8 @@ window.addEventListener("DOMContentLoaded", async ()=>{
 // 🔹 CREAR
 async function crear(){
 
-  const nombre = document.getElementById("nombre").value.trim();
-  const tipo = document.getElementById("tipo").value.trim();
+  const nombre = document.getElementById("nombre").value.trim().toLowerCase();
+  const tipo = document.getElementById("tipo").value.trim().toLowerCase();
 
   if(!nombre){
     alert("Nombre requerido");
@@ -150,13 +150,16 @@ async function crear(){
       created_at: new Date().toISOString()
     }]);
 
-  if(error){
-    document.getElementById("msg").innerText = "Ya existe o error";
-    return;
-  }
+ if(error){
+  console.error(error);
+
+  document.getElementById("msg").innerText = "Error al crear servicio";
+  return;
+}
 
   document.getElementById("nombre").value = "";
   document.getElementById("tipo").value = "";
+  document.getElementById("msg").innerText = "Servicio creado correctamente";
 
   cargar();
 }
@@ -188,7 +191,7 @@ async function cargar(){
 
       ${
         s.desactivado_at
-        ? `<div class="fecha">Baja: ${formatoMX(s.desactivado_at)}</div>`
+        ? `<div class="fecha">Baja: ${formatMXDate(s.desactivado_at)}</div>`
         : ""
       }
 
