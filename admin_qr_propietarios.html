@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Accesos propietarios</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
 <style>
 body {
   font-family: Arial;
@@ -65,20 +69,17 @@ button {
   📲 Enviar por WhatsApp
 </button>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-
 <script>
-const { createClient } = supabase;
-
-const supabaseClient = createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
 
 let urlCredencial = "";
 let urlParaEnviar = "";
-let creando = false; // 🔥 control de doble click
+let creando = false;
+
+// 🔐 PROTEGER ACCESO (ADMIN)
+window.addEventListener("DOMContentLoaded", async ()=>{
+  await protegerPagina(["admin","administracion"]);
+  cargarResidentes();
+});
 
 async function cargarResidentes() {
 
@@ -105,7 +106,7 @@ function generarUUID() {
 
 async function crearAcceso() {
 
-  if(creando) return; // 🔥 evita múltiples clicks
+  if(creando) return;
   creando = true;
 
   const btn = document.getElementById("btnCrear");
@@ -118,12 +119,11 @@ async function crearAcceso() {
 
   if (!nombre) {
     resultado.innerText = "Ingresa nombre";
-    creando = false;
-    btn.disabled = false;
+    reset();
     return;
   }
 
-  // 🔥 VALIDAR DUPLICADO
+  // 🔍 VALIDAR DUPLICADO
   const { data: existente } = await supabaseClient
     .from("accesos_propietarios")
     .select("id")
@@ -134,8 +134,7 @@ async function crearAcceso() {
 
   if(existente){
     resultado.innerText = "Ya existe un acceso activo para esta persona";
-    creando = false;
-    btn.disabled = false;
+    reset();
     return;
   }
 
@@ -157,10 +156,8 @@ async function crearAcceso() {
     });
 
   if (error) {
-    console.log("ERROR INSERT:", error);
     resultado.innerText = "Error al crear acceso";
-    creando = false;
-    btn.disabled = false;
+    reset();
     return;
   }
 
@@ -171,23 +168,20 @@ async function crearAcceso() {
   urlParaEnviar = `${window.location.origin}/credencial_propietario.html?qr=${identificador}&nombre=${encodeURIComponent(nombre)}&privada=${residente.privada}&casa=${residente.casa}`;
 
   generarQR(urlCredencial);
-
   prepararWhatsApp(nombre, residente.privada, residente.casa);
 
-  // 🔥 DISPARAR WA AUTOMÁTICO
   document.getElementById("btnWA").click();
 
+  reset();
+}
+
+function reset(){
   creando = false;
-  btn.disabled = false;
+  document.getElementById("btnCrear").disabled = false;
 }
 
 function generarQR(texto) {
-
-  const canvas = document.getElementById("qr");
-
-  QRCode.toCanvas(canvas, texto, { width: 220 }, function (error) {
-    if (error) console.error(error);
-  });
+  QRCode.toCanvas(document.getElementById("qr"), texto, { width: 220 });
 }
 
 function prepararWhatsApp(nombre, privada, casa) {
@@ -203,13 +197,10 @@ function prepararWhatsApp(nombre, privada, casa) {
       `Ubicación: Privada ${privada} - Lote ${casa}\n\n` +
       `Presenta este código en caseta:\n${urlParaEnviar}`;
 
-    const wa = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
-
-    window.open(wa, "_blank");
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
   };
 }
 
-cargarResidentes();
 </script>
 
 </body>
