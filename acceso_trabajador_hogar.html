@@ -80,8 +80,9 @@ const qr = new URLSearchParams(window.location.search).get("qr");
 let trabajador = null;
 let residente = null;
 let estadoPago = "";
-let tipoAccion = "";
 let vigilante = null;
+let accesoAbierto = null;
+let tipoAccion = "";
 
 init();
 
@@ -109,9 +110,21 @@ async function init(){
   residente = res;
   estadoPago = (res.estado_pago || "").toLowerCase();
 
-  renderDetalle();
+  // 🔥 DETECTAR SI YA ESTÁ DENTRO
+  const { data: abierto } = await supabaseClient
+    .from("accesos_trabajadores_hogar")
+    .select("*")
+    .eq("trabajador_id", trabajador.id)
+    .is("fecha_hora_salida", null)
+    .order("fecha_hora_entrada", { ascending:false })
+    .limit(1);
 
-  document.getElementById("estado").innerText = "Validar acceso";
+  accesoAbierto = abierto && abierto.length ? abierto[0] : null;
+
+  tipoAccion = accesoAbierto ? "salida" : "entrada";
+
+  renderDetalle();
+  estado.innerText = "Validar acceso";
 }
 
 // 🔹 VALIDAR PIN
@@ -139,13 +152,21 @@ btnValidar.onclick = async () => {
 
   vigilante = data;
 
-  evaluarEstado();
+  ocultarValidacion();
+
+  // 🔥 FLUJO SALIDA
+  if(tipoAccion === "salida"){
+    document.body.className = "warn";
+    estado.innerText = "Autorizar salida";
+    btnRegistrar.classList.remove("hidden");
+    return;
+  }
+
+  evaluarEstadoEntrada();
 };
 
-// 🔹 EVALUAR ESTADO
-function evaluarEstado(){
-
-  ocultarValidacion();
+// 🔹 ENTRADA (NO MODIFICADO)
+function evaluarEstadoEntrada(){
 
   if(estadoPago === "moroso"){
 
@@ -154,7 +175,6 @@ function evaluarEstado(){
 
     btnRegistrar.innerText = "Registrar acceso con residente";
     btnRegistrar.classList.remove("hidden");
-
     btnNotificar.classList.remove("hidden");
 
     return;
@@ -176,6 +196,29 @@ btnRegistrar.onclick = async () => {
 
   const ahora = new Date().toISOString();
 
+  // 🔥 SALIDA
+  if(tipoAccion === "salida"){
+
+    await supabaseClient
+      .from("accesos_trabajadores_hogar")
+      .update({
+        fecha_hora_salida: ahora,
+        estatus: "fuera",
+        vigilante_salida_id: vigilante.id
+      })
+      .eq("id", accesoAbierto.id);
+
+    estado.innerText = "Salida registrada";
+
+    // 🔥 WA AUTOMÁTICO SALIDA
+    const mensaje = `Estimado Residente, en este momento su empleado doméstico ${trabajador.nombre}, acaba de salir del fraccionamiento. Gracias.`;
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
+
+    return;
+  }
+
+  // 🔹 ENTRADA
   await supabaseClient
     .from("accesos_trabajadores_hogar")
     .insert([{
@@ -191,13 +234,13 @@ btnRegistrar.onclick = async () => {
   btnNotificar.classList.remove("hidden");
 };
 
-// 🔹 NOTIFICAR
+// 🔹 NOTIFICAR (ENTRADA)
 btnNotificar.onclick = () => {
 
   let mensaje = "";
 
   if(estadoPago === "moroso"){
-    mensaje = `Estimado residente, su empleado ${trabajador.nombre} se encuentra en caseta, le solicitamos su asistencia para permitírsele el acceso; asimismo, lo invitamos a regularizar sus pagos para el acceso controlado a sus empleados sin generarle molestias. Gracias;
+    mensaje = `Estimado residente, su empleado ${trabajador.nombre} se encuentra en caseta, le solicitamos su asistencia para permitírsele el acceso; asimismo, lo invitamos a regularizar sus pagos para el acceso controlado a sus empleados sin generarle molestias. Gracias`;
   }
   else if(estadoPago === "atraso_1"){
     mensaje = `Estimado residente, su empleado doméstico ${trabajador.nombre} ingresó en este momento al fraccionamiento. Lo invitamos a regularizar el atraso en su cuota para evitar molestias en el acceso a sus empleados. Gracias`;
