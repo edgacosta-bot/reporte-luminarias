@@ -5,7 +5,9 @@
   <title>Acceso de Visitantes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <!-- 🔥 ORDEN CORRECTO -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
@@ -198,22 +200,33 @@
 </div>
 
 <script>
-const client = window.supabase.createClient(
-  'https://prjxmfhahnzosdwljode.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
-);
 
-const privada = localStorage.getItem("privada");
-const casa = localStorage.getItem("casa");
-const rol = localStorage.getItem("rol");
+let residenteGlobal = null;
 
-document.getElementById("infoUsuario").innerText =
-  `Privada ${privada} - Casa ${casa}`;
+// 🔐 INICIALIZACIÓN SEGURA
+window.addEventListener("DOMContentLoaded", async () => {
+
+  await protegerPagina(["admin","colono","residente"]);
+
+  const { data: { user } } = await supabaseClient.auth.getUser();
+
+  const { data: residente } = await supabaseClient
+    .from("residentes")
+    .select("*")
+    .eq("user_id", user.id)
+    .single();
+
+  residenteGlobal = residente;
+
+  document.getElementById("infoUsuario").innerText =
+    `Privada ${residente.privada} - Casa ${residente.casa}`;
+});
 
 function obtenerTipoGenerador() {
-  if (rol === "admin") return "administracion";
-  if (rol === "colono") return "residente";
-  if (rol === "vigilante") return "vigilante";
+  const tipo = residenteGlobal?.tipo?.toLowerCase();
+  if (tipo === "admin") return "administracion";
+  if (tipo === "colono") return "residente";
+  if (tipo === "vigilante") return "vigilante";
   return "residente";
 }
 
@@ -247,14 +260,7 @@ async function generarQR() {
     return;
   }
 
-  const { data: user } = await client
-    .from('residentes')
-    .select('*')
-    .eq('privada', privada)
-    .eq('casa', casa)
-    .single();
-
-  const estado = (user.estado_pago || "corriente").toLowerCase().trim();
+  const estado = (residenteGlobal.estado_pago || "corriente").toLowerCase().trim();
 
   if (estado === "moroso") {
     mostrarBloqueo();
@@ -269,22 +275,21 @@ async function generarQR() {
   const codigo = crypto.randomUUID();
   const tipo_generador = obtenerTipoGenerador();
 
-  // 🔥 NUEVO: obtener usuario autenticado
-  const { data: { user: userAuth } } = await client.auth.getUser();
+  const { data: { user } } = await supabaseClient.auth.getUser();
 
-  await client.from('visitas_qr').insert([{
-    residente_id: user.id,
-    user_id: userAuth.id, // 🔥 NUEVO (CLAVE)
+  await supabaseClient.from('visitas_qr').insert([{
+    residente_id: residenteGlobal.id,
+    user_id: user.id,
     nombre_visitante: visitante,
     fecha_visita: fecha,
     hora_inicio: hora_inicio,
     hora_fin: hora_fin,
     codigo_qr: codigo,
-    privada: user.privada,
-    casa: user.casa,
+    privada: residenteGlobal.privada,
+    casa: residenteGlobal.casa,
     estatus: 'activo',
     tipo_generador: tipo_generador,
-    residente_nombre: user.nombre || ''
+    residente_nombre: residenteGlobal.nombre || ''
   }]);
 
   const linkRelativo = `/mostrar_qr.html?qr=${codigo}`;
@@ -308,6 +313,7 @@ async function generarQR() {
   btn.style.display = "block";
   btn.onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(linkAbsoluto)}`);
 }
+
 </script>
 
 </body>
