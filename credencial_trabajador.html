@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- 🔥 EVITA CACHE -->
 <meta http-equiv="Cache-Control" content="no-store" />
 
 <title>Credencial Trabajador</title>
@@ -35,7 +34,6 @@ body {
   color: #9ca3af;
 }
 
-/* 🔥 etiqueta reimpresión */
 .reimpresion {
   color: #f59e0b;
   font-weight: bold;
@@ -70,7 +68,6 @@ body {
   color: #94a3b8;
 }
 
-/* 🔥 BOTÓN WHATSAPP */
 #btnWA {
   display: none;
   margin-top: 15px;
@@ -92,7 +89,6 @@ body {
 
   <div class="header">Villas de la Concepción</div>
 
-  <!-- 🔥 REIMPRESIÓN -->
   <div id="reimpresionLabel" class="reimpresion"></div>
 
   <div class="titulo">Acceso de Trabajador</div>
@@ -106,7 +102,6 @@ body {
     Presentar este código en caseta
   </div>
 
-  <!-- 🔥 BOTÓN WHATSAPP -->
   <button id="btnWA">
     📲 Enviar por WhatsApp
   </button>
@@ -117,10 +112,6 @@ body {
 
 <script>
 
-// 🔥 LIMPIA CONTEXTO DE SESIÓN
-localStorage.clear();
-sessionStorage.clear();
-
 // 🔎 Leer parámetros
 const params = new URLSearchParams(window.location.search);
 
@@ -129,7 +120,13 @@ const nombre = params.get("nombre");
 const privada = params.get("privada");
 const casa = params.get("casa");
 
-// 🔥 DETECCIÓN ROBUSTA DE REIMPRESIÓN
+// 🔐 VALIDACIÓN
+if (!codigo) {
+  document.body.innerHTML = "QR inválido";
+  throw new Error("QR inválido");
+}
+
+// 🔥 DETECCIÓN REIMPRESIÓN
 const valorReimpresion = params.get("reimpresion");
 
 const esReimpresion =
@@ -138,7 +135,6 @@ const esReimpresion =
   valorReimpresion === "si" ||
   valorReimpresion === "yes";
 
-// 🔥 etiqueta SOLO si aplica
 if (esReimpresion) {
   document.getElementById("reimpresionLabel").innerText =
     "🔁 REIMPRESIÓN DE CÓDIGO QR";
@@ -146,10 +142,9 @@ if (esReimpresion) {
 
 const origen = params.get("origen");
 
-// 🔥 QR apunta al acceso real
+// 🔥 QR real
 const urlQR = `${window.location.origin}/acceso_trabajador.html?qr=${codigo}`;
 
-// 🎯 Generar QR
 QRCode.toCanvas(urlQR, { width: 220 }, function (err, canvas) {
   if (!err) {
     document.getElementById("qr").appendChild(canvas);
@@ -161,7 +156,7 @@ document.getElementById("nombre").innerText = nombre || "";
 document.getElementById("obra").innerText =
   `Privada ${privada || ""} - Lote ${casa || ""}`;
 
-// 🔥 CONTROL BOTÓN WA (SOLO ADMIN)
+// 🔥 WA solo admin
 if (origen === "admin") {
 
   const btn = document.getElementById("btnWA");
@@ -169,7 +164,6 @@ if (origen === "admin") {
 
   btn.addEventListener("click", () => {
 
-    // 🔥 LINK LIMPIO PERO CONSERVA REIMPRESIÓN
     const linkCredencial =
       `${window.location.origin}/credencial_trabajador.html` +
       `?qr=${codigo}` +
@@ -178,7 +172,6 @@ if (origen === "admin") {
       `&casa=${casa}` +
       (esReimpresion ? `&reimpresion=1` : "");
 
-    // 🔥 MENSAJE DINÁMICO
     const titulo = esReimpresion
       ? "🔁 REIMPRESIÓN DE CÓDIGO QR"
       : "👷 Credencial de acceso";
