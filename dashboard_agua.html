@@ -77,6 +77,15 @@ input, select {
   color: white;
 }
 
+/* 🔥 FIX INPUT DATE (UX PRO) */
+input[type="date"] {
+  color-scheme: dark;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+  
 /* Botones */
 .botones {
   display: flex;
