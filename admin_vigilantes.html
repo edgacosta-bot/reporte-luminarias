@@ -82,7 +82,7 @@ button {
 
 <div id="lista"></div>
 
-<!-- MODALES (SIN CAMBIO) -->
+<!-- MODAL PIN -->
 <div id="modalPin" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
   <div style="background:#111827; padding:20px; border-radius:16px; width:90%; max-width:300px; text-align:center;">
     <h3>🔐 Cambiar PIN</h3>
@@ -95,6 +95,7 @@ button {
   </div>
 </div>
 
+<!-- MODAL NUEVO -->
 <div id="modalNuevo" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
   <div style="background:#111827; padding:20px; border-radius:16px; width:90%; max-width:300px; text-align:center;">
     <h3>👮 Nuevo vigilante</h3>
@@ -117,7 +118,6 @@ background:#111827; color:white; padding:14px 20px; border-radius:12px; opacity:
 
 let vigilanteSeleccionado = null;
 
-// 🔐 CONTROL CORRECTO
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["admin","administracion"]);
   await cargar();
@@ -189,15 +189,16 @@ async function toggle(id, estadoActual) {
   cargar();
 }
 
-// 🗑️ ELIMINAR
+// 🗑️ ELIMINAR → 🔥 SOFT DELETE
 async function eliminar(id) {
   if (!confirm("¿Eliminar vigilante?")) return;
 
   await supabaseClient
     .from("residentes")
-    .delete()
+    .update({ activo: false })
     .eq("id", id);
 
+  mostrarToast("Vigilante desactivado");
   cargar();
 }
 
@@ -281,7 +282,8 @@ async function crearVigilante() {
       privada: "SEG",
       casa: nombre,
       pin_vigilante: pin,
-      activo: true
+      activo: true,
+      created_at: new Date().toISOString() // 🔥 AJUSTE
     }]);
 
   cerrarModalNuevo();
