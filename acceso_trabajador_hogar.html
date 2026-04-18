@@ -171,9 +171,9 @@ function evaluarEstadoEntrada(){
   if(estadoPago === "moroso"){
 
     document.body.className = "error";
-    estado.innerText = "Acceso NO permitido";
+    estado.innerText = "Acceso NO permitido por irregularidad en cuotas";
 
-    btnRegistrar.innerText = "Registrar acceso con residente";
+    btnRegistrar.innerText = "Registrar acceso con presencia del residente";
     btnRegistrar.classList.remove("hidden");
     btnNotificar.classList.remove("hidden");
 
@@ -182,7 +182,7 @@ function evaluarEstadoEntrada(){
 
   if(estadoPago === "atraso_1"){
     document.body.className = "warn";
-    estado.innerText = "Acceso permitido (con atraso)";
+    estado.innerText = "Acceso permitido (con atraso en pago de cuotas)";
   } else {
     document.body.className = "ok";
     estado.innerText = "Acceso permitido";
