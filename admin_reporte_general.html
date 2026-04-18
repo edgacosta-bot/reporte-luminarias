@@ -302,14 +302,15 @@ obras?.forEach(i=>{
       .lte("fecha_reporte", fechaFinUTC(fin));
 
     luminarias?.forEach(i=>{
-      registros.push({
-        tipo:"luminaria",
-        grupo:"luminaria",
-        titulo:`Luminaria #${i.no_luminaria}`,
-        descripcion:i.descripcion,
-        hora:i.fecha_reporte
-      });
-    });
+  registros.push({
+    tipo:"luminaria",
+    grupo:"luminaria",
+    titulo:`Luminaria #${i.no_luminaria}`,
+    descripcion:i.descripcion,
+    hora:i.fecha_reporte,
+    origen:`${i.privada}-${i.casa}` // 🔥 FIX
+  });
+});
 
     console.log("LUMINARIAS RAW:", luminarias);
     console.log("LUMINARIAS EN REGISTROS:", registros.filter(r => r.tipo === "luminaria"));
