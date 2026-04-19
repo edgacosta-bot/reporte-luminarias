@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reporte de incidente</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./auth.js"></script>
+
+<script>
+protegerPagina(["colono","residente"]);
+</script>
+
 <style>
 body {
   margin: 0;
@@ -30,7 +37,8 @@ h2 {
   margin-bottom: 15px;
 }
 
-select, textarea {
+/* 🔥 INPUTS ALINEADOS */
+select, textarea, input {
   width: 100%;
   padding: 12px;
   margin-bottom: 12px;
@@ -38,6 +46,7 @@ select, textarea {
   border: none;
   background: #1f2937;
   color: white;
+  box-sizing: border-box; /* 🔥 CLAVE */
 }
 
 textarea {
@@ -54,6 +63,7 @@ button {
   color: white;
   font-size: 16px;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .mensaje {
@@ -71,6 +81,7 @@ button {
   color: #9ca3af;
   text-decoration: none;
 }
+
 </style>
 </head>
 
@@ -86,6 +97,10 @@ button {
 
 <textarea id="descripcion" placeholder="Describe el incidente..."></textarea>
 
+<!-- 🔥 NUEVO BLOQUE -->
+<input type="text" id="privada_afectada" placeholder="Privada afectada (opcional)">
+<input type="text" id="casa_afectada" placeholder="Casa afectada (opcional)">
+
 <button onclick="reportar()">Enviar reporte</button>
 
 <div id="mensaje" class="mensaje"></div>
@@ -94,20 +109,39 @@ button {
 
 </div>
 
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- Tu auth existente -->
-<script src="./auth.js"></script>
-
 <script>
 
-// 🔹 Cargar catálogo dinámico
+let residenteGlobal = null;
+
+// 🔐 USUARIO REAL
+async function obtenerUsuario() {
+
+  const { data } = await supabaseClient.auth.getUser();
+  const user = data?.user;
+
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const { data: residente } = await supabaseClient
+    .from("residentes")
+    .select("privada, casa")
+    .eq("user_id", user.id)
+    .single();
+
+  residenteGlobal = {
+    ...residente,
+    user_id: user.id
+  };
+}
+
+// 🔹 CATÁLOGO
 async function cargarCatalogo() {
 
   const select = document.getElementById("tipo");
 
-  const { data, error } = await supabaseClient
+  const { data } = await supabaseClient
     .from("catalogo_reportes")
     .select("subtipo")
     .eq("categoria", "vecinal")
@@ -115,12 +149,6 @@ async function cargarCatalogo() {
     .eq("activo", true)
     .order("subtipo");
 
-  if (error) {
-    console.error("Error cargando catálogo:", error);
-    return;
-  }
-
-  // limpiar
   select.innerHTML = '<option value="">Tipo de incidente</option>';
 
   data.forEach(item => {
@@ -129,15 +157,15 @@ async function cargarCatalogo() {
     option.textContent = item.subtipo.replaceAll("_", " ");
     select.appendChild(option);
   });
-
 }
 
-
-// 🔹 Enviar reporte
+// 🔹 ENVIAR
 async function reportar() {
 
   const tipo = document.getElementById("tipo").value;
   const descripcion = document.getElementById("descripcion").value.trim();
+  const privadaAfectada = document.getElementById("privada_afectada").value.trim();
+  const casaAfectada = document.getElementById("casa_afectada").value.trim();
   const mensaje = document.getElementById("mensaje");
 
   mensaje.className = "mensaje";
@@ -148,29 +176,34 @@ async function reportar() {
     return;
   }
 
-  const privada = localStorage.getItem("privada");
-  const casa = localStorage.getItem("casa");
-
-  const ahoraUTC = new Date();
-  const fechaMexico = new Date(ahoraUTC.getTime() - (6 * 60 * 60 * 1000));
-  const fechaLocal = fechaMexico.toISOString().slice(0, 19);
+  if (!residenteGlobal) {
+    mensaje.innerText = "Error de sesión";
+    mensaje.classList.add("error");
+    return;
+  }
 
   const { error } = await supabaseClient
     .from("incidencias_vecinales")
     .insert([{
-      categoria: "vecinal", // 🔥 NUEVO (normalización)
+      categoria: "vecinal",
       tipo: tipo,
       descripcion: descripcion,
-      privada: privada,
-      casa: casa,
-      fecha: ahoraUTC.toISOString(),
-      fecha_local: fechaLocal,
+
+      // 🔐 QUIEN REPORTA
+      residente_id: residenteGlobal.user_id,
+      privada: residenteGlobal.privada,
+      casa: residenteGlobal.casa,
+
+      // 🎯 A QUIÉN REPORTA (OPCIONAL)
+      privada_afectada: privadaAfectada || null,
+      casa_afectada: casaAfectada || null,
+
+      fecha: new Date().toISOString(),
       estatus: "nuevo",
       atendido: false
     }]);
 
   if (error) {
-    console.error(error);
     mensaje.innerText = "Error al enviar reporte";
     mensaje.classList.add("error");
     return;
@@ -181,11 +214,13 @@ async function reportar() {
 
   document.getElementById("descripcion").value = "";
   document.getElementById("tipo").value = "";
+  document.getElementById("privada_afectada").value = "";
+  document.getElementById("casa_afectada").value = "";
 }
 
-
-// 🔹 Ejecutar al cargar
-document.addEventListener("DOMContentLoaded", () => {
+// 🔄 INIT
+document.addEventListener("DOMContentLoaded", async () => {
+  await obtenerUsuario();
   cargarCatalogo();
 });
 
