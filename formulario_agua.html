@@ -203,8 +203,11 @@ async function guardar(){
 
   // 🔥 CORRECCIÓN DE FECHA (SIN PROBLEMA UTC)
   const hoy = new Date();
-  hoy.setMinutes(hoy.getMinutes() - hoy.getTimezoneOffset());
-  const fechaLocal = hoy.toISOString().split("T")[0];
+
+  const fechaLocal =
+  hoy.getFullYear() + "-" +
+  String(hoy.getMonth() + 1).padStart(2, '0') + "-" +
+  String(hoy.getDate()).padStart(2, '0');
 
   const { error } = await supabaseClient
     .from("reportes_agua_caasim")
