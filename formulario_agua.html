@@ -7,6 +7,10 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- 🔐 AUTH GLOBAL -->
+<script src="auth.js"></script>
+
 </head>
 
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
@@ -83,20 +87,12 @@ Registrar reporte
 
 <script>
 
-const supabaseClient = supabase.createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
+/* 🔥 VARIABLES */
+let privada = null;
+let casa = null;
+let residenteId = null;
 
-const APPS_SCRIPT_URL = "https://datastudio.google.com/embed/reporting/d16fb6ac-e2b8-484f-b9cd-18aebbb0e4f1/page/p_torpw2u21d";
-
-const privada = localStorage.getItem("privada");
-const casa = localStorage.getItem("casa");
-
-document.getElementById("infoUsuario").innerText =
-  `Privada ${privada} - Casa ${casa}`;
-
-/* 🔥 NUEVO: CATÁLOGO */
+/* 🔥 CATÁLOGO */
 async function cargarCatalogoAgua() {
 
   const select = document.getElementById("tipo_falla");
@@ -150,6 +146,7 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
   const mensaje = document.getElementById("mensaje");
 
   const dataSupabase = {
+    residente_id: residenteId,
     fecha_reporte: document.getElementById("fecha_reporte").value,
     numero_reporte: document.getElementById("numero_reporte").value.trim(),
     medio_reporte: document.getElementById("medio_reporte").value,
@@ -167,12 +164,6 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
 
     if (error) throw error;
 
-    await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      body: "data=" + encodeURIComponent(JSON.stringify(dataSupabase))
-    });
-
     mensaje.innerText = "✅ Reporte registrado correctamente";
     mensaje.className = "text-green-600 text-center";
 
@@ -185,10 +176,34 @@ document.getElementById("formAgua").addEventListener("submit", async (e) => {
 
 });
 
-/* INIT */
-document.addEventListener("DOMContentLoaded", () => {
-  cargarCatalogoAgua();
-  cargarCalles();
+/* 🔐 INIT */
+document.addEventListener("DOMContentLoaded", async () => {
+
+  await protegerPagina(["colono", "residente"]);
+
+  const { data: userData } = await supabaseClient.auth.getUser();
+  const user = userData?.user;
+
+  const { data: residente } = await supabaseClient
+    .from("residentes")
+    .select("id, privada, casa")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!residente) {
+    alert("Error de sesión");
+    return;
+  }
+
+  privada = residente.privada;
+  casa = residente.casa;
+  residenteId = residente.id;
+
+  document.getElementById("infoUsuario").innerText =
+    `Privada ${privada} - Casa ${casa}`;
+
+  await cargarCatalogoAgua();
+  await cargarCalles();
 });
 
 </script>
