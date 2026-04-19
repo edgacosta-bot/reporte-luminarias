@@ -32,7 +32,6 @@ h2 {
   text-align: center;
 }
 
-/* AVISO */
 .aviso {
   background: #1f2937;
   padding: 15px;
@@ -42,7 +41,6 @@ h2 {
   color: #d1d5db;
 }
 
-/* CAMPOS */
 .campo {
   margin-bottom: 12px;
 }
@@ -62,7 +60,6 @@ input[type="date"] {
   box-sizing: border-box;
 }
 
-/* CHIPS */
 .chips {
   display: flex;
   gap: 8px;
@@ -82,7 +79,6 @@ input[type="date"] {
   background: #2563eb;
 }
 
-/* BOTÓN */
 button {
   width: 100%;
   padding: 12px;
@@ -93,7 +89,6 @@ button {
   margin-bottom: 10px;
 }
 
-/* ITEMS */
 .item {
   background: #111827;
   padding: 15px;
@@ -110,7 +105,6 @@ button {
   color: #9ca3af;
 }
 
-/* MODAL */
 .modal {
   position: fixed;
   top:0; left:0; right:0; bottom:0;
@@ -206,108 +200,55 @@ Gracias por su apoyo.
 let privada, casa;
 let seleccionado = null;
 
-/* 🔥 MODO PRUEBA */
 const MODO_PRUEBA_EVALUACION = true;
 
 function pasaron5Dias(fecha){
   if (MODO_PRUEBA_EVALUACION) return true;
-
   const hoy = new Date();
   const f = new Date(fecha);
-  const diff = (hoy - f) / (1000 * 60 * 60 * 24);
-
-  return diff >= 5;
+  return ((hoy - f) / (1000*60*60*24)) >= 5;
 }
 
 async function obtenerUsuario(){
-
   const { data } = await supabaseClient.auth.getUser();
   const user = data?.user;
 
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  const { data:res, error } = await supabaseClient
+  const { data:res } = await supabaseClient
     .from("residentes")
     .select("privada,casa")
     .eq("user_id", user.id)
     .single();
 
-  if (error || !res) {
-    document.getElementById("lista").innerHTML = "Error de sesión";
-    return;
-  }
-
   privada = res.privada;
   casa = res.casa;
 }
 
-function rangoRapido(dias){
-  let hoy = new Date();
-  let inicio = new Date();
-  inicio.setDate(hoy.getDate() - dias);
-
-  document.getElementById("inicio").value = inicio.toISOString().split("T")[0];
-  document.getElementById("fin").value = hoy.toISOString().split("T")[0];
-
-  cargar();
-}
-
 async function cargar(){
-
-  document.getElementById("lista").innerHTML = "Cargando...";
-
-  const inicio = document.getElementById("inicio").value;
-  const fin = document.getElementById("fin").value;
 
   let registros = [];
 
-  let querySeg = supabaseClient
-    .from("reportes_seguridad")
-    .select("*")
-    .or(`privada.eq.${privada},privada.eq.caseta`);
-
-  if (inicio && fin) {
-    querySeg = querySeg
-      .gte("fecha", fechaInicioUTC(inicio))
-      .lte("fecha", fechaFinUTC(fin));
-  }
-
-  const { data: seg } = await querySeg;
-
-  seg?.forEach(i=>{
-    registros.push({
-      tipo:"vecinal",
-      id:i.id,
-      descripcion:i.descripcion,
-      fecha:i.fecha
-    });
-  });
-
-  let queryObras = supabaseClient
+  const { data: obras } = await supabaseClient
     .from("reportes_obras")
     .select("*")
     .eq("privada", privada)
     .eq("casa", casa);
 
-  if (inicio && fin) {
-    queryObras = queryObras
-      .gte("fecha_reporte", fechaInicioUTC(inicio))
-      .lte("fecha_reporte", fechaFinUTC(fin));
+  let trabajadoresMap = {};
+
+  if (obras?.length) {
+    const ids = obras.map(o => o.trabajador_id).filter(Boolean);
+
+    if (ids.length) {
+      const { data: trabajadores } = await supabaseClient
+        .from("trabajadores_obra")
+        .select("id,nombre")
+        .in("id", ids);
+
+      trabajadores?.forEach(t=>{
+        trabajadoresMap[t.id] = t.nombre;
+      });
+    }
   }
-
-  const { data: obras } = await queryObras;
-
-  obras?.forEach(i => {
-    registros.push({
-      tipo:"obra",
-      id:i.id,
-      descripcion:i.descripcion,
-      fecha:i.fecha_reporte
-    });
-  });
 
   const { data: evals } = await supabaseClient
     .from("evaluaciones_reportes")
@@ -317,31 +258,34 @@ async function cargar(){
 
   let html="";
 
-  registros
-    .sort((a,b)=> new Date(b.fecha)-new Date(a.fecha))
-    .forEach(r=>{
+  obras?.forEach(r=>{
 
-      let puedeEvaluar =
-        (r.tipo === "vecinal" || r.tipo === "obra") &&
-        !evaluados.has(r.id);
+    const trabajador = trabajadoresMap[r.trabajador_id];
 
-      let habilitado = puedeEvaluar && pasaron5Dias(r.fecha);
+    let puedeEvaluar = !evaluados.has(r.id);
+    let habilitado = puedeEvaluar && pasaron5Dias(r.fecha_reporte);
 
-      html+=`
-      <div class="item ${r.tipo}">
-        <b>${r.tipo.toUpperCase()}</b>
-        <div>${r.descripcion}</div>
-        <div class="fecha">${formatMXDate(r.fecha)}</div>
+    html+=`
+    <div class="item obra">
+      <b>OBRA</b>
+      <div>${r.descripcion}</div>
 
-        ${puedeEvaluar ? `
-        <button 
-          onclick="${habilitado ? `abrir('${r.id}')` : ''}"
-          ${!habilitado ? 'disabled style="opacity:0.5;"' : ''}>
-          Evaluar atención
-        </button>`:""}
-      </div>
-      `;
-    });
+      ${trabajador ? `
+      <div style="font-size:13px;color:#9ca3af;margin-top:5px;">
+        👷 ${trabajador}
+      </div>` : ""}
+
+      <div class="fecha">${formatMXDate(r.fecha_reporte)}</div>
+
+      ${puedeEvaluar ? `
+      <button 
+        onclick="${habilitado ? `abrir('${r.id}')` : ''}"
+        ${!habilitado ? 'disabled style="opacity:0.5;"' : ''}>
+        Evaluar atención
+      </button>`:""}
+    </div>
+    `;
+  });
 
   document.getElementById("lista").innerHTML = html || "Sin resultados";
 }
@@ -349,8 +293,6 @@ async function cargar(){
 function abrir(id){
   seleccionado = id;
   document.getElementById("modal").style.display="flex";
-  document.getElementById("pregunta").style.display="block";
-  document.getElementById("respuesta").style.display="none";
 }
 
 async function evaluar(tipo){
