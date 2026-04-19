@@ -1,92 +1,92 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
+<script>
+protegerPagina(["colono","residente","admin"]);
+</script>
 
 <title>Dashboard Luminarias</title>
 
 <style>
 body {
   margin: 0;
-  font-family: Arial;
-  background: linear-gradient(135deg,#020617,#0f172a);
+  font-family: Arial, sans-serif;
+  background: #161a1d;
   color: white;
 }
 
 .container {
   max-width: 900px;
   margin: auto;
-  padding: 20px;
+  padding: 15px;
 }
 
 h1 {
   text-align: center;
+  margin-bottom: 15px;
 }
 
-/* KPIs */
-.kpis {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 20px;
+select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  background: #1e293b;
+  color: white;
+  border: none;
+  margin-bottom: 15px;
 }
 
 .card {
-  background: #111827;
-  padding: 15px;
+  background: #1e293b;
+  padding: 12px;
   border-radius: 12px;
+  margin-bottom: 10px;
   text-align: center;
 }
 
-.card h3 {
-  font-size: 13px;
-  color: #9ca3af;
+.kpis {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
-.card p {
-  font-size: 22px;
-  margin: 0;
+.kpis .card {
+  flex: 1;
 }
 
-/* Tabla */
 table {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 10px;
 }
 
 th {
-  background: #1e3a8a;
+  background: #334155;
   padding: 10px;
+  font-size: 13px;
 }
 
 td {
   padding: 10px;
-  text-align: center;
-  border-bottom: 1px solid #374151;
+  border-bottom: 1px solid #334155;
+  font-size: 13px;
 }
-
-/* estados */
-.operativo { color: #22c55e; }
-.fuera { color: #ef4444; }
-.reemplazar { color: #f59e0b; }
 
 .back {
   display: block;
-  margin-top: 20px;
   text-align: center;
+  padding: 14px;
+  margin-top: 15px;
   background: #374151;
-  padding: 12px;
   border-radius: 10px;
   text-decoration: none;
   color: white;
 }
 </style>
-
 </head>
 
 <body>
@@ -95,33 +95,39 @@ td {
 
 <h1>💡 Estado de luminarias</h1>
 
+<!-- 🔽 FILTRO -->
+<select id="filtroCalle" onchange="filtrar()">
+  <option value="">Todas las calles</option>
+</select>
+
+<!-- 📊 KPIs -->
 <div class="kpis">
   <div class="card">
-    <h3>Total</h3>
-    <p id="total">0</p>
+    <div>Total</div>
+    <div id="kpiTotal">0</div>
   </div>
   <div class="card">
-    <h3>Operativas</h3>
-    <p id="operativas">0</p>
+    <div>Operativas</div>
+    <div id="kpiOk">0</div>
   </div>
   <div class="card">
-    <h3>Fuera de servicio</h3>
-    <p id="fuera">0</p>
+    <div>Fuera de servicio</div>
+    <div id="kpiFail">0</div>
   </div>
   <div class="card">
-    <h3>Prever reemplazo Prox.</h3>
-    <p id="reemplazo">0</p>
+    <div>Prever reemplazo prox.</div>
+    <div id="kpiPrev">0</div>
   </div>
 </div>
 
+<!-- 📋 TABLA -->
 <table>
   <thead>
     <tr>
-      <th>#</th>
-      <th>Calle</th>
-      <th>Privada</th>
+      <th>No. luminaria conforme croquis</th>
       <th>Situación</th>
-      <th>Estado</th>
+      <th>% Vida útil</th>
+      <th>Acción a realizar</th>
     </tr>
   </thead>
   <tbody id="tabla"></tbody>
@@ -135,77 +141,87 @@ td {
 
 let datosGlobal = [];
 
-window.addEventListener("DOMContentLoaded", async () => {
-  await protegerPagina(["admin","colono","residente"]);
-  cargar();
-});
-
+// 🔄 CARGAR DATA
 async function cargar() {
 
   const { data, error } = await supabaseClient
     .from("dashboard_luminarias_safe")
-    .select("*")
-    .order("no_luminaria", { ascending: true });
+    .select("*");
 
   if (error) {
     console.error(error);
     return;
   }
 
-  datosGlobal = data || [];
-  render(datosGlobal);
+  datosGlobal = data;
+
+  llenarFiltroCalles(data);
+  render(data);
 }
 
+// 🔽 LLENAR SELECT
+function llenarFiltroCalles(data) {
+  const select = document.getElementById("filtroCalle");
+
+  const calles = [...new Set(data.map(d => d.calle))].sort();
+
+  calles.forEach(calle => {
+    const option = document.createElement("option");
+    option.value = calle;
+    option.textContent = calle;
+    select.appendChild(option);
+  });
+}
+
+// 🔍 FILTRO
+function filtrar() {
+
+  const calle = document.getElementById("filtroCalle").value;
+
+  let filtrados = datosGlobal;
+
+  if (calle) {
+    filtrados = filtrados.filter(d => d.calle === calle);
+  }
+
+  render(filtrados);
+}
+
+// 🎯 RENDER
 function render(data) {
-
-  document.getElementById("total").innerText = data.length;
-
-  document.getElementById("operativas").innerText =
-    data.filter(d => (d.situacion || "").toLowerCase() === "operativo").length;
-
-  document.getElementById("fuera").innerText =
-    data.filter(d => (d.situacion || "").toLowerCase() === "fuera de servicio").length;
-
-  document.getElementById("reemplazo").innerText =
-    data.filter(d =>
-    (d.estado_automatico || "").toLowerCase().includes("prever reemplazo")
-     ).length;
-    data.filter(d => (d.estado_automatico || "").toLowerCase().includes("reemplazar")).length;
-
-  renderTabla(data);
-}
-
-function renderTabla(data) {
 
   const tabla = document.getElementById("tabla");
   tabla.innerHTML = "";
 
-  if (!data.length) {
-    tabla.innerHTML = `<tr><td colspan="5">Sin registros</td></tr>`;
-    return;
-  }
+  let total = data.length;
+  let ok = 0;
+  let fail = 0;
+  let prev = 0;
 
-  data.forEach(d => {
+  data.forEach(l => {
 
-    const situacion = (d.situacion || "").toLowerCase();
-    let clase = "";
-
-    if (situacion === "operativo") clase = "operativo";
-    if (situacion === "fuera de servicio") clase = "fuera";
-
-    const reemplazo = (d.estado_automatico || "").toLowerCase().includes("reemplazar");
+    if (l.situacion === "Operativo") ok++;
+    if (l.situacion === "Fuera de servicio") fail++;
+    if (l.estado_automatico === "Prever reemplazo próximo") prev++;
 
     tabla.innerHTML += `
       <tr>
-        <td>${d.no_luminaria}</td>
-        <td>${d.calle}</td>
-        <td>${d.privada}</td>
-        <td class="${clase}">${d.situacion}</td>
-        <td class="${reemplazo ? "reemplazar" : ""}">${d.estado_automatico}</td>
+        <td>${l.no_luminaria}</td>
+        <td>${l.situacion}</td>
+        <td>${(l.porcentaje_vida * 100).toFixed(2)} %</td>
+        <td>${l.estado_automatico}</td>
       </tr>
     `;
   });
+
+  document.getElementById("kpiTotal").innerText = total;
+  document.getElementById("kpiOk").innerText = ok;
+  document.getElementById("kpiFail").innerText = fail;
+  document.getElementById("kpiPrev").innerText = prev;
 }
+
+// 🚀 INICIO
+cargar();
 
 </script>
 
