@@ -273,10 +273,17 @@ function filtrarPorFecha() {
 
     if (!r.fecha_reporte) return false;
 
-   const fecha = r.fecha_reporte?.split("T")[0]; // 🔥 usar string directo
+ const fecha = new Date(r.fecha_reporte + "T00:00:00Z");
 
-    if (inicio && fecha < inicio) return false;
-    if (fin && fecha > fin) return false;
+if (inicio) {
+  const fInicio = new Date(inicio + "T00:00:00Z");
+  if (fecha < fInicio) return false;
+}
+
+if (fin) {
+  const fFin = new Date(fin + "T23:59:59Z");
+  if (fecha > fFin) return false;
+}
 
     return true;
   });
