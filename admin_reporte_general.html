@@ -212,7 +212,7 @@ async function cargar(){
   .from("incidencias_vecinales")
   .select("*")
   .gte("fecha", inicio)
-  .lte("fecha", fin);
+  .lte("fecha", fechaFinUTC(fin));
 
     inc?.forEach(i=>{
       registros.push({
@@ -230,7 +230,7 @@ async function cargar(){
       .from("reportes_vigilantes")
       .select("*")
       .gte("fecha", inicio)
-      .lte("fecha", fin);
+      .lte("fecha", fechaFinUTC(fin));
 
     let mapaV = {};
 
@@ -262,7 +262,7 @@ let {data:obras} = await supabaseClient
   .from("reportes_obras")
   .select("*")
   .gte("fecha_reporte", inicio)
-  .lte("fecha_reporte", fin);
+  .lte("fecha_reporte", fechaFinUTC(fin));
 
 obras?.forEach(i=>{
   registros.push({
@@ -281,7 +281,7 @@ obras?.forEach(i=>{
       .from("reportes_agua_caasim")
       .select("*")
       .gte("fecha_registro", inicio)
-      .lte("fecha_registro", fin);
+      .lte("fecha_registro", fechaFinUTC(fin));
 
     agua?.forEach(i=>{
       registros.push({
@@ -299,7 +299,7 @@ obras?.forEach(i=>{
       .from("vista_reportes_luminarias")
       .select("*")
       .gte("fecha_reporte", inicio)
-      .lte("fecha_reporte", fin);
+      .lte("fecha_reporte", fechaFinUTC(fin));
 
     luminarias?.forEach(i=>{
   registros.push({
