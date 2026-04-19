@@ -156,14 +156,12 @@ Su evaluación nos ayuda a mejorar el servicio.<br><br>
 Gracias por su apoyo.
 </div>
 
-<!-- CHIPS -->
 <div class="chips">
   <div class="chip" onclick="rangoRapido(0)">Hoy</div>
   <div class="chip" onclick="rangoRapido(7)">7 días</div>
   <div class="chip" onclick="rangoRapido(30)">30 días</div>
 </div>
 
-<!-- FECHAS -->
 <div class="campo">
   <label>Fecha inicio</label>
   <input type="date" id="inicio">
@@ -180,7 +178,6 @@ Gracias por su apoyo.
 
 </div>
 
-<!-- MODAL -->
 <div id="modal" class="modal">
   <div class="modal-content">
     
@@ -208,6 +205,19 @@ Gracias por su apoyo.
 
 let privada, casa;
 let seleccionado = null;
+
+/* 🔥 MODO PRUEBA */
+const MODO_PRUEBA_EVALUACION = true;
+
+function pasaron5Dias(fecha){
+  if (MODO_PRUEBA_EVALUACION) return true;
+
+  const hoy = new Date();
+  const f = new Date(fecha);
+  const diff = (hoy - f) / (1000 * 60 * 60 * 24);
+
+  return diff >= 5;
+}
 
 async function obtenerUsuario(){
 
@@ -254,7 +264,6 @@ async function cargar(){
 
   let registros = [];
 
-  /* VECINAL */
   let querySeg = supabaseClient
     .from("reportes_seguridad")
     .select("*")
@@ -277,7 +286,6 @@ async function cargar(){
     });
   });
 
-  /* OBRAS */
   let queryObras = supabaseClient
     .from("reportes_obras")
     .select("*")
@@ -292,44 +300,15 @@ async function cargar(){
 
   const { data: obras } = await queryObras;
 
-  let trabajadoresMap = {};
-
-  if (obras && obras.length > 0) {
-    const ids = obras.map(o => o.trabajador_id).filter(Boolean);
-
-    if (ids.length > 0) {
-      const { data: trabajadores } = await supabaseClient
-        .from("trabajadores_obra")
-        .select("id,nombre,privada,casa")
-        .in("id", ids);
-
-      trabajadores?.forEach(t => {
-        trabajadoresMap[t.id] = t;
-      });
-    }
-  }
-
   obras?.forEach(i => {
-
-    const trabajador = trabajadoresMap[i.trabajador_id];
-
-    let nombreTrabajador = trabajador?.nombre || null;
-
-    let obraTexto = trabajador
-      ? `${trabajador.privada || ""} - ${trabajador.casa || ""}`
-      : `${i.privada || ""} - ${i.casa || ""}`;
-
     registros.push({
       tipo:"obra",
       id:i.id,
       descripcion:i.descripcion,
-      fecha:i.fecha_reporte,
-      trabajador: nombreTrabajador,
-      obra: obraTexto
+      fecha:i.fecha_reporte
     });
   });
 
-  /* EVALUACIONES */
   const { data: evals } = await supabaseClient
     .from("evaluaciones_reportes")
     .select("reporte_id");
@@ -346,21 +325,20 @@ async function cargar(){
         (r.tipo === "vecinal" || r.tipo === "obra") &&
         !evaluados.has(r.id);
 
+      let habilitado = puedeEvaluar && pasaron5Dias(r.fecha);
+
       html+=`
       <div class="item ${r.tipo}">
         <b>${r.tipo.toUpperCase()}</b>
         <div>${r.descripcion}</div>
-
-        ${r.tipo === "obra" ? `
-        <div style="font-size:13px;color:#9ca3af;margin-top:5px;line-height:1.4;">
-        🏠 ${r.obra}<br>
-        ${r.trabajador ? `👷 ${r.trabajador}` : ""}
-        </div>
-        ` : ""}
-
         <div class="fecha">${formatMXDate(r.fecha)}</div>
 
-        ${puedeEvaluar ? `<button onclick="abrir('${r.id}')">Evaluar atención</button>`:""}
+        ${puedeEvaluar ? `
+        <button 
+          onclick="${habilitado ? `abrir('${r.id}')` : ''}"
+          ${!habilitado ? 'disabled style="opacity:0.5;"' : ''}>
+          Evaluar atención
+        </button>`:""}
       </div>
       `;
     });
@@ -370,7 +348,6 @@ async function cargar(){
 
 function abrir(id){
   seleccionado = id;
-
   document.getElementById("modal").style.display="flex";
   document.getElementById("pregunta").style.display="block";
   document.getElementById("respuesta").style.display="none";
@@ -378,12 +355,17 @@ function abrir(id){
 
 async function evaluar(tipo){
 
+  const { data } = await supabaseClient.auth.getUser();
+  const user = data?.user;
+
   await supabaseClient.from("evaluaciones_reportes").insert([{
     reporte_id: seleccionado,
     tipo_reporte: "general",
     calificacion: tipo,
     privada,
-    casa
+    casa,
+    residente_id: user.id,
+    fecha: new Date()
   }]);
 
   document.getElementById("pregunta").style.display="none";
