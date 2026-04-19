@@ -101,6 +101,9 @@ Registra el número de reporte proporcionado por CAASIM junto con los datos corr
 
 <input id="numero_reporte" placeholder="Número de reporte">
 
+<!-- 🔥 NUEVO CAMPO -->
+<input type="date" id="fecha_reporte">
+
 <select id="tipo_falla">
   <option value="">Tipo de falla</option>
   <option value="sin_servicio">Sin servicio</option>
@@ -143,6 +146,17 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   cargarCalles();
+
+  // 🔥 FECHA POR DEFECTO (HOY)
+  const hoy = new Date();
+
+  const fechaHoy =
+    hoy.getFullYear() + "-" +
+    String(hoy.getMonth() + 1).padStart(2, '0') + "-" +
+    String(hoy.getDate()).padStart(2, '0');
+
+  document.getElementById("fecha_reporte").value = fechaHoy;
+
 });
 
 async function cargarCalles(){
@@ -177,6 +191,7 @@ async function cargarCalles(){
 async function guardar(){
 
   const numero_reporte = document.getElementById("numero_reporte").value.trim();
+  const fecha_reporte = document.getElementById("fecha_reporte").value;
   const tipo_falla = document.getElementById("tipo_falla").value;
   const calle_id = document.getElementById("calle").value;
   const numero_exterior = document.getElementById("numero_exterior").value.trim();
@@ -185,7 +200,7 @@ async function guardar(){
 
   const msg = document.getElementById("msg");
 
-  if(!numero_reporte || !tipo_falla || !calle_id){
+  if(!numero_reporte || !tipo_falla || !calle_id || !fecha_reporte){
     msg.innerText = "Completa los campos requeridos";
     return;
   }
@@ -201,14 +216,6 @@ async function guardar(){
     return;
   }
 
-  // 🔥 CORRECCIÓN DE FECHA (SIN PROBLEMA UTC)
-  const hoy = new Date();
-
-  const fechaLocal =
-  hoy.getFullYear() + "-" +
-  String(hoy.getMonth() + 1).padStart(2, '0') + "-" +
-  String(hoy.getDate()).padStart(2, '0');
-
   const { error } = await supabaseClient
     .from("reportes_agua_caasim")
     .insert([{
@@ -221,7 +228,7 @@ async function guardar(){
       medio_reporte,
       observaciones,
       estatus: "reportado",
-      fecha_reporte: fechaLocal
+      fecha_reporte: fecha_reporte
     }]);
 
   if(error){
@@ -235,6 +242,15 @@ async function guardar(){
   document.getElementById("numero_reporte").value = "";
   document.getElementById("numero_exterior").value = "";
   document.getElementById("observaciones").value = "";
+
+  // 🔥 RESETEAR FECHA A HOY
+  const hoy = new Date();
+  const fechaHoy =
+    hoy.getFullYear() + "-" +
+    String(hoy.getMonth() + 1).padStart(2, '0') + "-" +
+    String(hoy.getDate()).padStart(2, '0');
+
+  document.getElementById("fecha_reporte").value = fechaHoy;
 }
 
 </script>
