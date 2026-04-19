@@ -165,7 +165,7 @@ Gracias por su apoyo.
 
 <script>
 
-let userId, seleccionado=null;
+let residenteId, seleccionado=null;
 
 const MODO_PRUEBA_EVALUACION = true;
 
@@ -177,9 +177,24 @@ function pasaron5Dias(fecha){
 async function obtenerUsuario(){
   const { data } = await supabaseClient.auth.getUser();
   const user = data.user;
-  userId = user.id;
+
+// 🔥 obtener ID real del residente
+const { data: residente, error } = await supabaseClient
+  .from("residentes")
+  .select("id")
+  .eq("user_id", user.id)
+  .single();
+
+if (error || !residente) {
+  console.error("No se encontró residente");
+  return;
 }
 
+residenteId = residente.id;
+}
+
+console.log("RESIDENTE ID:", residenteId);
+  
 function rangoRapido(dias){
   let hoy = new Date();
   let inicio = new Date();
