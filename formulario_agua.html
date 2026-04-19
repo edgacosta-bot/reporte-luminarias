@@ -30,43 +30,48 @@ h2 {
 /* 🔥 TEXTO GUÍA */
 .info {
   font-size: 13px;
-  color: #e5e7eb; /* blanco suave pero visible */
+  color: #e5e7eb;
   margin-bottom: 20px;
   text-align: center;
 }
 
-/* 🔥 INPUTS */
+/* 🔥 CAMPOS */
 input, select, textarea, button {
   width: 100%;
   padding: 14px;
   margin-bottom: 12px;
   border-radius: 12px;
-  border: none;
+  border: 1px solid #334155;
   box-sizing: border-box;
   font-size: 15px;
 }
 
-/* 🔥 CAMPOS OSCUROS + TEXTO BLANCO */
-input, select, textarea {
-  background: #0f172a;
+/* 🔥 INPUTS OSCUROS */
+input, textarea {
+  background: #020617;
   color: white;
 }
 
-/* 🔥 PLACEHOLDER BLANCO (ANTES GRIS) */
+/* 🔥 SELECT (MEJOR CONTROL POSIBLE) */
+select {
+  background: #020617;
+  color: white;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+/* 🔥 PLACEHOLDER */
 input::placeholder,
 textarea::placeholder {
   color: #ffffff;
   opacity: 0.85;
 }
 
-/* 🔥 SELECT TEXTO */
-select {
-  color: white;
-}
-
-/* 🔥 OPCIONES */
+/* 🔥 OPCIONES (LO MÁXIMO QUE PERMITE EL NAVEGADOR) */
 select option {
-  color: black; /* necesario para dropdown nativo */
+  background: #ffffff; /* fondo claro obligatorio en muchos navegadores */
+  color: #000000;      /* texto negro para contraste */
 }
 
 /* 🔥 BOTÓN */
@@ -74,6 +79,12 @@ button {
   background: #2563eb;
   color: white;
   cursor: pointer;
+  border: none;
+}
+
+/* 🔥 MEJORA VISUAL EXTRA */
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid #2563eb;
 }
 </style>
 </head>
@@ -84,7 +95,6 @@ button {
 
 <h2>Reporte de agua</h2>
 
-<!-- 🔥 TEXTO GUÍA RESTAURADO -->
 <p class="info">
 Registra el número de reporte proporcionado por CAASIM junto con los datos correspondientes.
 </p>
@@ -120,7 +130,6 @@ Registra el número de reporte proporcionado por CAASIM junto con los datos corr
 
 let userGlobal = null;
 
-// 🔐 INIT
 window.addEventListener("DOMContentLoaded", async () => {
 
   await protegerPagina(["colono","residente","admin"]);
@@ -136,7 +145,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   cargarCalles();
 });
 
-// 🔹 CARGAR CALLES
 async function cargarCalles(){
 
   const { data: residente } = await supabaseClient
@@ -166,7 +174,6 @@ async function cargarCalles(){
   });
 }
 
-// 🔹 GUARDAR
 async function guardar(){
 
   const numero_reporte = document.getElementById("numero_reporte").value.trim();
