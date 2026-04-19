@@ -31,6 +31,7 @@ h1 {
   margin-bottom: 15px;
 }
 
+/* 🔽 FILTRO */
 select {
   width: 100%;
   padding: 12px;
@@ -41,42 +42,81 @@ select {
   margin-bottom: 15px;
 }
 
-.card {
-  background: #1e293b;
-  padding: 12px;
-  border-radius: 12px;
-  margin-bottom: 10px;
-  text-align: center;
-}
-
+/* 📊 KPIs */
 .kpis {
   display: flex;
   gap: 10px;
   margin-bottom: 15px;
 }
 
-.kpis .card {
+.card {
+  background: #1e293b;
+  padding: 12px;
+  border-radius: 12px;
+  text-align: center;
   flex: 1;
 }
 
+/* 📋 TABLA */
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
+  table-layout: fixed;
 }
 
 th {
   background: #334155;
   padding: 10px;
-  font-size: 13px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 td {
-  padding: 10px;
+  padding: 12px 8px;
   border-bottom: 1px solid #334155;
   font-size: 13px;
+  text-align: center;
 }
 
+tr:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+/* 📏 DISTRIBUCIÓN COLUMNAS */
+th:nth-child(1), td:nth-child(1) { width: 20%; }
+th:nth-child(2), td:nth-child(2) { width: 25%; }
+th:nth-child(3), td:nth-child(3) { width: 20%; }
+th:nth-child(4), td:nth-child(4) { width: 35%; }
+
+/* 🎯 UX */
+.center {
+  text-align: center;
+  font-weight: bold;
+}
+
+.vida {
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* 🎨 COLORES */
+.ok {
+  color: #22c55e;
+  font-weight: bold;
+}
+
+.fail {
+  color: #ef4444;
+  font-weight: bold;
+}
+
+.warn {
+  color: #facc15;
+  font-weight: bold;
+}
+
+/* 🔙 BOTÓN */
 .back {
   display: block;
   text-align: center;
@@ -207,10 +247,22 @@ function render(data) {
 
     tabla.innerHTML += `
       <tr>
-        <td>${l.no_luminaria}</td>
-        <td>${l.situacion}</td>
-        <td>${(l.porcentaje_vida * 100).toFixed(2)} %</td>
-        <td>${l.estado_automatico}</td>
+        <td class="center">${l.no_luminaria}</td>
+
+        <td class="${l.situacion === 'Operativo' ? 'ok' : 'fail'}">
+          ${l.situacion}
+        </td>
+
+        <td class="vida">
+          ${(l.porcentaje_vida * 100).toFixed(2)}%
+        </td>
+
+        <td class="${
+          l.estado_automatico === 'Prever reemplazo próximo' ? 'warn' :
+          l.estado_automatico === 'Reemplazar' ? 'fail' : 'ok'
+        }">
+          ${l.estado_automatico}
+        </td>
       </tr>
     `;
   });
