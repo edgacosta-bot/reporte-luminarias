@@ -4,6 +4,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
+<script src="utils/dates.js"></script>
 <script>
 protegerPagina(["colono","residente"]);
 </script>
@@ -209,17 +210,28 @@ let privada, casa;
 let seleccionado = null;
 
 async function obtenerUsuario(){
-  const { data } = await supabaseClient.auth.getUser();
-  const userId = data.user.id;
 
-  const { data:res } = await supabaseClient
+  const { data } = await supabaseClient.auth.getUser();
+  const user = data?.user;
+
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const { data:res, error } = await supabaseClient
     .from("residentes")
     .select("privada,casa")
-    .eq("user_id", userId)
+    .eq("user_id", user.id)
     .single();
 
-  privada = res?.privada;
-  casa = res?.casa;
+  if (error || !res) {
+    document.getElementById("lista").innerHTML = "Error de sesión";
+    return;
+  }
+
+  privada = res.privada;
+  casa = res.casa;
 }
 
 function rangoRapido(dias){
@@ -250,8 +262,8 @@ async function cargar(){
 
   if (inicio && fin) {
     querySeg = querySeg
-      .gte("fecha", inicio + "T00:00:00")
-      .lte("fecha", fin + "T23:59:59");
+      .gte("fecha", fechaInicioUTC(inicio))
+      .lte("fecha", fechaFinUTC(fin));
   }
 
   const { data: seg } = await querySeg;
@@ -265,7 +277,7 @@ async function cargar(){
     });
   });
 
-  /* OBRAS + TRABAJADOR */
+  /* OBRAS */
   let queryObras = supabaseClient
     .from("reportes_obras")
     .select("*")
@@ -273,13 +285,9 @@ async function cargar(){
     .eq("casa", casa);
 
   if (inicio && fin) {
-    let ini = new Date(inicio + "T00:00:00");
-    let fi = new Date(fin + "T23:59:59");
-    fi.setDate(fi.getDate() + 1);
-
     queryObras = queryObras
-      .gte("fecha_reporte", ini.toISOString())
-      .lt("fecha_reporte", fi.toISOString());
+      .gte("fecha_reporte", fechaInicioUTC(inicio))
+      .lte("fecha_reporte", fechaFinUTC(fin));
   }
 
   const { data: obras } = await queryObras;
@@ -350,7 +358,7 @@ async function cargar(){
         </div>
         ` : ""}
 
-        <div class="fecha">${new Date(r.fecha).toLocaleString("es-MX")}</div>
+        <div class="fecha">${formatMXDate(r.fecha)}</div>
 
         ${puedeEvaluar ? `<button onclick="abrir('${r.id}')">Evaluar atención</button>`:""}
       </div>
