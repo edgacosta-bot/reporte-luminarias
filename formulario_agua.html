@@ -4,6 +4,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
+<script src="utils/residente.js"></script>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -57,8 +58,6 @@ select {
   background: #020617;
   color: white;
   appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
 }
 
 /* 🔥 PLACEHOLDER */
@@ -101,7 +100,6 @@ Registra el número de reporte proporcionado por CAASIM junto con los datos corr
 
 <input id="numero_reporte" placeholder="Número de reporte">
 
-<!-- 🔥 NUEVO CAMPO -->
 <input type="date" id="fecha_reporte">
 
 <select id="tipo_falla">
@@ -131,25 +129,25 @@ Registra el número de reporte proporcionado por CAASIM junto con los datos corr
 
 <script>
 
-let userGlobal = null;
+// 🔥 NUEVO: residente global en memoria
+let residenteGlobal = null;
 
 window.addEventListener("DOMContentLoaded", async () => {
 
   await protegerPagina(["colono","residente","admin"]);
 
-  const { data } = await supabaseClient.auth.getUser();
-  userGlobal = data?.user;
+  // 🔥 obtener residente correctamente
+  residenteGlobal = await getResidente();
 
-  if (!userGlobal) {
+  if (!residenteGlobal) {
     alert("Sesión no válida");
     return;
   }
 
   cargarCalles();
 
-  // 🔥 FECHA POR DEFECTO (HOY)
+  // 🔥 FECHA HOY
   const hoy = new Date();
-
   const fechaHoy =
     hoy.getFullYear() + "-" +
     String(hoy.getMonth() + 1).padStart(2, '0') + "-" +
@@ -161,18 +159,12 @@ window.addEventListener("DOMContentLoaded", async () => {
 
 async function cargarCalles(){
 
-  const { data: residente } = await supabaseClient
-    .from("residentes")
-    .select("privada")
-    .eq("user_id", userGlobal.id)
-    .single();
-
-  if(!residente) return;
+  if(!residenteGlobal) return;
 
   const { data } = await supabaseClient
     .from("ubicaciones")
     .select("id, calle")
-    .eq("privada", residente.privada)
+    .eq("privada", residenteGlobal.privada)
     .order("calle");
 
   const select = document.getElementById("calle");
@@ -205,13 +197,7 @@ async function guardar(){
     return;
   }
 
-  const { data: residente } = await supabaseClient
-    .from("residentes")
-    .select("id, privada, casa")
-    .eq("user_id", userGlobal.id)
-    .single();
-
-  if (!residente) {
+  if (!residenteGlobal) {
     msg.innerText = "No se pudo identificar al residente";
     return;
   }
@@ -219,9 +205,9 @@ async function guardar(){
   const { error } = await supabaseClient
     .from("reportes_agua_caasim")
     .insert([{
-      residente_id: residente.id,
-      privada: residente.privada,
-      numero_exterior: residente.casa,
+      residente_id: residenteGlobal.id,
+      privada: residenteGlobal.privada,
+      numero_exterior: residenteGlobal.casa,
       calle_id,
       numero_reporte,
       tipo_falla,
@@ -243,7 +229,7 @@ async function guardar(){
   document.getElementById("numero_exterior").value = "";
   document.getElementById("observaciones").value = "";
 
-  // 🔥 RESETEAR FECHA A HOY
+  // 🔥 RESET FECHA
   const hoy = new Date();
   const fechaHoy =
     hoy.getFullYear() + "-" +
