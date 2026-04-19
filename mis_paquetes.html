@@ -42,7 +42,7 @@ body {
 
 <script>
 
-let residenteGlobal = null;
+let userGlobal = null;
 
 // 🔐 INIT AUTH
 window.addEventListener("DOMContentLoaded", async () => {
@@ -57,19 +57,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  const { data: residente, error } = await supabaseClient
-    .from("residentes")
-    .select("privada, casa")
-    .eq("user_id", user.id)
-    .single();
-
-  if (error || !residente) {
-    document.getElementById("lista").innerHTML =
-      "<div class='vacio'>Error de sesión</div>";
-    return;
-  }
-
-  residenteGlobal = residente;
+  userGlobal = user;
 
   cargar();
 
@@ -80,13 +68,12 @@ window.addEventListener("DOMContentLoaded", async () => {
 // 🔍 CARGAR DATOS
 async function cargar() {
 
-  if (!residenteGlobal) return;
+  if (!userGlobal?.id) return;
 
   const { data, error } = await supabaseClient
     .from('paquetes')
     .select('*')
-    .eq('privada', residenteGlobal.privada)
-    .eq('casa', residenteGlobal.casa)
+    .eq('residente_id', userGlobal.id)
     .eq('entregado', false)
     .order('fecha_recepcion', { ascending: false });
 
@@ -99,18 +86,27 @@ async function cargar() {
   }
 
   if (!data || data.length === 0) {
-    lista.innerHTML = "<div class='vacio'>No tienes paquetes pendientes</div>";
+    lista.innerHTML = `
+      <div class='vacio'>
+        📭 No tienes paquetes pendientes en caseta<br>
+        <small style="color:#64748b;">Cuando llegue uno aparecerá aquí</small>
+      </div>
+    `;
     return;
   }
 
   data.forEach(p => {
 
-    const fecha = formatMXDate(p.fecha_recepcion); // 🔥 HOMOLOGADO
+    if (!p.fecha_recepcion) return;
+
+    const fecha = formatMXDate(p.fecha_recepcion);
 
     lista.innerHTML += `
       <div class="item">
-        📦 Recibido:<br>
-        ${fecha}
+        <div><b>📦 Paquete en caseta</b></div>
+        <div style="margin-top:5px;">
+          🕒 Recibido: ${fecha}
+        </div>
       </div>
     `;
   });
