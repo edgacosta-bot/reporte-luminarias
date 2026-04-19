@@ -236,7 +236,8 @@ const { error: errorInsert } = await supabaseClient
   estatus: 'NUEVO',
   observaciones: comentario,
   privada: residente.privada,
-  casa: residente.casa
+  casa: residente.casa,
+  fecha_reporte: new Date().toISOString() // 🔥 HOMOLOGACIÓN
 }]);
 
 if (errorInsert) throw errorInsert;
