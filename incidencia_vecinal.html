@@ -37,8 +37,7 @@ h2 {
   margin-bottom: 15px;
 }
 
-/* 🔥 INPUTS ALINEADOS */
-select, textarea, input {
+select, textarea {
   width: 100%;
   padding: 12px;
   margin-bottom: 12px;
@@ -46,7 +45,7 @@ select, textarea, input {
   border: none;
   background: #1f2937;
   color: white;
-  box-sizing: border-box; /* 🔥 CLAVE */
+  box-sizing: border-box;
 }
 
 textarea {
@@ -81,7 +80,6 @@ button {
   color: #9ca3af;
   text-decoration: none;
 }
-
 </style>
 </head>
 
@@ -97,9 +95,14 @@ button {
 
 <textarea id="descripcion" placeholder="Describe el incidente..."></textarea>
 
-<!-- 🔥 NUEVO BLOQUE -->
-<input type="text" id="privada_afectada" placeholder="Privada afectada (opcional)">
-<input type="text" id="casa_afectada" placeholder="Casa afectada (opcional)">
+<!-- 🔥 NUEVO BLOQUE CONTROLADO -->
+<select id="privada_afectada">
+  <option value="">Privada afectada (opcional)</option>
+</select>
+
+<select id="lote_afectado">
+  <option value="">Lote afectado (opcional)</option>
+</select>
 
 <button onclick="reportar()">Enviar reporte</button>
 
@@ -112,17 +115,12 @@ button {
 <script>
 
 let residenteGlobal = null;
+let lotesGlobal = [];
 
-// 🔐 USUARIO REAL
+// 🔐 USUARIO
 async function obtenerUsuario() {
-
   const { data } = await supabaseClient.auth.getUser();
   const user = data?.user;
-
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
 
   const { data: residente } = await supabaseClient
     .from("residentes")
@@ -136,7 +134,7 @@ async function obtenerUsuario() {
   };
 }
 
-// 🔹 CATÁLOGO
+// 🔹 CATÁLOGO INCIDENTES
 async function cargarCatalogo() {
 
   const select = document.getElementById("tipo");
@@ -159,26 +157,58 @@ async function cargarCatalogo() {
   });
 }
 
+// 🔹 CARGAR LOTES
+async function cargarLotes() {
+
+  const { data } = await supabaseClient
+    .from("lotes")
+    .select("privada, lote")
+    .not("privada", "in", "(ADMIN,SEG)");
+
+  lotesGlobal = data;
+
+  const privadas = [...new Set(data.map(l => l.privada))];
+
+  const selectPriv = document.getElementById("privada_afectada");
+
+  privadas.forEach(p => {
+    const option = document.createElement("option");
+    option.value = p;
+    option.textContent = p;
+    selectPriv.appendChild(option);
+  });
+}
+
+// 🔹 FILTRAR LOTES
+function filtrarLotes() {
+
+  const privada = document.getElementById("privada_afectada").value;
+  const selectLote = document.getElementById("lote_afectado");
+
+  selectLote.innerHTML = '<option value="">Lote afectado (opcional)</option>';
+
+  const filtrados = lotesGlobal.filter(l => l.privada === privada);
+
+  filtrados.forEach(l => {
+    const option = document.createElement("option");
+    option.value = l.lote;
+    option.textContent = l.lote;
+    selectLote.appendChild(option);
+  });
+}
+
 // 🔹 ENVIAR
 async function reportar() {
 
   const tipo = document.getElementById("tipo").value;
   const descripcion = document.getElementById("descripcion").value.trim();
-  const privadaAfectada = document.getElementById("privada_afectada").value.trim();
-  const casaAfectada = document.getElementById("casa_afectada").value.trim();
+  const privadaAfectada = document.getElementById("privada_afectada").value;
+  const loteAfectado = document.getElementById("lote_afectado").value;
   const mensaje = document.getElementById("mensaje");
-
-  mensaje.className = "mensaje";
 
   if (!tipo || !descripcion) {
     mensaje.innerText = "Completa todos los campos";
-    mensaje.classList.add("error");
-    return;
-  }
-
-  if (!residenteGlobal) {
-    mensaje.innerText = "Error de sesión";
-    mensaje.classList.add("error");
+    mensaje.className = "mensaje error";
     return;
   }
 
@@ -186,18 +216,13 @@ async function reportar() {
     .from("incidencias_vecinales")
     .insert([{
       categoria: "vecinal",
-      tipo: tipo,
-      descripcion: descripcion,
-
-      // 🔐 QUIEN REPORTA
+      tipo,
+      descripcion,
       residente_id: residenteGlobal.user_id,
       privada: residenteGlobal.privada,
       casa: residenteGlobal.casa,
-
-      // 🎯 A QUIÉN REPORTA (OPCIONAL)
       privada_afectada: privadaAfectada || null,
-      casa_afectada: casaAfectada || null,
-
+      casa_afectada: loteAfectado || null,
       fecha: new Date().toISOString(),
       estatus: "nuevo",
       atendido: false
@@ -205,23 +230,25 @@ async function reportar() {
 
   if (error) {
     mensaje.innerText = "Error al enviar reporte";
-    mensaje.classList.add("error");
+    mensaje.className = "mensaje error";
     return;
   }
 
   mensaje.innerText = "Reporte enviado correctamente ✅";
-  mensaje.classList.add("ok");
+  mensaje.className = "mensaje ok";
 
   document.getElementById("descripcion").value = "";
-  document.getElementById("tipo").value = "";
-  document.getElementById("privada_afectada").value = "";
-  document.getElementById("casa_afectada").value = "";
 }
 
 // 🔄 INIT
 document.addEventListener("DOMContentLoaded", async () => {
   await obtenerUsuario();
-  cargarCatalogo();
+  await cargarCatalogo();
+  await cargarLotes();
+
+  document
+    .getElementById("privada_afectada")
+    .addEventListener("change", filtrarLotes);
 });
 
 </script>
