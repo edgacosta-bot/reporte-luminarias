@@ -165,7 +165,7 @@ Gracias por su apoyo.
 
 <script>
 
-let privada, casa, seleccionado=null;
+let userId, seleccionado=null;
 
 const MODO_PRUEBA_EVALUACION = true;
 
@@ -177,15 +177,7 @@ function pasaron5Dias(fecha){
 async function obtenerUsuario(){
   const { data } = await supabaseClient.auth.getUser();
   const user = data.user;
-
-  const { data: res } = await supabaseClient
-    .from("residentes")
-    .select("privada,casa")
-    .eq("user_id", user.id)
-    .single();
-
-  privada = res.privada;
-  casa = res.casa;
+  userId = user.id;
 }
 
 function rangoRapido(dias){
@@ -210,8 +202,7 @@ async function cargar(){
   let queryObras = supabaseClient
     .from("reportes_obras")
     .select("*")
-    .eq("privada", privada)
-    .eq("casa", casa);
+    .eq("residente_id", userId);
 
   if (inicio && fin) {
     queryObras = queryObras
@@ -225,8 +216,7 @@ async function cargar(){
   let queryVecinal = supabaseClient
     .from("incidencias_vecinales")
     .select("*")
-    .eq("privada", privada)
-    .eq("casa", casa);
+    .eq("residente_id", userId);
 
   if (inicio && fin) {
     queryVecinal = queryVecinal
@@ -258,7 +248,6 @@ async function cargar(){
 
   const evaluados = new Set(evals?.map(e=>e.reporte_id));
 
-  // 🔹 UNIFICAR
   let todos = [];
 
   obras?.forEach(r=>{
@@ -328,8 +317,6 @@ async function evaluar(tipo){
     reporte_id: seleccionado,
     tipo_reporte:"general",
     calificacion:tipo,
-    privada,
-    casa,
     residente_id:data.user.id,
     fecha:new Date()
   }]);
