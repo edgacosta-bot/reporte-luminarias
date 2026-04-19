@@ -273,10 +273,17 @@ function filtrarPorFecha() {
 
     if (!r.fecha_reporte) return false;
 
-    const fecha = r.fecha_reporte;
+    const fecha = new Date(r.fecha_reporte + "T00:00:00");
 
-    if (inicio && fecha < inicio) return false;
-    if (fin && fecha > fin) return false;
+if (inicio) {
+  const fInicio = new Date(inicio + "T00:00:00");
+  if (fecha < fInicio) return false;
+}
+
+if (fin) {
+  const fFin = new Date(fin + "T23:59:59");
+  if (fecha > fFin) return false;
+}
 
     return true;
   });
