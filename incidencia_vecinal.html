@@ -7,6 +7,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./auth.js"></script>
+<script src="utils/residente.js"></script>
 
 <script>
 protegerPagina(["colono","residente"]);
@@ -113,22 +114,7 @@ button {
 
 <script>
 
-let residenteGlobal = null;
 let lotesGlobal = [];
-
-// 🔐 USUARIO
-async function obtenerUsuario() {
-  const { data } = await supabaseClient.auth.getUser();
-  const user = data?.user;
-
-  const { data: residente } = await supabaseClient
-    .from("residentes")
-    .select("id, privada, casa") // 🔥 SE AGREGA id
-    .eq("user_id", user.id)
-    .single();
-
-  residenteGlobal = residente;
-}
 
 // 🔹 CATÁLOGO INCIDENTES
 async function cargarCatalogo() {
@@ -208,15 +194,24 @@ async function reportar() {
     return;
   }
 
+  // 🔥 NUEVO: obtener residente GLOBAL
+  const residente = await getResidente();
+
+  if (!residente) {
+    mensaje.innerText = "Error de sesión";
+    mensaje.className = "mensaje error";
+    return;
+  }
+
   const { error } = await supabaseClient
     .from("incidencias_vecinales")
     .insert([{
       categoria: "vecinal",
       tipo,
       descripcion,
-      residente_id: residenteGlobal.id, // ✅ FIX REAL
-      privada: residenteGlobal.privada,
-      casa: residenteGlobal.casa,
+      residente_id: residente.id,
+      privada: residente.privada,
+      casa: residente.casa,
       privada_afectada: privadaAfectada || null,
       casa_afectada: loteAfectado || null,
       fecha: new Date().toISOString(),
@@ -238,7 +233,6 @@ async function reportar() {
 
 // 🔄 INIT
 document.addEventListener("DOMContentLoaded", async () => {
-  await obtenerUsuario();
   await cargarCatalogo();
   await cargarLotes();
 
