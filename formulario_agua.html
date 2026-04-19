@@ -1,210 +1,194 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Reporte de Agua - Villas de la Concepción</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- 🔐 AUTH GLOBAL -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte Agua</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #161a1d;
+  color: white;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
+
+h2 {
+  text-align: center;
+}
+
+input, select, textarea, button {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  border: none;
+  box-sizing: border-box;
+}
+
+input, select, textarea {
+  background: #0f172a;
+  color: white;
+}
+
+button {
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+</style>
 </head>
 
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<body>
 
-<div class="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md border border-gray-200">
+<div class="container">
 
-<div class="text-center mb-6">
-  <h1 class="text-xl font-semibold text-gray-800">
-    Sistema de Información Vecinal
-  </h1>
-  <p class="text-sm text-gray-500">
-    Fraccionamiento Villas de la Concepción
-  </p>
-</div>
+<h2>Reporte de agua</h2>
 
-<div id="infoUsuario" class="text-xs text-gray-500 text-center mb-4"></div>
+<input id="numero_reporte" placeholder="Número de reporte">
 
-<div class="bg-blue-50 border border-blue-200 text-blue-700 text-sm rounded-lg p-3 mb-5">
-  Si realizaste un reporte a CAASIM, regístralo aquí.
-</div>
-
-<h2 class="text-lg font-semibold text-gray-700 mb-4 text-center">
-  Reporte de suministro de agua
-</h2>
-
-<form id="formAgua" class="space-y-4">
-
-<div>
-<label>Fecha del reporte</label>
-<input type="date" id="fecha_reporte" required class="mt-1 w-full p-3 border rounded-lg">
-</div>
-
-<div>
-<label>Número de reporte</label>
-<input type="text" id="numero_reporte" required class="mt-1 w-full p-3 border rounded-lg">
-</div>
-
-<div>
-<label>¿Cómo realizaste el reporte?</label>
-<select id="medio_reporte" required class="mt-1 w-full p-3 border rounded-lg">
-<option value="">Seleccione una opción</option>
-<option>Teléfono</option>
-<option>App</option>
-<option>Presencial</option>
-<option>Otro</option>
+<select id="tipo_falla">
+  <option value="">Tipo de falla</option>
+  <option value="sin_servicio">Sin servicio</option>
+  <option value="fuga">Fuga</option>
+  <option value="baja_presion">Baja presión</option>
 </select>
-</div>
 
-<div>
-<label>Tipo de falla</label>
-<select id="tipo_falla" required class="mt-1 w-full p-3 border rounded-lg">
-<option value="">Seleccione una opción</option>
+<select id="calle"></select>
+
+<input id="numero_exterior" placeholder="Número exterior">
+
+<select id="medio_reporte">
+  <option value="">Medio de reporte</option>
+  <option value="Teléfono">Teléfono</option>
+  <option value="App">App</option>
 </select>
-</div>
 
-<div>
-<label>Calle</label>
-<select id="calle" required class="mt-1 w-full p-3 border rounded-lg">
-<option value="">Selecciona calle</option>
-</select>
-</div>
+<textarea id="observaciones" placeholder="Observaciones (opcional)"></textarea>
 
-<button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg">
-Registrar reporte
-</button>
+<button onclick="guardar()">Guardar reporte</button>
 
-<p id="mensaje" class="text-center text-sm mt-2"></p>
-
-</form>
+<div id="msg"></div>
 
 </div>
-
 
 <script>
 
-/* 🔥 VARIABLES */
-let privada = null;
-let casa = null;
-let residenteId = null;
+let userGlobal = null;
 
-/* 🔥 CATÁLOGO */
-async function cargarCatalogoAgua() {
+// 🔐 INIT
+window.addEventListener("DOMContentLoaded", async () => {
 
-  const select = document.getElementById("tipo_falla");
+  await protegerPagina(["colono","residente","admin"]);
 
-  const { data, error } = await supabaseClient
-    .from("catalogo_reportes")
-    .select("subtipo")
-    .eq("categoria", "agua")
-    .eq("actor_permitido", "colono")
-    .eq("activo", true)
-    .order("subtipo");
+  const { data } = await supabaseClient.auth.getUser();
+  userGlobal = data?.user;
 
-  if (error) {
-    console.error(error);
+  if (!userGlobal) {
+    alert("Sesión no válida");
     return;
   }
 
-  select.innerHTML = '<option value="">Seleccione una opción</option>';
+  cargarCalles();
+});
 
-  data.forEach(item => {
-    const option = document.createElement("option");
-    option.value = item.subtipo;
-    option.textContent = item.subtipo.replaceAll("_", " ");
-    select.appendChild(option);
-  });
-}
+// 🔹 CARGAR CALLES
+async function cargarCalles(){
 
-/* CALLES */
-async function cargarCalles() {
+  const { data: residente } = await supabaseClient
+    .from("residentes")
+    .select("privada")
+    .eq("user_id", userGlobal.id)
+    .single();
+
+  if(!residente) return;
 
   const { data } = await supabaseClient
     .from("ubicaciones")
     .select("id, calle")
-    .eq("privada", privada);
+    .eq("privada", residente.privada)
+    .order("calle");
 
   const select = document.getElementById("calle");
+  select.innerHTML = '<option value="">Selecciona calle</option>';
 
-  data.forEach(item => {
+  // 🔥 evitar duplicados
+  const callesUnicas = [...new Map(data.map(item => [item.calle, item])).values()];
+
+  callesUnicas.forEach(c => {
     const option = document.createElement("option");
-    option.value = item.id;
-    option.textContent = item.calle;
+    option.value = c.id;
+    option.textContent = c.calle;
     select.appendChild(option);
   });
 }
 
-/* SUBMIT */
-document.getElementById("formAgua").addEventListener("submit", async (e) => {
+// 🔹 GUARDAR
+async function guardar(){
 
-  e.preventDefault();
+  const numero_reporte = document.getElementById("numero_reporte").value.trim();
+  const tipo_falla = document.getElementById("tipo_falla").value;
+  const calle_id = document.getElementById("calle").value;
+  const numero_exterior = document.getElementById("numero_exterior").value.trim();
+  const medio_reporte = document.getElementById("medio_reporte").value;
+  const observaciones = document.getElementById("observaciones").value.trim();
 
-  const mensaje = document.getElementById("mensaje");
+  const msg = document.getElementById("msg");
 
-  const dataSupabase = {
-    residente_id: residenteId,
-    fecha_reporte: document.getElementById("fecha_reporte").value,
-    numero_reporte: document.getElementById("numero_reporte").value.trim(),
-    medio_reporte: document.getElementById("medio_reporte").value,
-    tipo_falla: document.getElementById("tipo_falla").value,
-    calle_id: document.getElementById("calle").value,
-    numero_exterior: casa,
-    privada: privada
-  };
-
-  try {
-
-    const { error } = await supabaseClient
-      .from("reportes_agua_caasim")
-      .insert([dataSupabase]);
-
-    if (error) throw error;
-
-    mensaje.innerText = "✅ Reporte registrado correctamente";
-    mensaje.className = "text-green-600 text-center";
-
-    e.target.reset();
-
-  } catch (error) {
-    mensaje.innerText = "Error: " + error.message;
-    mensaje.className = "text-red-600 text-center";
-  }
-
-});
-
-/* 🔐 INIT */
-document.addEventListener("DOMContentLoaded", async () => {
-
-  await protegerPagina(["colono", "residente"]);
-
-  const { data: userData } = await supabaseClient.auth.getUser();
-  const user = userData?.user;
-
-  const { data: residente } = await supabaseClient
-    .from("residentes")
-    .select("id, privada, casa")
-    .eq("user_id", user.id)
-    .single();
-
-  if (!residente) {
-    alert("Error de sesión");
+  if(!numero_reporte || !tipo_falla || !calle_id){
+    msg.innerText = "Completa los campos requeridos";
     return;
   }
 
-  privada = residente.privada;
-  casa = residente.casa;
-  residenteId = residente.id;
+  // 🔥 obtener residente
+  const { data: residente } = await supabaseClient
+    .from("residentes")
+    .select("id, privada, casa")
+    .eq("user_id", userGlobal.id)
+    .single();
 
-  document.getElementById("infoUsuario").innerText =
-    `Privada ${privada} - Casa ${casa}`;
+  if (!residente) {
+    msg.innerText = "No se pudo identificar al residente";
+    return;
+  }
 
-  await cargarCatalogoAgua();
-  await cargarCalles();
-});
+  const { error } = await supabaseClient
+    .from("reportes_agua_caasim")
+    .insert([{
+      residente_id: residente.id, // 🔥 NUEVO
+      privada: residente.privada,
+      numero_exterior: residente.casa, // 🔥 casa real
+      calle_id,
+      numero_reporte,
+      tipo_falla,
+      medio_reporte,
+      observaciones,
+      estatus: "reportado",
+      fecha_reporte: new Date().toISOString().split("T")[0]
+    }]);
+
+  if(error){
+    console.error(error);
+    msg.innerText = "Error al guardar";
+    return;
+  }
+
+  msg.innerText = "Reporte guardado correctamente";
+
+  document.getElementById("numero_reporte").value = "";
+  document.getElementById("numero_exterior").value = "";
+  document.getElementById("observaciones").value = "";
+}
 
 </script>
 
