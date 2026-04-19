@@ -95,7 +95,6 @@ button {
 
 <textarea id="descripcion" placeholder="Describe el incidente..."></textarea>
 
-<!-- 🔥 NUEVO BLOQUE CONTROLADO -->
 <select id="privada_afectada">
   <option value="">Privada afectada (opcional)</option>
 </select>
@@ -124,14 +123,11 @@ async function obtenerUsuario() {
 
   const { data: residente } = await supabaseClient
     .from("residentes")
-    .select("privada, casa")
+    .select("id, privada, casa") // 🔥 SE AGREGA id
     .eq("user_id", user.id)
     .single();
 
-  residenteGlobal = {
-    ...residente,
-    user_id: user.id
-  };
+  residenteGlobal = residente;
 }
 
 // 🔹 CATÁLOGO INCIDENTES
@@ -218,7 +214,7 @@ async function reportar() {
       categoria: "vecinal",
       tipo,
       descripcion,
-      residente_id: residenteGlobal.user_id,
+      residente_id: residenteGlobal.id, // ✅ FIX REAL
       privada: residenteGlobal.privada,
       casa: residenteGlobal.casa,
       privada_afectada: privadaAfectada || null,
