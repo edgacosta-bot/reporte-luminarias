@@ -204,10 +204,15 @@ function rangoRapido(dias){
   document.getElementById("fin").value = hoy.toISOString().split("T")[0];
 
   cargar();
+ 
 }
 
 async function cargar(){
 
+  if (!residenteId) {
+  console.warn("residenteId no listo aún");
+  return;
+}
   document.getElementById("lista").innerHTML = "Cargando...";
 
   const inicio = document.getElementById("inicio").value;
@@ -342,7 +347,13 @@ async function evaluar(tipo){
 
 async function iniciar(){
   await obtenerUsuario();
-  cargar();
+
+  if (!residenteId) {
+    console.error("No se pudo obtener residenteId");
+    return;
+  }
+
+  await cargar();
 }
 
 iniciar();
