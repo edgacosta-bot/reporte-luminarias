@@ -166,7 +166,7 @@ function render(data) {
   document.getElementById("fuera").innerText =
     data.filter(d => (d.situacion || "").toLowerCase() === "fuera de servicio").length;
 
-  document.getElementById("reemplazo").innerText =
+  document.getElementById("Prever reemplazo Prox.").innerText =
     data.filter(d =>
     (d.estado_automatico || "").toLowerCase().includes("prever reemplazo")
      ).length;
