@@ -251,22 +251,15 @@ function filtrarPorFecha() {
 
   datosFiltrados = datosGlobal.filter(r => {
 
-    if (!r.fecha_reporte) return false;
+  if (!r.fecha_reporte) return false;
 
-    const fecha = new Date(r.fecha_reporte + "T00:00:00Z");
+  const fecha = r.fecha_reporte;
 
-    if (inicio) {
-      const fInicio = new Date(fechaInicioUTC(inicio));
-      if (fecha < fInicio) return false;
-    }
+  if (inicio && fecha < inicio) return false;
+  if (fin && fecha > fin) return false;
 
-    if (fin) {
-      const fFin = new Date(fechaFinUTC(fin));
-      if (fecha > fFin) return false;
-    }
-
-    return true;
-  });
+  return true;
+});
 
   aplicarFiltroTipo();
 }
@@ -343,7 +336,7 @@ function formatearTipo(tipo) {
 }
 
 function formatearFecha(fecha) {
-  return new Date(fecha).toLocaleDateString("es-MX");
+ return fecha.split("-").reverse().join("/");
 }
 
 setTimeout(cargarDatos, 300);
