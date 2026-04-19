@@ -186,8 +186,9 @@ let datosGlobal = [];
 async function cargar() {
 
   const { data, error } = await supabaseClient
-    .from("dashboard_luminarias_safe")
-    .select("*");
+  .from("dashboard_luminarias_safe")
+  .select("*")
+  .order("no_luminaria", { ascending: true });
 
   if (error) {
     console.error(error);
