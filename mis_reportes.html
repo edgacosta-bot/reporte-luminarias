@@ -46,7 +46,7 @@ input[type="date"] {
   padding: 12px 14px;
   border-radius: 12px;
   border: none;
-  box-sizing: border-box; /* 🔥 ESTE ES EL FIX */
+  box-sizing: border-box;
 }
 .chips {
   display: flex;
@@ -67,7 +67,7 @@ button {
   background: #2563eb;
   color: white;
   margin-bottom: 10px;
-  box-sizing: border-box; /* 🔥 MISMA REGLA */
+  box-sizing: border-box;
 }
 .item {
   background: #111827;
@@ -77,7 +77,10 @@ button {
   border-left: 6px solid;
 }
 .obra { border-color: #f59e0b; }
+.vecinal { border-color: #ef4444; }
+
 .fecha { font-size: 12px; color: #9ca3af; }
+
 .modal {
   position: fixed;
   top:0; left:0; right:0; bottom:0;
@@ -109,9 +112,8 @@ button {
   justify-content: center;
   gap: 25px;
 }
-  
 </style>
-  
+
 </head>
 
 <body>
@@ -204,22 +206,38 @@ async function cargar(){
   const inicio = document.getElementById("inicio").value;
   const fin = document.getElementById("fin").value;
 
-  let query = supabaseClient
+  // 🔹 OBRAS
+  let queryObras = supabaseClient
     .from("reportes_obras")
     .select("*")
     .eq("privada", privada)
     .eq("casa", casa);
 
   if (inicio && fin) {
-    query = query
+    queryObras = queryObras
       .gte("fecha_reporte", fechaInicioUTC(inicio))
       .lte("fecha_reporte", fechaFinUTC(fin));
   }
 
-  const { data: obras } = await query;
+  const { data: obras } = await queryObras;
 
+  // 🔹 VECINALES
+  let queryVecinal = supabaseClient
+    .from("incidencias_vecinales")
+    .select("*")
+    .eq("privada", privada)
+    .eq("casa", casa);
+
+  if (inicio && fin) {
+    queryVecinal = queryVecinal
+      .gte("fecha", fechaInicioUTC(inicio))
+      .lte("fecha", fechaFinUTC(fin));
+  }
+
+  const { data: vecinales } = await queryVecinal;
+
+  // 🔹 TRABAJADORES
   let trabajadoresMap = {};
-
   const ids = obras?.map(o=>o.trabajador_id).filter(Boolean) || [];
 
   if (ids.length) {
@@ -233,28 +251,58 @@ async function cargar(){
     });
   }
 
+  // 🔹 EVALUACIONES
   const { data: evals } = await supabaseClient
     .from("evaluaciones_reportes")
     .select("reporte_id");
 
   const evaluados = new Set(evals?.map(e=>e.reporte_id));
 
-  let html="";
+  // 🔹 UNIFICAR
+  let todos = [];
 
   obras?.forEach(r=>{
+    todos.push({
+      id: r.id,
+      tipo: "obra",
+      descripcion: r.descripcion,
+      fecha: r.fecha_reporte,
+      trabajador_id: r.trabajador_id
+    });
+  });
+
+  vecinales?.forEach(r=>{
+    todos.push({
+      id: r.id,
+      tipo: "vecinal",
+      descripcion: r.descripcion,
+      fecha: r.fecha,
+      trabajador_id: null
+    });
+  });
+
+  todos.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
+
+  let html="";
+
+  todos.forEach(r=>{
+
     const trabajador = trabajadoresMap[r.trabajador_id];
 
     let puede = !evaluados.has(r.id);
-    let habilitado = puede && pasaron5Dias(r.fecha_reporte);
+    let habilitado = puede && pasaron5Dias(r.fecha);
+
+    const clase = r.tipo === "obra" ? "obra" : "vecinal";
+    const titulo = r.tipo === "obra" ? "OBRA" : "VECINAL";
 
     html+=`
-    <div class="item obra">
-      <b>OBRA</b>
+    <div class="item ${clase}">
+      <b>${titulo}</b>
       <div>${r.descripcion}</div>
 
       ${trabajador ? `<div>👷 ${trabajador}</div>`:""}
 
-      <div class="fecha">${formatMXDate(r.fecha_reporte)}</div>
+      <div class="fecha">${formatMXDate(r.fecha)}</div>
 
       ${puede ? `
       <button onclick="${habilitado?`abrir('${r.id}')`:''}"
