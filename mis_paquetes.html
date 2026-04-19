@@ -26,7 +26,7 @@ body {
 
 .vacio {
   text-align:center;
-  color:#94a3b8;
+  color:#94a3af;
   margin-top:20px;
 }
 </style>
@@ -42,7 +42,7 @@ body {
 
 <script>
 
-let userGlobal = null;
+let residenteIdGlobal = null;
 
 // 🔐 INIT AUTH
 window.addEventListener("DOMContentLoaded", async () => {
@@ -57,7 +57,20 @@ window.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  userGlobal = user;
+  // 🔥 OBTENER ID REAL DE RESIDENTE
+  const { data: residente, error } = await supabaseClient
+    .from("residentes")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  if (error || !residente) {
+    document.getElementById("lista").innerHTML =
+      "<div class='vacio'>Error de sesión</div>";
+    return;
+  }
+
+  residenteIdGlobal = residente.id;
 
   cargar();
 
@@ -68,12 +81,12 @@ window.addEventListener("DOMContentLoaded", async () => {
 // 🔍 CARGAR DATOS
 async function cargar() {
 
-  if (!userGlobal?.id) return;
+  if (!residenteIdGlobal) return;
 
   const { data, error } = await supabaseClient
     .from('paquetes')
     .select('*')
-    .eq('residente_id', userGlobal.id)
+    .eq('residente_id', residenteIdGlobal)
     .eq('entregado', false)
     .order('fecha_recepcion', { ascending: false });
 
