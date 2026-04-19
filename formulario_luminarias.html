@@ -5,6 +5,11 @@
 <title>Sistema de Información Vecinal - Villas de la Concepción</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- 🔥 NUEVO -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
 </head>
 
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
@@ -101,13 +106,7 @@ La información proporcionada será utilizada únicamente para fines de atenció
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
-
-const supabaseUrl = 'https://prjxmfhahnzosdwljode.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs';
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 let reporteValido = false;
 let luminariaActual = null;
@@ -204,22 +203,28 @@ const mensaje = document.getElementById('mensaje');
 
 try {
 
+// 🔥 NUEVO: obtener usuario autenticado
+const { data: userData } = await supabaseClient.auth.getUser();
+const user = userData?.user;
+
+if (!user) {
+throw new Error("Sesión no válida");
+}
+
+// 🔥 obtener residente por user_id
+const { data: residente, error: errorResidente } = await supabaseClient
+.from("residentes")
+.select("privada, casa")
+.eq("user_id", user.id)
+.single();
+
+if (errorResidente || !residente) {
+throw new Error("No se pudo obtener la información del usuario");
+}
+
 const no_luminaria = Number(document.getElementById('no_luminaria').value);
 const descripcion = document.getElementById('descripcion').value;
 const comentario = document.getElementById('comentario').value;
-
-// 🔥 FIX SEGURO: obtener desde BD (NO localStorage directo)
-const identificador = localStorage.getItem("identificador");
-
-const { data: residente, error: errorResidente } = await supabaseClient
-  .from("residentes")
-  .select("privada, casa")
-  .eq("identificador", identificador)
-  .single();
-
-if (errorResidente || !residente) {
-  throw new Error("No se pudo obtener la información del usuario");
-}
 
 if (!luminariaActual) {
 throw new Error("Luminaria no válida");
@@ -237,7 +242,7 @@ const { error: errorInsert } = await supabaseClient
   observaciones: comentario,
   privada: residente.privada,
   casa: residente.casa,
-  fecha_reporte: new Date().toISOString() // 🔥 HOMOLOGACIÓN
+  fecha_reporte: new Date().toISOString()
 }]);
 
 if (errorInsert) throw errorInsert;
