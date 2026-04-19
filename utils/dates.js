@@ -75,14 +75,12 @@ window.formatMXDateOnly = function(dateString) {
 
 // 🔹 Inicio del día UTC
 window.fechaInicioUTC = function(fecha){
-  const d = new Date(fecha);
-  d.setHours(0,0,0,0);
+  const d = new Date(fecha + "T00:00:00");
   return d.toISOString();
 };
 
 // 🔹 Fin del día UTC
 window.fechaFinUTC = function(fecha){
-  const d = new Date(fecha);
-  d.setHours(23,59,59,999);
+  const d = new Date(fecha + "T23:59:59.999");
   return d.toISOString();
 };
