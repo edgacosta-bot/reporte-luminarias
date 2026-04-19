@@ -6,6 +6,8 @@
 <title>Mis paquetes</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script src="utils/dates.js"></script>
 
 <style>
 body {
@@ -39,33 +41,54 @@ body {
 <a href="index.html" style="display:block;margin-top:20px;color:white;">Regresar</a>
 
 <script>
-const { createClient } = supabase;
 
-const supabaseClient = createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
+let residenteGlobal = null;
 
-// 🔒 PROTECCIÓN
-if (!localStorage.getItem("usuario_valido")) {
-  window.location.href = "login.html";
-}
+// 🔐 INIT AUTH
+window.addEventListener("DOMContentLoaded", async () => {
 
-// 🔍 DATOS USUARIO
-const privada = (localStorage.getItem("privada") || "").trim();
-const casa = (localStorage.getItem("casa") || "").trim();
+  await protegerPagina(["colono","residente","admin"]);
 
+  const { data } = await supabaseClient.auth.getUser();
+  const user = data?.user;
+
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const { data: residente, error } = await supabaseClient
+    .from("residentes")
+    .select("privada, casa")
+    .eq("user_id", user.id)
+    .single();
+
+  if (error || !residente) {
+    document.getElementById("lista").innerHTML =
+      "<div class='vacio'>Error de sesión</div>";
+    return;
+  }
+
+  residenteGlobal = residente;
+
+  cargar();
+
+  // 🔄 refresco automático
+  setInterval(cargar, 10000);
+});
+
+// 🔍 CARGAR DATOS
 async function cargar() {
+
+  if (!residenteGlobal) return;
 
   const { data, error } = await supabaseClient
     .from('paquetes')
     .select('*')
-    .eq('privada', privada)
-    .eq('casa', casa)
+    .eq('privada', residenteGlobal.privada)
+    .eq('casa', residenteGlobal.casa)
     .eq('entregado', false)
     .order('fecha_recepcion', { ascending: false });
-
-  console.log("PAQUETES:", data);
 
   const lista = document.getElementById("lista");
   lista.innerHTML = "";
@@ -82,21 +105,17 @@ async function cargar() {
 
   data.forEach(p => {
 
-    const fecha = new Date(p.fecha_recepcion);
+    const fecha = formatMXDate(p.fecha_recepcion); // 🔥 HOMOLOGADO
 
     lista.innerHTML += `
       <div class="item">
         📦 Recibido:<br>
-        ${fecha.toLocaleString('es-MX')}
+        ${fecha}
       </div>
     `;
   });
 }
 
-// 🔄 refresco automático
-setInterval(cargar, 10000);
-
-cargar();
 </script>
 
 </body>
