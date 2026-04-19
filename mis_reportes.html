@@ -14,24 +14,18 @@ protegerPagina(["colono","residente"]);
 <title>Mis reportes</title>
 
 <style>
-
 body {
   margin: 0;
   font-family: Arial;
   background: linear-gradient(135deg, #0f172a, #1e293b);
   color: white;
 }
-
 .container {
   max-width: 520px;
   margin: auto;
   padding: 20px 16px;
 }
-
-h2 {
-  text-align: center;
-}
-
+h2 { text-align: center; }
 .aviso {
   background: #1f2937;
   padding: 15px;
@@ -40,45 +34,30 @@ h2 {
   font-size: 14px;
   color: #d1d5db;
 }
-
-.campo {
-  margin-bottom: 12px;
-}
-
+.campo { margin-bottom: 12px; }
 .campo label {
   font-size: 13px;
   color: #9ca3af;
   display: block;
   margin-bottom: 5px;
 }
-
 input[type="date"] {
   width: 100%;
   padding: 12px 14px;
   border-radius: 12px;
   border: none;
-  box-sizing: border-box;
 }
-
 .chips {
   display: flex;
   gap: 8px;
   margin-bottom: 15px;
-  flex-wrap: wrap;
 }
-
 .chip {
   padding: 8px 12px;
   background: #1f2937;
   border-radius: 20px;
-  font-size: 12px;
   cursor: pointer;
 }
-
-.chip.active {
-  background: #2563eb;
-}
-
 button {
   width: 100%;
   padding: 12px;
@@ -88,7 +67,6 @@ button {
   color: white;
   margin-bottom: 10px;
 }
-
 .item {
   background: #111827;
   padding: 15px;
@@ -96,15 +74,8 @@ button {
   margin-top: 10px;
   border-left: 6px solid;
 }
-
-.vecinal { border-color: #ef4444; }
 .obra { border-color: #f59e0b; }
-
-.fecha {
-  font-size: 12px;
-  color: #9ca3af;
-}
-
+.fecha { font-size: 12px; color: #9ca3af; }
 .modal {
   position: fixed;
   top:0; left:0; right:0; bottom:0;
@@ -113,27 +84,12 @@ button {
   justify-content:center;
   align-items:center;
 }
-
 .modal-content {
   background:#111827;
   padding:20px;
   border-radius:12px;
   text-align:center;
-  max-width:300px;
 }
-
-.emoji {
-  font-size: 35px;
-  margin: 10px;
-  cursor: pointer;
-}
-
-.mensaje-final {
-  margin-top: 15px;
-  font-size: 14px;
-  color: #d1d5db;
-}
-
 </style>
 </head>
 
@@ -184,36 +140,22 @@ Gracias por su apoyo.
       </div>
     </div>
 
-    <div id="respuesta" style="display:none;">
-      <div class="mensaje-final">
-        Gracias por tu evaluación.<br>
-        Nos ayuda a mejorar en nuestro fraccionamiento.
-      </div>
-      <button onclick="cerrarModal()">Cerrar</button>
-    </div>
-
-  </div>
-</div>
-
 <script>
 
-let privada, casa;
-let seleccionado = null;
+let privada, casa, seleccionado=null;
 
 const MODO_PRUEBA_EVALUACION = true;
 
 function pasaron5Dias(fecha){
   if (MODO_PRUEBA_EVALUACION) return true;
-  const hoy = new Date();
-  const f = new Date(fecha);
-  return ((hoy - f) / (1000*60*60*24)) >= 5;
+  return (new Date() - new Date(fecha)) / 86400000 >= 5;
 }
 
 async function obtenerUsuario(){
   const { data } = await supabaseClient.auth.getUser();
-  const user = data?.user;
+  const user = data.user;
 
-  const { data:res } = await supabaseClient
+  const { data: res } = await supabaseClient
     .from("residentes")
     .select("privada,casa")
     .eq("user_id", user.id)
@@ -223,31 +165,51 @@ async function obtenerUsuario(){
   casa = res.casa;
 }
 
+function rangoRapido(dias){
+  let hoy = new Date();
+  let inicio = new Date();
+  inicio.setDate(hoy.getDate()-dias);
+
+  document.getElementById("inicio").value = inicio.toISOString().split("T")[0];
+  document.getElementById("fin").value = hoy.toISOString().split("T")[0];
+
+  cargar();
+}
+
 async function cargar(){
 
-  let registros = [];
+  document.getElementById("lista").innerHTML = "Cargando...";
 
-  const { data: obras } = await supabaseClient
+  const inicio = document.getElementById("inicio").value;
+  const fin = document.getElementById("fin").value;
+
+  let query = supabaseClient
     .from("reportes_obras")
     .select("*")
     .eq("privada", privada)
     .eq("casa", casa);
 
+  if (inicio && fin) {
+    query = query
+      .gte("fecha_reporte", fechaInicioUTC(inicio))
+      .lte("fecha_reporte", fechaFinUTC(fin));
+  }
+
+  const { data: obras } = await query;
+
   let trabajadoresMap = {};
 
-  if (obras?.length) {
-    const ids = obras.map(o => o.trabajador_id).filter(Boolean);
+  const ids = obras?.map(o=>o.trabajador_id).filter(Boolean) || [];
 
-    if (ids.length) {
-      const { data: trabajadores } = await supabaseClient
-        .from("trabajadores_obra")
-        .select("id,nombre")
-        .in("id", ids);
+  if (ids.length) {
+    const { data: trabajadores } = await supabaseClient
+      .from("trabajadores_obra")
+      .select("id,nombre")
+      .in("id", ids);
 
-      trabajadores?.forEach(t=>{
-        trabajadoresMap[t.id] = t.nombre;
-      });
-    }
+    trabajadores?.forEach(t=>{
+      trabajadoresMap[t.id]=t.nombre;
+    });
   }
 
   const { data: evals } = await supabaseClient
@@ -259,29 +221,24 @@ async function cargar(){
   let html="";
 
   obras?.forEach(r=>{
-
     const trabajador = trabajadoresMap[r.trabajador_id];
 
-    let puedeEvaluar = !evaluados.has(r.id);
-    let habilitado = puedeEvaluar && pasaron5Dias(r.fecha_reporte);
+    let puede = !evaluados.has(r.id);
+    let habilitado = puede && pasaron5Dias(r.fecha_reporte);
 
     html+=`
     <div class="item obra">
       <b>OBRA</b>
       <div>${r.descripcion}</div>
 
-      ${trabajador ? `
-      <div style="font-size:13px;color:#9ca3af;margin-top:5px;">
-        👷 ${trabajador}
-      </div>` : ""}
+      ${trabajador ? `<div>👷 ${trabajador}</div>`:""}
 
       <div class="fecha">${formatMXDate(r.fecha_reporte)}</div>
 
-      ${puedeEvaluar ? `
-      <button 
-        onclick="${habilitado ? `abrir('${r.id}')` : ''}"
-        ${!habilitado ? 'disabled style="opacity:0.5;"' : ''}>
-        Evaluar atención
+      ${puede ? `
+      <button onclick="${habilitado?`abrir('${r.id}')`:''}"
+      ${!habilitado?'disabled':''}>
+      Evaluar atención
       </button>`:""}
     </div>
     `;
@@ -291,30 +248,23 @@ async function cargar(){
 }
 
 function abrir(id){
-  seleccionado = id;
+  seleccionado=id;
   document.getElementById("modal").style.display="flex";
 }
 
 async function evaluar(tipo){
-
   const { data } = await supabaseClient.auth.getUser();
-  const user = data?.user;
 
   await supabaseClient.from("evaluaciones_reportes").insert([{
     reporte_id: seleccionado,
-    tipo_reporte: "general",
-    calificacion: tipo,
+    tipo_reporte:"general",
+    calificacion:tipo,
     privada,
     casa,
-    residente_id: user.id,
-    fecha: new Date()
+    residente_id:data.user.id,
+    fecha:new Date()
   }]);
 
-  document.getElementById("pregunta").style.display="none";
-  document.getElementById("respuesta").style.display="block";
-}
-
-function cerrarModal(){
   document.getElementById("modal").style.display="none";
   cargar();
 }
