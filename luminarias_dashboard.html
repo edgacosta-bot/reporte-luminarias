@@ -167,6 +167,9 @@ function render(data) {
     data.filter(d => (d.situacion || "").toLowerCase() === "fuera de servicio").length;
 
   document.getElementById("reemplazo").innerText =
+    data.filter(d =>
+    (d.estado_automatico || "").toLowerCase().includes("prever reemplazo")
+     ).length;
     data.filter(d => (d.estado_automatico || "").toLowerCase().includes("reemplazar")).length;
 
   renderTabla(data);
