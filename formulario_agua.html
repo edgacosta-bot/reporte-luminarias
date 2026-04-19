@@ -52,7 +52,7 @@ input, textarea {
   color: white;
 }
 
-/* 🔥 SELECT (MEJOR CONTROL POSIBLE) */
+/* 🔥 SELECT */
 select {
   background: #020617;
   color: white;
@@ -68,10 +68,10 @@ textarea::placeholder {
   opacity: 0.85;
 }
 
-/* 🔥 OPCIONES (LO MÁXIMO QUE PERMITE EL NAVEGADOR) */
+/* 🔥 OPCIONES */
 select option {
-  background: #ffffff; /* fondo claro obligatorio en muchos navegadores */
-  color: #000000;      /* texto negro para contraste */
+  background: #ffffff;
+  color: #000000;
 }
 
 /* 🔥 BOTÓN */
@@ -82,7 +82,7 @@ button {
   border: none;
 }
 
-/* 🔥 MEJORA VISUAL EXTRA */
+/* 🔥 FOCUS */
 input:focus, select:focus, textarea:focus {
   outline: 2px solid #2563eb;
 }
@@ -201,6 +201,11 @@ async function guardar(){
     return;
   }
 
+  // 🔥 CORRECCIÓN DE FECHA (SIN PROBLEMA UTC)
+  const hoy = new Date();
+  hoy.setMinutes(hoy.getMinutes() - hoy.getTimezoneOffset());
+  const fechaLocal = hoy.toISOString().split("T")[0];
+
   const { error } = await supabaseClient
     .from("reportes_agua_caasim")
     .insert([{
@@ -213,7 +218,7 @@ async function guardar(){
       medio_reporte,
       observaciones,
       estatus: "reportado",
-      fecha_reporte: new Date().toISOString().split("T")[0]
+      fecha_reporte: fechaLocal
     }]);
 
   if(error){
