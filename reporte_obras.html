@@ -9,6 +9,7 @@
 <!-- 🔥 HOMOLOGACIÓN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
+<script src="utils/residente.js"></script>
 
 <style>
 body {
@@ -111,43 +112,22 @@ Trabajador (opcional)
 <script>
 
 // 🔐 VARIABLES
-let residente_id = null;
-let privada = null;
-let casa = null;
+let actorInfo = document.getElementById("actorInfo");
+let actor = "colono";
 
-const actorInfo = document.getElementById("actorInfo");
+// 🔐 OBTENER RESIDENTE (NUEVO MODELO)
+async function inicializarResidente(){
 
-let actor = null;
+  const residente = await getResidente();
 
-// 🔐 OBTENER USUARIO (HOMOLOGADO)
-async function obtenerUsuario(){
-
-  const { data } = await supabaseClient.auth.getUser();
-  const user = data?.user;
-
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  const { data:res, error } = await supabaseClient
-    .from("residentes")
-    .select("id, privada, casa")
-    .eq("user_id", user.id)
-    .single();
-
-  if (error || !res) {
+  if (!residente) {
     actorInfo.innerText = "Error de sesión";
-    return;
+    return null;
   }
 
-  residente_id = res.id;
-  privada = res.privada;
-  casa = res.casa;
+  actorInfo.innerText = `Privada ${residente.privada} - Casa ${residente.casa}`;
 
-  actor = "colono";
-
-  actorInfo.innerText = `Privada ${privada} - Casa ${casa}`;
+  return residente;
 }
 
 // 🔥 CATÁLOGO
@@ -237,14 +217,23 @@ async function enviarReporte() {
     return;
   }
 
+  // 🔥 NUEVO: obtener residente
+  const residente = await getResidente();
+
+  if (!residente) {
+    mensaje.innerText = "Error de sesión";
+    mensaje.className = "mensaje error";
+    return;
+  }
+
   const dataInsert = {
     tipo: tipo,
     descripcion: descripcion,
     trabajador_id: trabajador_id || null,
     obra_id: obra_id,
-    privada: privada || null,
-    casa: casa || null,
-    residente_id: residente_id, // 🔥 NUEVO
+    privada: residente.privada,
+    casa: residente.casa,
+    residente_id: residente.id,
     fecha_reporte: new Date(),
     estatus: "nuevo"
   };
@@ -266,7 +255,7 @@ async function enviarReporte() {
 
 // INIT
 window.addEventListener("DOMContentLoaded", async () => {
-  await obtenerUsuario();
+  await inicializarResidente();
   cargarCatalogo();
   cargarObras();
 });
