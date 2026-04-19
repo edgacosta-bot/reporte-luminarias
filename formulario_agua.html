@@ -27,6 +27,15 @@ h2 {
   text-align: center;
 }
 
+/* 🔥 TEXTO GUÍA */
+.info {
+  font-size: 13px;
+  color: #e5e7eb; /* blanco suave pero visible */
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* 🔥 INPUTS */
 input, select, textarea, button {
   width: 100%;
   padding: 14px;
@@ -34,13 +43,33 @@ input, select, textarea, button {
   border-radius: 12px;
   border: none;
   box-sizing: border-box;
+  font-size: 15px;
 }
 
+/* 🔥 CAMPOS OSCUROS + TEXTO BLANCO */
 input, select, textarea {
   background: #0f172a;
   color: white;
 }
 
+/* 🔥 PLACEHOLDER BLANCO (ANTES GRIS) */
+input::placeholder,
+textarea::placeholder {
+  color: #ffffff;
+  opacity: 0.85;
+}
+
+/* 🔥 SELECT TEXTO */
+select {
+  color: white;
+}
+
+/* 🔥 OPCIONES */
+select option {
+  color: black; /* necesario para dropdown nativo */
+}
+
+/* 🔥 BOTÓN */
 button {
   background: #2563eb;
   color: white;
@@ -54,6 +83,11 @@ button {
 <div class="container">
 
 <h2>Reporte de agua</h2>
+
+<!-- 🔥 TEXTO GUÍA RESTAURADO -->
+<p class="info">
+Registra el número de reporte proporcionado por CAASIM junto con los datos correspondientes.
+</p>
 
 <input id="numero_reporte" placeholder="Número de reporte">
 
@@ -122,7 +156,6 @@ async function cargarCalles(){
   const select = document.getElementById("calle");
   select.innerHTML = '<option value="">Selecciona calle</option>';
 
-  // 🔥 evitar duplicados
   const callesUnicas = [...new Map(data.map(item => [item.calle, item])).values()];
 
   callesUnicas.forEach(c => {
@@ -150,7 +183,6 @@ async function guardar(){
     return;
   }
 
-  // 🔥 obtener residente
   const { data: residente } = await supabaseClient
     .from("residentes")
     .select("id, privada, casa")
@@ -165,9 +197,9 @@ async function guardar(){
   const { error } = await supabaseClient
     .from("reportes_agua_caasim")
     .insert([{
-      residente_id: residente.id, // 🔥 NUEVO
+      residente_id: residente.id,
       privada: residente.privada,
-      numero_exterior: residente.casa, // 🔥 casa real
+      numero_exterior: residente.casa,
       calle_id,
       numero_reporte,
       tipo_falla,
