@@ -217,7 +217,7 @@ async function cargar(){
   let queryObras = supabaseClient
     .from("reportes_obras")
     .select("*")
-    .eq("residente_id", userId);
+    .eq("residente_id", residenteId)
 
   if (inicio && fin) {
     queryObras = queryObras
@@ -231,7 +231,7 @@ async function cargar(){
   let queryVecinal = supabaseClient
     .from("incidencias_vecinales")
     .select("*")
-    .eq("residente_id", userId);
+    .eq("residente_id", residenteId)
 
   if (inicio && fin) {
     queryVecinal = queryVecinal
