@@ -78,7 +78,6 @@ button {
 }
 .obra { border-color: #f59e0b; }
 .vecinal { border-color: #ef4444; }
-.vigilante { border-color: #3b82f6; }
 
 .fecha { font-size: 12px; color: #9ca3af; }
 
@@ -178,36 +177,43 @@ async function obtenerUsuario(){
   const { data } = await supabaseClient.auth.getUser();
   const user = data.user;
 
-  const { data: residente } = await supabaseClient
+  const { data: residente, error } = await supabaseClient
     .from("residentes")
     .select("id")
     .eq("user_id", user.id)
     .single();
 
-  residenteId = residente?.id;
+  if (error || !residente) {
+    console.error("No se encontró residente");
+    return;
+  }
+
+  residenteId = residente.id;
 }
 
 function rangoRapido(dias){
-  let hoy = new Date();
-  let inicio = new Date();
-  inicio.setDate(hoy.getDate()-dias);
 
-  document.getElementById("inicio").value = inicio.toISOString().split("T")[0];
-  document.getElementById("fin").value = hoy.toISOString().split("T")[0];
+  // 🔥 USAR dates.js (CORRECCIÓN REAL)
+  const rango = getLastDaysRange(dias);
+
+  document.getElementById("inicio").value = rango.start.split("T")[0];
+  document.getElementById("fin").value = rango.end.split("T")[0];
 
   cargar();
 }
 
 async function cargar(){
 
-  if (!residenteId) return;
+  if (!residenteId) {
+    console.warn("residenteId no listo aún");
+    return;
+  }
 
   document.getElementById("lista").innerHTML = "Cargando...";
 
   const inicio = document.getElementById("inicio").value;
   const fin = document.getElementById("fin").value;
 
-  // 🔹 OBRAS (SIN TOCAR)
   let queryObras = supabaseClient
     .from("reportes_obras")
     .select("*")
@@ -221,7 +227,6 @@ async function cargar(){
 
   const { data: obras } = await queryObras;
 
-  // 🔹 VECINALES (SIN TOCAR)
   let queryVecinal = supabaseClient
     .from("incidencias_vecinales")
     .select("*")
@@ -235,21 +240,6 @@ async function cargar(){
 
   const { data: vecinales } = await queryVecinal;
 
-  // 🔥 VIGILANTES (NUEVO SIN ROMPER NADA)
-  let queryVigilantes = supabaseClient
-    .from("reportes_vigilantes")
-    .select("*")
-    .eq("residente_id", residenteId)
-
-  if (inicio && fin) {
-    queryVigilantes = queryVigilantes
-      .gte("fecha", fechaInicioUTC(inicio))
-      .lte("fecha", fechaFinUTC(fin));
-  }
-
-  const { data: vigilantes } = await queryVigilantes;
-
-  // 🔹 TRABAJADORES (SIN TOCAR)
   let trabajadoresMap = {};
   const ids = obras?.map(o=>o.trabajador_id).filter(Boolean) || [];
 
@@ -264,7 +254,6 @@ async function cargar(){
     });
   }
 
-  // 🔹 EVALUACIONES
   const { data: evals } = await supabaseClient
     .from("evaluaciones_reportes")
     .select("reporte_id");
@@ -292,16 +281,6 @@ async function cargar(){
     });
   });
 
-  // 🔥 SOLO AGREGADO
-  vigilantes?.forEach(r=>{
-    todos.push({
-      id: r.id,
-      tipo: "vigilante",
-      descripcion: r.descripcion,
-      fecha: r.fecha
-    });
-  });
-
   todos.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
 
   let html="";
@@ -313,11 +292,8 @@ async function cargar(){
     let puede = !evaluados.has(r.id);
     let habilitado = puede && pasaron5Dias(r.fecha);
 
-    const clase = r.tipo;
-    const titulo =
-      r.tipo === "obra" ? "OBRA" :
-      r.tipo === "vecinal" ? "VECINAL" :
-      "VIGILANTE";
+    const clase = r.tipo === "obra" ? "obra" : "vecinal";
+    const titulo = r.tipo === "obra" ? "OBRA" : "VECINAL";
 
     html+=`
     <div class="item ${clase}">
