@@ -191,19 +191,22 @@ async function guardar(){
     return;
   }
 
+  // 🔥 CONVERSIÓN CORRECTA A TIMESTAMP (CLAVE)
+  const fechaISO = new Date(fecha_reporte + "T00:00:00").toISOString();
+
   const { error } = await supabaseClient
     .from("reportes_agua_caasim")
     .insert([{
       residente_id: residenteGlobal.id,
       privada: residenteGlobal.privada,
-      numero_exterior: numero_exterior, // 🔥 CORREGIDO
+      numero_exterior: numero_exterior,
       calle_id,
       numero_reporte,
       tipo_falla,
       medio_reporte,
       observaciones,
       estatus: "reportado",
-      fecha_reporte: fecha_reporte
+      fecha_reporte: fechaISO
     }]);
 
   if(error){
