@@ -352,41 +352,7 @@ function renderGrupo(titulo, tipo, clase){
 html += renderGrupo("🟡 OBRAS", "obra", "obra");
 html += renderGrupo("🔴 VECINALES", "vecinal", "vecinal");
 html += renderGrupo("🟢 VIGILANTES", "vigilante", "vigilante");
-  todos.forEach(r=>{
-
-    const trabajador = trabajadoresMap[r.trabajador_id];
-
-    const clase =
-      r.tipo === "obra" ? "obra" :
-      r.tipo === "vecinal" ? "vecinal" :
-      "vigilante";
-
-    const titulo =
-      r.tipo === "obra" ? "OBRA" :
-      r.tipo === "vecinal" ? "VECINAL" :
-      "VIGILANTE";
-
-    let puede = !evaluados.has(r.id);
-    let habilitado = puede && pasaron5Dias(r.fecha);
-
-    html+=`
-    <div class="item ${clase}">
-      <b>${titulo}</b>
-      <div>${r.descripcion}</div>
-
-      ${trabajador ? `<div>👷 ${trabajador}</div>`:""}
-
-      <div class="fecha">${formatMXDate(r.fecha)}</div>
-
-      ${puede ? `
-      <button onclick="${habilitado?`abrir('${r.id}')`:''}"
-      ${!habilitado?'disabled':''}>
-      Evaluar atención
-      </button>`:""}
-    </div>
-    `;
-  });
-
+  
   document.getElementById("lista").innerHTML = html || "Sin resultados";
 }
 
