@@ -212,18 +212,26 @@ console.log({
   const { error } = await supabaseClient
     .from("incidencias_vecinales")
     .insert([{
-      categoria: "vecinal",
-      tipo,
-      descripcion,
-      residente_id: residente.id,
-      privada: residente.privada,
-      casa: residente.casa,
-      privada_afectada: privadaAfectada ? privadaAfectada : null,
-      casa_afectada: loteAfectado ? String(loteAfectado) : null,
-      fecha_reporte: new Date().toISOString(),
-      estatus: "nuevo",
-      atendido: false
-    }]);
+  categoria: "vecinal",
+  tipo,
+  descripcion,
+
+  residente_id: residente.id,
+
+  privada: residente.privada,
+  casa: residente.casa,
+
+  // 🔥 NUEVO (TRAZABILIDAD)
+  creado_por: residente.id,
+  rol_creador: "residente",
+
+  privada_afectada: privadaAfectada ? privadaAfectada : null,
+  casa_afectada: loteAfectado ? String(loteAfectado) : null,
+
+  fecha_reporte: new Date().toISOString(),
+  estatus: "nuevo",
+  atendido: false
+}]);
 
   if (error) {
     mensaje.innerText = "Error al enviar reporte";
