@@ -28,7 +28,6 @@ h2 {
   text-align: center;
 }
 
-/* 🔥 TEXTO GUÍA */
 .info {
   font-size: 13px;
   color: #e5e7eb;
@@ -36,7 +35,6 @@ h2 {
   text-align: center;
 }
 
-/* 🔥 CAMPOS */
 input, select, textarea, button {
   width: 100%;
   padding: 14px;
@@ -47,33 +45,28 @@ input, select, textarea, button {
   font-size: 15px;
 }
 
-/* 🔥 INPUTS OSCUROS */
 input, textarea {
   background: #020617;
   color: white;
 }
 
-/* 🔥 SELECT */
 select {
   background: #020617;
   color: white;
   appearance: none;
 }
 
-/* 🔥 PLACEHOLDER */
 input::placeholder,
 textarea::placeholder {
   color: #ffffff;
   opacity: 0.85;
 }
 
-/* 🔥 OPCIONES */
 select option {
   background: #ffffff;
   color: #000000;
 }
 
-/* 🔥 BOTÓN */
 button {
   background: #2563eb;
   color: white;
@@ -81,7 +74,6 @@ button {
   border: none;
 }
 
-/* 🔥 FOCUS */
 input:focus, select:focus, textarea:focus {
   outline: 2px solid #2563eb;
 }
@@ -129,14 +121,12 @@ Registra el número de reporte proporcionado por CAASIM junto con los datos corr
 
 <script>
 
-// 🔥 NUEVO: residente global en memoria
 let residenteGlobal = null;
 
 window.addEventListener("DOMContentLoaded", async () => {
 
   await protegerPagina(["colono","residente","admin"]);
 
-  // 🔥 obtener residente correctamente
   residenteGlobal = await getResidente();
 
   if (!residenteGlobal) {
@@ -146,7 +136,6 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   cargarCalles();
 
-  // 🔥 FECHA HOY
   const hoy = new Date();
   const fechaHoy =
     hoy.getFullYear() + "-" +
@@ -192,7 +181,7 @@ async function guardar(){
 
   const msg = document.getElementById("msg");
 
-  if(!numero_reporte || !tipo_falla || !calle_id || !fecha_reporte){
+  if(!numero_reporte || !tipo_falla || !calle_id || !fecha_reporte || !numero_exterior || !medio_reporte){
     msg.innerText = "Completa los campos requeridos";
     return;
   }
@@ -207,7 +196,7 @@ async function guardar(){
     .insert([{
       residente_id: residenteGlobal.id,
       privada: residenteGlobal.privada,
-      numero_exterior: residenteGlobal.casa,
+      numero_exterior: numero_exterior, // 🔥 CORREGIDO
       calle_id,
       numero_reporte,
       tipo_falla,
@@ -229,7 +218,6 @@ async function guardar(){
   document.getElementById("numero_exterior").value = "";
   document.getElementById("observaciones").value = "";
 
-  // 🔥 RESET FECHA
   const hoy = new Date();
   const fechaHoy =
     hoy.getFullYear() + "-" +
