@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -300,8 +300,58 @@ async function cargar(){
 
   todos.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
 
-  let html="";
+// 🔥 AGRUPACIÓN POR TIPO
+const grupos = {
+  obra: [],
+  vecinal: [],
+  vigilante: []
+};
 
+todos.forEach(r => {
+  if (grupos[r.tipo]) {
+    grupos[r.tipo].push(r);
+  }
+});
+
+let html="";
+
+function renderGrupo(titulo, tipo, clase){
+  if (!grupos[tipo].length) return "";
+
+  let bloque = `<h3 style="margin-top:20px;">${titulo}</h3>`;
+
+  grupos[tipo].forEach(r => {
+
+    const trabajador = trabajadoresMap[r.trabajador_id];
+
+    let puede = !evaluados.has(r.id);
+    let habilitado = puede && pasaron5Dias(r.fecha);
+
+    bloque += `
+    <div class="item ${clase}">
+      <b>${titulo}</b>
+      <div>${r.descripcion}</div>
+
+      ${trabajador ? `<div>👷 ${trabajador}</div>`:""}
+
+      <div class="fecha">${formatMXDate(r.fecha)}</div>
+
+      ${puede ? `
+      <button onclick="${habilitado?`abrir('${r.id}')`:''}"
+      ${!habilitado?'disabled':''}>
+      Evaluar atención
+      </button>`:""}
+    </div>
+    `;
+  });
+
+  return bloque;
+}
+
+// 🔥 ORDEN DE GRUPOS
+html += renderGrupo("🟡 OBRAS", "obra", "obra");
+html += renderGrupo("🔴 VECINALES", "vecinal", "vecinal");
+html += renderGrupo("🟢 VIGILANTES", "vigilante", "vigilante");
   todos.forEach(r=>{
 
     const trabajador = trabajadoresMap[r.trabajador_id];
