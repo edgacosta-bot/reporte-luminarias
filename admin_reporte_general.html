@@ -228,6 +228,27 @@ async function cargar(){
     });
   });
 
+// 🔵 MAPA OBRAS
+let mapaObras = {};
+const { data: listaObras } = await supabaseClient
+  .from("obras")
+  .select("id, privada, casa");
+
+listaObras?.forEach(o=>{
+  mapaObras[o.id] = `${o.privada}-${o.casa}`;
+});
+
+// 🔵 MAPA TRABAJADORES
+let mapaTrabajadores = {};
+const { data: listaTrabajadores } = await supabaseClient
+  .from("trabajadores_obra")
+  .select("id, nombre");
+
+listaTrabajadores?.forEach(t=>{
+  mapaTrabajadores[t.id] = t.nombre;
+});
+
+  
   // 🟣 OBRAS (SIN JOIN RIESGOSO)
   let {data:obras} = await supabaseClient
     .from("reportes_obras")
@@ -244,10 +265,11 @@ async function cargar(){
     hora:i.fecha_reporte,
 
     reporta: `${i.privada}-${i.casa}`,
-    obra: i.obra_id || "Sin obra",
+
+    obra: mapaObras[i.obra_id] || "Obra no identificada",
 
     trabajador: i.trabajador_id
-      ? `👷 Trabajador implicado: ${i.trabajador_id}`
+      ? `👷 ${mapaTrabajadores[i.trabajador_id] || "Trabajador desconocido"}`
       : "👷 Trabajador no identificado"
   });
 });
