@@ -32,6 +32,17 @@ body {
   text-align: center;
 }
 
+.logo {
+  width: 80px;
+  margin-bottom: 10px;
+}
+
+.descripcion {
+  font-size: 13px;
+  color: #9ca3af;
+  margin-bottom: 15px;
+}
+
 select {
   width: 100%;
   padding: 12px;
@@ -69,11 +80,19 @@ button {
 
 <div class="card">
 
+<!-- 🔥 LOGO -->
+<img src="logo.png" class="logo">
+
 <h2>QR Trabajador</h2>
 
-<!-- 🔥 NUEVO FILTRO -->
+<!-- 🔥 TEXTO UX -->
+<div class="descripcion">
+  Utilice este formulario para generar códigos QR de acceso para los trabajadores de obra
+</div>
+
+<!-- 🔥 CAMBIO AQUÍ -->
 <select id="filtroPrivada">
-  <option value="">Todas las privadas</option>
+  <option value="">Selecciona la privada</option>
 </select>
 
 <select id="trabajador">
@@ -98,13 +117,13 @@ button {
 let trabajadorSeleccionado = null;
 let dataGlobal = [];
 
-// 🔥 SECUENCIA
+// 🔥 SECUENCIA (NO TOCADA)
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["administracion"]);
   await cargarTrabajadores();
 });
 
-// 🔥 CARGA BASE
+// 🔥 CARGA BASE (NO TOCADA)
 async function cargarTrabajadores() {
 
   const select = document.getElementById("trabajador");
@@ -135,14 +154,14 @@ async function cargarTrabajadores() {
   renderTrabajadores();
 }
 
-// 🔥 LLENAR FILTRO
+// 🔥 LLENAR FILTRO (solo texto cambiado)
 function cargarFiltroPrivadas(data) {
 
   const filtro = document.getElementById("filtroPrivada");
 
   const privadas = [...new Set(data.map(t => t.privada))];
 
-  filtro.innerHTML = '<option value="">Todas las privadas</option>';
+  filtro.innerHTML = '<option value="">Selecciona la privada</option>';
 
   privadas.forEach(p => {
     const option = document.createElement("option");
@@ -152,7 +171,7 @@ function cargarFiltroPrivadas(data) {
   });
 }
 
-// 🔥 RENDER SEGÚN FILTRO
+// 🔥 RENDER (NO TOCADO)
 function renderTrabajadores() {
 
   const select = document.getElementById("trabajador");
@@ -187,10 +206,10 @@ function renderTrabajadores() {
   });
 }
 
-// 🔁 EVENTO FILTRO
+// 🔁 EVENTO (NO TOCADO)
 document.getElementById("filtroPrivada").addEventListener("change", renderTrabajadores);
 
-// 🎯 CAMBIO DE TRABAJADOR
+// 🎯 CAMBIO (NO TOCADO)
 document.getElementById("trabajador").addEventListener("change", function() {
 
   const qrDiv = document.getElementById("qr");
@@ -232,7 +251,7 @@ document.getElementById("trabajador").addEventListener("change", function() {
   btn.style.display = "block";
 });
 
-// 📲 WHATSAPP
+// 📲 WHATSAPP (NO TOCADO)
 document.getElementById("btnWA").addEventListener("click", () => {
 
   if (!trabajadorSeleccionado) return;
