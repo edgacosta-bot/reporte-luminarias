@@ -4,6 +4,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
+<script src="utils/residente.js"></script>
+
 <script>
 protegerPagina(["colono","residente"]);
 </script>
@@ -100,24 +102,6 @@ button {
 
 <script>
 
-let privada, casa;
-
-/* 🔐 USUARIO */
-async function obtenerUsuario(){
-
-  const { data } = await supabaseClient.auth.getUser();
-  const userId = data.user.id;
-
-  const { data:res } = await supabaseClient
-    .from("residentes")
-    .select("privada,casa")
-    .eq("user_id", userId)
-    .single();
-
-  privada = res?.privada;
-  casa = res?.casa;
-}
-
 /* 🔥 CATÁLOGO DINÁMICO */
 async function cargarCatalogo(){
 
@@ -140,7 +124,6 @@ async function cargarCatalogo(){
     const opt = document.createElement("option");
     opt.value = i.subtipo;
 
-    // 🔥 formato bonito
     opt.textContent = i.subtipo
       .replaceAll("_"," ")
       .replace(/\b\w/g, l => l.toUpperCase());
@@ -173,12 +156,6 @@ async function cargarVigilantes(){
   });
 }
 
-/* 🧠 FECHA MÉXICO */
-function fechaMexico(){
-  const now = new Date();
-  return new Date(now.getTime() - (6 * 60 * 60 * 1000));
-}
-
 /* 🚀 ENVIAR */
 async function enviar(){
 
@@ -195,15 +172,25 @@ async function enviar(){
     return;
   }
 
+  // 🔥 OBTENER RESIDENTE HOMOLOGADO
+  const residente = await getResidente();
+
+  if (!residente) {
+    msg.innerText = "Error de sesión";
+    msg.classList.add("error");
+    return;
+  }
+
   const { error } = await supabaseClient
     .from("reportes_vigilantes")
     .insert([{
       vigilante_id,
       tipo,
       descripcion,
-      privada,
-      casa,
-      fecha: fechaMexico().toISOString(),
+      privada: residente.privada,
+      casa: residente.casa,
+      residente_id: residente.id,
+      fecha: new Date().toISOString(), // 🔥 CORREGIDO (UTC estándar)
       estatus: "nuevo"
     }]);
 
@@ -224,7 +211,6 @@ async function enviar(){
 
 /* INIT */
 async function init(){
-  await obtenerUsuario();
   await cargarCatalogo();
   await cargarVigilantes();
 }
