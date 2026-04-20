@@ -196,7 +196,10 @@ document.getElementById("btnValidar").onclick = async () => {
 // 🔹 REGISTRAR
 document.getElementById("btnRegistrar").onclick = async () => {
 
-  const ahora = new Date().toISOString();
+  // 🔥 FECHA ESTÁNDAR GLOBAL (UTC)
+  function fechaUTC(){
+  return new Date().toISOString();
+}
 
   if(tipoAccion === "entrada"){
 
