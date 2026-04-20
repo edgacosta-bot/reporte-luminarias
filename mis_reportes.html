@@ -207,52 +207,49 @@ async function cargar(){
   const inicio = document.getElementById("inicio").value;
   const fin = document.getElementById("fin").value;
 
-  const ini = inicio ? inicio + " 00:00:00" : null;
-  const finf = fin ? fin + " 23:59:59" : null;
-
-  // 🔹 OBRAS
+  // 🔹 OBRAS (SIN TOCAR)
   let queryObras = supabaseClient
     .from("reportes_obras")
     .select("*")
-    .eq("residente_id", residenteId);
+    .eq("residente_id", residenteId)
 
-  if (ini && finf) {
+  if (inicio && fin) {
     queryObras = queryObras
-      .gte("fecha_reporte", ini)
-      .lte("fecha_reporte", finf);
+      .gte("fecha_reporte", fechaInicioUTC(inicio))
+      .lte("fecha_reporte", fechaFinUTC(fin));
   }
 
   const { data: obras } = await queryObras;
 
-  // 🔹 VECINALES
+  // 🔹 VECINALES (SIN TOCAR)
   let queryVecinal = supabaseClient
     .from("incidencias_vecinales")
     .select("*")
-    .eq("residente_id", residenteId);
+    .eq("residente_id", residenteId)
 
-  if (ini && finf) {
+  if (inicio && fin) {
     queryVecinal = queryVecinal
-      .gte("fecha", ini)
-      .lte("fecha", finf);
+      .gte("fecha", fechaInicioUTC(inicio))
+      .lte("fecha", fechaFinUTC(fin));
   }
 
   const { data: vecinales } = await queryVecinal;
 
-  // 🔹 VIGILANTES
+  // 🔥 VIGILANTES (NUEVO SIN ROMPER NADA)
   let queryVigilantes = supabaseClient
     .from("reportes_vigilantes")
     .select("*")
-    .eq("residente_id", residenteId);
+    .eq("residente_id", residenteId)
 
-  if (ini && finf) {
+  if (inicio && fin) {
     queryVigilantes = queryVigilantes
-      .gte("fecha", ini)
-      .lte("fecha", finf);
+      .gte("fecha", fechaInicioUTC(inicio))
+      .lte("fecha", fechaFinUTC(fin));
   }
 
   const { data: vigilantes } = await queryVigilantes;
 
-  // 🔹 TRABAJADORES
+  // 🔹 TRABAJADORES (SIN TOCAR)
   let trabajadoresMap = {};
   const ids = obras?.map(o=>o.trabajador_id).filter(Boolean) || [];
 
@@ -267,6 +264,7 @@ async function cargar(){
     });
   }
 
+  // 🔹 EVALUACIONES
   const { data: evals } = await supabaseClient
     .from("evaluaciones_reportes")
     .select("reporte_id");
@@ -276,15 +274,32 @@ async function cargar(){
   let todos = [];
 
   obras?.forEach(r=>{
-    todos.push({ id:r.id, tipo:"obra", descripcion:r.descripcion, fecha:r.fecha_reporte, trabajador_id:r.trabajador_id });
+    todos.push({
+      id: r.id,
+      tipo: "obra",
+      descripcion: r.descripcion,
+      fecha: r.fecha_reporte,
+      trabajador_id: r.trabajador_id
+    });
   });
 
   vecinales?.forEach(r=>{
-    todos.push({ id:r.id, tipo:"vecinal", descripcion:r.descripcion, fecha:r.fecha });
+    todos.push({
+      id: r.id,
+      tipo: "vecinal",
+      descripcion: r.descripcion,
+      fecha: r.fecha
+    });
   });
 
+  // 🔥 SOLO AGREGADO
   vigilantes?.forEach(r=>{
-    todos.push({ id:r.id, tipo:"vigilante", descripcion:r.descripcion, fecha:r.fecha });
+    todos.push({
+      id: r.id,
+      tipo: "vigilante",
+      descripcion: r.descripcion,
+      fecha: r.fecha
+    });
   });
 
   todos.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
@@ -299,16 +314,27 @@ async function cargar(){
     let habilitado = puede && pasaron5Dias(r.fecha);
 
     const clase = r.tipo;
-    const titulo = r.tipo === "obra" ? "OBRA" : r.tipo === "vecinal" ? "VECINAL" : "VIGILANTE";
+    const titulo =
+      r.tipo === "obra" ? "OBRA" :
+      r.tipo === "vecinal" ? "VECINAL" :
+      "VIGILANTE";
 
     html+=`
     <div class="item ${clase}">
       <b>${titulo}</b>
       <div>${r.descripcion}</div>
+
       ${trabajador ? `<div>👷 ${trabajador}</div>`:""}
+
       <div class="fecha">${formatMXDate(r.fecha)}</div>
-      ${puede ? `<button onclick="${habilitado?`abrir('${r.id}')`:''}" ${!habilitado?'disabled':''}>Evaluar atención</button>`:""}
-    </div>`;
+
+      ${puede ? `
+      <button onclick="${habilitado?`abrir('${r.id}')`:''}"
+      ${!habilitado?'disabled':''}>
+      Evaluar atención
+      </button>`:""}
+    </div>
+    `;
   });
 
   document.getElementById("lista").innerHTML = html || "Sin resultados";
