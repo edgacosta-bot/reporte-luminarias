@@ -247,20 +247,7 @@ let { data: inc } = await queryVecinal;
   });
 
   // 🔵 VIGILANTES
- let queryVigilante = supabaseClient
-  .from("reportes_vigilantes")
-  .select("*")
-  .gte("fecha_reporte", fechaInicioUTC(inicio))
-  .lte("fecha_reporte", fechaFinUTC(fin));
-
-if(privadaFiltro){
-  queryVigilante = queryVigilante.eq("privada", privadaFiltro);
-}
-
-if(loteFiltro){
-  queryVigilante = queryVigilante.eq("casa", loteFiltro);
-}
-
+ 
 let queryVigilante = supabaseClient
   .from("reportes_vigilantes")
   .select("*")
