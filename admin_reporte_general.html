@@ -243,7 +243,9 @@ async function cargar(){
       descripcion:i.descripcion,
       hora:i.fecha_reporte,
       origen:`${i.privada}-${i.casa}`,
-      extra2: i.trabajador_id ? "👷 Trabajador asignado" : null
+      extra2: i.trabajador_nombre 
+  ? `👷 ${i.trabajador_nombre}`
+  : "👷 Trabajador no identificado"
     });
   });
 
