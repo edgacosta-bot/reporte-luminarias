@@ -78,7 +78,7 @@ button {
 }
 .obra { border-color: #f59e0b; }
 .vecinal { border-color: #ef4444; }
-.vigilante { border-color: #3b82f6; } /* 🔥 NUEVO */
+.vigilante { border-color: #3b82f6; }
 
 .fecha { font-size: 12px; color: #9ca3af; }
 
@@ -103,7 +103,6 @@ button {
   cursor: pointer;
   transition: transform 0.2s ease;
 }
-
 .emoji:hover {
   transform: scale(1.2);
 }
@@ -208,16 +207,19 @@ async function cargar(){
   const inicio = document.getElementById("inicio").value;
   const fin = document.getElementById("fin").value;
 
+  const ini = inicio ? inicio + " 00:00:00" : null;
+  const finf = fin ? fin + " 23:59:59" : null;
+
   // 🔹 OBRAS
   let queryObras = supabaseClient
     .from("reportes_obras")
     .select("*")
     .eq("residente_id", residenteId);
 
-  if (inicio && fin) {
+  if (ini && finf) {
     queryObras = queryObras
-      .gte("fecha_reporte", fechaInicioUTC(inicio))
-      .lte("fecha_reporte", fechaFinUTC(fin));
+      .gte("fecha_reporte", ini)
+      .lte("fecha_reporte", finf);
   }
 
   const { data: obras } = await queryObras;
@@ -228,24 +230,24 @@ async function cargar(){
     .select("*")
     .eq("residente_id", residenteId);
 
-  if (inicio && fin) {
+  if (ini && finf) {
     queryVecinal = queryVecinal
-      .gte("fecha", fechaInicioUTC(inicio))
-      .lte("fecha", fechaFinUTC(fin));
+      .gte("fecha", ini)
+      .lte("fecha", finf);
   }
 
   const { data: vecinales } = await queryVecinal;
 
-  // 🔥 VIGILANTES (NUEVO)
+  // 🔹 VIGILANTES
   let queryVigilantes = supabaseClient
     .from("reportes_vigilantes")
     .select("*")
     .eq("residente_id", residenteId);
 
-  if (inicio && fin) {
+  if (ini && finf) {
     queryVigilantes = queryVigilantes
-      .gte("fecha", fechaInicioUTC(inicio))
-      .lte("fecha", fechaFinUTC(fin));
+      .gte("fecha", ini)
+      .lte("fecha", finf);
   }
 
   const { data: vigilantes } = await queryVigilantes;
@@ -265,7 +267,6 @@ async function cargar(){
     });
   }
 
-  // 🔹 EVALUACIONES
   const { data: evals } = await supabaseClient
     .from("evaluaciones_reportes")
     .select("reporte_id");
@@ -275,33 +276,15 @@ async function cargar(){
   let todos = [];
 
   obras?.forEach(r=>{
-    todos.push({
-      id: r.id,
-      tipo: "obra",
-      descripcion: r.descripcion,
-      fecha: r.fecha_reporte,
-      trabajador_id: r.trabajador_id
-    });
+    todos.push({ id:r.id, tipo:"obra", descripcion:r.descripcion, fecha:r.fecha_reporte, trabajador_id:r.trabajador_id });
   });
 
   vecinales?.forEach(r=>{
-    todos.push({
-      id: r.id,
-      tipo: "vecinal",
-      descripcion: r.descripcion,
-      fecha: r.fecha,
-      trabajador_id: null
-    });
+    todos.push({ id:r.id, tipo:"vecinal", descripcion:r.descripcion, fecha:r.fecha });
   });
 
   vigilantes?.forEach(r=>{
-    todos.push({
-      id: r.id,
-      tipo: "vigilante",
-      descripcion: r.descripcion,
-      fecha: r.fecha,
-      trabajador_id: null
-    });
+    todos.push({ id:r.id, tipo:"vigilante", descripcion:r.descripcion, fecha:r.fecha });
   });
 
   todos.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
@@ -316,27 +299,16 @@ async function cargar(){
     let habilitado = puede && pasaron5Dias(r.fecha);
 
     const clase = r.tipo;
-    const titulo =
-      r.tipo === "obra" ? "OBRA" :
-      r.tipo === "vecinal" ? "VECINAL" :
-      "VIGILANTE";
+    const titulo = r.tipo === "obra" ? "OBRA" : r.tipo === "vecinal" ? "VECINAL" : "VIGILANTE";
 
     html+=`
     <div class="item ${clase}">
       <b>${titulo}</b>
       <div>${r.descripcion}</div>
-
       ${trabajador ? `<div>👷 ${trabajador}</div>`:""}
-
       <div class="fecha">${formatMXDate(r.fecha)}</div>
-
-      ${puede ? `
-      <button onclick="${habilitado?`abrir('${r.id}')`:''}"
-      ${!habilitado?'disabled':''}>
-      Evaluar atención
-      </button>`:""}
-    </div>
-    `;
+      ${puede ? `<button onclick="${habilitado?`abrir('${r.id}')`:''}" ${!habilitado?'disabled':''}>Evaluar atención</button>`:""}
+    </div>`;
   });
 
   document.getElementById("lista").innerHTML = html || "Sin resultados";
