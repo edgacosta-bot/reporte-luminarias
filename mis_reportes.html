@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -192,13 +193,9 @@ async function obtenerUsuario(){
 }
 
 function rangoRapido(dias){
-
-  // 🔥 USAR dates.js (CORRECCIÓN REAL)
   const rango = getLastDaysRange(dias);
-
   document.getElementById("inicio").value = rango.start.split("T")[0];
   document.getElementById("fin").value = rango.end.split("T")[0];
-
   cargar();
 }
 
@@ -234,8 +231,8 @@ async function cargar(){
 
   if (inicio && fin) {
     queryVecinal = queryVecinal
-      .gte("fecha", fechaInicioUTC(inicio))
-      .lte("fecha", fechaFinUTC(fin));
+      .gte("fecha_reporte", fechaInicioUTC(inicio))
+      .lte("fecha_reporte", fechaFinUTC(fin));
   }
 
   const { data: vecinales } = await queryVecinal;
@@ -277,7 +274,7 @@ async function cargar(){
       id: r.id,
       tipo: "vecinal",
       descripcion: r.descripcion,
-      fecha: r.fecha
+      fecha: r.fecha_reporte
     });
   });
 
@@ -347,3 +344,4 @@ iniciar();
 
 </body>
 </html>
+```
