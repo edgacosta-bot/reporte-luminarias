@@ -247,11 +247,35 @@ let { data: inc } = await queryVecinal;
   });
 
   // 🔵 VIGILANTES
-  let {data:rv} = await supabaseClient
-    .from("reportes_vigilantes")
-    .select("*")
-    .gte("fecha_reporte", fechaInicioUTC(inicio))
-    .lte("fecha_reporte", fechaFinUTC(fin));
+ let queryVigilante = supabaseClient
+  .from("reportes_vigilantes")
+  .select("*")
+  .gte("fecha_reporte", fechaInicioUTC(inicio))
+  .lte("fecha_reporte", fechaFinUTC(fin));
+
+if(privadaFiltro){
+  queryVigilante = queryVigilante.eq("privada", privadaFiltro);
+}
+
+if(loteFiltro){
+  queryVigilante = queryVigilante.eq("casa", loteFiltro);
+}
+
+let queryVigilante = supabaseClient
+  .from("reportes_vigilantes")
+  .select("*")
+  .gte("fecha_reporte", fechaInicioUTC(inicio))
+  .lte("fecha_reporte", fechaFinUTC(fin));
+
+if(privadaFiltro){
+  queryVigilante = queryVigilante.eq("privada", privadaFiltro);
+}
+
+if(loteFiltro){
+  queryVigilante = queryVigilante.eq("casa", loteFiltro);
+}
+  
+let { data: rv } = await queryVigilante;
 
   rv?.forEach(r=>{
     registros.push({
@@ -287,11 +311,21 @@ listaTrabajadores?.forEach(t=>{
 
   
   // 🟣 OBRAS (SIN JOIN RIESGOSO)
-  let {data:obras} = await supabaseClient
-    .from("reportes_obras")
-    .select("*")
-    .gte("fecha_reporte", fechaInicioUTC(inicio))
-    .lte("fecha_reporte", fechaFinUTC(fin));
+ let queryObras = supabaseClient
+  .from("reportes_obras")
+  .select("*")
+  .gte("fecha_reporte", fechaInicioUTC(inicio))
+  .lte("fecha_reporte", fechaFinUTC(fin));
+
+if(privadaFiltro){
+  queryObras = queryObras.eq("privada", privadaFiltro);
+}
+
+if(loteFiltro){
+  queryObras = queryObras.eq("casa", loteFiltro);
+}
+
+let { data: obras } = await queryObras;
 
   obras?.forEach(i=>{
   registros.push({
@@ -312,11 +346,21 @@ listaTrabajadores?.forEach(t=>{
 });
 
   // 🟡 AGUA
-  let {data:agua} = await supabaseClient
-    .from("reportes_agua_caasim")
-    .select("*")
-    .gte("fecha_registro", fechaInicioUTC(inicio))
-    .lte("fecha_registro", fechaFinUTC(fin));
+  let queryAgua = supabaseClient
+  .from("reportes_agua_caasim")
+  .select("*")
+  .gte("fecha_registro", fechaInicioUTC(inicio))
+  .lte("fecha_registro", fechaFinUTC(fin));
+
+if(privadaFiltro){
+  queryAgua = queryAgua.eq("privada", privadaFiltro);
+}
+
+if(loteFiltro){
+  queryAgua = queryAgua.eq("numero_exterior", loteFiltro);
+}
+
+let { data: agua } = await queryAgua;
 
   agua?.forEach(i=>{
     registros.push({
@@ -330,11 +374,21 @@ listaTrabajadores?.forEach(t=>{
   });
 
   // 🟢 LUMINARIAS
-  let {data:luminarias} = await supabaseClient
-    .from("vista_reportes_luminarias")
-    .select("*")
-    .gte("fecha_reporte", fechaInicioUTC(inicio))
-    .lte("fecha_reporte", fechaFinUTC(fin));
+  let queryLuminarias = supabaseClient
+  .from("vista_reportes_luminarias")
+  .select("*")
+  .gte("fecha_reporte", fechaInicioUTC(inicio))
+  .lte("fecha_reporte", fechaFinUTC(fin));
+
+if(privadaFiltro){
+  queryLuminarias = queryLuminarias.eq("privada", privadaFiltro);
+}
+
+if(loteFiltro){
+  queryLuminarias = queryLuminarias.eq("casa", loteFiltro);
+}
+
+let { data: luminarias } = await queryLuminarias;
 
   luminarias?.forEach(i=>{
     registros.push({
