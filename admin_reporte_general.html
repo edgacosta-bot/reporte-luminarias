@@ -162,6 +162,7 @@ Gracias por tu compromiso.
 
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["admin","administracion"]);
+  await cargarPrivadas(); // 🔥 ESTA ES LA CLAVE
 });
 
 function rangoRapido(dias){
@@ -192,6 +193,8 @@ async function cargarPrivadas(){
   
 async function cargar(){
 
+  const privadaFiltro = document.getElementById("filtroPrivada").value;
+const loteFiltro = document.getElementById("filtroCasa").value;
   const inicio = document.getElementById("inicio").value;
   const fin = document.getElementById("fin").value;
 
@@ -213,11 +216,21 @@ async function cargar(){
   });
 
   // 🔴 VECINALES
-  let {data:inc} = await supabaseClient
-    .from("incidencias_vecinales")
-    .select("*")
-    .gte("fecha_reporte", fechaInicioUTC(inicio))
-    .lte("fecha_reporte", fechaFinUTC(fin));
+  let queryVecinal = supabaseClient
+  .from("incidencias_vecinales")
+  .select("*")
+  .gte("fecha_reporte", fechaInicioUTC(inicio))
+  .lte("fecha_reporte", fechaFinUTC(fin));
+
+if(privadaFiltro){
+  queryVecinal = queryVecinal.eq("privada", privadaFiltro);
+}
+
+if(loteFiltro){
+  queryVecinal = queryVecinal.eq("casa", loteFiltro);
+}
+
+let { data: inc } = await queryVecinal;
 
   inc?.forEach(i=>{
     registros.push({
