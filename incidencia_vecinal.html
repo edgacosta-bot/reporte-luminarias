@@ -203,6 +203,12 @@ async function reportar() {
     return;
   }
 
+// 🔍 DEBUG
+console.log({
+  privadaAfectada,
+  loteAfectado
+});
+  
   const { error } = await supabaseClient
     .from("incidencias_vecinales")
     .insert([{
@@ -212,8 +218,8 @@ async function reportar() {
       residente_id: residente.id,
       privada: residente.privada,
       casa: residente.casa,
-      privada_afectada: privadaAfectada || null,
-      casa_afectada: loteAfectado || null,
+      privada_afectada: privadaAfectada ? privadaAfectada : null,
+      casa_afectada: loteAfectado ? String(loteAfectado) : null,
       fecha_reporte: new Date().toISOString(),
       estatus: "nuevo",
       atendido: false
