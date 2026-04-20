@@ -236,18 +236,21 @@ async function cargar(){
     .lte("fecha_reporte", fechaFinUTC(fin));
 
   obras?.forEach(i=>{
-    registros.push({
-      tipo:"obra",
-      grupo:"obra",
-      titulo:"Reporte de obra",
-      descripcion:i.descripcion,
-      hora:i.fecha_reporte,
-      origen:`${i.privada}-${i.casa}`,
-      extra2: i.trabajador_nombre 
-  ? `👷 ${i.trabajador_nombre}`
-  : "👷 Trabajador no identificado"
-    });
+  registros.push({
+    tipo:"obra",
+    grupo:"obra",
+    titulo:"Reporte de obra",
+    descripcion:i.descripcion,
+    hora:i.fecha_reporte,
+
+    reporta: `${i.privada}-${i.casa}`,
+    obra: i.obra_id || "Sin obra",
+
+    trabajador: i.trabajador_id
+      ? `👷 Trabajador implicado: ${i.trabajador_id}`
+      : "👷 Trabajador no identificado"
   });
+});
 
   // 🟡 AGUA
   let {data:agua} = await supabaseClient
@@ -317,6 +320,8 @@ async function cargar(){
         ${r.afecta ? `<div class="extra">🎯 Afecta: ${r.afecta}</div>`:""}
         ${(!r.reporta && r.origen) ? `<div class="extra">🏠 ${r.origen}</div>`:""}
         ${r.extra2 ? `<div class="extra">${r.extra2}</div>`:""}
+        ${r.obra ? `<div class="extra">🏗️ Obra reportada: ${r.obra}</div>`:""}
+        ${r.trabajador ? `<div class="extra">${r.trabajador}</div>`:""}
 
         <div class="extra">${r.descripcion}</div>
       </div>`;
