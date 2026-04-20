@@ -134,7 +134,6 @@ Una vez transcurrido este periodo, los residentes podrán evaluar la calidad de 
 Gracias por tu compromiso.
 </div>
 
-<!-- 🔥 FILTROS RÁPIDOS (MISMO MODELO QUE MIS_REPORTES) -->
 <div style="display:flex; gap:10px; margin-bottom:10px;">
   <button onclick="rangoRapido(0)">HOY</button>
   <button onclick="rangoRapido(7)">7 días</button>
@@ -205,12 +204,12 @@ async function cargar(){
 
   try {
 
-    // 🔴 VECINAL
+    // 🔴 VECINAL (FIX)
     let {data:inc} = await supabaseClient
       .from("incidencias_vecinales")
       .select("*")
-      .gte("fecha", fechaInicioUTC(inicio))
-      .lte("fecha", fechaFinUTC(fin));
+      .gte("fecha_reporte", fechaInicioUTC(inicio))
+      .lte("fecha_reporte", fechaFinUTC(fin));
 
     inc?.forEach(i=>{
       registros.push({
@@ -218,17 +217,17 @@ async function cargar(){
         grupo:"vecinal",
         titulo:"Incidencia vecinal",
         descripcion:i.descripcion,
-        hora:i.fecha,
+        hora:i.fecha_reporte,
         origen:`${i.privada}-${i.casa}`
       });
     });
 
-    // 🔵 VIGILANTES
+    // 🔵 VIGILANTES (FIX)
     let {data:rv} = await supabaseClient
       .from("reportes_vigilantes")
       .select("*")
-      .gte("fecha", fechaInicioUTC(inicio))
-      .lte("fecha", fechaFinUTC(fin));
+      .gte("fecha_reporte", fechaInicioUTC(inicio))
+      .lte("fecha_reporte", fechaFinUTC(fin));
 
     let mapaV = {};
 
@@ -248,7 +247,7 @@ async function cargar(){
         grupo:"vigilante",
         titulo:"Reporte a vigilante",
         descripcion:r.descripcion,
-        hora:r.fecha,
+        hora:r.fecha_reporte,
         vigilante: mapaV[r.vigilante_id],
         origen:`${r.privada}-${r.casa}`,
         subtipo:r.tipo
