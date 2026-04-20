@@ -6,6 +6,8 @@
 <title>Trabajador del hogar</title>
 
 <script src="auth.js"></script>
+<script src="utils/residente.js"></script>
+
 <script>
 protegerPagina(["colono"]);
 </script>
@@ -60,20 +62,14 @@ button {
   cursor: pointer;
 }
 
-/* 🔥 MENSAJE APP */
 .mensaje {
   margin-top: 10px;
   font-size: 14px;
   display: none;
 }
 
-.error {
-  color: #dc2626;
-}
-
-.warning {
-  color: #f59e0b;
-}
+.error { color: #dc2626; }
+.warning { color: #f59e0b; }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -102,14 +98,23 @@ button {
 
 <script>
 
-const client = window.supabase.createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
+let residenteGlobal = null;
+
+// 🔐 INIT
+window.addEventListener("DOMContentLoaded", async () => {
+
+  residenteGlobal = await getResidente();
+
+  if (!residenteGlobal) {
+    alert("Sesión no válida");
+    return;
+  }
+
+});
 
 async function registrar() {
 
-  const nombre = document.getElementById("nombre").value;
+  const nombre = document.getElementById("nombre").value.trim();
   const inicio = document.getElementById("inicio").value;
   const fin = document.getElementById("fin").value;
   const mensaje = document.getElementById("mensaje");
@@ -123,24 +128,16 @@ async function registrar() {
     return;
   }
 
-  const identificador = localStorage.getItem("identificador");
-
-  const { data: residente, error } = await client
-    .from("residentes")
-    .select("*")
-    .eq("identificador", identificador)
-    .single();
-
-  if (error || !residente) {
-    mensaje.innerText = "Error obteniendo datos";
+  if (!residenteGlobal) {
+    mensaje.innerText = "Error de sesión";
     mensaje.className = "mensaje error";
     mensaje.style.display = "block";
     return;
   }
 
-  const estado = (residente.estado_pago || "").toLowerCase();
+  const estado = (residenteGlobal.estado_pago || "").toLowerCase();
 
-  // 🔴 BLOQUEO TOTAL
+  // 🔴 BLOQUEO
   if (estado === "moroso") {
     mensaje.innerText = "⛔ No puedes generar accesos. Regulariza tu pago.";
     mensaje.className = "mensaje error";
@@ -157,10 +154,10 @@ async function registrar() {
 
   const codigo = crypto.randomUUID();
 
-  const { error: insertError } = await client
+  const { error } = await supabaseClient
     .from("trabajadores_hogar")
     .insert([{
-      residente_id: residente.id,
+      residente_id: residenteGlobal.id,
       nombre: nombre,
       qr_codigo: codigo,
       activo: true,
@@ -168,7 +165,8 @@ async function registrar() {
       fecha_fin: fin || null
     }]);
 
-  if (insertError) {
+  if (error) {
+    console.error(error);
     mensaje.innerText = "Error al registrar";
     mensaje.className = "mensaje error";
     mensaje.style.display = "block";
@@ -176,7 +174,8 @@ async function registrar() {
   }
 
   window.location.href =
-  `credencial_trabajador_hogar.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${residente.privada}&casa=${residente.casa}&origen=admin`;
+    `credencial_trabajador_hogar.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${residenteGlobal.privada}&casa=${residenteGlobal.casa}&origen=residente`;
+
 }
 
 </script>
