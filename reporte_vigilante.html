@@ -184,16 +184,23 @@ async function enviar(){
   const { error } = await supabaseClient
     .from("reportes_vigilantes")
     .insert([{
-      vigilante_id,
-      tipo,
-      descripcion,
-      privada: residente.privada,
-      casa: residente.casa,
-      residente_id: residente.id,
-      fecha_reporte: new Date().toISOString(), // 🔥 UNIFICADO
-      estatus: "nuevo"
-    }]);
+  vigilante_id,
+  tipo,
+  descripcion,
 
+  privada: residente.privada,
+  casa: residente.casa,
+
+  residente_id: residente.id,
+
+  // 🔥 TRAZABILIDAD (IGUAL QUE LOS OTROS)
+  creado_por: residente.id,
+  rol_creador: "residente",
+
+  fecha_reporte: new Date().toISOString(),
+  estatus: "nuevo"
+}]);
+  
   if(error){
     console.error(error);
     msg.innerText = "Error al enviar reporte";
