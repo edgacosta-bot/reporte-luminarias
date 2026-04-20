@@ -328,7 +328,11 @@ let { data: obras } = await queryObras;
 
     trabajador: i.trabajador_id
       ? `👷 ${mapaTrabajadores[i.trabajador_id] || "Trabajador desconocido"}`
-      : "👷 Trabajador no identificado"
+      : "👷 Trabajador no identificado",
+
+    // 🔥 NUEVO (CLAVE)
+    origen_reporte: i.origen,
+    rol_creador: i.rol_creador
   });
 });
 
@@ -421,6 +425,10 @@ let { data: luminarias } = await queryLuminarias;
         ${(!r.reporta && r.origen) ? `<div class="extra">🏠 ${r.origen}</div>`:""}
         ${r.extra2 ? `<div class="extra">${r.extra2}</div>`:""}
         ${r.obra ? `<div class="extra">🏗️ Obra reportada: ${r.obra}</div>`:""}
+        ${r.origen_reporte === "vigilante"
+  ? `<div class="extra">🤖 Sistema detectó salida fuera de horario</div>`
+  : `<div class="extra">👤 Reportado por residente</div>`
+}
         ${r.trabajador ? `<div class="extra">${r.trabajador}</div>`:""}
 
         <div class="extra">${r.descripcion}</div>
