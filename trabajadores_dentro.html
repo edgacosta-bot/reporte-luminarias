@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<script src="auth.js"></script>
-<script>
-protegerPagina(["vigilante", "admin"]);
-</script>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trabajadores dentro</title>
 
+<!-- 🔥 ORDEN CORRECTO -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
+<script>
+protegerPagina(["vigilante", "admin"]);
+</script>
 
 <style>
 body {
@@ -94,15 +96,11 @@ h1 {
 
 <script>
 
-const supabaseClient = window.supabase.createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
-
+// 🔥 AUTO REFRESH
 cargar();
 setInterval(cargar, 10000);
 
-// 🔥 FORMATEO SIMPLE (YA LOCAL)
+// 🔥 FORMATO
 function formatearHora(fecha) {
   if (!fecha) return "-";
 
@@ -116,7 +114,7 @@ function formatearHora(fecha) {
   });
 }
 
-// 🔥 CÁLCULO (USA LOCAL)
+// 🔥 TIEMPO
 function calcularTiempo(fechaLocal) {
 
   if (!fechaLocal) return { horas: 0, minutos: 0, totalHoras: 0 };
@@ -141,6 +139,11 @@ function calcularTiempo(fechaLocal) {
 // 🔥 FUNCIÓN PRINCIPAL
 async function cargar() {
 
+  if (!window.supabaseClient) {
+    console.error("Supabase no inicializado");
+    return;
+  }
+
   const { data: accesos, error } = await supabaseClient
     .from("accesos_trabajadores")
     .select("*")
@@ -161,18 +164,26 @@ async function cargar() {
     return;
   }
 
+  // 🔥 MAPA DE TRABAJADORES (OPTIMIZACIÓN)
+  const ids = accesos.map(a => a.trabajador_id);
+
+  const { data: trabajadores } = await supabaseClient
+    .from("trabajadores_obra")
+    .select("id, nombre, privada, casa")
+    .in("id", ids);
+
+  let mapaTrabajadores = {};
+  trabajadores?.forEach(t => {
+    mapaTrabajadores[t.id] = t;
+  });
+
   lista.innerHTML = "";
   let totalAlertas = 0;
 
   for (const item of accesos) {
 
-    const { data: trabajador } = await supabaseClient
-      .from("trabajadores_obra")
-      .select("nombre, privada, casa")
-      .eq("id", item.trabajador_id)
-      .single();
+    const trabajador = mapaTrabajadores[item.trabajador_id];
 
-    // 🔥 USAR LOCAL (CON FALLBACK POR SEGURIDAD)
     const entradaBase = item.fecha_hora_entrada_local || item.fecha_hora_entrada;
 
     const tiempo = calcularTiempo(entradaBase);
