@@ -40,21 +40,27 @@ body.warn {
 .container {
   max-width: 320px;
   width: 90%;
+  padding: 0 10px; /* 👈 pequeño respiro lateral */
 }
 
 input, button {
   width: 100%;
   padding: 14px;
-  margin-top: 10px;
   border-radius: 10px;
   border: none;
+  box-sizing: border-box; /* 🔥 AQUÍ MEJOR */
 }
 
 input {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: none;
   background: #020617;
   color: white;
   text-align: center;
   font-size: 18px;
+  box-sizing: border-box; /* 🔥 SOLUCIÓN */
 }
 
 button {
