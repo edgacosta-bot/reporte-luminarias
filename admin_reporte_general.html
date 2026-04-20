@@ -76,7 +76,7 @@ button {
 }
 
 .incidencia { background: #ef4444; }
-.agua { background: #f59e0b; color: #1e293b; } /* 🔥 FIX */
+.agua { background: #f59e0b; color: #1e293b; }
 .luminaria { background: #10b981; }
 .total { background: #0f172a; }
 
@@ -91,6 +91,10 @@ button {
   border-radius: 16px;
   margin-bottom: 10px;
   border-left: 6px solid;
+}
+
+.item.agua {
+  color: #ffffff !important; /* 🔥 FIX REAL */
 }
 
 .item.incidencia { border-color: #ef4444; }
@@ -174,7 +178,17 @@ async function cargar(){
 
   let registros=[];
 
-  // 🔴 INCIDENCIAS
+  // 🔵 MAPA VIGILANTES (SEGURO)
+  let mapaVigilantes = {};
+  const { data: vigilantesLista } = await supabaseClient
+    .from("vigilantes")
+    .select("id,nombre");
+
+  vigilantesLista?.forEach(v=>{
+    mapaVigilantes[v.id] = v.nombre;
+  });
+
+  // 🔴 VECINALES
   let {data:inc} = await supabaseClient
     .from("incidencias_vecinales")
     .select("*")
@@ -188,16 +202,17 @@ async function cargar(){
       titulo:"Incidencia vecinal",
       descripcion:i.descripcion,
       hora:i.fecha_reporte,
-      origen: i.privada_afectada && i.casa_afectada
+      reporta: `${i.privada}-${i.casa}`,
+      afecta: i.privada_afectada && i.casa_afectada
         ? `${i.privada_afectada}-${i.casa_afectada}`
-        : `${i.privada}-${i.casa}`
+        : null
     });
   });
 
   // 🔵 VIGILANTES
   let {data:rv} = await supabaseClient
     .from("reportes_vigilantes")
-    .select("*, vigilantes(nombre)")
+    .select("*")
     .gte("fecha_reporte", fechaInicioUTC(inicio))
     .lte("fecha_reporte", fechaFinUTC(fin));
 
@@ -209,14 +224,14 @@ async function cargar(){
       descripcion:r.descripcion,
       hora:r.fecha_reporte,
       origen:`${r.privada}-${r.casa}`,
-      extra2: r.vigilantes?.nombre
+      extra2: mapaVigilantes[r.vigilante_id] || "Sin nombre"
     });
   });
 
-  // 🟣 OBRAS
+  // 🟣 OBRAS (SIN JOIN RIESGOSO)
   let {data:obras} = await supabaseClient
     .from("reportes_obras")
-    .select("*, obras(privada,casa), trabajadores(nombre)")
+    .select("*")
     .gte("fecha_reporte", fechaInicioUTC(inicio))
     .lte("fecha_reporte", fechaFinUTC(fin));
 
@@ -227,10 +242,8 @@ async function cargar(){
       titulo:"Reporte de obra",
       descripcion:i.descripcion,
       hora:i.fecha_reporte,
-      origen: i.obras
-        ? `${i.obras.privada}-${i.obras.casa}`
-        : `${i.privada}-${i.casa}`,
-      extra2: i.trabajadores?.nombre
+      origen:`${i.privada}-${i.casa}`,
+      extra2: i.trabajador_id ? "👷 Trabajador asignado" : null
     });
   });
 
@@ -270,19 +283,6 @@ async function cargar(){
     });
   });
 
-  // 🔍 FILTRO
-  const privadaFiltro = document.getElementById("filtroPrivada").value.trim().toLowerCase();
-  const casaFiltro = document.getElementById("filtroCasa").value.trim().toLowerCase();
-
-  if (privadaFiltro || casaFiltro) {
-    registros = registros.filter(r => {
-      if (!r.origen) return false;
-      const [privada, casa] = r.origen.toLowerCase().split("-");
-      return (!privadaFiltro || privada === privadaFiltro) &&
-             (!casaFiltro || casa === casaFiltro);
-    });
-  }
-
   // KPIs
   document.getElementById("inc").innerText =
     registros.filter(r=>["incidencia","vigilante","obra"].includes(r.tipo)).length + " Incidencias";
@@ -310,8 +310,12 @@ async function cargar(){
       html += `<div class="item ${r.tipo}">
         <b>${r.titulo}</b>
         <div class="hora">${formatMXDate(r.hora)}</div>
-        ${r.origen ? `<div class="extra">🏠 ${r.origen}</div>`:""}
-        ${r.extra2 ? `<div class="extra">👤 ${r.extra2}</div>`:""}
+
+        ${r.reporta ? `<div class="extra">🏠 Reporta: ${r.reporta}</div>`:""}
+        ${r.afecta ? `<div class="extra">🎯 Afecta: ${r.afecta}</div>`:""}
+        ${(!r.reporta && r.origen) ? `<div class="extra">🏠 ${r.origen}</div>`:""}
+        ${r.extra2 ? `<div class="extra">${r.extra2}</div>`:""}
+
         <div class="extra">${r.descripcion}</div>
       </div>`;
     });
