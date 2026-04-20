@@ -204,105 +204,45 @@ async function cargar(){
   const inicio = document.getElementById("inicio").value;
   const fin = document.getElementById("fin").value;
 
-  // OBRAS
-  let queryObras = supabaseClient
-    .from("reportes_obras")
-    .select("*")
-    .eq("residente_id", residenteId);
-
-  if (inicio && fin) {
-    queryObras = queryObras
-      .gte("fecha_reporte", fechaInicioUTC(inicio))
-      .lte("fecha_reporte", fechaFinUTC(fin));
-  }
-
+  let queryObras = supabaseClient.from("reportes_obras").select("*").eq("residente_id", residenteId);
+  if (inicio && fin) queryObras = queryObras.gte("fecha_reporte", fechaInicioUTC(inicio)).lte("fecha_reporte", fechaFinUTC(fin));
   const { data: obras } = await queryObras;
 
-  // VECINALES
-  let queryVecinal = supabaseClient
-    .from("incidencias_vecinales")
-    .select("*")
-    .eq("residente_id", residenteId);
-
-  if (inicio && fin) {
-    queryVecinal = queryVecinal
-      .gte("fecha_reporte", fechaInicioUTC(inicio))
-      .lte("fecha_reporte", fechaFinUTC(fin));
-  }
-
+  let queryVecinal = supabaseClient.from("incidencias_vecinales").select("*").eq("residente_id", residenteId);
+  if (inicio && fin) queryVecinal = queryVecinal.gte("fecha_reporte", fechaInicioUTC(inicio)).lte("fecha_reporte", fechaFinUTC(fin));
   const { data: vecinales } = await queryVecinal;
 
-  // VIGILANTES
-  let queryVigilantes = supabaseClient
-    .from("reportes_vigilantes")
-    .select("*")
-    .eq("residente_id", residenteId);
-
-  if (inicio && fin) {
-    queryVigilantes = queryVigilantes
-      .gte("fecha_reporte", fechaInicioUTC(inicio))
-      .lte("fecha_reporte", fechaFinUTC(fin));
-  }
-
+  let queryVigilantes = supabaseClient.from("reportes_vigilantes").select("*").eq("residente_id", residenteId);
+  if (inicio && fin) queryVigilantes = queryVigilantes.gte("fecha_reporte", fechaInicioUTC(inicio)).lte("fecha_reporte", fechaFinUTC(fin));
   const { data: vigilantes } = await queryVigilantes;
 
-  // LUMINARIAS
-  let queryLuminarias = supabaseClient
-    .from("reportes_vecinales")
-    .select("*")
-    .eq("residente_id", residenteId);
-
-  if (inicio && fin) {
-    queryLuminarias = queryLuminarias
-      .gte("fecha_reporte", fechaInicioUTC(inicio))
-      .lte("fecha_reporte", fechaFinUTC(fin));
-  }
-
+  let queryLuminarias = supabaseClient.from("reportes_vecinales").select("*").eq("residente_id", residenteId);
+  if (inicio && fin) queryLuminarias = queryLuminarias.gte("fecha_reporte", fechaInicioUTC(inicio)).lte("fecha_reporte", fechaFinUTC(fin));
   const { data: luminarias } = await queryLuminarias;
 
-  // AGUA
-  let queryAgua = supabaseClient
-    .from("reportes_agua_caasim")
-    .select("*")
-    .eq("residente_id", residenteId);
-
-  if (inicio && fin) {
-    queryAgua = queryAgua
-      .gte("fecha_reporte", inicio)
-      .lte("fecha_reporte", fin);
-  }
-
+  let queryAgua = supabaseClient.from("reportes_agua_caasim").select("*").eq("residente_id", residenteId);
+  if (inicio && fin) queryAgua = queryAgua.gte("fecha_reporte", inicio).lte("fecha_reporte", fin);
   const { data: agua } = await queryAgua;
+
+  // 🔥 RESTAURADO (CRÍTICO)
+  const { data: evals } = await supabaseClient
+    .from("evaluaciones_reportes")
+    .select("reporte_id");
+
+  const evaluados = new Set(evals?.map(e=>e.reporte_id));
 
   let todos = [];
 
-  obras?.forEach(r=>{
-    todos.push({ id:"obra-"+r.id, tipo:"obra", descripcion:r.descripcion, fecha:r.fecha_reporte, trabajador_id:r.trabajador_id });
-  });
-
-  vecinales?.forEach(r=>{
-    todos.push({ id:"vec-"+r.id, tipo:"vecinal", descripcion:r.descripcion, fecha:r.fecha_reporte });
-  });
-
-  vigilantes?.forEach(r=>{
-    todos.push({ id:"vig-"+r.id, tipo:"vigilante", descripcion:r.descripcion, fecha:r.fecha_reporte });
-  });
-
-  luminarias?.forEach(r=>{
-    todos.push({ id:"lum-"+r.id, tipo:"luminaria", descripcion:r.descripcion, fecha:r.fecha_reporte });
-  });
-
-  agua?.forEach(r=>{
-    todos.push({ id:"agua-"+r.id, tipo:"agua", descripcion:r.tipo_falla || "Reporte de agua", fecha:r.fecha_reporte });
-  });
+  obras?.forEach(r=> todos.push({ id:"obra-"+r.id, tipo:"obra", descripcion:r.descripcion, fecha:r.fecha_reporte }));
+  vecinales?.forEach(r=> todos.push({ id:"vec-"+r.id, tipo:"vecinal", descripcion:r.descripcion, fecha:r.fecha_reporte }));
+  vigilantes?.forEach(r=> todos.push({ id:"vig-"+r.id, tipo:"vigilante", descripcion:r.descripcion, fecha:r.fecha_reporte }));
+  luminarias?.forEach(r=> todos.push({ id:"lum-"+r.id, tipo:"luminaria", descripcion:r.descripcion, fecha:r.fecha_reporte }));
+  agua?.forEach(r=> todos.push({ id:"agua-"+r.id, tipo:"agua", descripcion:r.tipo_falla || "Reporte de agua", fecha:r.fecha_reporte }));
 
   todos.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
 
   const grupos = { obra:[], vecinal:[], vigilante:[], luminaria:[], agua:[] };
-
-  todos.forEach(r=>{
-    if(grupos[r.tipo]) grupos[r.tipo].push(r);
-  });
+  todos.forEach(r=> grupos[r.tipo]?.push(r));
 
   let html="";
 
