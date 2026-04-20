@@ -233,18 +233,23 @@ if(loteFiltro){
 let { data: inc } = await queryVecinal;
 
   inc?.forEach(i=>{
-    registros.push({
-      tipo:"incidencia",
-      grupo:"vecinal",
-      titulo:"Incidencia vecinal",
-      descripcion:i.descripcion,
-      hora:i.fecha_reporte,
-      reporta: `${i.privada}-${i.casa}`,
-      afecta: i.privada_afectada && i.casa_afectada
-        ? `${i.privada_afectada}-${i.casa_afectada}`
-        : null
-    });
+  registros.push({
+    tipo:"incidencia",
+    grupo:"vecinal",
+    titulo:"Incidencia vecinal",
+    descripcion:i.descripcion,
+    hora:i.fecha_reporte,
+
+    reporta: `${i.privada}-${i.casa}`,
+
+    afecta: i.privada_afectada && i.casa_afectada
+      ? `${i.privada_afectada}-${i.casa_afectada}`
+      : null,
+
+    // 🔥 NUEVO
+    rol_creador: i.rol_creador
   });
+});
 
   // 🔵 VIGILANTES
  
@@ -264,17 +269,21 @@ if(loteFiltro){
   
 let { data: rv } = await queryVigilante;
 
-  rv?.forEach(r=>{
-    registros.push({
-      tipo:"vigilante",
-      grupo:"vigilante",
-      titulo:"Reporte a vigilante",
-      descripcion:r.descripcion,
-      hora:r.fecha_reporte,
-      origen:`${r.privada}-${r.casa}`,
-      extra2: mapaVigilantes[r.vigilante_id] || "Sin nombre"
-    });
+ rv?.forEach(r=>{
+  registros.push({
+    tipo:"vigilante",
+    grupo:"vigilante",
+    titulo:"Reporte a vigilante",
+    descripcion:r.descripcion,
+    hora:r.fecha_reporte,
+
+    origen:`${r.privada}-${r.casa}`,
+    extra2: mapaVigilantes[r.vigilante_id] || "Sin nombre",
+
+    // 🔥 NUEVO
+    rol_creador: r.rol_creador
   });
+});
 
 // 🔵 MAPA OBRAS
 let mapaObras = {};
@@ -424,8 +433,8 @@ let { data: luminarias } = await queryLuminarias;
         ${(!r.reporta && r.origen) ? `<div class="extra">🏠 ${r.origen}</div>`:""}
         ${r.extra2 ? `<div class="extra">${r.extra2}</div>`:""}
         ${r.obra ? `<div class="extra">🏗️ Obra reportada: ${r.obra}</div>`:""}
-        ${r.origen_reporte === "vigilante"
-  ? `<div class="extra">🤖 Sistema detectó salida fuera de horario</div>`
+        ${r.rol_creador === "vigilante"
+  ? `<div class="extra">🤖 Generado por vigilancia</div>`
   : `<div class="extra">👤 Reportado por residente</div>`
 }
         ${r.trabajador ? `<div class="extra">${r.trabajador}</div>`:""}
