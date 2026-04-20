@@ -69,6 +69,11 @@ button {
   margin-bottom: 10px;
   box-sizing: border-box;
 }
+  
+.item div {
+  white-space: pre-line;
+}
+  
 .item {
   background: #111827;
   padding: 15px;
@@ -236,8 +241,19 @@ async function cargar(){
   obras?.forEach(r=> todos.push({ id:"obra-"+r.id, tipo:"obra", descripcion:r.descripcion, fecha:r.fecha_reporte }));
   vecinales?.forEach(r=> todos.push({ id:"vec-"+r.id, tipo:"vecinal", descripcion:r.descripcion, fecha:r.fecha_reporte }));
   vigilantes?.forEach(r=> todos.push({ id:"vig-"+r.id, tipo:"vigilante", descripcion:r.descripcion, fecha:r.fecha_reporte }));
-  luminarias?.forEach(r=> todos.push({ id:"lum-"+r.id, tipo:"luminaria", descripcion:r.descripcion, fecha:r.fecha_reporte }));
-  agua?.forEach(r=> todos.push({ id:"agua-"+r.id, tipo:"agua", descripcion:r.tipo_falla || "Reporte de agua", fecha:r.fecha_reporte }));
+  
+  luminarias?.forEach(r=> todos.push({
+  id:"lum-"+r.id,
+  tipo:"luminaria",
+  descripcion: `Luminaria: ${r.no_luminaria}\n${r.descripcion}`,
+  fecha:r.fecha_reporte
+}));
+  agua?.forEach(r=> todos.push({
+  id:"agua-"+r.id,
+  tipo:"agua",
+  descripcion: `No. reporte: ${r.numero_reporte}\n${r.tipo_falla || ""}`,
+  fecha:r.fecha_reporte
+}));
 
   todos.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
 
