@@ -238,9 +238,29 @@ async function cargar(){
 
   let todos = [];
 
-  obras?.forEach(r=> todos.push({ id:"obra-"+r.id, tipo:"obra", descripcion:r.descripcion, fecha:r.fecha_reporte }));
-  vecinales?.forEach(r=> todos.push({ id:"vec-"+r.id, tipo:"vecinal", descripcion:r.descripcion, fecha:r.fecha_reporte }));
-  vigilantes?.forEach(r=> todos.push({ id:"vig-"+r.id, tipo:"vigilante", descripcion:r.descripcion, fecha:r.fecha_reporte }));
+  obras?.forEach(r=> todos.push({
+  id:"obra-"+r.id,
+  id_real: r.id,
+  tipo:"obra",
+  descripcion:r.descripcion,
+  fecha:r.fecha_reporte
+}));
+
+vecinales?.forEach(r=> todos.push({
+  id:"vec-"+r.id,
+  id_real: r.id,
+  tipo:"vecinal",
+  descripcion:r.descripcion,
+  fecha:r.fecha_reporte
+}));
+
+vigilantes?.forEach(r=> todos.push({
+  id:"vig-"+r.id,
+  id_real: r.id,
+  tipo:"vigilante",
+  descripcion:r.descripcion,
+  fecha:r.fecha_reporte
+}));
   
   luminarias?.forEach(r=> todos.push({
   id:"lum-"+r.id,
@@ -270,7 +290,7 @@ async function cargar(){
     grupos[tipo].forEach(r => {
 
       let esEvaluable = ["obra","vecinal","vigilante"].includes(r.tipo);
-      let puede = esEvaluable && !evaluados.has(r.id);
+      let puede = esEvaluable && !evaluados.has(r.id_real);
       let habilitado = puede && pasaron5Dias(r.fecha);
 
       bloque += `
@@ -280,7 +300,7 @@ async function cargar(){
         <div class="fecha">${formatMXDate(r.fecha)}</div>
 
         ${puede ? `
-        <button onclick="${habilitado?`abrir('${r.id}')`:''}"
+        <button onclick="${habilitado?`abrir('${r.id_real}')`:''}"
         ${!habilitado?'disabled':''}>
         Evaluar atención
         </button>`:""}
