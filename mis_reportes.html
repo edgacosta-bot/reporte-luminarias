@@ -79,6 +79,7 @@ button {
 }
 .obra { border-color: #f59e0b; }
 .vecinal { border-color: #ef4444; }
+.vigilante { border-color: #22c55e; }
 
 .fecha { font-size: 12px; color: #9ca3af; }
 
@@ -178,18 +179,13 @@ async function obtenerUsuario(){
   const { data } = await supabaseClient.auth.getUser();
   const user = data.user;
 
-  const { data: residente, error } = await supabaseClient
+  const { data: residente } = await supabaseClient
     .from("residentes")
     .select("id")
     .eq("user_id", user.id)
     .single();
 
-  if (error || !residente) {
-    console.error("No se encontró residente");
-    return;
-  }
-
-  residenteId = residente.id;
+  residenteId = residente?.id;
 }
 
 function rangoRapido(dias){
@@ -201,20 +197,18 @@ function rangoRapido(dias){
 
 async function cargar(){
 
-  if (!residenteId) {
-    console.warn("residenteId no listo aún");
-    return;
-  }
+  if (!residenteId) return;
 
   document.getElementById("lista").innerHTML = "Cargando...";
 
   const inicio = document.getElementById("inicio").value;
   const fin = document.getElementById("fin").value;
 
+  // OBRAS
   let queryObras = supabaseClient
     .from("reportes_obras")
     .select("*")
-    .eq("residente_id", residenteId)
+    .eq("residente_id", residenteId);
 
   if (inicio && fin) {
     queryObras = queryObras
@@ -224,10 +218,11 @@ async function cargar(){
 
   const { data: obras } = await queryObras;
 
+  // VECINALES
   let queryVecinal = supabaseClient
     .from("incidencias_vecinales")
     .select("*")
-    .eq("residente_id", residenteId)
+    .eq("residente_id", residenteId);
 
   if (inicio && fin) {
     queryVecinal = queryVecinal
@@ -237,6 +232,21 @@ async function cargar(){
 
   const { data: vecinales } = await queryVecinal;
 
+  // 🔥 VIGILANTES (NUEVO)
+  let queryVigilantes = supabaseClient
+    .from("reportes_vigilantes")
+    .select("*")
+    .eq("residente_id", residenteId);
+
+  if (inicio && fin) {
+    queryVigilantes = queryVigilantes
+      .gte("fecha_reporte", fechaInicioUTC(inicio))
+      .lte("fecha_reporte", fechaFinUTC(fin));
+  }
+
+  const { data: vigilantes } = await queryVigilantes;
+
+  // MAP TRABAJADORES
   let trabajadoresMap = {};
   const ids = obras?.map(o=>o.trabajador_id).filter(Boolean) || [];
 
@@ -278,6 +288,16 @@ async function cargar(){
     });
   });
 
+  // 🔥 AGREGADO
+  vigilantes?.forEach(r=>{
+    todos.push({
+      id: r.id,
+      tipo: "vigilante",
+      descripcion: r.descripcion,
+      fecha: r.fecha_reporte
+    });
+  });
+
   todos.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
 
   let html="";
@@ -286,11 +306,18 @@ async function cargar(){
 
     const trabajador = trabajadoresMap[r.trabajador_id];
 
+    const clase =
+      r.tipo === "obra" ? "obra" :
+      r.tipo === "vecinal" ? "vecinal" :
+      "vigilante";
+
+    const titulo =
+      r.tipo === "obra" ? "OBRA" :
+      r.tipo === "vecinal" ? "VECINAL" :
+      "VIGILANTE";
+
     let puede = !evaluados.has(r.id);
     let habilitado = puede && pasaron5Dias(r.fecha);
-
-    const clase = r.tipo === "obra" ? "obra" : "vecinal";
-    const titulo = r.tipo === "obra" ? "OBRA" : "VECINAL";
 
     html+=`
     <div class="item ${clase}">
