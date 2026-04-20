@@ -126,8 +126,13 @@ Gracias por tu compromiso.
 </div>
 
 <div style="display:flex; gap:10px; margin-bottom:10px;">
-  <input id="filtroPrivada" placeholder="Privada" style="flex:1; padding:10px; border-radius:20px; border:none; background:#1f2937; color:white; text-align:center;">
-  <input id="filtroCasa" placeholder="Casa" style="flex:1; padding:10px; border-radius:20px; border:none; background:#1f2937; color:white; text-align:center;">
+<select id="filtroPrivada" style="flex:1; padding:10px; border-radius:20px; background:#1f2937; color:white;">
+  <option value="">Privada</option>
+</select>
+
+<select id="filtroCasa" style="flex:1; padding:10px; border-radius:20px; background:#1f2937; color:white;">
+  <option value="">Lote</option>
+</select>
 </div>
 
 <div>
@@ -166,6 +171,25 @@ function rangoRapido(dias){
   cargar();
 }
 
+async function cargarPrivadas(){
+
+  const { data } = await supabaseClient
+    .from("lotes")
+    .select("privada")
+    .not("privada","in","(ADMIN,SEG)");
+
+  const privadas = [...new Set(data.map(l=>l.privada))];
+
+  const select = document.getElementById("filtroPrivada");
+
+  privadas.forEach(p=>{
+    const opt = document.createElement("option");
+    opt.value = p;
+    opt.textContent = p;
+    select.appendChild(opt);
+  });
+}
+  
 async function cargar(){
 
   const inicio = document.getElementById("inicio").value;
@@ -359,6 +383,46 @@ listaTrabajadores?.forEach(t=>{
   document.getElementById("lista").innerHTML = html || "Sin resultados";
 }
 
+// Cuando cambia la privada
+document.getElementById("filtroPrivada").addEventListener("change", async function(){
+
+  // 1. Saber qué privada eligieron
+  const privadaSeleccionada = this.value;
+
+  // 2. Ubicar el select de lotes
+  const selectLote = document.getElementById("filtroCasa");
+
+  // 3. Limpiar el select
+  selectLote.innerHTML = '<option value="">Lote</option>';
+
+  // 4. Si no eligieron privada, salir
+  if(!privadaSeleccionada) return;
+
+  // 5. Traer lotes de esa privada
+  const { data, error } = await supabaseClient
+    .from("lotes")
+    .select("lote")
+    .eq("privada", privadaSeleccionada);
+
+  if(error){
+    console.error(error);
+    return;
+  }
+
+  // 6. Llenar el select
+  data.forEach(registro => {
+
+    const option = document.createElement("option");
+
+    option.value = registro.lote;
+    option.textContent = registro.lote;
+
+    selectLote.appendChild(option);
+  });
+
+});
+
+  
 </script>
 
 </body>
