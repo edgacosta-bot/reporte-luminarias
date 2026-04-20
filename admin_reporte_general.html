@@ -330,8 +330,7 @@ let { data: obras } = await queryObras;
       ? `👷 ${mapaTrabajadores[i.trabajador_id] || "Trabajador desconocido"}`
       : "👷 Trabajador no identificado",
 
-    // 🔥 NUEVO (CLAVE)
-    origen_reporte: i.origen,
+    // 🔥 CLAVE REAL (NO inventamos origen)
     rol_creador: i.rol_creador
   });
 });
