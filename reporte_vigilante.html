@@ -172,7 +172,7 @@ async function enviar(){
     return;
   }
 
-  // 🔥 OBTENER RESIDENTE HOMOLOGADO
+  // 🔥 OBTENER RESIDENTE
   const residente = await getResidente();
 
   if (!residente) {
@@ -190,7 +190,7 @@ async function enviar(){
       privada: residente.privada,
       casa: residente.casa,
       residente_id: residente.id,
-      fecha: new Date().toISOString(), // 🔥 CORREGIDO (UTC estándar)
+      fecha_reporte: new Date().toISOString(), // 🔥 UNIFICADO
       estatus: "nuevo"
     }]);
 
