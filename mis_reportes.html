@@ -78,6 +78,7 @@ button {
 }
 .obra { border-color: #f59e0b; }
 .vecinal { border-color: #ef4444; }
+.vigilante { border-color: #3b82f6; } /* 🔥 NUEVO */
 
 .fecha { font-size: 12px; color: #9ca3af; }
 
@@ -178,23 +179,15 @@ async function obtenerUsuario(){
   const { data } = await supabaseClient.auth.getUser();
   const user = data.user;
 
-// 🔥 obtener ID real del residente
-const { data: residente, error } = await supabaseClient
-  .from("residentes")
-  .select("id")
-  .eq("user_id", user.id)
-  .single();
+  const { data: residente } = await supabaseClient
+    .from("residentes")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
 
-if (error || !residente) {
-  console.error("No se encontró residente");
-  return;
+  residenteId = residente?.id;
 }
 
-residenteId = residente.id;
-}
-
-console.log("RESIDENTE ID:", residenteId);
-  
 function rangoRapido(dias){
   let hoy = new Date();
   let inicio = new Date();
@@ -204,15 +197,12 @@ function rangoRapido(dias){
   document.getElementById("fin").value = hoy.toISOString().split("T")[0];
 
   cargar();
- 
 }
 
 async function cargar(){
 
-  if (!residenteId) {
-  console.warn("residenteId no listo aún");
-  return;
-}
+  if (!residenteId) return;
+
   document.getElementById("lista").innerHTML = "Cargando...";
 
   const inicio = document.getElementById("inicio").value;
@@ -222,7 +212,7 @@ async function cargar(){
   let queryObras = supabaseClient
     .from("reportes_obras")
     .select("*")
-    .eq("residente_id", residenteId)
+    .eq("residente_id", residenteId);
 
   if (inicio && fin) {
     queryObras = queryObras
@@ -236,7 +226,7 @@ async function cargar(){
   let queryVecinal = supabaseClient
     .from("incidencias_vecinales")
     .select("*")
-    .eq("residente_id", residenteId)
+    .eq("residente_id", residenteId);
 
   if (inicio && fin) {
     queryVecinal = queryVecinal
@@ -245,6 +235,20 @@ async function cargar(){
   }
 
   const { data: vecinales } = await queryVecinal;
+
+  // 🔥 VIGILANTES (NUEVO)
+  let queryVigilantes = supabaseClient
+    .from("reportes_vigilantes")
+    .select("*")
+    .eq("residente_id", residenteId);
+
+  if (inicio && fin) {
+    queryVigilantes = queryVigilantes
+      .gte("fecha", fechaInicioUTC(inicio))
+      .lte("fecha", fechaFinUTC(fin));
+  }
+
+  const { data: vigilantes } = await queryVigilantes;
 
   // 🔹 TRABAJADORES
   let trabajadoresMap = {};
@@ -290,6 +294,16 @@ async function cargar(){
     });
   });
 
+  vigilantes?.forEach(r=>{
+    todos.push({
+      id: r.id,
+      tipo: "vigilante",
+      descripcion: r.descripcion,
+      fecha: r.fecha,
+      trabajador_id: null
+    });
+  });
+
   todos.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
 
   let html="";
@@ -301,8 +315,11 @@ async function cargar(){
     let puede = !evaluados.has(r.id);
     let habilitado = puede && pasaron5Dias(r.fecha);
 
-    const clase = r.tipo === "obra" ? "obra" : "vecinal";
-    const titulo = r.tipo === "obra" ? "OBRA" : "VECINAL";
+    const clase = r.tipo;
+    const titulo =
+      r.tipo === "obra" ? "OBRA" :
+      r.tipo === "vecinal" ? "VECINAL" :
+      "VIGILANTE";
 
     html+=`
     <div class="item ${clase}">
@@ -347,12 +364,6 @@ async function evaluar(tipo){
 
 async function iniciar(){
   await obtenerUsuario();
-
-  if (!residenteId) {
-    console.error("No se pudo obtener residenteId");
-    return;
-  }
-
   await cargar();
 }
 
