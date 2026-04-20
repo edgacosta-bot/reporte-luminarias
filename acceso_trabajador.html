@@ -207,7 +207,7 @@ document.getElementById("btnRegistrar").onclick = async () => {
       .from("accesos_trabajadores")
       .insert([{
         trabajador_id: trabajadorGlobal.id,
-        fecha_hora_entrada: ahora,
+        fecha_hora_entrada: fechaUTC(),
         estatus: "dentro",
         vigilante_id: vigilante.id
       }]);
@@ -220,7 +220,7 @@ document.getElementById("btnRegistrar").onclick = async () => {
     await supabaseClient
       .from("accesos_trabajadores")
       .update({
-        fecha_hora_salida: ahora,
+        fecha_hora_salida: fechaUTC(),
         estatus: "fuera",
         vigilante_salida_id: vigilante.id
       })
