@@ -234,7 +234,7 @@ async function enviarReporte() {
     privada: residente.privada,
     casa: residente.casa,
     residente_id: residente.id,
-    fecha_reporte: new Date(),
+    fecha_reporte: new Date().toISOString(),
     estatus: "nuevo"
   };
 
