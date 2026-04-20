@@ -214,7 +214,7 @@ throw new Error("Sesión no válida");
 // 🔥 obtener residente por user_id
 const { data: residente, error: errorResidente } = await supabaseClient
 .from("residentes")
-.select("privada, casa")
+.select("id, privada, casa") // 🔥 AQUÍ
 .eq("user_id", user.id)
 .single();
 
@@ -242,6 +242,7 @@ const { error: errorInsert } = await supabaseClient
   observaciones: comentario,
   privada: residente.privada,
   casa: residente.casa,
+  residente_id: residente.id, // 🔥 ESTE ES EL CAMBIO CLAVE
   fecha_reporte: new Date().toISOString()
 }]);
 
