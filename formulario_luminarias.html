@@ -240,9 +240,16 @@ const { error: errorInsert } = await supabaseClient
   descripcion: descripcion,
   estatus: 'NUEVO',
   observaciones: comentario,
+
   privada: residente.privada,
   casa: residente.casa,
-  residente_id: residente.id, // 🔥 ESTE ES EL CAMBIO CLAVE
+
+  residente_id: residente.id,
+
+  // 🔥 NUEVO (HOMOLOGACIÓN)
+  creado_por: residente.id,
+  rol_creador: "residente",
+
   fecha_reporte: new Date().toISOString()
 }]);
 
