@@ -37,6 +37,15 @@ body {
   margin-bottom: 10px;
 }
 
+.label{
+  display:block;
+  text-align:left;
+  font-size:12px;
+  color:#9ca3af;
+  margin-bottom:4px;
+  margin-top:6px;
+}
+  
 .descripcion {
   font-size: 13px;
   color: #9ca3af;
@@ -100,7 +109,10 @@ button {
 </select>
 
 <!-- 🔥 NUEVO: FECHAS -->
+<label class="label">Fecha inicio de vigencia</label>
 <input type="date" id="fechaInicio">
+
+<label class="label">Fecha término de vigencia</label>
 <input type="date" id="fechaFin">
 
 <div id="qr"></div>
