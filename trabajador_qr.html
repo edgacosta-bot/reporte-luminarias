@@ -43,7 +43,7 @@ body {
   margin-bottom: 15px;
 }
 
-select {
+select, input[type="date"] {
   width: 100%;
   padding: 12px;
   margin-bottom: 10px;
@@ -80,8 +80,8 @@ button {
 
 <div class="card">
 
-<!-- 🔥 LOGO -->
-<img src="logo.png" class="logo">
+<!-- 🔥 LOGO CORRECTO -->
+<img src="icono-512.png" class="logo">
 
 <h2>QR Trabajador</h2>
 
@@ -90,7 +90,7 @@ button {
   Utilice este formulario para generar códigos QR de acceso para los trabajadores de obra
 </div>
 
-<!-- 🔥 CAMBIO AQUÍ -->
+<!-- 🔥 FILTRO -->
 <select id="filtroPrivada">
   <option value="">Selecciona la privada</option>
 </select>
@@ -98,6 +98,10 @@ button {
 <select id="trabajador">
   <option value="">Cargando trabajadores...</option>
 </select>
+
+<!-- 🔥 NUEVO: FECHAS -->
+<input type="date" id="fechaInicio">
+<input type="date" id="fechaFin">
 
 <div id="qr"></div>
 
@@ -117,13 +121,13 @@ button {
 let trabajadorSeleccionado = null;
 let dataGlobal = [];
 
-// 🔥 SECUENCIA (NO TOCADA)
+// 🔥 SECUENCIA (RESPETADA)
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["administracion"]);
   await cargarTrabajadores();
 });
 
-// 🔥 CARGA BASE (NO TOCADA)
+// 🔥 CARGA BASE (RESPETADA)
 async function cargarTrabajadores() {
 
   const select = document.getElementById("trabajador");
@@ -154,7 +158,7 @@ async function cargarTrabajadores() {
   renderTrabajadores();
 }
 
-// 🔥 LLENAR FILTRO (solo texto cambiado)
+// 🔥 FILTRO (RESPETADO + TEXTO AJUSTADO)
 function cargarFiltroPrivadas(data) {
 
   const filtro = document.getElementById("filtroPrivada");
@@ -171,7 +175,7 @@ function cargarFiltroPrivadas(data) {
   });
 }
 
-// 🔥 RENDER (NO TOCADO)
+// 🔥 RENDER (RESPETADO)
 function renderTrabajadores() {
 
   const select = document.getElementById("trabajador");
@@ -206,10 +210,10 @@ function renderTrabajadores() {
   });
 }
 
-// 🔁 EVENTO (NO TOCADO)
+// 🔁 EVENTO FILTRO (RESPETADO)
 document.getElementById("filtroPrivada").addEventListener("change", renderTrabajadores);
 
-// 🎯 CAMBIO (NO TOCADO)
+// 🎯 CAMBIO (RESPETADO + FECHAS)
 document.getElementById("trabajador").addEventListener("change", function() {
 
   const qrDiv = document.getElementById("qr");
@@ -235,6 +239,12 @@ document.getElementById("trabajador").addEventListener("change", function() {
 
   trabajadorSeleccionado = { codigo, nombre, privada, casa };
 
+  // 🔥 AUTOCARGAR FECHAS
+  const trabajador = dataGlobal.find(t => t.qr_codigo === codigo);
+
+  document.getElementById("fechaInicio").value = trabajador?.fecha_inicio || "";
+  document.getElementById("fechaFin").value = trabajador?.fecha_fin || "";
+
   const url = `${window.location.origin}/credencial_trabajador.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
 
   QRCode.toCanvas(url, { width: 200 }, function (err, canvas) {
@@ -251,7 +261,7 @@ document.getElementById("trabajador").addEventListener("change", function() {
   btn.style.display = "block";
 });
 
-// 📲 WHATSAPP (NO TOCADO)
+// 📲 WHATSAPP (RESPETADO)
 document.getElementById("btnWA").addEventListener("click", () => {
 
   if (!trabajadorSeleccionado) return;
