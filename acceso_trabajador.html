@@ -21,26 +21,14 @@ body {
   text-align: center;
 }
 
-/* 🔥 COLORES POR ESTADO (CORREGIDO) */
-body.ok {
-  background: #16a34a;
-  color: white;
-}
-
-body.error {
-  background: #dc2626;
-  color: white;
-}
-
-body.warn {
-  background: #f59e0b;
-  color: #111827; /* 🔥 TEXTO OSCURO */
-}
+body.ok { background: #16a34a; color: white; }
+body.error { background: #dc2626; color: white; }
+body.warn { background: #f59e0b; color: #111827; }
 
 .container {
   max-width: 320px;
   width: 90%;
-  padding: 0 10px; /* 👈 pequeño respiro lateral */
+  padding: 0 10px;
 }
 
 input, button {
@@ -48,19 +36,14 @@ input, button {
   padding: 14px;
   border-radius: 10px;
   border: none;
-  box-sizing: border-box; /* 🔥 AQUÍ MEJOR */
+  box-sizing: border-box;
 }
 
 input {
-  width: 100%;
-  padding: 14px;
-  border-radius: 10px;
-  border: none;
   background: #020617;
   color: white;
   text-align: center;
   font-size: 18px;
-  box-sizing: border-box; /* 🔥 SOLUCIÓN */
 }
 
 button {
@@ -69,8 +52,12 @@ button {
   font-weight: bold;
 }
 
-.hidden {
-  display: none;
+.hidden { display: none; }
+
+.info {
+  font-size: 12px;
+  margin-top: 10px;
+  opacity: 0.8;
 }
 </style>
 </head>
@@ -83,6 +70,12 @@ button {
 
   <h1 id="estado">Validando...</h1>
   <div id="detalle"></div>
+
+  <div class="info">
+    Horario permitido:<br>
+    L-V 08:00 a 18:00<br>
+    Sáb 09:00 a 14:00
+  </div>
 
   <input type="password" id="pin" placeholder="Ingrese PIN del vigilante">
   <button id="btnValidar">Validar</button>
@@ -125,7 +118,6 @@ async function init(){
   trabajadorGlobal = trabajador;
   renderDetalle();
 
-  // 🔴 ACCESO CANCELADO
   if (!trabajador.activo){
     pintarErrorFinal("Acceso cancelado");
     return;
@@ -188,26 +180,68 @@ document.getElementById("btnValidar").onclick = async () => {
 
   vigilante = data;
 
-  if(tipoAccion === "entrada"){
-    document.getElementById("estado").innerText = "Registrar entrada";
-  } else {
-    document.getElementById("estado").innerText = "Confirmar salida";
-  }
+  document.getElementById("estado").innerText =
+    tipoAccion === "entrada" ? "Registrar entrada" : "Confirmar salida";
 
   ocultarValidacion();
   document.getElementById("btnRegistrar").classList.remove("hidden");
 
 };
 
-// 🔹 REGISTRAR
-document.getElementById("btnRegistrar").onclick = async () => {
-
-  // 🔥 FECHA ESTÁNDAR GLOBAL (UTC)
-  function fechaUTC(){
+// 🔹 FECHA UTC ESTÁNDAR
+function fechaUTC(){
   return new Date().toISOString();
 }
 
+// 🔹 VALIDAR ENTRADA
+function esEntradaPermitida(){
+
+  const ahora = new Date();
+  const dia = ahora.getDay();
+  const hora = ahora.getHours();
+
+  if (dia === 0) return false;
+
+  if (dia >= 1 && dia <= 5){
+    return (hora >= 8 && hora <= 18);
+  }
+
+  if (dia === 6){
+    return (hora >= 9 && hora <= 14);
+  }
+
+  return false;
+}
+
+// 🔹 VALIDAR SALIDA
+function esFueraDeHorario(){
+
+  const ahora = new Date();
+  const dia = ahora.getDay();
+  const hora = ahora.getHours();
+
+  if (dia === 0) return true;
+
+  if (dia >= 1 && dia <= 5){
+    return (hora < 8 || hora > 18);
+  }
+
+  if (dia === 6){
+    return (hora < 9 || hora > 14);
+  }
+
+  return true;
+}
+
+// 🔹 REGISTRAR
+document.getElementById("btnRegistrar").onclick = async () => {
+
   if(tipoAccion === "entrada"){
+
+    if(!esEntradaPermitida()){
+      pintarErrorFinal("Horario no permitido");
+      return;
+    }
 
     await supabaseClient
       .from("accesos_trabajadores")
@@ -223,6 +257,8 @@ document.getElementById("btnRegistrar").onclick = async () => {
 
   if(tipoAccion === "salida"){
 
+    const fueraHorario = esFueraDeHorario();
+
     await supabaseClient
       .from("accesos_trabajadores")
       .update({
@@ -232,6 +268,26 @@ document.getElementById("btnRegistrar").onclick = async () => {
       })
       .eq("id", accesoActual.id);
 
+    // 🔥 GENERAR REPORTE AUTOMÁTICO
+    if(fueraHorario){
+
+      await supabaseClient
+        .from("reportes_obras")
+        .insert([{
+          tipo: "salida_extemporanea",
+          descripcion: "Salida fuera de horario detectada en caseta",
+          trabajador_id: trabajadorGlobal.id,
+          obra_id: trabajadorGlobal.obra_id,
+          privada: trabajadorGlobal.privada,
+          casa: trabajadorGlobal.casa,
+          fecha_reporte: fechaUTC(),
+          estatus: "nuevo",
+          origen: "vigilante",
+          residente_id: null
+        }]);
+
+    }
+
     pintarFinal("SALIDA REGISTRADA","warn");
   }
 
@@ -239,13 +295,10 @@ document.getElementById("btnRegistrar").onclick = async () => {
 
 // 🔴 ERROR FINAL
 function pintarErrorFinal(msg){
-
   document.body.className = "error";
   document.getElementById("estado").innerText = msg;
-
   ocultarValidacion();
   document.getElementById("btnAceptar").classList.remove("hidden");
-
 }
 
 // 🔹 ACEPTAR
@@ -255,12 +308,9 @@ document.getElementById("btnAceptar").onclick = () => {
 
 // 🔹 UI FINAL
 function pintarFinal(texto,color){
-
   document.body.className = color;
   document.getElementById("estado").innerText = texto;
-
   renderDetalle();
-
   document.getElementById("btnRegistrar").classList.add("hidden");
 }
 
