@@ -24,7 +24,6 @@ body {
   padding: 20px;
 }
 
-/* 🔥 TARJETA INFO */
 .info {
   background: #111827;
   padding: 18px;
@@ -35,14 +34,9 @@ body {
   color: #cbd5f5;
 }
 
-.info b {
-  color: white;
-}
+.info b { color: white; }
 
-/* 🔥 FORM */
-.form-group {
-  margin-bottom: 14px;
-}
+.form-group { margin-bottom: 14px; }
 
 .label {
   font-size: 13px;
@@ -59,14 +53,8 @@ input[type="date"] {
   background: #1e293b;
   color: white;
   font-size: 15px;
-  outline: none;
 }
 
-input[type="date"]:focus {
-  border: 1px solid #3b82f6;
-}
-
-/* 🔥 BOTÓN */
 button {
   width: 100%;
   padding: 15px;
@@ -80,7 +68,6 @@ button {
   cursor: pointer;
 }
 
-/* 🔥 KPIs */
 .kpis {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -100,7 +87,6 @@ button {
 .luminaria { background: #10b981; }
 .total { background: #0f172a; }
 
-/* 🔥 LISTA */
 .section-title {
   margin-top: 25px;
   margin-bottom: 10px;
@@ -114,7 +100,7 @@ button {
   border-radius: 16px;
   margin-bottom: 10px;
   border-left: 6px solid;
-  color: #f1f5f9; /* 🔥 TEXTO CLARO */
+  color: #f1f5f9;
 }
 
 .item.incidencia { border-color: #ef4444; }
@@ -145,6 +131,13 @@ button {
 Se recomienda informar a los residentes sobre las acciones realizadas en atención a sus reportes dentro de un plazo no mayor a 5 días.<br><br>
 Una vez transcurrido este periodo, los residentes podrán evaluar la calidad de la atención recibida.<br><br>
 Gracias por tu compromiso.
+</div>
+
+<!-- 🔥 BOTONES RÁPIDOS -->
+<div style="display:flex; gap:10px; margin-bottom:10px;">
+  <button onclick="setHoy()">HOY</button>
+  <button onclick="set7()">7 días</button>
+  <button onclick="set30()">30 días</button>
 </div>
 
 <div class="form-group">
@@ -184,14 +177,38 @@ Gracias por tu compromiso.
 
 </div>
 
-<script src="utils/dates.js"></script>
-  
 <script>
 
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["admin","administracion"]);
 });
 
+function setHoy(){
+  const hoy = new Date().toISOString().slice(0,10);
+  document.getElementById("inicio").value = hoy;
+  document.getElementById("fin").value = hoy;
+  cargar();
+}
+
+function set7(){
+  const hoy = new Date();
+  const inicio = new Date();
+  inicio.setDate(hoy.getDate()-7);
+
+  document.getElementById("inicio").value = inicio.toISOString().slice(0,10);
+  document.getElementById("fin").value = hoy.toISOString().slice(0,10);
+  cargar();
+}
+
+function set30(){
+  const hoy = new Date();
+  const inicio = new Date();
+  inicio.setDate(hoy.getDate()-30);
+
+  document.getElementById("inicio").value = inicio.toISOString().slice(0,10);
+  document.getElementById("fin").value = hoy.toISOString().slice(0,10);
+  cargar();
+}
 
 async function cargar(){
 
@@ -208,11 +225,11 @@ async function cargar(){
   try {
 
     // 🔴 VECINAL
-   let {data:inc} = await supabaseClient
-  .from("incidencias_vecinales")
-  .select("*")
-  .gte("fecha", fechaInicioUTC(inicio))
-  .lte("fecha", fechaFinUTC(fin))
+    let {data:inc} = await supabaseClient
+      .from("incidencias_vecinales")
+      .select("*")
+      .gte("fecha", inicio + "T00:00:00")
+      .lte("fecha", fin + "T23:59:59")
 
     inc?.forEach(i=>{
       registros.push({
@@ -229,8 +246,8 @@ async function cargar(){
     let {data:rv} = await supabaseClient
       .from("reportes_vigilantes")
       .select("*")
-      .gte("fecha", fechaInicioUTC(inicio))
-      .lte("fecha", fechaFinUTC(fin))
+      .gte("fecha", inicio + "T00:00:00")
+      .lte("fecha", fin + "T23:59:59")
 
     let mapaV = {};
 
@@ -257,31 +274,31 @@ async function cargar(){
       });
     });
 
-// 🏗️ REPORTES DE OBRA
-let {data:obras} = await supabaseClient
-  .from("reportes_obras")
-  .select("*")
-  .gte("fecha_reporte", fechaInicioUTC(inicio))
-  .lte("fecha_reporte", fechaFinUTC(fin))
+    // 🏗️ OBRAS
+    let {data:obras} = await supabaseClient
+      .from("reportes_obras")
+      .select("*")
+      .gte("fecha_reporte", inicio + "T00:00:00")
+      .lte("fecha_reporte", fin + "T23:59:59")
 
-obras?.forEach(i=>{
-  registros.push({
-    tipo:"obra",
-    grupo:"obra",
-    titulo:"Reporte de obra",
-    descripcion:i.descripcion,
-    hora:i.fecha_reporte,
-    origen:`${i.privada}-${i.casa}`,
-    subtipo:i.tipo
-  });
-});
-    
+    obras?.forEach(i=>{
+      registros.push({
+        tipo:"obra",
+        grupo:"obra",
+        titulo:"Reporte de obra",
+        descripcion:i.descripcion,
+        hora:i.fecha_reporte,
+        origen:`${i.privada}-${i.casa}`,
+        subtipo:i.tipo
+      });
+    });
+
     // 💧 AGUA
     let {data:agua} = await supabaseClient
       .from("reportes_agua_caasim")
       .select("*")
-      .gte("fecha_registro", fechaInicioUTC(inicio))
-      .lte("fecha_registro", fechaFinUTC(fin))
+      .gte("fecha_registro", inicio + "T00:00:00")
+      .lte("fecha_registro", fin + "T23:59:59")
 
     agua?.forEach(i=>{
       registros.push({
@@ -298,48 +315,39 @@ obras?.forEach(i=>{
     let {data:luminarias} = await supabaseClient
       .from("vista_reportes_luminarias")
       .select("*")
-      .gte("fecha_reporte", fechaInicioUTC(inicio))
-      .lte("fecha_reporte", fechaFinUTC(fin))
+      .gte("fecha_reporte", inicio + "T00:00:00")
+      .lte("fecha_reporte", fin + "T23:59:59")
 
     luminarias?.forEach(i=>{
-  registros.push({
-    tipo:"luminaria",
-    grupo:"luminaria",
-    titulo:`Luminaria #${i.no_luminaria}`,
-    descripcion:i.descripcion,
-    hora:i.fecha_reporte,
-    origen:`${i.privada}-${i.casa}` // 🔥 FIX
-  });
-});
-
-    console.log("LUMINARIAS RAW:", luminarias);
-    console.log("LUMINARIAS EN REGISTROS:", registros.filter(r => r.tipo === "luminaria"));
+      registros.push({
+        tipo:"luminaria",
+        grupo:"luminaria",
+        titulo:`Luminaria #${i.no_luminaria}`,
+        descripcion:i.descripcion,
+        hora:i.fecha_reporte,
+        origen:`${i.privada}-${i.casa}`
+      });
+    });
 
   } catch(e){
     console.error(e);
   }
 
-  // 🔥 FILTRO POR PRIVADA Y CASA
-const privadaFiltro = document.getElementById("filtroPrivada")?.value.trim().toLowerCase();
-const casaFiltro = document.getElementById("filtroCasa")?.value.trim().toLowerCase();
+  // FILTROS
+  const privadaFiltro = document.getElementById("filtroPrivada")?.value.trim().toLowerCase();
+  const casaFiltro = document.getElementById("filtroCasa")?.value.trim().toLowerCase();
 
-if (privadaFiltro || casaFiltro) {
-  registros = registros.filter(r => {
+  if (privadaFiltro || casaFiltro) {
+    registros = registros.filter(r => {
+      if (!r.origen) return false;
 
-    if (!r.origen) return false;
+      const [privada, casa] = r.origen.toLowerCase().split("-");
+      return (!privadaFiltro || privada === privadaFiltro) &&
+             (!casaFiltro || casa === casaFiltro);
+    });
+  }
 
-    const partes = r.origen.split("-");
-    const privada = partes[0]?.toLowerCase();
-    const casa = partes[1]?.toLowerCase();
-
-    const coincidePrivada = privadaFiltro ? privada === privadaFiltro : true;
-    const coincideCasa = casaFiltro ? casa === casaFiltro : true;
-
-    return coincidePrivada && coincideCasa;
-  });
-}
-
-  // 🔥 KPI
+  // KPIs
   document.getElementById("inc").innerText =
     registros.filter(r=>["incidencia","vigilante","obra"].includes(r.tipo)).length + " Incidencias";
 
@@ -365,12 +373,10 @@ if (privadaFiltro || casaFiltro) {
     datos.forEach(r=>{
       html += `<div class="item ${r.tipo}">
         <b>${r.titulo}</b>
-        <div class="hora">${formatMXDate(r.hora)}</div>
-
+        <div class="hora">${new Date(r.hora).toLocaleString()}</div>
         ${r.vigilante ? `<div class="extra">👮 ${r.vigilante}</div>`:""}
         ${r.subtipo ? `<div class="extra">⚠️ ${r.subtipo.replaceAll("_"," ")}</div>`:""}
         ${r.origen ? `<div class="extra">🏠 ${r.origen}</div>`:""}
-
         <div class="extra">${r.descripcion}</div>
       </div>`;
     });
@@ -388,7 +394,8 @@ if (privadaFiltro || casaFiltro) {
 function limpiarFiltros(){
   document.getElementById("filtroPrivada").value = "";
   document.getElementById("filtroCasa").value = "";
-}  
+}
+
 </script>
 
 </body>
