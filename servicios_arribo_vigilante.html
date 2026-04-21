@@ -6,7 +6,10 @@
 
 <title>Servicios por arribar</title>
 
+<!-- 🔥 ORDEN CORRECTO -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
+
 <script>
 protegerPagina(["vigilante"]);
 </script>
@@ -23,6 +26,17 @@ body {
   max-width: 500px;
   margin: auto;
   padding: 20px;
+}
+
+/* 🔥 LOGO */
+.logo {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.logo img {
+  width: 90px;
+  border-radius: 20px;
 }
 
 h2 {
@@ -84,7 +98,6 @@ button:active {
   color: white;
 }
 
-/* 🔥 NUEVO BLOQUE VACÍO */
 .vacio {
   background: #1f2937;
   padding: 25px;
@@ -106,9 +119,43 @@ button:active {
   font-weight: bold;
   cursor: pointer;
 }
-</style>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+/* 🔥 MODAL NIP */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-box {
+  background: white;
+  color: black;
+  padding: 20px;
+  border-radius: 14px;
+  width: 85%;
+  max-width: 300px;
+  text-align: center;
+}
+
+.modal-box input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+.modal-box button {
+  margin-top: 12px;
+  width: 100%;
+}
+</style>
 
 </head>
 
@@ -116,18 +163,30 @@ button:active {
 
 <div class="container">
 
-<h2>🚚 Servicios por arribar</h2>
+  <!-- 🔥 LOGO -->
+  <div class="logo">
+    <img src="icono-512.png">
+  </div>
 
-<div id="lista"></div>
+  <h2>🚚 Servicios por arribar</h2>
 
+  <div id="lista"></div>
+
+</div>
+
+<!-- 🔥 MODAL NIP -->
+<div id="modal" class="modal">
+  <div class="modal-box">
+    <h3>Validar NIP</h3>
+    <input type="password" id="nip" placeholder="Ingrese NIP">
+    <button onclick="confirmarNIP()">Confirmar</button>
+  </div>
 </div>
 
 <script>
 
-const client = window.supabase.createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
+let accion = null;
+let registroId = null;
 
 cargar();
 
@@ -135,7 +194,7 @@ async function cargar() {
 
   const ahora = new Date().toISOString();
 
-  const { data } = await client
+  const { data } = await supabaseClient
     .from("servicios_arribo")
     .select("*")
     .gt("expira_en", ahora)
@@ -146,7 +205,6 @@ async function cargar() {
   const contenedor = document.getElementById("lista");
   contenedor.innerHTML = "";
 
-  // 🔥 NUEVO: VALIDACIÓN VACÍA
   if (!data || data.length === 0) {
 
     contenedor.innerHTML = `
@@ -164,7 +222,6 @@ async function cargar() {
   data.forEach(s => {
 
     const card = document.createElement("div");
-
     card.className = "card " + s.estado;
 
     card.innerHTML = `
@@ -179,13 +236,13 @@ async function cargar() {
       <div class="botones">
 
         ${s.estado === "pendiente" ? `
-          <button class="btn-entrada" onclick="entrada('${s.id}')">
+          <button class="btn-entrada" onclick="abrirNIP('entrada','${s.id}')">
             Registrar entrada
           </button>
         ` : ""}
 
         ${s.estado === "dentro" ? `
-          <button class="btn-salida" onclick="salida('${s.id}')">
+          <button class="btn-salida" onclick="abrirNIP('salida','${s.id}')">
             Registrar salida
           </button>
         ` : ""}
@@ -197,42 +254,62 @@ async function cargar() {
   });
 }
 
-
-// 🔥 ENTRADA
-async function entrada(id) {
-
-  const ahora = new Date().toISOString();
-
-  await client
-    .from("servicios_arribo")
-    .update({
-      estado: "dentro",
-      hora_entrada: ahora
-    })
-    .eq("id", id);
-
-  const mensaje = `Estimado residente, el servicio que tiene en espera, en este momento ha entrado al fraccionamiento. Gracias.`;
-
-  const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
-
-  window.open(url, "_blank");
-
-  cargar();
+function abrirNIP(tipo, id){
+  accion = tipo;
+  registroId = id;
+  document.getElementById("modal").style.display = "flex";
 }
 
+async function confirmarNIP(){
 
-// 🔥 SALIDA
-async function salida(id) {
+  const nip = document.getElementById("nip").value;
+
+  const { data: vigilante } = await supabaseClient
+    .from("vigilantes")
+    .select("id,nip")
+    .eq("nip", nip)
+    .single();
+
+  if(!vigilante){
+    alert("NIP incorrecto");
+    return;
+  }
 
   const ahora = new Date().toISOString();
 
-  await client
-    .from("servicios_arribo")
-    .update({
-      estado: "finalizado",
-      hora_salida: ahora
-    })
-    .eq("id", id);
+  if(accion === "entrada"){
+
+    await supabaseClient
+      .from("servicios_arribo")
+      .update({
+        estado: "dentro",
+        hora_entrada: ahora,
+        vigilante_entrada_id: vigilante.id
+      })
+      .eq("id", registroId);
+
+    // 🔥 WA SE MANTIENE
+    const mensaje = `Estimado residente, el servicio que tiene en espera, en este momento ha entrado al fraccionamiento. Gracias.`;
+    const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+    window.open(url, "_blank");
+
+  }
+
+  if(accion === "salida"){
+
+    await supabaseClient
+      .from("servicios_arribo")
+      .update({
+        estado: "finalizado",
+        hora_salida: ahora,
+        vigilante_salida_id: vigilante.id
+      })
+      .eq("id", registroId);
+
+  }
+
+  document.getElementById("modal").style.display = "none";
+  document.getElementById("nip").value = "";
 
   cargar();
 }
