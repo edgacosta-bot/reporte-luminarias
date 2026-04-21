@@ -5,11 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trabajador del hogar</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 <script src="utils/residente.js"></script>
 
 <script>
-protegerPagina(["colono"]);
+window.addEventListener("load", () => {
+  protegerPagina(["residente"]);
+});
 </script>
 
 <style>
@@ -72,7 +75,6 @@ button {
 .warning { color: #f59e0b; }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
@@ -90,7 +92,7 @@ button {
 <label>Fin</label>
 <input id="fin" type="date">
 
-<button onclick="registrar()">Generar QR</button>
+<button id="btnRegistrar" onclick="registrar()">Generar QR</button>
 
 <div id="mensaje" class="mensaje"></div>
 
@@ -118,6 +120,14 @@ async function registrar() {
   const inicio = document.getElementById("inicio").value;
   const fin = document.getElementById("fin").value;
   const mensaje = document.getElementById("mensaje");
+  const btn = document.getElementById("btnRegistrar");
+  // 🔥 VALIDACIÓN DE RANGO DE FECHAS
+if (inicio && fin && fin < inicio) {
+  mensaje.innerText = "La fecha fin no puede ser menor a inicio";
+  mensaje.className = "mensaje error";
+  mensaje.style.display = "block";
+  return;
+}
 
   mensaje.style.display = "none";
 
@@ -151,7 +161,8 @@ async function registrar() {
     mensaje.className = "mensaje warning";
     mensaje.style.display = "block";
   }
-
+  btn.disabled = true;
+  btn.innerText = "Generando...";
   const codigo = crypto.randomUUID();
 
   const { error } = await supabaseClient
@@ -166,6 +177,8 @@ async function registrar() {
     }]);
 
   if (error) {
+    btn.disabled = false;
+    btn.innerText = "Generar QR";
     console.error(error);
     mensaje.innerText = "Error al registrar";
     mensaje.className = "mensaje error";
