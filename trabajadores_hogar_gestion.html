@@ -1,13 +1,21 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestión de trabajadores</title>
 
+<!-- 🔥 ORDEN CORRECTO -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script src="auth.js"></script>
+
 <script>
-protegerPagina(["colono"]);
+window.addEventListener("load", () => {
+  protegerPagina(["colono"]);
+});
 </script>
 
 <style>
@@ -29,7 +37,6 @@ h2 {
   margin-bottom: 20px;
 }
 
-/* 🔥 AVISOS */
 .aviso {
   padding: 12px;
   border-radius: 10px;
@@ -47,7 +54,6 @@ h2 {
   background: #dc2626;
 }
 
-/* TARJETAS */
 .card {
   background: #1f2937;
   border-radius: 14px;
@@ -84,13 +90,12 @@ button {
 .btn-off { background: #6b7280; color: white; }
 .btn-del { background: #dc2626; color: white; }
 
-/* 🔒 BOTÓN BLOQUEADO */
 .bloqueado {
   opacity: 0.5;
   pointer-events: none;
 }
 
-  #modalRenovar {
+#modalRenovar {
   backdrop-filter: blur(4px);
 }
 
@@ -99,14 +104,6 @@ button {
 }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js"></script>
-
-<script>
-window.addEventListener("load", () => {
-  protegerPagina(["colono"]);
-});
-</script>
 </head>
 
 <body>
@@ -115,243 +112,231 @@ window.addEventListener("load", () => {
 
 <h2>👷 Trabajadores del hogar</h2>
 
-<!-- 🔥 AVISO DINÁMICO -->
 <div id="aviso"></div>
-
 <div id="lista"></div>
 
 <div id="toast" style="
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #16a34a;
-  color: white;
-  padding: 12px 20px;
-  border-radius: 10px;
-  display: none;
-  font-weight: bold;
-  z-index: 999;
+position: fixed;
+bottom: 20px;
+left: 50%;
+transform: translateX(-50%);
+background: #16a34a;
+color: white;
+padding: 12px 20px;
+border-radius: 10px;
+display: none;
+font-weight: bold;
+z-index: 999;
 ">
-  Renovado correctamente
-</div>  
+Renovado correctamente
+</div>
 
- <div id="modalRenovar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
+<div id="modalRenovar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
 
-  <div style="background:#1f2937; padding:20px; border-radius:16px; width:90%; max-width:300px;">
+<div style="background:#1f2937; padding:20px; border-radius:16px; width:90%; max-width:300px;">
 
-    <h3 style="margin-top:0;">Renovar vigencia</h3>
+<h3 style="margin-top:0;">Renovar vigencia</h3>
 
-    <input type="date" id="nuevaFecha" style="width:100%; padding:10px; border-radius:10px; border:none; margin-top:10px;">
+<input type="date" id="nuevaFecha" style="width:100%; padding:10px; border-radius:10px; border:none; margin-top:10px;">
 
-    <div style="display:flex; gap:10px; margin-top:15px;">
-      <button onclick="cerrarModal()">Cancelar</button>
-      <button class="btn-on" onclick="confirmarRenovar(event)">Guardar</button>
-    </div>
+<div style="display:flex; gap:10px; margin-top:15px;">
+<button onclick="cerrarModal()">Cancelar</button>
+<button class="btn-on" onclick="confirmarRenovar(event)">Guardar</button>
+</div>
 
-  </div>
-</div> 
+</div>
+</div>
 
 </div>
 
 <script>
 
-
-
 let residente = null;
-
-let trabajadorSeleccionado = null;  
+let trabajadorSeleccionado = null;
 
 cargar();
 
 async function cargar() {
 
-  // 🔎 obtener residente
-// 🔥 SESIÓN REAL
 const { data: userData } = await supabaseClient.auth.getUser();
 const user = userData?.user;
 
 if (!user) {
-  alert("Sesión no válida");
-  return;
+alert("Sesión no válida");
+return;
 }
 
-// 🔥 RESIDENTE POR USER_ID
 const { data, error } = await supabaseClient
-  .from("residentes")
-  .select("*")
-  .eq("user_id", user.id)
-  .single();
+.from("residentes")
+.select("*")
+.eq("user_id", user.id)
+.single();
 
 if (error || !data) {
-  alert("Error obteniendo residente");
-  return;
+alert("Error obteniendo residente");
+return;
 }
 
 residente = data;
 
-  
+const aviso = document.getElementById("aviso");
+aviso.innerHTML = "";
 
-  // 🔥 MOSTRAR AVISO
-  const aviso = document.getElementById("aviso");
-
-  if (residente.estado_pago === "atraso_1") {
-    aviso.className = "aviso aviso-warning";
-    aviso.innerText = "⚠️ Tienes atraso en tus aportaciones. Puedes continuar, pero regulariza.";
-  }
-
-  if (residente.estado_pago === "moroso") {
-    aviso.className = "aviso aviso-error";
-    aviso.innerText = "⛔ No puedes gestionar trabajadores por adeudo. Regulariza para continuar.";
-  }
-
-  // 🔎 obtener trabajadores
-  const { data: trabajadores } = await supabaseClient
-    .from("trabajadores_hogar")
-    .select("*")
-    .eq("residente_id", residente.id)
-    .order("created_at", { ascending: false });
-
-  const contenedor = document.getElementById("lista");
-  contenedor.innerHTML = "";
-
-  trabajadores.forEach(t => {
-
-    const card = document.createElement("div");
-    card.className = "card";
-
-    card.innerHTML = `
-      <div class="nombre">${t.nombre}</div>
-
-      <div class="info">
-       Inicio: ${t.fecha_inicio ? formatoMX(t.fecha_inicio) : "Sin definir"}<br>
-       Fin: ${t.fecha_fin ? formatoMX(t.fecha_fin) : "Sin límite"}
-      </div>
-
-      <div class="botones">
-  <button class="${t.activo ? 'btn-off' : 'btn-on'}"
-    onclick="toggle('${t.id}', ${t.activo})">
-    ${t.activo ? 'Desactivar' : 'Activar'}
-  </button>
-
-  <button onclick="abrirRenovar('${t.id}', '${t.fecha_fin || ''}')">
-    Renovar
-  </button>
-
-  <button class="btn-del" onclick="eliminar('${t.id}')">
-    Eliminar
-  </button>
-</div>
-    `;
-
-    // 🔒 BLOQUEAR SI MOROSO
-    if (residente.estado_pago === "moroso") {
-      card.querySelectorAll("button").forEach(btn => {
-        btn.classList.add("bloqueado");
-      });
-    }
-
-    contenedor.appendChild(card);
-  });
+if (residente.estado_pago === "atraso_1") {
+aviso.className = "aviso aviso-warning";
+aviso.innerText = "⚠️ Tienes atraso en tus aportaciones. Puedes continuar, pero regulariza.";
 }
 
-// 🔥 ACTIVAR / DESACTIVAR
+if (residente.estado_pago === "moroso") {
+aviso.className = "aviso aviso-error";
+aviso.innerText = "⛔ No puedes gestionar trabajadores por adeudo. Regulariza para continuar.";
+}
+
+const { data: trabajadores } = await supabaseClient
+.from("trabajadores_hogar")
+.select("*")
+.eq("residente_id", residente.id)
+.order("created_at", { ascending: false });
+
+const contenedor = document.getElementById("lista");
+contenedor.innerHTML = "";
+
+trabajadores?.forEach(t => {
+
+const card = document.createElement("div");
+card.className = "card";
+
+card.innerHTML = `
+<div class="nombre">${t.nombre}</div>
+
+<div class="info">
+Inicio: ${t.fecha_inicio ? formatoMX(t.fecha_inicio) : "Sin definir"}<br>
+Fin: ${t.fecha_fin ? formatoMX(t.fecha_fin) : "Sin límite"}
+</div>
+
+<div class="botones">
+<button class="${t.activo ? 'btn-off' : 'btn-on'}"
+onclick="toggle('${t.id}', ${t.activo})">
+${t.activo ? 'Desactivar' : 'Activar'}
+</button>
+
+<button onclick="abrirRenovar('${t.id}', '${t.fecha_fin || ''}')">
+Renovar
+</button>
+
+<button class="btn-del" onclick="eliminar('${t.id}')">
+Eliminar
+</button>
+</div>
+`;
+
+if (residente.estado_pago === "moroso") {
+card.querySelectorAll("button").forEach(btn => {
+btn.classList.add("bloqueado");
+});
+}
+
+contenedor.appendChild(card);
+});
+}
+
 async function toggle(id, estadoActual) {
 
-  if (residente.estado_pago === "moroso") return;
+if (residente.estado_pago === "moroso") return;
 
-  await supabaseClient
-    .from("trabajadores_hogar")
-    .update({ activo: !estadoActual })
-    .eq("id", id);
+await supabaseClient
+.from("trabajadores_hogar")
+.update({ activo: !estadoActual })
+.eq("id", id);
 
-  cargar();
+cargar();
 }
 
-// 🔥 ELIMINAR
 async function eliminar(id) {
 
-  if (residente.estado_pago === "moroso") return;
+if (residente.estado_pago === "moroso") return;
 
-  if (!confirm("¿Eliminar trabajador?")) return;
+if (!confirm("¿Eliminar trabajador?")) return;
 
-  await supabaseClient
-    .from("trabajadores_hogar")
-    .delete()
-    .eq("id", id);
+await supabaseClient
+.from("trabajadores_hogar")
+.delete()
+.eq("id", id);
 
-  cargar();
+cargar();
 }
 
-// 🔄 RENOVAR
 function abrirRenovar(id, fechaActual) {
 
-  if (residente.estado_pago === "moroso") return;
+if (residente.estado_pago === "moroso") return;
 
-  trabajadorSeleccionado = id;
+trabajadorSeleccionado = id;
 
-  document.getElementById("modalRenovar").style.display = "flex";
-  document.getElementById("nuevaFecha").value = fechaActual || "";
+document.getElementById("modalRenovar").style.display = "flex";
+document.getElementById("nuevaFecha").value = fechaActual || "";
 }
 
-  function cerrarModal() {
-  document.getElementById("modalRenovar").style.display = "none";
+function cerrarModal() {
+document.getElementById("modalRenovar").style.display = "none";
 }
 
 async function confirmarRenovar(event) {
 
-  const nuevaFecha = document.getElementById("nuevaFecha").value;
-  const btn = event.target;
+const nuevaFecha = document.getElementById("nuevaFecha").value;
+const btn = event.target;
+
 btn.disabled = true;
 btn.innerText = "Guardando...";
 
-  if (!nuevaFecha) {
-  alert("Selecciona una fecha");
-  btn.disabled = false;
-  btn.innerText = "Guardar";
-  return;
+if (!nuevaFecha) {
+alert("Selecciona una fecha");
+btn.disabled = false;
+btn.innerText = "Guardar";
+return;
 }
 
-  if (isNaN(Date.parse(nuevaFecha))) {
-  alert("Fecha inválida");
-  btn.disabled = false;
-  btn.innerText = "Guardar";
-  return;
+if (isNaN(Date.parse(nuevaFecha))) {
+alert("Fecha inválida");
+btn.disabled = false;
+btn.innerText = "Guardar";
+return;
 }
 
-  const { error } = await supabaseClient
-    .from("trabajadores_hogar")
-    .update({
-      fecha_fin: nuevaFecha,
-      activo: true
-    })
-    .eq("id", trabajadorSeleccionado);
+const { error } = await supabaseClient
+.from("trabajadores_hogar")
+.update({
+fecha_fin: nuevaFecha,
+activo: true
+})
+.eq("id", trabajadorSeleccionado);
 
- if (error) {
-  alert("Error al renovar");
-  console.log(error);
-  btn.disabled = false;
-  btn.innerText = "Guardar";
-  return;
+if (error) {
+alert("Error al renovar");
+console.log(error);
+btn.disabled = false;
+btn.innerText = "Guardar";
+return;
 }
 
-  
-  cerrarModal();
-  cargar();
-  mostrarToast("Renovado correctamente");
-  btn.disabled = false;
+cerrarModal();
+cargar();
+mostrarToast("Renovado correctamente");
+
+btn.disabled = false;
 btn.innerText = "Guardar";
 }
-  function mostrarToast(mensaje) {
 
-  const toast = document.getElementById("toast");
-  toast.innerText = mensaje;
-  toast.style.display = "block";
+function mostrarToast(mensaje) {
 
-  setTimeout(() => {
-    toast.style.display = "none";
-  }, 2000);
+const toast = document.getElementById("toast");
+toast.innerText = mensaje;
+toast.style.display = "block";
+
+setTimeout(() => {
+toast.style.display = "none";
+}, 2000);
 }
+
 </script>
 
 </body>
