@@ -71,7 +71,8 @@ input {
   padding: 12px;
   border-radius: 10px;
   border: none;
-  margin-top: 10px;
+  margin-top: 8px;
+  font-size: 14px;
   background: #1f2937;
   color: white;
 }
@@ -119,6 +120,23 @@ window.addEventListener("DOMContentLoaded", async ()=>{
 });
 
 // 🔹 CARGAR SERVICIOS
+
+async function validarNIP(pinIngresado){
+
+  if(!pinIngresado) return null;
+
+  const { data, error } = await supabaseClient
+    .from("residentes")
+    .select("id, pin_vigilante, tipo")
+    .eq("tipo","vigilante")
+    .eq("pin_vigilante", pinIngresado)
+    .maybeSingle();
+
+  if(error || !data) return null;
+
+  return data; // 🔥 devuelve el vigilante válido
+}
+  
 async function cargarServicios(){
 
   const { data } = await supabaseClient
@@ -143,20 +161,29 @@ async function cargarServicios(){
 
       <div class="nombre">${s.nombre}</div>
 
-      ${
-        abierto?.length
-        ? `
-          <div class="estado">
-            🟢 Entrada: ${window.formatMXDate(abierto[0].fecha_entrada)}
-          </div>
+     ${abierto?.length
+  ? `
+    <div class="estado">
+      🟢 Entrada: ${window.formatMXDate(abierto[0].fecha_entrada)}
+    </div>
 
-          <button class="btn salida"
-            onclick="registrarSalida('${abierto[0].id}')">
-            Registrar salida
-          </button>
-        `
+    <!-- 🔐 INPUT NIP SALIDA -->
+    <input 
+      id="nip_salida_${abierto[0].id}" 
+      type="password"
+      placeholder="NIP de seguridad"
+    >
+
+    <button class="btn salida"
+      onclick="registrarSalida('${abierto[0].id}')">
+      Registrar salida
+    </button>
+  `
         : `
-          <input id="persona_${s.id}" placeholder="Nombre de quien ingresa">
+         <input id="persona_${s.id}" placeholder="Nombre de quien ingresa">
+
+          <input id="nip_entrada_${s.id}" type="password"
+            placeholder="NIP de seguridad">
 
           <button class="btn entrada"
             onclick="registrarEntrada('${s.id}')">
@@ -174,22 +201,33 @@ async function cargarServicios(){
 // 🔹 ENTRADA (UTC CORRECTO)
 async function registrarEntrada(servicio_id){
 
-  const nombre = document.getElementById("persona_"+servicio_id).value;
+  const nombre = document.getElementById("persona_"+servicio_id).value.trim();
+  const pin = document.getElementById("nip_entrada_"+servicio_id).value.trim();
 
   if(!nombre){
     alert("Ingresa nombre");
     return;
   }
 
-  const { data:userData } = await supabaseClient.auth.getUser();
+  if(!pin){
+    alert("Ingresa NIP");
+    return;
+  }
+
+  const vigilante = await validarNIP(pin);
+
+  if(!vigilante){
+    alert("NIP incorrecto");
+    return;
+  }
 
   const { error } = await supabaseClient
     .from("accesos_servicios")
     .insert([{
       servicio_id,
       nombre_persona: nombre,
-      fecha_entrada: new Date().toISOString(), // ✅ UTC correcto
-      registrado_por: userData.user.id
+      fecha_entrada: new Date().toISOString(), // 🔥 timestamptz
+      vigilante_entrada_id: vigilante.id
     }]);
 
   if(error){
@@ -204,11 +242,42 @@ async function registrarEntrada(servicio_id){
 // 🔹 SALIDA (UTC CORRECTO)
 async function registrarSalida(id){
 
-  const { error } = await supabaseClient
-    .from("accesos_servicios")
-    .update({
-      fecha_salida: new Date().toISOString() // ✅ UTC correcto
-    })
+  const pin = document.getElementById("nip_salida_"+id).value.trim();
+
+  if(!pin){
+    alert("Ingresa NIP");
+    return;
+  }
+
+  const vigilante = await validarNIP(pin);
+
+if(!vigilante){
+  alert("NIP incorrecto");
+  return;
+}
+
+// 🔥 👉 AQUÍ VA LA VALIDACIÓN (ANTES DEL INSERT)
+const { data: abierto } = await supabaseClient
+  .from("accesos_servicios")
+  .select("id")
+  .eq("servicio_id", servicio_id)
+  .is("fecha_salida", null)
+  .limit(1);
+
+if (abierto && abierto.length > 0) {
+  alert("Ya existe un acceso abierto para este servicio");
+  return;
+}
+
+// 🔽 INSERT (esto ya lo tenías)
+const { error } = await supabaseClient
+  .from("accesos_servicios")
+  .insert([{
+    servicio_id,
+    nombre_persona: nombre,
+    fecha_entrada: new Date().toISOString(),
+    vigilante_entrada_id: vigilante.id
+  }]);
     .eq("id", id);
 
   if(error){
