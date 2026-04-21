@@ -96,20 +96,15 @@ input {
 
 <body>
 
-<!-- 🔥 HEADER UX PRO -->
 <div class="header-app">
   <img src="/icono-512.png" class="logo-app">
 </div>
 
 <div class="container">
-
 <h2>🚧 Accesos recurrentes</h2>
-
 <div id="lista">Cargando...</div>
-
 </div>
 
-<!-- 🔥 FECHAS GLOBAL -->
 <script src="/utils/dates.js"></script>
 
 <script>
@@ -119,8 +114,7 @@ window.addEventListener("DOMContentLoaded", async ()=>{
   cargarServicios();
 });
 
-// 🔹 CARGAR SERVICIOS
-
+// 🔐 VALIDAR NIP
 async function validarNIP(pinIngresado){
 
   if(!pinIngresado) return null;
@@ -134,9 +128,10 @@ async function validarNIP(pinIngresado){
 
   if(error || !data) return null;
 
-  return data; // 🔥 devuelve el vigilante válido
+  return data;
 }
-  
+
+// 🔹 CARGAR SERVICIOS
 async function cargarServicios(){
 
   const { data } = await supabaseClient
@@ -147,7 +142,7 @@ async function cargarServicios(){
 
   let html="";
 
-  for(const s of data){
+  for(const s of (data || [])){
 
     const { data: abierto } = await supabaseClient
       .from("accesos_servicios")
@@ -161,26 +156,25 @@ async function cargarServicios(){
 
       <div class="nombre">${s.nombre}</div>
 
-     ${abierto?.length
-  ? `
-    <div class="estado">
-      🟢 Entrada: ${window.formatMXDate(abierto[0].fecha_entrada)}
-    </div>
+      ${abierto?.length
+        ? `
+          <div class="estado">
+            🟢 Entrada: ${window.formatMXDate(abierto[0].fecha_entrada)}
+          </div>
 
-    <!-- 🔐 INPUT NIP SALIDA -->
-    <input 
-      id="nip_salida_${abierto[0].id}" 
-      type="password"
-      placeholder="NIP de seguridad"
-    >
+          <input 
+            id="nip_salida_${abierto[0].id}" 
+            type="password"
+            placeholder="NIP de seguridad"
+          >
 
-    <button class="btn salida"
-      onclick="registrarSalida('${abierto[0].id}')">
-      Registrar salida
-    </button>
-  `
+          <button class="btn salida"
+            onclick="registrarSalida('${abierto[0].id}')">
+            Registrar salida
+          </button>
+        `
         : `
-         <input id="persona_${s.id}" placeholder="Nombre de quien ingresa">
+          <input id="persona_${s.id}" placeholder="Nombre de quien ingresa">
 
           <input id="nip_entrada_${s.id}" type="password"
             placeholder="NIP de seguridad">
@@ -198,11 +192,13 @@ async function cargarServicios(){
   document.getElementById("lista").innerHTML = html || "Sin servicios";
 }
 
-// 🔹 ENTRADA (UTC CORRECTO)
+// 🔹 ENTRADA
 async function registrarEntrada(servicio_id){
 
   const nombre = document.getElementById("persona_"+servicio_id).value.trim();
-  const pin = document.getElementById("nip_entrada_"+servicio_id).value.trim();
+
+  const pin = document.getElementById("nip_entrada_"+servicio_id)
+    .value.trim().replace(/\s+/g, "");
 
   if(!nombre){
     alert("Ingresa nombre");
@@ -221,12 +217,25 @@ async function registrarEntrada(servicio_id){
     return;
   }
 
+  // 🚫 EVITAR DUPLICADO
+  const { data: abierto } = await supabaseClient
+    .from("accesos_servicios")
+    .select("id")
+    .eq("servicio_id", servicio_id)
+    .is("fecha_salida", null)
+    .limit(1);
+
+  if (abierto && abierto.length > 0) {
+    alert("Ya existe un acceso abierto");
+    return;
+  }
+
   const { error } = await supabaseClient
     .from("accesos_servicios")
     .insert([{
       servicio_id,
       nombre_persona: nombre,
-      fecha_entrada: new Date().toISOString(), // 🔥 timestamptz
+      fecha_entrada: new Date().toISOString(),
       vigilante_entrada_id: vigilante.id
     }]);
 
@@ -236,10 +245,14 @@ async function registrarEntrada(servicio_id){
     return;
   }
 
+  // 🧹 LIMPIEZA
+  document.getElementById("persona_"+servicio_id).value = "";
+  document.getElementById("nip_entrada_"+servicio_id).value = "";
+
   cargarServicios();
 }
 
-// 🔹 SALIDA (UTC CORRECTO)
+// 🔹 SALIDA
 async function registrarSalida(id){
 
   const pin = document.getElementById("nip_salida_"+id).value.trim();
@@ -256,7 +269,6 @@ async function registrarSalida(id){
     return;
   }
 
-  // 🔥 UPDATE (NO INSERT)
   const { error } = await supabaseClient
     .from("accesos_servicios")
     .update({
@@ -273,6 +285,7 @@ async function registrarSalida(id){
 
   cargarServicios();
 }
+
 </script>
 
 </body>
