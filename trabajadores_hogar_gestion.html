@@ -139,7 +139,7 @@ button {
 
     <div style="display:flex; gap:10px; margin-top:15px;">
       <button onclick="cerrarModal()">Cancelar</button>
-      <button class="btn-on" onclick="confirmarRenovar()">Guardar</button>
+      <button class="btn-on" onclick="confirmarRenovar(event)">Guardar</button>
     </div>
 
   </div>
@@ -149,12 +149,7 @@ button {
 
 <script>
 
-const client = window.supabase.createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
 
-const identificador = localStorage.getItem("identificador");
 
 let residente = null;
 
@@ -165,13 +160,30 @@ cargar();
 async function cargar() {
 
   // 🔎 obtener residente
-  const { data } = await client
-    .from("residentes")
-    .select("*")
-    .eq("identificador", identificador)
-    .single();
+// 🔥 SESIÓN REAL
+const { data: userData } = await supabaseClient.auth.getUser();
+const user = userData?.user;
 
-  residente = data;
+if (!user) {
+  alert("Sesión no válida");
+  return;
+}
+
+// 🔥 RESIDENTE POR USER_ID
+const { data, error } = await supabaseClient
+  .from("residentes")
+  .select("*")
+  .eq("user_id", user.id)
+  .single();
+
+if (error || !data) {
+  alert("Error obteniendo residente");
+  return;
+}
+
+residente = data;
+
+  
 
   // 🔥 MOSTRAR AVISO
   const aviso = document.getElementById("aviso");
@@ -187,7 +199,7 @@ async function cargar() {
   }
 
   // 🔎 obtener trabajadores
-  const { data: trabajadores } = await client
+  const { data: trabajadores } = await supabaseClient
     .from("trabajadores_hogar")
     .select("*")
     .eq("residente_id", residente.id)
@@ -205,8 +217,8 @@ async function cargar() {
       <div class="nombre">${t.nombre}</div>
 
       <div class="info">
-        Inicio: ${t.fecha_inicio || "Sin definir"}<br>
-        Fin: ${t.fecha_fin || "Sin límite"}
+       Inicio: ${t.fecha_inicio ? formatoMX(t.fecha_inicio) : "Sin definir"}
+       Fin: ${t.fecha_fin ? formatoMX(t.fecha_fin) : "Sin límite"}
       </div>
 
       <div class="botones">
@@ -241,7 +253,7 @@ async function toggle(id, estadoActual) {
 
   if (residente.estado_pago === "moroso") return;
 
-  await client
+  await supabaseClient
     .from("trabajadores_hogar")
     .update({ activo: !estadoActual })
     .eq("id", id);
@@ -256,7 +268,7 @@ async function eliminar(id) {
 
   if (!confirm("¿Eliminar trabajador?")) return;
 
-  await client
+  await supabaseClient
     .from("trabajadores_hogar")
     .delete()
     .eq("id", id);
@@ -300,7 +312,7 @@ btn.innerText = "Guardando...";
   return;
 }
 
-  const { error } = await client
+  const { error } = await supabaseClient
     .from("trabajadores_hogar")
     .update({
       fecha_fin: nuevaFecha,
