@@ -162,7 +162,7 @@ let residenteIdGlobal = null;
 // 🔐 CONTROL
 window.addEventListener("DOMContentLoaded", async () => {
 
-  await protegerPagina(["residente"]);
+  await protegerPagina(["admin","colono","residente"]);
 
   const { data } = await supabaseClient.auth.getUser();
   const user = data?.user;
