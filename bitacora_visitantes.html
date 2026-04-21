@@ -95,16 +95,18 @@ button {
 
 <div class="container">
   <div class="card">
+  <img src="/icono-512.png" style="width:70px; display:block; margin:0 auto 10px;">
+    
 
     <h2>Bitácora de visitantes</h2>
 
     <div id="infoUsuario" class="info-user"></div>
 
-    <label>Desde</label>
-    <input id="desde" type="date">
+   <label>Fecha de inicio de tu consulta</label>
+   <input id="desde" type="date">
 
-    <label>Hasta</label>
-    <input id="hasta" type="date">
+   <label>Fecha término de tu consulta</label>
+   <input id="hasta" type="date">
 
     <button class="btn-primary" onclick="consultar()">Consultar</button>
 
@@ -152,6 +154,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("infoUsuario").innerText =
       `Administrador - Consulta general`;
   }
+// 🔥 ESTA ES LA LÍNEA NUEVA
+  document.getElementById("resultado").innerHTML =
+    "<div class='vacio'>Selecciona filtros y presiona consultar</div>";
+  
 });
 
 // 🕒 UTC helper (se mantiene)
@@ -173,18 +179,28 @@ async function consultar() {
 
   contenedor.innerHTML = "Consultando...";
 
-  let query = supabaseClient
-    .from('visitas_qr')
-    .select('*')
-    .not('hora_ingreso_utc', 'is', null)
-    .order('hora_ingreso_utc', { ascending: false });
+ let query = supabaseClient
+  .from('accesos_visitas')
+  .select(`
+    id,
+    fecha_hora_entrada,
+    fecha_hora_salida,
+    visitas_qr (
+      nombre_visitante,
+      privada,
+      casa,
+      residente_id
+    )
+  `)
+  .not('fecha_hora_entrada', 'is', null)
+  .order('hora_ingreso_utc', { ascending: false });
 
   if (rolGlobal !== "admin") {
-    query = query.eq('residente_id', residenteIdGlobal); // 🔥 ya no consulta otra vez
+    query = query.eq('visitas_qr.residente_id', residenteIdGlobal);// 🔥 ya no consulta otra vez
   }
 
-  if (desde) query = query.gte('hora_ingreso_utc', toUTC(desde));
-  if (hasta) query = query.lte('hora_ingreso_utc', toUTC(hasta, true));
+  if (desde) query = query.gte('fecha_hora_entrada', toUTC(desde));
+  if (hasta) query = query.lte('fecha_hora_entrada', toUTC(hasta, true));
 
   const { data, error } = await query;
 
@@ -203,18 +219,23 @@ async function consultar() {
 
   data.forEach(v => {
 
-    if (!v.hora_ingreso_utc) return; // 🔥 protección
+  const visita = v.visitas_qr;
 
-    const fechaLocal = formatMXDate(v.hora_ingreso_utc); // 🔥 ESTANDAR
+ 
+  const entrada = formatMXDate(v.fecha_hora_entrada);
+  const salida = v.fecha_hora_salida
+    ? formatMXDate(v.fecha_hora_salida)
+    : "Dentro";
 
-    contenedor.innerHTML += `
-      <div class="item">
-        <b>${v.nombre_visitante}</b><br>
-        📅 ${fechaLocal}<br>
-        🏠 ${v.privada}-${v.casa}
-      </div>
-    `;
-  });
+  contenedor.innerHTML += `
+    <div class="item">
+      <b>${visita.nombre_visitante}</b><br>
+      🟢 Entrada: ${entrada}<br>
+      🔴 Salida: ${salida}<br>
+      🏠 ${visita.privada}-${visita.casa}
+    </div>
+  `;
+});
 }
 
 function volverInicio() {
