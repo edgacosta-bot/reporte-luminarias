@@ -29,11 +29,11 @@ body {
   width: 80px;
 }
 
-/* CONTENEDOR */
+/* CONTENEDOR MÁS EQUILIBRADO */
 .container {
   max-width: 520px;
   margin: auto;
-  padding: 20px;
+  padding: 18px;
 }
 
 h2 {
@@ -41,11 +41,12 @@ h2 {
   margin-bottom: 15px;
 }
 
-/* FILTROS */
-.filtros-rapidos {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
+/* BOTONES FILTRO */
+.filtros-rapidos button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
 }
 
 .filtros-rapidos button {
@@ -65,46 +66,37 @@ label {
   margin-top: 8px;
 }
 
+/* INPUTS MÁS CÓMODOS */
 input {
   width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: none;
-  background: #1f2937;
-  color: white;
-  margin-top: 4px;
-}
-
-.btn-consultar {
-  margin-top: 12px;
   padding: 14px;
   border-radius: 12px;
-  border: none;
-  background: #2563eb;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  width: 100%;
+  font-size: 15px;
+}
+
+/* BOTÓN PRINCIPAL */
+.btn-consultar {
+  margin-top: 14px;
+  padding: 16px;
+  font-size: 16px;
+  border-radius: 14px;
 }
 
 /* CARD */
+/* CARD MÁS RESPIRABLE */
 .card {
-  background: #111827;
-  padding: 16px;
-  border-radius: 16px;
-  margin-bottom: 12px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+  padding: 18px;
+  border-radius: 18px;
+  margin-bottom: 14px;
 }
 
+/* TEXTO MEJOR JERARQUÍA */
 .nombre {
-  font-weight: bold;
-  margin-bottom: 6px;
+  font-size: 17px;
 }
 
 .detalle {
-  font-size: 13px;
-  margin-bottom: 6px;
-  color: #cbd5f5;
+  font-size: 14px;
 }
 
 .hora {
@@ -162,11 +154,19 @@ input {
 
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["residente","admin","vigilante"]);
-  setRango(7);
-  cargar();
+
+  // 🔥 SOLO setea fechas, NO carga datos
+  setRango(7, false);
+
+  // 🔥 mensaje inicial
+  document.getElementById("lista").innerHTML = `
+    <div class="vacio">
+      Selecciona un rango de fechas y presiona "Consultar"
+    </div>
+  `;
 });
 
-function setRango(dias){
+function setRango(dias, autoConsultar = true){
 
   const hoy = new Date();
 
@@ -181,8 +181,9 @@ function setRango(dias){
   document.getElementById("fin").value =
     fin.toISOString().split("T")[0];
 
-  // 🔥 ESTA ES LA CLAVE
-  cargar();
+  if(autoConsultar){
+    cargar();
+  }
 }
 
 
