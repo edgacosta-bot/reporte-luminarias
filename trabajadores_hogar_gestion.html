@@ -99,15 +99,13 @@ button {
 }
 </style>
 
-<!-- 1️⃣ PRIMERO SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- 2️⃣ LUEGO TU AUTH -->
 <script src="auth.js"></script>
 
-<!-- 3️⃣ LUEGO PROTECCIÓN -->
 <script>
-protegerPagina(["colono"]);
+window.addEventListener("load", () => {
+  protegerPagina(["colono"]);
+});
 </script>
 </head>
 
