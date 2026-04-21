@@ -4,12 +4,10 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Bitácora de accesos</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
-<script src="/utils/dates.js"></script>
 
 <style>
 
@@ -20,21 +18,18 @@ body {
   color: white;
 }
 
-/* 🔷 HEADER */
+/* HEADER */
 .header-app {
   display: flex;
   justify-content: center;
-  align-items: center;
   margin-top: 20px;
 }
 
 .logo-app {
   width: 80px;
-  height: 80px;
-  object-fit: contain;
 }
 
-/* 🔷 CONTENEDOR */
+/* CONTENEDOR */
 .container {
   max-width: 520px;
   margin: auto;
@@ -46,35 +41,53 @@ h2 {
   margin-bottom: 15px;
 }
 
-/* 🔷 FILTROS */
-.filtros {
+/* FILTROS */
+.filtros-rapidos {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.filtros-rapidos button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  background: #1e40af;
+  border: none;
+  color: white;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+label {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 8px;
 }
 
 input {
+  width: 100%;
   padding: 12px;
   border-radius: 10px;
   border: none;
   background: #1f2937;
   color: white;
-  font-size: 14px;
+  margin-top: 4px;
 }
 
-button {
+.btn-consultar {
+  margin-top: 12px;
   padding: 14px;
   border-radius: 12px;
   border: none;
   background: #2563eb;
   color: white;
   font-weight: bold;
-  font-size: 15px;
   cursor: pointer;
+  width: 100%;
 }
 
-/* 🔷 CARD */
+/* CARD */
 .card {
   background: #111827;
   padding: 16px;
@@ -85,19 +98,17 @@ button {
 
 .nombre {
   font-weight: bold;
-  font-size: 16px;
   margin-bottom: 6px;
 }
 
 .detalle {
   font-size: 13px;
-  color: #cbd5f5;
   margin-bottom: 6px;
+  color: #cbd5f5;
 }
 
 .hora {
   font-size: 13px;
-  margin-bottom: 4px;
 }
 
 .estado-activo {
@@ -108,7 +119,6 @@ button {
   color: #f87171;
 }
 
-/* 🔷 VACÍO */
 .vacio {
   text-align: center;
   margin-top: 20px;
@@ -120,7 +130,6 @@ button {
 
 <body>
 
-<!-- 🔷 LOGO -->
 <div class="header-app">
   <img src="/icono-512.png" class="logo-app">
 </div>
@@ -129,14 +138,22 @@ button {
 
 <h2>📊 Bitácora de accesos</h2>
 
-<!-- 🔷 FILTROS -->
-<div class="filtros">
-  <input type="date" id="inicio">
-  <input type="date" id="fin">
-  <button onclick="cargar()">Consultar</button>
+<!-- FILTROS RÁPIDOS -->
+<div class="filtros-rapidos">
+  <button onclick="setRango(0)">Hoy</button>
+  <button onclick="setRango(7)">7 días</button>
+  <button onclick="setRango(30)">30 días</button>
 </div>
 
-<!-- 🔷 RESULTADOS -->
+<!-- INPUTS -->
+<label>Fecha de inicio de tu consulta</label>
+<input type="date" id="inicio">
+
+<label>Fecha término de tu consulta</label>
+<input type="date" id="fin">
+
+<button class="btn-consultar" onclick="cargar()">Consultar</button>
+
 <div id="lista"></div>
 
 </div>
@@ -145,10 +162,28 @@ button {
 
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["residente","admin","vigilante"]);
+  setRango(7);
+  cargar();
 });
 
+function setRango(dias){
 
-// 🔥 CARGAR BITÁCORA GLOBAL
+  const hoy = new Date();
+
+  const fin = new Date(hoy);
+  const inicio = new Date(hoy);
+
+  inicio.setDate(hoy.getDate() - dias);
+
+  document.getElementById("inicio").value =
+    inicio.toISOString().split("T")[0];
+
+  document.getElementById("fin").value =
+    fin.toISOString().split("T")[0];
+}
+
+
+// 🔥 CONSULTA GLOBAL
 async function cargar(){
 
   const inicio = document.getElementById("inicio").value;
@@ -159,11 +194,8 @@ async function cargar(){
     return;
   }
 
-  const fechaInicioLocal = parseLocalDate(inicio);
-  const fechaFinLocal = parseLocalDate(fin);
-
-  const rangoInicio = window.getUTCDayRange(fechaInicioLocal);
-  const rangoFin = window.getUTCDayRange(fechaFinLocal);
+  const fechaInicio = new Date(inicio + "T00:00:00");
+  const fechaFin = new Date(fin + "T23:59:59");
 
   const { data, error } = await supabaseClient
     .from("accesos_servicios")
@@ -174,14 +206,13 @@ async function cargar(){
       fecha_salida,
       catalogo_servicios(nombre)
     `)
-    .gte("fecha_entrada", rangoInicio.start)
-    .lte("fecha_entrada", rangoFin.end)
-    .not("fecha_entrada","is",null)
+    .gte("fecha_entrada", fechaInicio.toISOString())
+    .lte("fecha_entrada", fechaFin.toISOString())
     .order("fecha_entrada", { ascending: false });
 
   if(error){
     console.error(error);
-    alert("Error al cargar información");
+    alert("Error al cargar datos");
     return;
   }
 
@@ -207,14 +238,14 @@ async function cargar(){
       </div>
 
       <div class="hora">
-        🟢 Entrada: ${window.formatMXDate(r.fecha_entrada)}
+        🟢 Entrada: ${new Date(r.fecha_entrada).toLocaleString()}
       </div>
 
       <div class="hora">
         ${
           r.fecha_salida
           ? `<span class="estado-finalizado">
-               🔴 Salida: ${window.formatMXDate(r.fecha_salida)}
+               🔴 Salida: ${new Date(r.fecha_salida).toLocaleString()}
              </span>`
           : `<span class="estado-activo">
                🟡 En sitio
