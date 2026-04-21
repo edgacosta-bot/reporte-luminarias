@@ -1,10 +1,14 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 
 <!-- 🔥 ORDEN CORRECTO -->
+
 <script src="utils/dates.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script src="auth.js"></script>
 
 <meta charset="UTF-8">
@@ -89,30 +93,34 @@ button {
   text-align: center;
 }
 </style>
+
 </head>
 
 <body>
 
 <div class="container">
   <div class="card">
-  <img src="/icono-512.png" style="width:70px; display:block; margin:0 auto 10px;">
-    
 
-    <h2>Bitácora de visitantes</h2>
+```
+<!-- 🔥 LOGO -->
+<img src="/icono-512.png" style="width:70px; display:block; margin:0 auto 10px;">
 
-    <div id="infoUsuario" class="info-user"></div>
+<h2>Bitácora de visitantes</h2>
 
-   <label>Fecha de inicio de tu consulta</label>
-   <input id="desde" type="date">
+<div id="infoUsuario" class="info-user"></div>
 
-   <label>Fecha término de tu consulta</label>
-   <input id="hasta" type="date">
+<label>Fecha de inicio de tu consulta</label>
+<input id="desde" type="date">
 
-    <button class="btn-primary" onclick="consultar()">Consultar</button>
+<label>Fecha término de tu consulta</label>
+<input id="hasta" type="date">
 
-    <div id="resultado" class="resultado"></div>
+<button class="btn-primary" onclick="consultar()">Consultar</button>
 
-    <button class="btn-back" onclick="volverInicio()">← Volver al inicio</button>
+<div id="resultado" class="resultado"></div>
+
+<button class="btn-back" onclick="volverInicio()">← Volver al inicio</button>
+```
 
   </div>
 </div>
@@ -154,13 +162,14 @@ window.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("infoUsuario").innerText =
       `Administrador - Consulta general`;
   }
-// 🔥 ESTA ES LA LÍNEA NUEVA
+
+  // 🔥 MENSAJE INICIAL UX
   document.getElementById("resultado").innerHTML =
     "<div class='vacio'>Selecciona filtros y presiona consultar</div>";
-  
+
 });
 
-// 🕒 UTC helper (se mantiene)
+// 🕒 UTC helper
 function toUTC(date, end=false) {
   const d = new Date(date + "T00:00:00");
 
@@ -179,24 +188,24 @@ async function consultar() {
 
   contenedor.innerHTML = "Consultando...";
 
- let query = supabaseClient
-  .from('accesos_visitas')
-  .select(`
-    id,
-    fecha_hora_entrada,
-    fecha_hora_salida,
-    visitas_qr (
-      nombre_visitante,
-      privada,
-      casa,
-      residente_id
-    )
-  `)
-  .not('fecha_hora_entrada', 'is', null)
-  .order('hora_ingreso_utc', { ascending: false });
+  let query = supabaseClient
+    .from('accesos_visitas')
+    .select(`
+      id,
+      fecha_hora_entrada,
+      fecha_hora_salida,
+      visitas_qr (
+        nombre_visitante,
+        privada,
+        casa,
+        residente_id
+      )
+    `)
+    .not('fecha_hora_entrada', 'is', null)
+    .order('fecha_hora_entrada', { ascending: false });
 
   if (rolGlobal !== "admin") {
-    query = query.eq('visitas_qr.residente_id', residenteIdGlobal);// 🔥 ya no consulta otra vez
+    query = query.eq('visitas_qr.residente_id', residenteIdGlobal);
   }
 
   if (desde) query = query.gte('fecha_hora_entrada', toUTC(desde));
@@ -219,23 +228,24 @@ async function consultar() {
 
   data.forEach(v => {
 
-  const visita = v.visitas_qr;
+    if (!v.visitas_qr) return;
 
- 
-  const entrada = formatMXDate(v.fecha_hora_entrada);
-  const salida = v.fecha_hora_salida
-    ? formatMXDate(v.fecha_hora_salida)
-    : "Dentro";
+    const visita = v.visitas_qr;
 
-  contenedor.innerHTML += `
-    <div class="item">
-      <b>${visita.nombre_visitante}</b><br>
-      🟢 Entrada: ${entrada}<br>
-      🔴 Salida: ${salida}<br>
-      🏠 ${visita.privada}-${visita.casa}
-    </div>
-  `;
-});
+    const entrada = formatMXDate(v.fecha_hora_entrada);
+    const salida = v.fecha_hora_salida
+      ? formatMXDate(v.fecha_hora_salida)
+      : "Dentro";
+
+    contenedor.innerHTML += `
+      <div class="item">
+        <b>${visita.nombre_visitante}</b><br>
+        🟢 Entrada: ${entrada}<br>
+        🔴 Salida: ${salida}<br>
+        🏠 ${visita.privada}-${visita.casa}
+      </div>
+    `;
+  });
 }
 
 function volverInicio() {
