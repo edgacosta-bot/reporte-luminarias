@@ -3,8 +3,6 @@
 <html lang="es">
 <head>
 
-<!-- 🔥 ORDEN CORRECTO -->
-
 <script src="utils/dates.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -37,9 +35,36 @@ body {
   padding: 20px;
 }
 
+.logo {
+  width: 70px;
+  display: block;
+  margin: 0 auto 10px;
+}
+
 h2 {
   text-align: center;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
+}
+
+.filtros {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.filtros button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  background: #1f2937;
+  color: white;
+  cursor: pointer;
+}
+
+.filtros button.activo {
+  background: #2563eb;
 }
 
 label {
@@ -102,12 +127,18 @@ button {
   <div class="card">
 
 ```
-<!-- 🔥 LOGO -->
-<img src="/icono-512.png" style="width:70px; display:block; margin:0 auto 10px;">
+<img src="/icono-512.png" class="logo">
 
 <h2>Bitácora de visitantes</h2>
 
 <div id="infoUsuario" class="info-user"></div>
+
+<!-- 🔥 FILTROS PRO -->
+<div class="filtros">
+  <button id="btnHoy" onclick="filtroHoy()">Hoy</button>
+  <button id="btn7" onclick="filtro7dias()">7 días</button>
+  <button id="btn30" onclick="filtro30dias()">30 días</button>
+</div>
 
 <label>Fecha de inicio de tu consulta</label>
 <input id="desde" type="date">
@@ -128,7 +159,6 @@ button {
 <script>
 
 let rolGlobal = null;
-let userIdGlobal = null;
 let residenteIdGlobal = null;
 
 // 🔐 CONTROL
@@ -144,8 +174,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  userIdGlobal = user.id;
-
   const { data: residente } = await supabaseClient
     .from("residentes")
     .select("tipo, privada, casa, id")
@@ -155,28 +183,63 @@ window.addEventListener("DOMContentLoaded", async () => {
   rolGlobal = residente.tipo;
   residenteIdGlobal = residente.id;
 
-  if (rolGlobal !== "admin") {
-    document.getElementById("infoUsuario").innerText =
-      `Privada ${residente.privada} - Casa ${residente.casa}`;
-  } else {
-    document.getElementById("infoUsuario").innerText =
-      `Administrador - Consulta general`;
-  }
+  document.getElementById("infoUsuario").innerText =
+    rolGlobal === "admin"
+      ? "Administrador - Consulta general"
+      : `Privada ${residente.privada} - Casa ${residente.casa}`;
 
-  // 🔥 MENSAJE INICIAL UX
   document.getElementById("resultado").innerHTML =
-    "<div class='vacio'>Selecciona filtros y presiona consultar</div>";
+    "<div class='vacio'>Selecciona un filtro o rango de fechas</div>";
 
 });
 
-// 🕒 UTC helper
+// 🕒 UTC
 function toUTC(date, end=false) {
   const d = new Date(date + "T00:00:00");
-
-  if (end) d.setHours(23,59,59,999);
-  else d.setHours(0,0,0,0);
-
+  end ? d.setHours(23,59,59,999) : d.setHours(0,0,0,0);
   return d.toISOString();
+}
+
+// 🎯 ACTIVAR BOTÓN
+function activarBoton(id) {
+  ["btnHoy","btn7","btn30"].forEach(b=>{
+    document.getElementById(b).classList.remove("activo");
+  });
+  document.getElementById(id).classList.add("activo");
+}
+
+// 📅 SET FECHAS
+function setFechas(desde, hasta) {
+  document.getElementById("desde").value = desde;
+  document.getElementById("hasta").value = hasta;
+}
+
+// 🔥 FILTROS
+function filtroHoy() {
+  const hoy = new Date().toISOString().slice(0,10);
+  setFechas(hoy, hoy);
+  activarBoton("btnHoy");
+  consultar();
+}
+
+function filtro7dias() {
+  const hoy = new Date();
+  const desde = new Date();
+  desde.setDate(hoy.getDate() - 6);
+
+  setFechas(desde.toISOString().slice(0,10), hoy.toISOString().slice(0,10));
+  activarBoton("btn7");
+  consultar();
+}
+
+function filtro30dias() {
+  const hoy = new Date();
+  const desde = new Date();
+  desde.setDate(hoy.getDate() - 29);
+
+  setFechas(desde.toISOString().slice(0,10), hoy.toISOString().slice(0,10));
+  activarBoton("btn30");
+  consultar();
 }
 
 // 🔍 CONSULTA
