@@ -143,17 +143,16 @@ button:active {
   justify-content: center;
   align-items: center;
   z-index: 999;
+  <div id="errorNip" style="
+  margin-top:10px;
+  color:#dc2626;
+  font-size:14px;
+  display:none;
+">
+  NIP incorrecto
+</div>
 }
   
-.modal-box {
-  background: white;
-  color: black;
-  padding: 20px;
-  border-radius: 14px;
-  width: 85%;
-  max-width: 300px;
-  text-align: center;
-}
 
 .modal-box input {
   width: 100%;
@@ -292,22 +291,30 @@ function abrirNIP(tipo, id){
   accion = tipo;
   registroId = id;
   document.getElementById("modal").style.display = "flex";
+  document.getElementById("errorNip").style.display = "none";
+  document.getElementById("nip").value = "";
 }
 
+function mostrarError(msg){
+  const e = document.getElementById("errorNip");
+  e.innerText = msg;
+  e.style.display = "block";
+}
+  
 async function confirmarNIP(){
 
-  const nip = document.getElementById("nip").value;
+  const nip = document.getElementById("nip").value.trim();
 
-  const { data: vigilante } = await supabaseClient
-    .from("vigilantes")
-    .select("id,nip")
-    .eq("nip", nip)
-    .single();
+const { data: vigilante, error } = await supabaseClient
+  .from("vigilantes")
+  .select("id,nip")
+  .eq("nip", nip)
+  .maybeSingle();
 
-  if(!vigilante){
-    alert("NIP incorrecto");
-    return;
-  }
+if (!vigilante) {
+  mostrarError("NIP incorrecto");
+  return;
+}
 
   const ahora = new Date().toISOString();
 
