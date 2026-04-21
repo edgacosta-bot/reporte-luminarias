@@ -2,12 +2,14 @@
 <html lang="es">
 <head>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js"></script>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Servicios del fraccionamiento</title>
+
+<title>Bitácora de accesos</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script src="/utils/dates.js"></script>
 
 <style>
 
@@ -18,96 +20,98 @@ body {
   color: white;
 }
 
-/* 🔥 HEADER APP */
+/* 🔷 HEADER */
 .header-app {
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: 20px;
-  margin-bottom: 10px;
 }
 
 .logo-app {
-  width: 70px;
-  height: 70px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
-  opacity: 0.95;
 }
 
+/* 🔷 CONTENEDOR */
 .container {
-  max-width: 500px;
+  max-width: 520px;
   margin: auto;
   padding: 20px;
 }
 
-.info {
-  background: #111827;
-  padding: 15px;
-  border-radius: 14px;
+h2 {
+  text-align: center;
   margin-bottom: 15px;
-  font-size: 14px;
-  color: #cbd5f5;
 }
 
+/* 🔷 FILTROS */
 .filtros {
   display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
-.filtros button {
-  flex: 1;
-  padding: 10px;
+input {
+  padding: 12px;
   border-radius: 10px;
   border: none;
   background: #1f2937;
   color: white;
-  font-size: 13px;
-  cursor: pointer;
+  font-size: 14px;
 }
 
-input {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: none;
-  background: #1f2937;
-  color: white;
-  margin-bottom: 10px;
-}
-
-button.consultar {
-  width: 100%;
+button {
   padding: 14px;
   border-radius: 12px;
   border: none;
   background: #2563eb;
   color: white;
   font-weight: bold;
+  font-size: 15px;
   cursor: pointer;
 }
 
+/* 🔷 CARD */
 .card {
   background: #111827;
-  padding: 15px;
-  border-radius: 14px;
-  margin-top: 12px;
-  border-left: 6px solid #3b82f6;
+  padding: 16px;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
 }
 
 .nombre {
   font-weight: bold;
-  font-size: 15px;
+  font-size: 16px;
+  margin-bottom: 6px;
 }
 
 .detalle {
   font-size: 13px;
-  margin-top: 4px;
   color: #cbd5f5;
+  margin-bottom: 6px;
 }
 
 .hora {
-  font-size: 12px;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.estado-activo {
+  color: #facc15;
+}
+
+.estado-finalizado {
+  color: #f87171;
+}
+
+/* 🔷 VACÍO */
+.vacio {
+  text-align: center;
+  margin-top: 20px;
   color: #94a3b8;
 }
 
@@ -116,100 +120,42 @@ button.consultar {
 
 <body>
 
-<!-- 🔥 HEADER UX PRO -->
+<!-- 🔷 LOGO -->
 <div class="header-app">
   <img src="/icono-512.png" class="logo-app">
 </div>
 
 <div class="container">
 
-<div class="info">
-Consulta los servicios que han ingresado al fraccionamiento.<br>
-Puede verificar horarios y personal que realizó el acceso.
-</div>
+<h2>📊 Bitácora de accesos</h2>
 
+<!-- 🔷 FILTROS -->
 <div class="filtros">
-  <button onclick="filtroRapido('hoy')">Hoy</button>
-  <button onclick="filtroRapido('ayer')">Ayer</button>
-  <button onclick="filtroRapido('semana')">7 días</button>
-  <button onclick="filtroRapido('custom')">Personalizado</button>
+  <input type="date" id="inicio">
+  <input type="date" id="fin">
+  <button onclick="cargar()">Consultar</button>
 </div>
 
-<input type="date" id="inicio">
-<input type="date" id="fin">
-
-<button class="consultar" onclick="cargar()">Consultar</button>
-
+<!-- 🔷 RESULTADOS -->
 <div id="lista"></div>
 
 </div>
 
-<!-- 🔥 FECHAS GLOBAL -->
-<script src="/utils/dates.js"></script>
-
 <script>
 
-// 🔹 PROTEGER
-window.addEventListener("DOMContentLoaded", async ()=>{
-  await protegerPagina(["residente","colono"]);
+window.addEventListener("DOMContentLoaded", async () => {
+  await protegerPagina(["residente","admin","vigilante"]);
 });
 
-// 🔹 PARSE LOCAL (FIX ZONA HORARIA)
-function parseLocalDate(dateString) {
-  const [year, month, day] = dateString.split("-");
-  return new Date(year, month - 1, day);
-}
 
-// 🔹 FORMATO INPUT
-function formatoInput(fecha){
-  return fecha.toISOString().split("T")[0];
-}
-
-// 🔹 SET INPUTS
-function setFechaInputs(inicio, fin){
-  document.getElementById("inicio").value = inicio;
-  document.getElementById("fin").value = fin;
-}
-
-// 🔹 FILTROS RÁPIDOS
-function filtroRapido(tipo){
-
-  const hoy = new Date();
-  let inicio, fin;
-
-  if(tipo === "hoy"){
-    inicio = new Date(hoy);
-    fin = new Date(hoy);
-  }
-
-  if(tipo === "ayer"){
-    inicio = new Date(hoy);
-    inicio.setDate(inicio.getDate() - 1);
-    fin = new Date(inicio);
-  }
-
-  if(tipo === "semana"){
-    inicio = new Date(hoy);
-    inicio.setDate(inicio.getDate() - 7);
-    fin = new Date(hoy);
-  }
-
-  if(tipo === "custom"){
-    return;
-  }
-
-  setFechaInputs(formatoInput(inicio), formatoInput(fin));
-  cargar();
-}
-
-// 🔹 CARGAR DATOS
+// 🔥 CARGAR BITÁCORA GLOBAL
 async function cargar(){
 
   const inicio = document.getElementById("inicio").value;
   const fin = document.getElementById("fin").value;
 
   if(!inicio || !fin){
-    alert("Selecciona fechas");
+    alert("Selecciona rango de fechas");
     return;
   }
 
@@ -222,28 +168,38 @@ async function cargar(){
   const { data, error } = await supabaseClient
     .from("accesos_servicios")
     .select(`
-      *,
+      id,
+      nombre_persona,
+      fecha_entrada,
+      fecha_salida,
       catalogo_servicios(nombre)
     `)
     .gte("fecha_entrada", rangoInicio.start)
     .lte("fecha_entrada", rangoFin.end)
-    .order("fecha_entrada",{ascending:false});
+    .not("fecha_entrada","is",null)
+    .order("fecha_entrada", { ascending: false });
 
   if(error){
-    console.error("ERROR SUPABASE:", error);
-    alert("Error al cargar datos");
+    console.error(error);
+    alert("Error al cargar información");
     return;
   }
 
-  let html="";
+  let html = "";
 
-  data?.forEach(r=>{
+  if(!data || data.length === 0){
+    document.getElementById("lista").innerHTML =
+      `<div class="vacio">No hay registros en el rango seleccionado</div>`;
+    return;
+  }
+
+  data.forEach(r => {
 
     html += `
     <div class="card">
 
       <div class="nombre">
-        🚛 ${r.catalogo_servicios?.nombre || "Servicio"}
+        🚚 ${r.catalogo_servicios?.nombre || "Servicio"}
       </div>
 
       <div class="detalle">
@@ -257,16 +213,20 @@ async function cargar(){
       <div class="hora">
         ${
           r.fecha_salida
-          ? `🔴 Salida: ${window.formatMXDate(r.fecha_salida)}`
-          : "⚠️ En sitio"
+          ? `<span class="estado-finalizado">
+               🔴 Salida: ${window.formatMXDate(r.fecha_salida)}
+             </span>`
+          : `<span class="estado-activo">
+               🟡 En sitio
+             </span>`
         }
       </div>
 
     </div>`;
   });
 
-  document.getElementById("lista").innerHTML =
-    html || "Sin registros";
+  document.getElementById("lista").innerHTML = html;
+
 }
 
 </script>
