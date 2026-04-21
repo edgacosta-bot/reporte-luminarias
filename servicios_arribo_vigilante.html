@@ -332,11 +332,14 @@ async function confirmarNIP(){
     return;
   }
 
-  // 🔥 CONSULTA CORRECTA
+  // 🔥 VALIDAR CONTRA RESIDENTES (tipo vigilante)
   const { data: vigilante, error } = await supabaseClient
-    .from("vigilantes")
-    .select("id, nip")
-    .eq("nip", nip) // 🔥 SIN Number()
+     .from("residentes")
+    .select("id, pin_vigilante")
+    .eq("tipo", "vigilante")
+    .eq("pin_vigilante", nip)
+    .eq("activo", true)
+    .limit(1)           // 👈 AGREGA ESTO
     .maybeSingle();
 
   console.log("VIGILANTE:", vigilante);
@@ -349,6 +352,7 @@ async function confirmarNIP(){
 
   const ahora = new Date().toISOString();
 
+  // 🔥 ENTRADA
   if(accion === "entrada"){
 
     await supabaseClient
@@ -360,12 +364,12 @@ async function confirmarNIP(){
       })
       .eq("id", registroId);
 
-    const mensaje = `Estimado residente, el servicio que tiene en espera, en este momento ha entrado al fraccionamiento. Gracias.`;
-
+    const mensaje = `Estimado residente, el servicio que tiene en espera ha ingresado al fraccionamiento. Gracias.`;
     const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
     window.open(url, "_blank");
   }
 
+  // 🔥 SALIDA
   if(accion === "salida"){
 
     await supabaseClient
@@ -378,6 +382,7 @@ async function confirmarNIP(){
       .eq("id", registroId);
   }
 
+  // 🔥 LIMPIEZA
   document.getElementById("modal").style.display = "none";
   document.getElementById("nip").value = "";
 
