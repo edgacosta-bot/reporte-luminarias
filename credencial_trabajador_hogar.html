@@ -130,7 +130,7 @@ document.getElementById("detalle").innerText =
   `Privada ${privada} • Lote ${casa}`;
 
 // 🔥 CONTROL BOTÓN WA
-if (origen !== "admin") {
+if (origen !== "admin" && origen !== "residente") {
   document.getElementById("btnWA").style.display = "none";
 }
 
