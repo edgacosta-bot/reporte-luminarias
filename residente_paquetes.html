@@ -100,52 +100,40 @@ h2 {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script src="utils/residente.js"></script>
 
 <script>
-const { createClient } = supabase;
+window.addEventListener("load", () => {
+  protegerPagina(["residente"]);
+});
 
-const supabaseClient = createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
+<script>
+
 
 let residenteId = null;
 let estadoPago = null;
 let autorizado = false;
 
-async function obtenerDatosUsuario() {
 
-  const { data: userData } = await supabaseClient.auth.getUser();
-
-  if (!userData?.user) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  const userId = userData.user.id;
-
-  const { data: residente } = await supabaseClient
-    .from("residentes")
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (!residente) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  residenteId = residente.id;
-  estadoPago = residente.estado_pago;
-  autorizado = residente.recibe_paquetes || false;
-}
   
 const toggle = document.getElementById("toggle");
 const mensaje = document.getElementById("mensaje");
 
 // 🔽 CARGAR DATOS
 async function cargar() {
-  await obtenerDatosUsuario();
+
+  const residente = await getResidente();
+
+  if (!residente) {
+    alert("Error de sesión");
+    return;
+  }
+
+  residenteId = residente.id;
+  estadoPago = (residente.estado_pago || "").toLowerCase();
+  autorizado = residente.recibe_paquetes || false;
+
   render();
 }
 
