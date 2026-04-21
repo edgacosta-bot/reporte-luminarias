@@ -251,33 +251,18 @@ async function registrarSalida(id){
 
   const vigilante = await validarNIP(pin);
 
-if(!vigilante){
-  alert("NIP incorrecto");
-  return;
-}
+  if(!vigilante){
+    alert("NIP incorrecto");
+    return;
+  }
 
-// 🔥 👉 AQUÍ VA LA VALIDACIÓN (ANTES DEL INSERT)
-const { data: abierto } = await supabaseClient
-  .from("accesos_servicios")
-  .select("id")
-  .eq("servicio_id", servicio_id)
-  .is("fecha_salida", null)
-  .limit(1);
-
-if (abierto && abierto.length > 0) {
-  alert("Ya existe un acceso abierto para este servicio");
-  return;
-}
-
-// 🔽 INSERT (esto ya lo tenías)
-const { error } = await supabaseClient
-  .from("accesos_servicios")
-  .insert([{
-    servicio_id,
-    nombre_persona: nombre,
-    fecha_entrada: new Date().toISOString(),
-    vigilante_entrada_id: vigilante.id
-  }]);
+  // 🔥 UPDATE (NO INSERT)
+  const { error } = await supabaseClient
+    .from("accesos_servicios")
+    .update({
+      fecha_salida: new Date().toISOString(),
+      vigilante_salida_id: vigilante.id
+    })
     .eq("id", id);
 
   if(error){
@@ -288,7 +273,6 @@ const { error } = await supabaseClient
 
   cargarServicios();
 }
-
 </script>
 
 </body>
