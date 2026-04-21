@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -6,6 +7,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script src="auth.js"></script>
 
   <style>
     * { box-sizing: border-box; }
@@ -19,7 +22,7 @@
       height: 100vh;
       color: white;
       text-align: center;
-      transition: background 0.3s ease;
+      background: #020617;
     }
 
     .container {
@@ -28,8 +31,13 @@
       width: 100%;
     }
 
+    .logo {
+      width: 80px;
+      margin-bottom: 15px;
+    }
+
     h1 {
-      font-size: 32px;
+      font-size: 28px;
       margin-bottom: 10px;
       font-weight: bold;
     }
@@ -39,22 +47,22 @@
     .error { background: #dc2626; }
 
     .control {
-      margin-top: 25px;
+      margin-top: 20px;
       display: none;
     }
 
     input {
       width: 100%;
-      padding: 14px;
+      padding: 16px;
       border-radius: 10px;
-      border: 1px solid #334155;
+      border: none;
       margin-top: 10px;
       font-size: 18px;
       text-align: center;
       background: #020617;
       color: white;
       font-weight: bold;
-      letter-spacing: 2px;
+      letter-spacing: 4px;
     }
 
     button {
@@ -64,58 +72,70 @@
       border-radius: 10px;
       border: none;
       font-weight: bold;
-      font-size: 18px;
+      font-size: 16px;
       cursor: pointer;
     }
 
     .btn {
       background: #020617;
       color: white;
-      opacity: 0.4;
+      opacity: 0.5;
     }
 
     .btn.enabled {
       opacity: 1;
-      transform: scale(1.02);
     }
 
     .error-box {
       display: none;
-      margin-top: 12px;
+      margin-top: 10px;
       padding: 10px;
       border-radius: 8px;
       background: #7f1d1d;
       color: #fecaca;
       font-weight: bold;
     }
+
+    .btn-wa {
+      background: #25D366;
+      color: white;
+    }
+
+    .btn-cerrar {
+      background: #020617;
+      color: white;
+    }
   </style>
+
 </head>
 
 <body>
 
 <div class="container">
+
+  <img src="/icono-512.png" class="logo">
+
   <h1 id="estado">Validando...</h1>
   <div id="detalle"></div>
 
   <div id="control" class="control">
-    <input type="password" id="pin" placeholder="Ingrese PIN">
+    <input type="password" id="pin" placeholder="Ingrese NIP">
 
-    <div id="errorPin" class="error-box">
-      PIN incorrecto
-    </div>
+```
+<div id="errorPin" class="error-box">
+  NIP incorrecto
+</div>
 
-    <button id="btnAutorizar" class="btn" disabled>
-      Autorizar acceso
-    </button>
+<button id="btnAutorizar" class="btn" disabled>
+  Autorizar acceso
+</button>
+```
+
   </div>
+
 </div>
 
 <script>
-
-const client = window.supabase.createClient(
-  'https://prjxmfhahnzosdwljode.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs'
-);
 
 const params = new URLSearchParams(window.location.search);
 const qr = params.get("qr")?.trim();
@@ -124,15 +144,28 @@ let visitaGlobal = null;
 let tipoAccion = "";
 let accesoActual = null;
 
-init();
-
-async function init() {
+window.addEventListener("DOMContentLoaded", async ()=>{
+  await protegerPagina(["vigilante","admin"]);
   await validar();
+});
+
+// 🔐 VALIDAR NIP
+async function validarNIP(pin){
+  const { data } = await supabaseClient
+    .from("residentes")
+    .select("id")
+    .eq("pin_vigilante", pin.trim())
+    .eq("tipo","vigilante")
+    .eq("activo", true)
+    .maybeSingle();
+
+  return data || null;
 }
 
-async function validar() {
+// 🔍 VALIDACIÓN GENERAL
+async function validar(){
 
-  const { data, error } = await client
+  const { data, error } = await supabaseClient
     .from('visitas_qr')
     .select('*')
     .eq('codigo_qr', qr)
@@ -145,46 +178,23 @@ async function validar() {
 
   visitaGlobal = data;
 
-  const { data: accesosFinalizados } = await client
-    .from('accesos_visitas')
-    .select('id')
-    .eq('visita_id', visitaGlobal.id)
-    .not('fecha_hora_salida', 'is', null)
-    .limit(1);
-
-  if (accesosFinalizados?.length > 0) {
-    pintar("ACCESO YA FINALIZADO", "error", visitaGlobal);
-    return;
-  }
-
-  if (visitaGlobal.estatus === 'finalizado') {
-    pintar("ACCESO YA FINALIZADO", "error", visitaGlobal);
-    return;
-  }
-
-  if (visitaGlobal.estatus === 'cancelado') {
-    pintar("ACCESO CANCELADO", "error", visitaGlobal);
-    return;
-  }
-
-  const now = new Date();
-  const hoy = new Date().toLocaleDateString('sv-SE');
-  const horaActual = now.toTimeString().slice(0,5);
-
-  const horaInicio = visitaGlobal.hora_inicio.slice(0,5);
-  const horaFin = visitaGlobal.hora_fin.slice(0,5);
+  const hoy = new Date().toISOString().slice(0,10);
 
   if (visitaGlobal.fecha_visita !== hoy) {
     pintar("QR NO VÁLIDO PARA HOY", "error", visitaGlobal);
     return;
   }
 
-  if (horaActual < horaInicio || horaActual > horaFin) {
+  const ahora = new Date();
+  const inicio = new Date(`${visitaGlobal.fecha_visita}T${visitaGlobal.hora_inicio}`);
+  const fin = new Date(`${visitaGlobal.fecha_visita}T${visitaGlobal.hora_fin}`);
+
+  if (ahora < inicio || ahora > fin) {
     pintar("FUERA DE HORARIO", "error", visitaGlobal);
     return;
   }
 
-  const { data: accesos } = await client
+  const { data: accesos } = await supabaseClient
     .from('accesos_visitas')
     .select('id')
     .eq('visita_id', visitaGlobal.id)
@@ -202,43 +212,46 @@ async function validar() {
     pintar("REGISTRAR SALIDA", "warn", visitaGlobal);
   }
 
+  prepararControl();
+}
+
+// 🎛️ UI CONTROL
+function prepararControl(){
+
   const btn = document.getElementById("btnAutorizar");
 
-if (tipoAccion === "entrada") {
-  btn.innerText = "Autorizar acceso";
-  btn.style.background = "#16a34a";
-} else {
-  btn.innerText = "Autorizar salida";
-  btn.style.background = "#f59e0b";
-}
-
   document.getElementById("control").style.display = "block";
+
+  if (tipoAccion === "entrada") {
+    btn.innerText = "Autorizar acceso";
+    btn.style.background = "#16a34a";
+  } else {
+    btn.innerText = "Autorizar salida";
+    btn.style.background = "#f59e0b";
+  }
+
+  document.getElementById("pin").focus();
 }
 
+// 🔥 INPUT
 const pinInput = document.getElementById("pin");
 const btn = document.getElementById("btnAutorizar");
 const errorDiv = document.getElementById("errorPin");
 
 pinInput.addEventListener("input", () => {
-  btn.disabled = pinInput.value.length < 4;
-  btn.classList.toggle("enabled", pinInput.value.length >= 4);
+  const valido = pinInput.value.length >= 4;
+  btn.disabled = !valido;
+  btn.classList.toggle("enabled", valido);
   errorDiv.style.display = "none";
 });
 
+// 🚀 ACCIÓN PRINCIPAL
 btn.addEventListener("click", async () => {
 
   btn.disabled = true;
   btn.innerText = "Procesando...";
 
-  const pin = pinInput.value;
-
-  const { data: vigilante } = await client
-    .from("residentes")
-    .select("id")
-    .eq("pin_vigilante", pin)
-    .eq("tipo", "vigilante")
-    .eq("activo", true)
-    .maybeSingle();
+  const vigilante = await validarNIP(pinInput.value);
 
   if (!vigilante) {
     errorDiv.style.display = "block";
@@ -252,7 +265,7 @@ btn.addEventListener("click", async () => {
 
   if (tipoAccion === "entrada") {
 
-    const { data: nuevoAcceso, error } = await client
+    const { data: nuevoAcceso, error } = await supabaseClient
       .from('accesos_visitas')
       .insert([{
         visita_id: visitaGlobal.id,
@@ -270,7 +283,7 @@ btn.addEventListener("click", async () => {
 
     pintar("ENTRADA REGISTRADA", "ok", visitaGlobal);
 
-    client
+    await supabaseClient
       .from('accesos_visitas')
       .update({
         notificado: true,
@@ -285,7 +298,7 @@ btn.addEventListener("click", async () => {
 
   } else {
 
-    await client
+    await supabaseClient
       .from('accesos_visitas')
       .update({
         fecha_hora_salida: ahora,
@@ -294,7 +307,7 @@ btn.addEventListener("click", async () => {
       })
       .eq('id', accesoActual.id);
 
-    await client
+    await supabaseClient
       .from('visitas_qr')
       .update({ estatus: 'finalizado' })
       .eq('id', visitaGlobal.id);
@@ -309,6 +322,7 @@ btn.addEventListener("click", async () => {
 
 });
 
+// 📲 BOTÓN WHATSAPP (RECUPERADO)
 function crearBotonNotificar(mensaje, color) {
 
   const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
@@ -317,17 +331,9 @@ function crearBotonNotificar(mensaje, color) {
   existentes.forEach(b => b.remove());
 
   const btnWA = document.createElement("button");
-btnWA.innerText = "Notificar";
-
-btnWA.style.marginTop = "12px";
-btnWA.style.background = color;
-btnWA.style.color = "white";
-btnWA.style.fontWeight = "bold";
-btnWA.style.borderRadius = "10px";
-btnWA.style.boxShadow = "0 4px 10px rgba(0,0,0,0.3)";
-btnWA.style.padding = "14px";
-btnWA.style.border = "none";
-btnWA.style.cursor = "pointer";
+  btnWA.innerText = "Notificar";
+  btnWA.className = "btn-wa";
+  btnWA.style.background = color;
 
   btnWA.onclick = () => {
 
@@ -337,20 +343,9 @@ btnWA.style.cursor = "pointer";
     btnWA.style.background = "#1e293b";
     btnWA.disabled = true;
 
-    const cierreExistente = document.querySelector(".btn-cerrar");
-    if (cierreExistente) cierreExistente.remove();
-
     const btnCerrar = document.createElement("button");
     btnCerrar.innerText = "Finalizar";
-    btnCerrar.style.marginTop = "10px";
-btnCerrar.style.background = "#020617";
-btnCerrar.style.color = "white";
-btnCerrar.style.borderRadius = "10px";
-btnCerrar.style.padding = "14px";
-btnCerrar.style.fontWeight = "bold";
-btnCerrar.style.border = "none";
-btnCerrar.style.cursor = "pointer";
-    btnCerrar.classList.add("btn-cerrar");
+    btnCerrar.className = "btn-cerrar";
 
     btnCerrar.onclick = () => {
       window.close();
@@ -362,10 +357,10 @@ btnCerrar.style.cursor = "pointer";
     document.querySelector(".container").appendChild(btnCerrar);
   };
 
-  btnWA.classList.add("btn-wa");
   document.querySelector(".container").appendChild(btnWA);
 }
 
+// 🎨 UI
 function pintar(mensaje, tipo, data = null) {
   document.getElementById("control").style.display = "none";
   document.getElementById("estado").innerText = mensaje;
