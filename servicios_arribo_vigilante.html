@@ -139,11 +139,10 @@ button:active {
   width: 100%;
   height: 100%;
   background: rgba(0,0,0,0.6);
-  display: none; /* 🔥 CLAVE */
+  display: none;
   justify-content: center;
   align-items: center;
   z-index: 999;
- </div>
 }
   
 
@@ -314,6 +313,12 @@ function abrirNIP(tipo, id){
 
 function mostrarError(msg){
   const e = document.getElementById("errorNip");
+
+  if (!e) {
+    alert(msg);
+    return;
+  }
+
   e.innerText = msg;
   e.style.display = "block";
 }
@@ -322,16 +327,25 @@ async function confirmarNIP(){
 
   const nip = document.getElementById("nip").value.trim();
 
-const { data: vigilante, error } = await supabaseClient
-  .from("vigilantes")
-  .select("id,nip")
-  .eq("nip", Number(nip))
-  .maybeSingle();
+  if (!nip) {
+    mostrarError("Ingrese NIP");
+    return;
+  }
 
-if (!vigilante) {
-  mostrarError("NIP incorrecto");
-  return;
-}
+  // 🔥 CONSULTA CORRECTA
+  const { data: vigilante, error } = await supabaseClient
+    .from("vigilantes")
+    .select("id, nip")
+    .eq("nip", nip) // 🔥 SIN Number()
+    .maybeSingle();
+
+  console.log("VIGILANTE:", vigilante);
+  console.log("ERROR:", error);
+
+  if (error || !vigilante) {
+    mostrarError("NIP incorrecto");
+    return;
+  }
 
   const ahora = new Date().toISOString();
 
@@ -346,11 +360,10 @@ if (!vigilante) {
       })
       .eq("id", registroId);
 
-    // 🔥 WA SE MANTIENE
     const mensaje = `Estimado residente, el servicio que tiene en espera, en este momento ha entrado al fraccionamiento. Gracias.`;
+
     const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
     window.open(url, "_blank");
-
   }
 
   if(accion === "salida"){
@@ -363,7 +376,6 @@ if (!vigilante) {
         vigilante_salida_id: vigilante.id
       })
       .eq("id", registroId);
-
   }
 
   document.getElementById("modal").style.display = "none";
