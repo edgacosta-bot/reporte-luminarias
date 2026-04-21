@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -63,6 +64,7 @@ h2 {
   cursor: pointer;
 }
 </style>
+
 </head>
 
 <body>
@@ -96,26 +98,36 @@ const privada = params.get("privada");
 const casa = params.get("casa");
 const origen = params.get("origen");
 
-// 🔐 VALIDACIÓN
-if (!codigo) {
-  document.body.innerHTML = "QR inválido";
-  throw new Error("QR inválido");
+// 🔐 VALIDACIÓN COMPLETA
+if (!codigo || !nombre || !privada || !casa) {
+  document.body.innerHTML = "Datos incompletos";
+  throw new Error("Datos incompletos");
 }
 
-// 🔥 URL REAL DE ACCESO
-const urlQR = `${window.location.origin}/acceso_trabajador_hogar.html?qr=${codigo}`;
+// 🔥 BASE URL
+const baseURL = window.location.origin;
 
-// 🎯 GENERAR QR
-QRCode.toCanvas(urlQR, { width: 220 }, function (err, canvas) {
+// 🔥 URL REAL DE ACCESO
+const urlQR = `${baseURL}/acceso_trabajador_hogar.html?qr=${codigo}`;
+
+// 🎯 GENERAR QR (MEJORADO)
+QRCode.toCanvas(urlQR, {
+  width: 240,
+  margin: 2,
+  color: {
+    dark: "#000000",
+    light: "#ffffff"
+  }
+}, function (err, canvas) {
   if (!err) {
     document.getElementById("qr").appendChild(canvas);
   }
 });
 
 // 🧾 DATOS
-document.getElementById("nombre").innerText = nombre || "";
+document.getElementById("nombre").innerText = nombre;
 document.getElementById("detalle").innerText =
-  `Privada ${privada || ""} - Lote ${casa || ""}`;
+  `Privada ${privada} • Lote ${casa}`;
 
 // 🔥 CONTROL BOTÓN WA
 if (origen !== "admin") {
@@ -126,7 +138,7 @@ if (origen !== "admin") {
 document.getElementById("btnWA").addEventListener("click", () => {
 
   const linkCredencial =
-    `${window.location.origin}/credencial_trabajador_hogar.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
+    `${baseURL}/credencial_trabajador_hogar.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
 
   const mensaje =
     `👷 Credencial de acceso\n\n` +
