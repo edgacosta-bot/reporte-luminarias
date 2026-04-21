@@ -143,14 +143,7 @@ button:active {
   justify-content: center;
   align-items: center;
   z-index: 999;
-  <div id="errorNip" style="
-  margin-top:10px;
-  color:#dc2626;
-  font-size:14px;
-  display:none;
-">
-  NIP incorrecto
-</div>
+ </div>
 }
   
 
@@ -191,28 +184,40 @@ button:active {
 <!-- 🔥 MODAL NIP -->
 <div id="modal" class="modal">
   <div class="modal-box">
+
     <h3>Validar NIP</h3>
 
     <input 
-  type="password" 
-  id="nip" 
-  placeholder="Ingrese NIP"
-  inputmode="numeric"
-  maxlength="6"
-  style="
-    width: 100%;
-    padding: 16px;
-    margin-top: 12px;
-    border-radius: 12px;
-    border: 1px solid #d1d5db;
-    font-size: 18px;
-    text-align: center;
-    letter-spacing: 6px;
-    box-sizing: border-box;
-  "
-> 
-    
+      type="password" 
+      id="nip" 
+      placeholder="Ingrese NIP"
+      inputmode="numeric"
+      maxlength="6"
+      style="
+        width: 100%;
+        padding: 16px;
+        margin-top: 12px;
+        border-radius: 12px;
+        border: 1px solid #d1d5db;
+        font-size: 18px;
+        text-align: center;
+        letter-spacing: 6px;
+        box-sizing: border-box;
+      "
+    >
+
+    <!-- 🔴 AQUÍ VA ESTO -->
+    <div id="errorNip" style="
+      margin-top:10px;
+      color:#dc2626;
+      font-size:14px;
+      display:none;
+      text-align:center;
+    ">
+    </div>
+
     <button onclick="confirmarNIP()">Confirmar</button>
+
   </div>
 </div>
 
@@ -283,16 +288,28 @@ async function cargar() {
       </div>
     `;
 
-    contenedor.appendChild(card);
+    contenedor.appendChild(card);  
   });
 }
 
 function abrirNIP(tipo, id){
   accion = tipo;
   registroId = id;
-  document.getElementById("modal").style.display = "flex";
-  document.getElementById("errorNip").style.display = "none";
-  document.getElementById("nip").value = "";
+
+  const modal = document.getElementById("modal");
+  modal.style.display = "flex";
+
+  // 🔥 INPUT
+  const input = document.getElementById("nip");
+
+  if (input) {
+    input.value = "";   // limpia
+    input.focus();      // 👈 AQUÍ ESTÁ EL AUTO-FOCUS
+  }
+
+  // 🔥 LIMPIAR ERROR
+  const error = document.getElementById("errorNip");
+  if (error) error.style.display = "none";
 }
 
 function mostrarError(msg){
@@ -308,7 +325,7 @@ async function confirmarNIP(){
 const { data: vigilante, error } = await supabaseClient
   .from("vigilantes")
   .select("id,nip")
-  .eq("nip", nip)
+  .eq("nip", Number(nip))
   .maybeSingle();
 
 if (!vigilante) {
