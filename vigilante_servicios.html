@@ -2,12 +2,13 @@
 <html lang="es">
 <head>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js"></script>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Accesos recurrentes</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script src="/utils/dates.js"></script>
 
 <style>
 
@@ -18,78 +19,104 @@ body {
   color: white;
 }
 
-/* 🔥 HEADER APP */
+/* HEADER */
 .header-app {
   display: flex;
   justify-content: center;
-  align-items: center;
   margin-top: 20px;
-  margin-bottom: 10px;
 }
 
 .logo-app {
-  width: 70px;
-  height: 70px;
-  object-fit: contain;
-  opacity: 0.95;
+  width: 80px;
 }
 
+/* CONTENEDOR */
 .container {
-  max-width: 500px;
+  max-width: 520px;
   margin: auto;
-  padding: 20px;
+  padding: 18px;
 }
 
 h2 {
   text-align: center;
-  margin-bottom: 15px;
+  margin-bottom: 18px;
 }
 
-/* 🔥 CARD */
+/* CARD */
 .card {
   background: #111827;
-  padding: 16px;
-  border-radius: 16px;
-  margin-bottom: 12px;
+  padding: 18px;
+  border-radius: 18px;
+  margin-bottom: 14px;
   border-left: 6px solid #3b82f6;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
 }
 
 .nombre {
   font-weight: bold;
-  font-size: 16px;
+  font-size: 17px;
+  margin-bottom: 6px;
 }
 
 .estado {
   font-size: 13px;
-  color: #94a3b8;
-  margin-top: 4px;
+  margin-bottom: 10px;
 }
 
-/* 🔥 INPUT */
+.estado.activo {
+  color: #4ade80;
+}
+
+.estado.cerrado {
+  color: #f87171;
+}
+
+/* INPUTS */
 input {
   width: 100%;
-  padding: 12px;
-  border-radius: 10px;
+  padding: 14px;
+  border-radius: 12px;
   border: none;
   margin-top: 8px;
-  font-size: 14px;
+  font-size: 15px;
   background: #1f2937;
   color: white;
 }
 
-/* 🔥 BOTONES */
+/* BOTONES */
 .btn {
-  margin-top: 10px;
-  padding: 12px;
-  border-radius: 10px;
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 12px;
   border: none;
   width: 100%;
   font-weight: bold;
+  font-size: 15px;
   cursor: pointer;
+}
+
+.btn:active {
+  transform: scale(0.97);
 }
 
 .entrada { background: #16a34a; }
 .salida { background: #dc2626; }
+
+/* MENSAJES */
+.mensaje {
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.error { color: #f87171; }
+.ok { color: #4ade80; }
+
+/* VACÍO */
+.vacio {
+  text-align: center;
+  color: #94a3b8;
+  margin-top: 20px;
+}
 
 </style>
 </head>
@@ -102,37 +129,36 @@ input {
 
 <div class="container">
 <h2>🚧 Accesos recurrentes</h2>
-<div id="lista">Cargando...</div>
+<div id="lista" class="vacio">Cargando servicios...</div>
 </div>
-
-<script src="/utils/dates.js"></script>
 
 <script>
 
 window.addEventListener("DOMContentLoaded", async ()=>{
-  await protegerPagina(["vigilante","admin"]);
+  await protegerPagina(["vigilante"]);
   cargarServicios();
 });
 
 // 🔐 VALIDAR NIP
-async function validarNIP(pinIngresado){
+async function validarNIP(pin){
 
-  if(!pinIngresado) return null;
+  const limpio = pin.trim().replace(/\s+/g,"");
 
-  const { data, error } = await supabaseClient
+  const { data } = await supabaseClient
     .from("residentes")
-    .select("id, pin_vigilante, tipo")
+    .select("id")
     .eq("tipo","vigilante")
-    .eq("pin_vigilante", pinIngresado)
+    .eq("pin_vigilante", limpio)
     .maybeSingle();
 
-  if(error || !data) return null;
-
-  return data;
+  return data || null;
 }
 
 // 🔹 CARGAR SERVICIOS
 async function cargarServicios(){
+
+  const contenedor = document.getElementById("lista");
+  contenedor.innerHTML = "Cargando...";
 
   const { data } = await supabaseClient
     .from("catalogo_servicios")
@@ -140,9 +166,14 @@ async function cargarServicios(){
     .eq("activo", true)
     .order("nombre");
 
-  let html="";
+  if(!data || data.length === 0){
+    contenedor.innerHTML = `<div class="vacio">Sin servicios disponibles</div>`;
+    return;
+  }
 
-  for(const s of (data || [])){
+  let html = "";
+
+  for(const s of data){
 
     const { data: abierto } = await supabaseClient
       .from("accesos_servicios")
@@ -151,25 +182,26 @@ async function cargarServicios(){
       .is("fecha_salida", null)
       .limit(1);
 
+    const activo = abierto?.length;
+
     html += `
     <div class="card">
 
       <div class="nombre">${s.nombre}</div>
 
-      ${abierto?.length
+      ${activo
         ? `
-          <div class="estado">
-            🟢 Entrada: ${window.formatMXDate(abierto[0].fecha_entrada)}
+          <div class="estado activo">
+            🟢 En sitio desde ${window.formatMXDate(abierto[0].fecha_entrada)}
           </div>
 
-          <input 
-            id="nip_salida_${abierto[0].id}" 
-            type="password"
-            placeholder="NIP de seguridad"
-          >
+          <input id="nip_salida_${abierto[0].id}" type="password"
+            placeholder="NIP de seguridad">
+
+          <div id="msg_${abierto[0].id}" class="mensaje"></div>
 
           <button class="btn salida"
-            onclick="registrarSalida('${abierto[0].id}')">
+            onclick="registrarSalida('${abierto[0].id}', this)">
             Registrar salida
           </button>
         `
@@ -179,8 +211,10 @@ async function cargarServicios(){
           <input id="nip_entrada_${s.id}" type="password"
             placeholder="NIP de seguridad">
 
+          <div id="msg_${s.id}" class="mensaje"></div>
+
           <button class="btn entrada"
-            onclick="registrarEntrada('${s.id}')">
+            onclick="registrarEntrada('${s.id}', this)">
             Registrar entrada
           </button>
         `
@@ -189,35 +223,43 @@ async function cargarServicios(){
     </div>`;
   }
 
-  document.getElementById("lista").innerHTML = html || "Sin servicios";
+  contenedor.innerHTML = html;
 }
 
 // 🔹 ENTRADA
-async function registrarEntrada(servicio_id){
+async function registrarEntrada(servicio_id, btn){
+
+  btn.disabled = true;
 
   const nombre = document.getElementById("persona_"+servicio_id).value.trim();
+  const pin = document.getElementById("nip_entrada_"+servicio_id).value.trim();
+  const msg = document.getElementById("msg_"+servicio_id);
 
-  const pin = document.getElementById("nip_entrada_"+servicio_id)
-    .value.trim().replace(/\s+/g, "");
+  msg.innerText = "";
 
   if(!nombre){
-    alert("Ingresa nombre");
+    msg.className="mensaje error";
+    msg.innerText="Ingresa nombre";
+    btn.disabled=false;
     return;
   }
 
   if(!pin){
-    alert("Ingresa NIP");
+    msg.className="mensaje error";
+    msg.innerText="Ingresa NIP";
+    btn.disabled=false;
     return;
   }
 
   const vigilante = await validarNIP(pin);
 
   if(!vigilante){
-    alert("NIP incorrecto");
+    msg.className="mensaje error";
+    msg.innerText="NIP incorrecto";
+    btn.disabled=false;
     return;
   }
 
-  // 🚫 EVITAR DUPLICADO
   const { data: abierto } = await supabaseClient
     .from("accesos_servicios")
     .select("id")
@@ -225,12 +267,14 @@ async function registrarEntrada(servicio_id){
     .is("fecha_salida", null)
     .limit(1);
 
-  if (abierto && abierto.length > 0) {
-    alert("Ya existe un acceso abierto");
+  if(abierto?.length){
+    msg.className="mensaje error";
+    msg.innerText="Ya existe un acceso abierto";
+    btn.disabled=false;
     return;
   }
 
-  const { error } = await supabaseClient
+  await supabaseClient
     .from("accesos_servicios")
     .insert([{
       servicio_id,
@@ -239,49 +283,42 @@ async function registrarEntrada(servicio_id){
       vigilante_entrada_id: vigilante.id
     }]);
 
-  if(error){
-    console.error(error);
-    alert("Error al registrar entrada");
-    return;
-  }
-
-  // 🧹 LIMPIEZA
-  document.getElementById("persona_"+servicio_id).value = "";
-  document.getElementById("nip_entrada_"+servicio_id).value = "";
-
   cargarServicios();
 }
 
 // 🔹 SALIDA
-async function registrarSalida(id){
+async function registrarSalida(id, btn){
+
+  btn.disabled = true;
 
   const pin = document.getElementById("nip_salida_"+id).value.trim();
+  const msg = document.getElementById("msg_"+id);
+
+  msg.innerText="";
 
   if(!pin){
-    alert("Ingresa NIP");
+    msg.className="mensaje error";
+    msg.innerText="Ingresa NIP";
+    btn.disabled=false;
     return;
   }
 
   const vigilante = await validarNIP(pin);
 
   if(!vigilante){
-    alert("NIP incorrecto");
+    msg.className="mensaje error";
+    msg.innerText="NIP incorrecto";
+    btn.disabled=false;
     return;
   }
 
-  const { error } = await supabaseClient
+  await supabaseClient
     .from("accesos_servicios")
     .update({
       fecha_salida: new Date().toISOString(),
       vigilante_salida_id: vigilante.id
     })
     .eq("id", id);
-
-  if(error){
-    console.error(error);
-    alert("Error al registrar salida");
-    return;
-  }
 
   cargarServicios();
 }
