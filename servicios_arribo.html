@@ -6,9 +6,13 @@
 
 <title>Servicios por arribar</title>
 
+<!-- 🔥 ORDEN CORRECTO -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
+<script src="utils/residente.js"></script>
+
 <script>
-protegerPagina(["colono"]);
+protegerPagina(["residente"]);
 </script>
 
 <style>
@@ -75,7 +79,7 @@ button {
 }
 
 .modal-content {
-  background: #ffffff; /* 🔥 CAMBIO CLAVE */
+  background: #ffffff;
   padding: 22px;
   border-radius: 16px;
   width: 85%;
@@ -86,7 +90,7 @@ button {
 
 .modal-text {
   margin-bottom: 20px;
-  color: #111827; /* 🔥 TEXTO OSCURO SOBRE FONDO CLARO */
+  color: #111827;
   font-size: 15px;
   line-height: 1.4;
 }
@@ -101,43 +105,45 @@ button {
   color: white;
 }
 
-/* 🎨 COLORES BONITOS */
 .warn { background: #a57f2c; }
 .error { background: #9b2247; }
 .success { background: #1e5b4f; }
 
 </style>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 </head>
 
 <body>
 
 <div class="card">
 
-<h2>🚚 Servicio por arribar</h2>
+  <!-- 🔥 LOGO -->
+  <div style="text-align:center; margin-bottom:15px;">
+    <img src="icono-512.png" alt="Logo"
+         style="width:90px; height:auto; border-radius:20px;">
+  </div>
 
-<label>Nombre del servicio</label>
-<input id="servicio" placeholder="Ej: Uber Eats, Gas Hidalgo">
+  <h2>🚚 Servicio por arribar</h2>
 
-<label>Tipo</label>
-<select id="tipo">
-  <option value="">Seleccionar</option>
-  <option value="comida">Comida</option>
-  <option value="suministros">Suministros</option>
-  <option value="mantenimiento">Mantenimiento</option>
-  <option value="otro">Otro</option>
-</select>
+  <label>Nombre del servicio</label>
+  <input id="servicio" placeholder="Ej: Uber Eats, Gas Hidalgo">
 
-<label>Tiempo</label>
-<select id="vigencia">
-  <option value="30">30 min</option>
-  <option value="60" selected>1 hora</option>
-  <option value="120">2 horas</option>
-</select>
+  <label>Tipo</label>
+  <select id="tipo">
+    <option value="">Seleccionar</option>
+    <option value="comida">Comida</option>
+    <option value="suministros">Suministros</option>
+    <option value="mantenimiento">Mantenimiento</option>
+    <option value="otro">Otro</option>
+  </select>
 
-<button onclick="registrar()">Registrar servicio</button>
+  <label>Tiempo</label>
+  <select id="vigencia">
+    <option value="30">30 min</option>
+    <option value="60" selected>1 hora</option>
+    <option value="120">2 horas</option>
+  </select>
+
+  <button onclick="registrar()">Registrar servicio</button>
 
 </div>
 
@@ -151,36 +157,22 @@ button {
 
 <script>
 
-const client = window.supabase.createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
+let residenteGlobal = null;
 
-  let residenteGlobal = null;
+// 🔽 CARGAR RESIDENTE (HOMOLOGADO)
+async function cargarResidente() {
 
-async function obtenerResidente() {
-
-  const { data: userData } = await client.auth.getUser();
-
-  if (!userData?.user) {
-    window.location.href = "login.html";
-    return null;
-  }
-
-  const { data: residente } = await client
-    .from("residentes")
-    .select("*")
-    .eq("user_id", userData.user.id)
-    .single();
+  const residente = await getResidente();
 
   if (!residente) {
-    mostrarModal("Error obteniendo datos", "error");
-    return null;
+    mostrarModal("Error de sesión", "error");
+    return;
   }
 
   residenteGlobal = residente;
-  return residente;
 }
+
+// 🔥 MODAL
 function mostrarModal(texto, tipo, callback) {
 
   const modal = document.getElementById("modal");
@@ -188,7 +180,6 @@ function mostrarModal(texto, tipo, callback) {
   const btn = document.getElementById("modalBtn");
 
   text.innerText = texto;
-
   btn.className = "modal-btn " + tipo;
 
   modal.style.display = "flex";
@@ -199,6 +190,7 @@ function mostrarModal(texto, tipo, callback) {
   };
 }
 
+// 🚀 REGISTRO
 async function registrar() {
 
   const servicio = document.getElementById("servicio").value.trim();
@@ -210,15 +202,14 @@ async function registrar() {
     return;
   }
 
-  
   const residente = residenteGlobal;
-  
+
   if (!residente) {
     mostrarModal("Error obteniendo datos", "error");
     return;
   }
 
-  // 🔴 MOROSO (bloquea)
+  // 🔴 BLOQUEO
   if (residente.estado_pago === "moroso") {
     mostrarModal(
       "No es posible registrar el servicio. Presenta adeudo en sus cuotas.",
@@ -227,10 +218,10 @@ async function registrar() {
     return;
   }
 
-  // 🟡 ATRASO (advierte y permite)
+  // 🟡 ADVERTENCIA
   if (residente.estado_pago === "atraso_1") {
     mostrarModal(
-      "Puede registrar el servicio en esta ocasión, sin embargo presenta retraso en sus cuotas, por lo que se sugiere regularizar sus pagos",
+      "Puede registrar el servicio en esta ocasión, sin embargo presenta retraso en sus cuotas.",
       "warn",
       () => insertarServicio()
     );
@@ -240,36 +231,48 @@ async function registrar() {
   insertarServicio();
 }
 
+// 💾 INSERT
 async function insertarServicio() {
 
   const servicio = document.getElementById("servicio").value.trim();
   const tipo = document.getElementById("tipo").value;
   const vigencia = parseInt(document.getElementById("vigencia").value);
 
- const residente = residenteGlobal;
-if (!residente) return;
+  const residente = residenteGlobal;
+  if (!residente) return;
 
   const ahora = new Date();
   const expira = new Date(ahora.getTime() + (vigencia * 60000));
 
-  await client.from("servicios_arribo").insert([{
-    residente_id: residente.id,
-    nombre_servicio: servicio,
-    tipo: tipo || null,
-    privada: residente.privada,
-    casa: residente.casa,
-    vigencia_minutos: vigencia,
-    expira_en: expira.toISOString(),
-    estado: "pendiente"
-  }]);
+  const { error } = await supabaseClient
+    .from("servicios_arribo")
+    .insert([{
+      residente_id: residente.id,
+      nombre_servicio: servicio,
+      tipo: tipo || null,
+      privada: residente.privada,
+      casa: residente.casa,
+      vigencia_minutos: vigencia,
+      expira_en: expira.toISOString(),
+      estado: "pendiente"
+    }]);
+
+  if (error) {
+    console.error(error);
+    mostrarModal("Error al registrar servicio", "error");
+    return;
+  }
 
   mostrarModal("Servicio registrado correctamente", "success", () => {
     window.location.href = "index.html";
   });
 }
+
+// INIT
 (async () => {
-  await obtenerResidente();
+  await cargarResidente();
 })();
+
 </script>
 
 </body>
