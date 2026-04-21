@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 
@@ -7,52 +8,9 @@
 <title>Accesos recurrentes</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script src="auth.js"></script>
-<script src="/utils/dates.js"></script>
 
-<style>
-
-body {
-  margin: 0;
-  font-family: 'Segoe UI';
-  background: linear-gradient(135deg,#020617,#0f172a);
-  color: white;
-}
-
-/* HEADER */
-.header-app {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.logo-app {
-  width: 80px;
-}
-
-/* CONTENEDOR */
-.container {
-  max-width: 520px;
-  margin: auto;
-  padding: 18px;
-}
-
-h2 {
-  text-align: center;
-  margin-bottom: 18px;
-}
-
-/* CARD */
-<!DOCTYPE html>
-<html lang="es">
-<head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Accesos recurrentes</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js"></script>
 <script src="/utils/dates.js"></script>
 
 <style>
@@ -98,27 +56,21 @@ h2 {
 
   display: flex;
   flex-direction: column;
-  gap: 12px; /* 🔥 clave para alineación uniforme */
+  gap: 12px;
 }
 
 .nombre {
   font-weight: bold;
   font-size: 18px;
-  text-align: center; /* 🔥 mejor jerarquía */
+  text-align: center;
 }
 
 .estado {
   font-size: 13px;
-  margin-bottom: 10px;
 }
 
-.estado.activo {
-  color: #4ade80;
-}
-
-.estado.cerrado {
-  color: #f87171;
-}
+.estado.activo { color: #4ade80; }
+.estado.cerrado { color: #f87171; }
 
 /* INPUTS */
 input {
@@ -131,7 +83,7 @@ input {
   color: white;
 }
 
-  input::placeholder {
+input::placeholder {
   color: #9ca3af;
 }
 
@@ -156,293 +108,16 @@ input {
 
 .entrada {
   background: #16a34a;
-  color: white; /* 🔥 IMPORTANTE */
+  color: white;
 }
 
 .salida {
   background: #dc2626;
-  color: white; /* 🔥 IMPORTANTE */
-}
-
-/* MENSAJES */
-.mensaje {
-  margin-top: 8px;
-  font-size: 13px;
-}
-
-.error { color: #f87171; }
-.ok { color: #4ade80; }
-
-/* VACÍO */
-.vacio {
-  text-align: center;
-  color: #94a3b8;
-  margin-top: 20px;
-}
-
-</style>
-</head>
-
-<body>
-
-<div class="header-app">
-  <img src="/icono-512.png" class="logo-app">
-</div>
-
-<div class="container">
-<h2>🚧 Accesos recurrentes</h2>
-<div id="lista" class="vacio">Cargando servicios...</div>
-</div>
-
-<script>
-
-window.addEventListener("DOMContentLoaded", async ()=>{
-  await protegerPagina(["vigilante"]);
-  cargarServicios();
-});
-
-// 🔐 VALIDAR NIP
-async function validarNIP(pin){
-
-  const limpio = pin.trim().replace(/\s+/g,"");
-
-  const { data } = await supabaseClient
-    .from("residentes")
-    .select("id")
-    .eq("tipo","vigilante")
-    .eq("pin_vigilante", limpio)
-    .maybeSingle();
-
-  return data || null;
-}
-
-// 🔹 CARGAR SERVICIOS
-async function cargarServicios(){
-
-  const contenedor = document.getElementById("lista");
-  contenedor.innerHTML = "Cargando...";
-
-  const { data } = await supabaseClient
-    .from("catalogo_servicios")
-    .select("*")
-    .eq("activo", true)
-    .order("nombre");
-
-  if(!data || data.length === 0){
-    contenedor.innerHTML = `<div class="vacio">Sin servicios disponibles</div>`;
-    return;
-  }
-
-  let html = "";
-
-  for(const s of data){
-
-    const { data: abierto } = await supabaseClient
-      .from("accesos_servicios")
-      .select("*")
-      .eq("servicio_id", s.id)
-      .is("fecha_salida", null)
-      .limit(1);
-
-    const activo = abierto?.length;
-
-    html += `
-    <div class="card">
-
-      <div class="nombre">${s.nombre}</div>
-
-      ${activo
-        ? `
-          <div class="estado activo">
-            🟢 En sitio desde ${window.formatMXDate(abierto[0].fecha_entrada)}
-          </div>
-
-          <input id="nip_salida_${abierto[0].id}" type="password"
-            placeholder="NIP de seguridad">
-
-          <div id="msg_${abierto[0].id}" class="mensaje"></div>
-
-          <button class="btn salida"
-            onclick="registrarSalida('${abierto[0].id}', this)">
-            Registrar salida
-          </button>
-        `
-        : `
-          <input id="persona_${s.id}" placeholder="Nombre de quien ingresa">
-
-          <input id="nip_entrada_${s.id}" type="password"
-            placeholder="NIP de seguridad">
-
-          <div id="msg_${s.id}" class="mensaje"></div>
-
-          <button class="btn entrada"
-            onclick="registrarEntrada('${s.id}', this)">
-            Registrar entrada
-          </button>
-        `
-      }
-
-    </div>`;
-  }
-
-  contenedor.innerHTML = html;
-}
-
-// 🔹 ENTRADA
-async function registrarEntrada(servicio_id, btn){
-
-  btn.disabled = true;
-
-  const nombre = document.getElementById("persona_"+servicio_id).value.trim();
-  const pin = document.getElementById("nip_entrada_"+servicio_id).value.trim();
-  const msg = document.getElementById("msg_"+servicio_id);
-
-  msg.innerText = "";
-
-  if(!nombre){
-    msg.className="mensaje error";
-    msg.innerText="Ingresa nombre";
-    btn.disabled=false;
-    return;
-  }
-
-  if(!pin){
-    msg.className="mensaje error";
-    msg.innerText="Ingresa NIP";
-    btn.disabled=false;
-    return;
-  }
-
-  const vigilante = await validarNIP(pin);
-
-  if(!vigilante){
-    msg.className="mensaje error";
-    msg.innerText="NIP incorrecto";
-    btn.disabled=false;
-    return;
-  }
-
-  const { data: abierto } = await supabaseClient
-    .from("accesos_servicios")
-    .select("id")
-    .eq("servicio_id", servicio_id)
-    .is("fecha_salida", null)
-    .limit(1);
-
-  if(abierto?.length){
-    msg.className="mensaje error";
-    msg.innerText="Ya existe un acceso abierto";
-    btn.disabled=false;
-    return;
-  }
-
-  await supabaseClient
-    .from("accesos_servicios")
-    .insert([{
-      servicio_id,
-      nombre_persona: nombre,
-      fecha_entrada: new Date().toISOString(),
-      vigilante_entrada_id: vigilante.id
-    }]);
-
-  cargarServicios();
-}
-
-// 🔹 SALIDA
-async function registrarSalida(id, btn){
-
-  btn.disabled = true;
-
-  const pin = document.getElementById("nip_salida_"+id).value.trim();
-  const msg = document.getElementById("msg_"+id);
-
-  msg.innerText="";
-
-  if(!pin){
-    msg.className="mensaje error";
-    msg.innerText="Ingresa NIP";
-    btn.disabled=false;
-    return;
-  }
-
-  const vigilante = await validarNIP(pin);
-
-  if(!vigilante){
-    msg.className="mensaje error";
-    msg.innerText="NIP incorrecto";
-    btn.disabled=false;
-    return;
-  }
-
-  await supabaseClient
-    .from("accesos_servicios")
-    .update({
-      fecha_salida: new Date().toISOString(),
-      vigilante_salida_id: vigilante.id
-    })
-    .eq("id", id);
-
-  cargarServicios();
-}
-
-</script>
-
-</body>
-</html>
-
-.nombre {
-  font-weight: bold;
-  font-size: 17px;
-  margin-bottom: 6px;
-}
-
-.estado {
-  font-size: 13px;
-  margin-bottom: 10px;
-}
-
-.estado.activo {
-  color: #4ade80;
-}
-
-.estado.cerrado {
-  color: #f87171;
-}
-
-/* INPUTS */
-input {
-  width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  border: none;
-  margin-top: 8px;
-  font-size: 15px;
-  background: #1f2937;
   color: white;
 }
 
-/* BOTONES */
-.btn {
-  margin-top: 12px;
-  padding: 14px;
-  border-radius: 12px;
-  border: none;
-  width: 100%;
-  font-weight: bold;
-  font-size: 15px;
-  cursor: pointer;
-}
-
-.btn:active {
-  transform: scale(0.97);
-}
-
-.entrada { background: #16a34a; }
-.salida { background: #dc2626; }
-
 /* MENSAJES */
 .mensaje {
-  margin-top: 8px;
   font-size: 13px;
 }
 
@@ -457,6 +132,7 @@ input {
 }
 
 </style>
+
 </head>
 
 <body>
@@ -477,7 +153,7 @@ window.addEventListener("DOMContentLoaded", async ()=>{
   cargarServicios();
 });
 
-// 🔐 VALIDAR NIP
+// 🔐 VALIDAR NIP (DESDE RESIDENTES ✔)
 async function validarNIP(pin){
 
   const limpio = pin.trim().replace(/\s+/g,"");
