@@ -213,8 +213,10 @@ function setFechas(desde, hasta) {
 }
 
 // 🔥 FILTROS
+// 🔥 FILTROS CORREGIDOS (LOCAL TIME)
+
 function filtroHoy() {
-  const hoy = new Date().toISOString().slice(0,10);
+  const hoy = new Date().toLocaleDateString("en-CA");
   setFechas(hoy, hoy);
   activarBoton("btnHoy");
   consultar();
@@ -225,7 +227,11 @@ function filtro7dias() {
   const desde = new Date();
   desde.setDate(hoy.getDate() - 6);
 
-  setFechas(desde.toISOString().slice(0,10), hoy.toISOString().slice(0,10));
+  setFechas(
+    desde.toLocaleDateString("en-CA"),
+    hoy.toLocaleDateString("en-CA")
+  );
+
   activarBoton("btn7");
   consultar();
 }
@@ -235,11 +241,15 @@ function filtro30dias() {
   const desde = new Date();
   desde.setDate(hoy.getDate() - 29);
 
-  setFechas(desde.toISOString().slice(0,10), hoy.toISOString().slice(0,10));
+  setFechas(
+    desde.toLocaleDateString("en-CA"),
+    hoy.toLocaleDateString("en-CA")
+  );
+
   activarBoton("btn30");
   consultar();
 }
-
+  
 // 🔍 CONSULTA
 async function consultar() {
 
