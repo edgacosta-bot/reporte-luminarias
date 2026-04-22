@@ -201,36 +201,61 @@ btnRegistrar.onclick = async () => {
   const ahora = new Date().toISOString();
 
   // 🔥 SALIDA
-  if(tipoAccion === "salida"){
+ if(tipoAccion === "salida"){
 
-    await supabaseClient
-      .from("accesos_trabajadores_hogar")
-      .update({
-        fecha_hora_salida: ahora,
-        estatus: "fuera",
-        vigilante_salida_id: vigilante.id
-      })
-      .eq("id", accesoAbierto.id);
+  btnRegistrar.disabled = true;
+  btnRegistrar.innerText = "Procesando...";
 
-    estado.innerText = "Salida registrada";
+  const { error } = await supabaseClient
+    .from("accesos_trabajadores_hogar")
+    .update({
+      fecha_hora_salida: ahora,
+      estatus: "fuera",
+      vigilante_salida_id: vigilante.id
+    })
+    .eq("id", accesoAbierto.id);
 
-    // 🔥 WA AUTOMÁTICO SALIDA
-    const mensaje = `Estimado Residente, en este momento su empleado doméstico ${trabajador.nombre}, acaba de salir del fraccionamiento. Gracias.`;
+  if (error) {
+    console.error("ERROR UPDATE:", error);
 
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
+    ui.error("❌ Error al registrar salida");
+
+    btnRegistrar.disabled = false;
+    btnRegistrar.innerText = "Registrar";
 
     return;
   }
 
+  estado.innerText = "Salida registrada";
+
+  // 🔥 WhatsApp solo si TODO salió bien
+  const mensaje = `Estimado Residente, en este momento su empleado doméstico ${trabajador.nombre}, acaba de salir del fraccionamiento. Gracias.`;
+
+  window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
+
+  return;
+}
+
   // 🔹 ENTRADA
-await supabaseClient
+const { error } = await supabaseClient
   .from("accesos_trabajadores_hogar")
   .insert([{
     trabajador_id: trabajador.id,
     fecha_hora_entrada: ahora,
     estatus: "dentro",
-    vigilante_id: vigilante.id
+    vigilante_entrada_id: vigilante.id
   }]);
+
+if (error) {
+  console.error("ERROR INSERT:", error);
+
+  ui.error("❌ Error al registrar acceso");
+
+  btnRegistrar.disabled = false;
+  btnRegistrar.innerText = "Registrar";
+
+  return;
+}
 
 estado.innerText = "Acceso registrado";
 
