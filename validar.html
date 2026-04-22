@@ -178,19 +178,24 @@ async function validar(){
 
   const hoy = new Date().toLocaleDateString("en-CA");
 
+  // después de detectar tipoAccion
+if (tipoAccion === "entrada") {
   if (visitaGlobal.fecha_visita !== hoy) {
     pintar("QR NO VÁLIDO PARA HOY", "error", visitaGlobal);
     return;
   }
+}
 
   const ahora = new Date();
   const inicio = new Date(`${visitaGlobal.fecha_visita}T${visitaGlobal.hora_inicio}`);
   const fin = new Date(`${visitaGlobal.fecha_visita}T${visitaGlobal.hora_fin}`);
 
+  if (tipoAccion === "entrada") {
   if (ahora < inicio || ahora > fin) {
     pintar("FUERA DE HORARIO", "error", visitaGlobal);
     return;
   }
+}
 
   const { data: accesos } = await supabaseClient
     .from('accesos_visitas')
@@ -297,14 +302,20 @@ btn.addEventListener("click", async () => {
 
   } else {
 
-    await supabaseClient
-      .from('accesos_visitas')
-      .update({
-        fecha_hora_salida: ahora,
-        estatus: 'fuera',
-        vigilante_salida_id: vigilante.id
-      })
-      .eq('id', accesoActual.id);
+   const { error } = await supabaseClient
+  .from('accesos_visitas')
+  .update({
+    fecha_hora_salida: ahora,
+    estatus: 'fuera',
+    vigilante_salida_id: vigilante.id
+  })
+  .eq('id', accesoActual.id);
+
+if (error) {
+  console.error("🔥 ERROR UPDATE:", error);
+  alert("Error al registrar salida");
+  return;
+}
 
     await supabaseClient
       .from('visitas_qr')
