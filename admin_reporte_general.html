@@ -195,13 +195,15 @@ async function cargar(){
 
   const privadaFiltro = document.getElementById("filtroPrivada").value;
 const loteFiltro = document.getElementById("filtroCasa").value;
-  const inicio = document.getElementById("inicio").value;
-  const fin = document.getElementById("fin").value;
+  let inicio = document.getElementById("inicio").value;
+  let fin = document.getElementById("fin").value;
 
   if(!inicio || !fin){
-    alert("Selecciona fechas");
-    return;
-  }
+  const rango = getLastDaysRange(7);
+
+  inicio = rango.start.split("T")[0];
+  fin = rango.end.split("T")[0];
+}
 
   let registros=[];
 
@@ -348,8 +350,9 @@ let { data: obras } = await queryObras;
   let queryAgua = supabaseClient
   .from("reportes_agua_caasim")
   .select("*")
-  .gte("fecha_registro", fechaInicioUTC(inicio))
-  .lte("fecha_registro", fechaFinUTC(fin));
+  // ✅ CORRECTO
+.gte("fecha_registro", fechaInicioUTC(inicio))
+.lte("fecha_registro", fechaFinUTC(fin))
 
 if(privadaFiltro){
   queryAgua = queryAgua.eq("privada", privadaFiltro);
@@ -361,16 +364,16 @@ if(loteFiltro){
 
 let { data: agua } = await queryAgua;
 
-  agua?.forEach(i=>{
-    registros.push({
-      tipo:"agua",
-      grupo:"agua",
-      titulo:`Reporte ${i.numero_reporte}`,
-      descripcion:i.tipo_falla,
-      hora:i.fecha_registro,
-      origen:`${i.privada}-${i.numero_exterior}`
-    });
+ agua?.forEach(i=>{
+  registros.push({
+    tipo:"agua",
+    grupo:"agua",
+    titulo:`Reporte ${i.numero_reporte}`,
+    descripcion:i.tipo_falla,
+    hora: i.fecha_reporte || i.fecha_registro, // 🔥 FIX REAL
+    origen:`${i.privada}-${i.numero_exterior}`
   });
+});
 
   // 🟢 LUMINARIAS
   let queryLuminarias = supabaseClient
