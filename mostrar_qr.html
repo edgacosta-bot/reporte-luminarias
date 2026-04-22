@@ -155,9 +155,17 @@ async function cargar() {
   document.getElementById("status").style.background = "#64748b";
 
   const { data, error } = await client
-  .from('accesos_visitas')
-  .select('*')
-  .eq('visita_id', qrParam);
+  .from('visitas_qr')
+  .select(`
+    *,
+    accesos_visitas (
+      id,
+      fecha_hora_entrada,
+      fecha_hora_salida,
+      estatus
+    )
+  `)
+  .eq('codigo_qr', qrParam);
   
 // 🚨 1. ERROR REAL DE SUPABASE (RLS, conexión, etc)
 if (error) {
@@ -180,6 +188,7 @@ if (!data || data.length === 0) {
 }
 
   const visita = data[0];
+  const acceso = visita.accesos_visitas?.[0] || null;
 
   document.getElementById("nombre").innerText = visita.nombre_visitante;
 
