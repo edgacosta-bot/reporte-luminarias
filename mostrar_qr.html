@@ -28,7 +28,6 @@
       box-shadow: 0 20px 40px rgba(0,0,0,0.4);
     }
 
-    /* 🔥 LOGO */
     .logo {
       text-align: center;
       margin-bottom: 10px;
@@ -38,7 +37,6 @@
       width: 70px;
     }
 
-    /* HEADER */
     .header {
       background: #1e293b;
       color: white;
@@ -50,9 +48,8 @@
       line-height: 1.4;
     }
 
-    /* STATUS */
     .status {
-      background: #16a34a;
+      background: #64748b;
       color: white;
       padding: 8px;
       border-radius: 8px;
@@ -75,7 +72,6 @@
       line-height: 1.5;
     }
 
-    /* 🔥 QR */
     .qr-box {
       margin-top: 18px;
       padding: 16px;
@@ -89,7 +85,6 @@
       display: block;
     }
 
-    /* FOOTER */
     .footer {
       margin-top: 18px;
       font-size: 13px;
@@ -106,7 +101,6 @@
 
 <div class="card">
 
-  <!-- 🔥 LOGO -->
   <div class="logo">
     <img src="/icono-512.png" alt="Logo">
   </div>
@@ -150,45 +144,49 @@ cargar();
 
 async function cargar() {
 
-   // 👇 AQUÍ VA (PRIMERAS LÍNEAS)
+  // 🔵 estado inicial
   document.getElementById("status").innerText = "Validando...";
   document.getElementById("status").style.background = "#64748b";
 
   const { data, error } = await client
-  .from('visitas_qr')
-  .select(`
-    *,
-    accesos_visitas (
-      id,
-      fecha_hora_entrada,
-      fecha_hora_salida,
-      estatus
-    )
-  `)
-  .eq('codigo_qr', qrParam);
-  
-// 🚨 1. ERROR REAL DE SUPABASE (RLS, conexión, etc)
-if (error) {
-  console.error("ERROR SUPABASE:", error);
+    .from('visitas_qr')
+    .select(`
+      *,
+      accesos_visitas (
+        id,
+        fecha_hora_entrada,
+        fecha_hora_salida,
+        estatus
+      )
+    `)
+    .eq('codigo_qr', qrParam);
 
-  document.querySelector(".status").innerText = "❌ ERROR";
-  document.querySelector(".status").style.background = "#dc2626";
+  // ❌ ERROR SUPABASE
+  if (error) {
+    console.error("ERROR SUPABASE:", error);
 
-  document.getElementById("nombre").innerText = "Error al validar QR";
-  return;
-}
+    document.getElementById("status").innerText = "❌ ERROR";
+    document.getElementById("status").style.background = "#dc2626";
 
-// 🚨 2. QR NO EXISTE
-if (!data || data.length === 0) {
-  document.querySelector(".status").innerText = "❌ ACCESO DENEGADO";
-  document.querySelector(".status").style.background = "#dc2626";
+    document.getElementById("nombre").innerText = "Error al validar QR";
+    return;
+  }
 
-  document.getElementById("nombre").innerText = "QR inválido";
-  return;
-}
+  // ❌ NO EXISTE
+  if (!data || data.length === 0) {
+    document.getElementById("status").innerText = "❌ ACCESO DENEGADO";
+    document.getElementById("status").style.background = "#dc2626";
+
+    document.getElementById("nombre").innerText = "QR inválido";
+    return;
+  }
 
   const visita = data[0];
   const acceso = visita.accesos_visitas?.[0] || null;
+
+  // ✅ ACCESO VÁLIDO
+  document.getElementById("status").innerText = "✔ ACCESO VÁLIDO";
+  document.getElementById("status").style.background = "#16a34a";
 
   document.getElementById("nombre").innerText = visita.nombre_visitante;
 
