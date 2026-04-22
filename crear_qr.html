@@ -280,14 +280,15 @@ async function generarQR() {
   const fechaInicio = new Date(`${fecha}T${hora_inicio}:00`);
   const fechaFin = new Date(`${fecha}T${hora_fin}:00`);
 
-await supabaseClient.from('visitas_qr').insert([{
+const { error } = await supabaseClient.from('visitas_qr').insert([{
   residente_id: residenteGlobal.id,
   user_id: user.id,
   nombre_visitante: visitante,
 
-  // 🔥 NUEVO MODELO
-  fecha_inicio: fechaInicio.toISOString(),
-  fecha_fin: fechaFin.toISOString(),
+  // 🔥 CAMPOS CORRECTOS
+  fecha_visita: fecha,
+  hora_inicio: hora_inicio,
+  hora_fin: hora_fin,
 
   codigo_qr: codigo,
   privada: residenteGlobal.privada,
@@ -296,6 +297,12 @@ await supabaseClient.from('visitas_qr').insert([{
   tipo_generador: tipo_generador,
   residente_nombre: residenteGlobal.nombre || ''
 }]);
+
+if (error) {
+  console.error("ERROR INSERT:", error);
+  alert("Error al guardar QR");
+  return;
+}
 
   const linkRelativo = `/mostrar_qr.html?qr=${codigo}`;
   const linkAbsoluto = `${window.location.origin}/mostrar_qr.html?qr=${codigo}`;
