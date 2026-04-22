@@ -116,7 +116,7 @@
     Pase de visitante
   </div>
 
-  <div class="status">✔ ACCESO VÁLIDO</div>
+  <div class="status" id="status">Validando...</div>
 
   <div class="nombre" id="nombre">Cargando...</div>
 
@@ -150,15 +150,34 @@ cargar();
 
 async function cargar() {
 
-  const { data, error } = await client
-    .from('visitas_qr')
-    .select('*')
-    .eq('codigo_qr', qrParam);
+   // 👇 AQUÍ VA (PRIMERAS LÍNEAS)
+  document.getElementById("status").innerText = "Validando...";
+  document.getElementById("status").style.background = "#64748b";
 
-  if (error || !data || data.length === 0) {
-    document.getElementById("nombre").innerText = "QR inválido";
-    return;
-  }
+  const { data, error } = await client
+  .from('visitas_qr')
+  .select('*')
+  .eq('codigo_qr', qrParam);
+
+// 🚨 1. ERROR REAL DE SUPABASE (RLS, conexión, etc)
+if (error) {
+  console.error("ERROR SUPABASE:", error);
+
+  document.querySelector(".status").innerText = "❌ ERROR";
+  document.querySelector(".status").style.background = "#dc2626";
+
+  document.getElementById("nombre").innerText = "Error al validar QR";
+  return;
+}
+
+// 🚨 2. QR NO EXISTE
+if (!data || data.length === 0) {
+  document.querySelector(".status").innerText = "❌ ACCESO DENEGADO";
+  document.querySelector(".status").style.background = "#dc2626";
+
+  document.getElementById("nombre").innerText = "QR inválido";
+  return;
+}
 
   const visita = data[0];
 
