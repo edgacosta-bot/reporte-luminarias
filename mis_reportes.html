@@ -225,9 +225,18 @@ async function cargar(){
   if (inicio && fin) queryLuminarias = queryLuminarias.gte("fecha_reporte", fechaInicioUTC(inicio)).lte("fecha_reporte", fechaFinUTC(fin));
   const { data: luminarias } = await queryLuminarias;
 
-  let queryAgua = supabaseClient.from("reportes_agua_caasim").select("*").eq("residente_id", residenteId);
-  if (inicio && fin) queryAgua = queryAgua.gte("fecha_reporte", inicio).lte("fecha_reporte", fin);
-  const { data: agua } = await queryAgua;
+  let queryAgua = supabaseClient
+  .from("reportes_agua_caasim")
+  .select("*")
+  .eq("residente_id", residenteId);
+
+if (inicio && fin) {
+  queryAgua = queryAgua
+    .gte("fecha_reporte", fechaInicioUTC(inicio))
+    .lte("fecha_reporte", fechaFinUTC(fin));
+}
+
+const { data: agua } = await queryAgua;
 
   // 🔥 RESTAURADO (CRÍTICO)
   const { data: evals } = await supabaseClient
