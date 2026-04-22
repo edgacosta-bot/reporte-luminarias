@@ -167,6 +167,7 @@ async function validar(){
     .from('visitas_qr')
     .select('*')
     .eq('codigo_qr', qr)
+    .eq('estatus', 'activo')
     .maybeSingle();
 
   if (error || !data) {
