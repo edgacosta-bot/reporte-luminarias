@@ -320,7 +320,7 @@ if (error) {
 
     const { error: errorQR } = await supabaseClient
   .from('visitas_qr')
-  .update({ estatus: 'finalizado' })
+  .update({ estatus: 'usado' })
   .eq('id', visitaGlobal.id);
 
 if (errorQR) {
