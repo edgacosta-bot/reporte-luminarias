@@ -318,10 +318,20 @@ if (error) {
   return;
 }
 
-    const { error: errorQR } = await supabaseClient
+    console.log("VISITA GLOBAL:", visitaGlobal);
+
+const { data, error } = await supabaseClient
   .from('visitas_qr')
   .update({ estatus: 'usado' })
-  .eq('id', visitaGlobal.id);
+  .eq('id', visitaGlobal.id)
+  .select();
+
+console.log("RESULTADO UPDATE:", data);
+console.log("ERROR UPDATE:", error);
+
+if (error) {
+  alert("Error al actualizar QR");
+}
 
 if (errorQR) {
   console.error("🔥 ERROR UPDATE QR:", errorQR);
