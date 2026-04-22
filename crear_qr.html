@@ -277,20 +277,25 @@ async function generarQR() {
 
   const { data: { user } } = await supabaseClient.auth.getUser();
 
-  await supabaseClient.from('visitas_qr').insert([{
-    residente_id: residenteGlobal.id,
-    user_id: user.id,
-    nombre_visitante: visitante,
-    fecha_visita: fecha,
-    hora_inicio: hora_inicio,
-    hora_fin: hora_fin,
-    codigo_qr: codigo,
-    privada: residenteGlobal.privada,
-    casa: residenteGlobal.casa,
-    estatus: 'activo',
-    tipo_generador: tipo_generador,
-    residente_nombre: residenteGlobal.nombre || ''
-  }]);
+  const fechaInicio = new Date(`${fecha}T${hora_inicio}:00`);
+  const fechaFin = new Date(`${fecha}T${hora_fin}:00`);
+
+await supabaseClient.from('visitas_qr').insert([{
+  residente_id: residenteGlobal.id,
+  user_id: user.id,
+  nombre_visitante: visitante,
+
+  // 🔥 NUEVO MODELO
+  fecha_inicio: fechaInicio.toISOString(),
+  fecha_fin: fechaFin.toISOString(),
+
+  codigo_qr: codigo,
+  privada: residenteGlobal.privada,
+  casa: residenteGlobal.casa,
+  estatus: 'activo',
+  tipo_generador: tipo_generador,
+  residente_nombre: residenteGlobal.nombre || ''
+}]);
 
   const linkRelativo = `/mostrar_qr.html?qr=${codigo}`;
   const linkAbsoluto = `${window.location.origin}/mostrar_qr.html?qr=${codigo}`;
