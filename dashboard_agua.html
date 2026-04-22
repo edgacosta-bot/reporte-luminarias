@@ -249,17 +249,20 @@ function filtrarPorFecha() {
   const inicio = document.getElementById("fechaInicio").value;
   const fin = document.getElementById("fechaFin").value;
 
+  const inicioUTC = inicio ? fechaInicioUTC(inicio) : null;
+  const finUTC = fin ? fechaFinUTC(fin) : null;
+
   datosFiltrados = datosGlobal.filter(r => {
 
-  if (!r.fecha_reporte) return false;
+    if (!r.fecha_reporte) return false;
 
-  const fecha = r.fecha_reporte;
+    const fecha = new Date(r.fecha_reporte).toISOString();
 
-  if (inicio && fecha < inicio) return false;
-  if (fin && fecha > fin) return false;
+    if (inicioUTC && fecha < inicioUTC) return false;
+    if (finUTC && fecha > finUTC) return false;
 
-  return true;
-});
+    return true;
+  });
 
   aplicarFiltroTipo();
 }
@@ -336,7 +339,7 @@ function formatearTipo(tipo) {
 }
 
 function formatearFecha(fecha) {
- return fecha.split("-").reverse().join("/");
+  return formatMXDate(fecha);
 }
 
 setTimeout(cargarDatos, 300);
