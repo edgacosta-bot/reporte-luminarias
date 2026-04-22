@@ -155,7 +155,7 @@ async function cargar() {
   document.getElementById("status").style.background = "#64748b";
 
   const { data, error } = await client
-  .from('visitas_qr')
+  .from('accesos_visitas')
   .select('*')
   .eq('codigo_qr', qrParam);
 
