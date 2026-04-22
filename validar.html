@@ -318,10 +318,15 @@ if (error) {
   return;
 }
 
-    await supabaseClient
-      .from('visitas_qr')
-      .update({ estatus: 'finalizado' })
-      .eq('id', visitaGlobal.id);
+    const { error: errorQR } = await supabaseClient
+  .from('visitas_qr')
+  .update({ estatus: 'finalizado' })
+  .eq('id', visitaGlobal.id);
+
+if (errorQR) {
+  console.error("🔥 ERROR UPDATE QR:", errorQR);
+  alert("Error al actualizar QR");
+}
 
     pintar("SALIDA REGISTRADA", "warn", visitaGlobal);
 
