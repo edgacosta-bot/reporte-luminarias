@@ -157,8 +157,8 @@ async function cargar() {
   const { data, error } = await client
   .from('accesos_visitas')
   .select('*')
-  .eq('codigo_qr', qrParam);
-
+  .eq('visita_id', qrParam);
+  
 // 🚨 1. ERROR REAL DE SUPABASE (RLS, conexión, etc)
 if (error) {
   console.error("ERROR SUPABASE:", error);
