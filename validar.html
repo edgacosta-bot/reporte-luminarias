@@ -176,7 +176,7 @@ async function validar(){
 
   visitaGlobal = data;
 
-  const hoy = new Date().toISOString().slice(0,10);
+  const hoy = new Date().toLocaleDateString("en-CA");
 
   if (visitaGlobal.fecha_visita !== hoy) {
     pintar("QR NO VÁLIDO PARA HOY", "error", visitaGlobal);
