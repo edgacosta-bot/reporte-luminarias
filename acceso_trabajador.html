@@ -95,6 +95,8 @@ let accesoActual = null;
 let tipoAccion = "";
 let vigilante = null;
 
+const btnRegistrar = document.getElementById("btnRegistrar");
+
 init();
 
 async function init(){
@@ -123,7 +125,7 @@ async function init(){
     return;
   }
 
-  const hoy = new Date().toLocaleDateString('sv-SE');
+  const hoy = new Date().toISOString().split("T")[0];
 
   if (trabajador.fecha_inicio && hoy < trabajador.fecha_inicio){
     pintarErrorFinal("Acceso aún no inicia");
@@ -236,21 +238,41 @@ function esFueraDeHorario(){
 // 🔹 REGISTRAR
 document.getElementById("btnRegistrar").onclick = async () => {
 
+  // 🔥 BLOQUEO UX PRO
+  btnRegistrar.disabled = true;
+  btnRegistrar.innerText = "Procesando...";
+
   if(tipoAccion === "entrada"){
 
     if(!esEntradaPermitida()){
       pintarErrorFinal("Horario no permitido");
+
+      // 🔥 REACTIVAR
+      btnRegistrar.disabled = false;
+      btnRegistrar.innerText = "Registrar";
+
       return;
     }
 
-    await supabaseClient
+    const { error } = await supabaseClient
       .from("accesos_trabajadores")
       .insert([{
         trabajador_id: trabajadorGlobal.id,
         fecha_hora_entrada: fechaUTC(),
         estatus: "dentro",
-        vigilante_id: vigilante.id
+        vigilante_entrada_id: vigilante.id
       }]);
+
+    if (error) {
+      console.error("ERROR INSERT:", error);
+      ui.error("❌ Error al registrar entrada");
+
+      // 🔥 REACTIVAR
+      btnRegistrar.disabled = false;
+      btnRegistrar.innerText = "Registrar";
+
+      return;
+    }
 
     pintarFinal("ENTRADA REGISTRADA","ok");
   }
@@ -259,7 +281,7 @@ document.getElementById("btnRegistrar").onclick = async () => {
 
     const fueraHorario = esFueraDeHorario();
 
-    await supabaseClient
+    const { error } = await supabaseClient
       .from("accesos_trabajadores")
       .update({
         fecha_hora_salida: fechaUTC(),
@@ -268,10 +290,20 @@ document.getElementById("btnRegistrar").onclick = async () => {
       })
       .eq("id", accesoActual.id);
 
-    // 🔥 GENERAR REPORTE AUTOMÁTICO
+    if (error) {
+      console.error("ERROR UPDATE:", error);
+      ui.error("❌ Error al registrar salida");
+
+      // 🔥 REACTIVAR
+      btnRegistrar.disabled = false;
+      btnRegistrar.innerText = "Registrar";
+
+      return;
+    }
+
     if(fueraHorario){
 
-      await supabaseClient
+      const { error: errorReporte } = await supabaseClient
         .from("reportes_obras")
         .insert([{
           tipo: "salida_extemporanea",
@@ -286,6 +318,9 @@ document.getElementById("btnRegistrar").onclick = async () => {
           residente_id: null
         }]);
 
+      if(errorReporte){
+        console.error("ERROR REPORTE:", errorReporte);
+      }
     }
 
     pintarFinal("SALIDA REGISTRADA","warn");
