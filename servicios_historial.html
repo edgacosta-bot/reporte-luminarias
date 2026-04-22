@@ -176,10 +176,10 @@ function setRango(dias, autoConsultar = true){
   inicio.setDate(hoy.getDate() - dias);
 
   document.getElementById("inicio").value =
-    inicio.toISOString().split("T")[0];
+    inicio.toLocaleDateString("en-CA")
 
   document.getElementById("fin").value =
-    fin.toISOString().split("T")[0];
+     fin.toLocaleDateString("en-CA")
 
   if(autoConsultar){
     cargar();
