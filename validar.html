@@ -275,9 +275,10 @@ btn.addEventListener("click", async () => {
       .single();
 
     if (error) {
-      alert("Error al registrar entrada");
-      return;
-    }
+  console.error("🔥 ERROR INSERT:", error);
+  alert("Error al registrar entrada");
+  return;
+}
 
     pintar("ENTRADA REGISTRADA", "ok", visitaGlobal);
 
