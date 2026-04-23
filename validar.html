@@ -143,6 +143,13 @@ let tipoAccion = "";
 let accesoActual = null;
 
 window.addEventListener("DOMContentLoaded", async ()=>{
+
+  const { data } = await supabaseClient.auth.getSession();
+
+  if (data.session) {
+    await protegerPagina(["vigilante","residente"]);
+  }
+
   await validar();
 });
 
