@@ -154,7 +154,9 @@ async function cargar() {
   }
 
   residenteId = residente.id;
-  estadoPago = (residente.estado_pago || "").toLowerCase();
+  estadoPago = (residente.estado_pago || "").trim().toLowerCase();
+  console.log("estado_pago limpio:", estadoPago);
+  console.log("estado_pago raw:", residente.estado_pago);
   autorizado = residente.recibe_paquetes || false;
 
   render();
