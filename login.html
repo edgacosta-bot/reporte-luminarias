@@ -162,11 +162,11 @@ async function login() {
     const user = data.user;
 
     // 🔍 VALIDAR VÍNCULO (SIN AUTO-CREAR)
-    const { data: residente, error: err2 } = await supabaseClient
-      .from("residentes")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle();
+   const { data: residente, error: err2 } = await supabaseClient
+  .from("residentes")
+  .select("id, privada, casa, tipo, identificador")
+  .eq("user_id", user.id)
+  .maybeSingle();
 
     if (err2) {
       mensaje.innerText = "Error al validar usuario";
