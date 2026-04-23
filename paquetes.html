@@ -153,16 +153,17 @@ if (rol !== "vigilante" && rol !== "admin") {
   window.location.href = "index.html";
 }
 
-function mostrarModal(titulo, texto, tipo = "") {
+function mostrarModal(titulo, texto, privada, casa) {
 
-  let botones = `<button onclick="cerrarModal()">Cerrar</button>`;
+  document.getElementById("modalContenido").innerHTML = `
+    <h3>${titulo}</h3>
+    <p>${texto}</p>
+    <button onclick="abrirWhats('${privada}','${casa}')">Abrir WhatsApp</button>
+    <button onclick="cerrarModal()">Cerrar</button>
+  `;
 
-  if (tipo === "notificar") {
-    botones = `
-      <button onclick="abrirWhats()">Abrir WhatsApp</button>
-      <button onclick="confirmarNotificacion()">Ya notifiqué</button>
-    `;
-  }
+  document.getElementById("modal").style.display = "flex";
+}
 
   document.getElementById("modalContenido").innerHTML = `
     <h3>${titulo}</h3>
@@ -288,17 +289,16 @@ async function registrar(id, privada, casa) {
     return;
   }
 
-  mostrarModal(
-    "Notificación",
-    "Selecciona al residente en WhatsApp y envía el mensaje.",
-    "notificar"
-  );
+  abrirWhats(privada, casa);
+  mostrarModal("Listo", "Paquete registrado correctamente");
 }
 
-function abrirWhats() {
+function abrirWhats(privada, casa) {
+
+  const ahora = new Date().toLocaleTimeString();
 
   const mensaje = encodeURIComponent(
-    "Estimado residente, tiene un paquete en caseta..."
+    `Estimado residente, le informamos que a las ${ahora} se recibió un paquete para usted en la caseta de vigilancia (Privada ${privada}, lote ${casa}); le pedimos que sea recibido a la brevedad posible. Gracias.`
   );
 
   window.open(`https://wa.me/?text=${mensaje}`, '_blank');
