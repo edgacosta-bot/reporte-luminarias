@@ -165,15 +165,7 @@ function mostrarModal(titulo, texto, privada, casa) {
   document.getElementById("modal").style.display = "flex";
 }
 
-  document.getElementById("modalContenido").innerHTML = `
-    <h3>${titulo}</h3>
-    <p>${texto}</p>
-    ${botones}
-  `;
-
-  document.getElementById("modal").style.display = "flex";
-}
-
+  
 function cerrarModal() {
   document.getElementById("modal").style.display = "none";
 }
@@ -289,8 +281,14 @@ async function registrar(id, privada, casa) {
     return;
   }
 
-  abrirWhats(privada, casa);
-  mostrarModal("Listo", "Paquete registrado correctamente");
+  console.log("REGISTRADO OK", privada, casa);
+  
+  mostrarModal(
+  "Notificación",
+  "Envía el mensaje por WhatsApp al residente",
+  privada,
+  casa
+);
 }
 
 function abrirWhats(privada, casa) {
