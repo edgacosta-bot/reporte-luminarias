@@ -60,18 +60,25 @@ yaValidado = true;
     const rolesNormalizados = rolesPermitidos.map(r => r.toLowerCase());
 
     // 🔹 7. Validación
-    if (!residente || !rolesNormalizados.includes(tipo)) {
-      console.warn("⛔ Acceso no autorizado:", tipo);
-      window.location.href = "index.html";
-      return;
-    }
+   if (!residente || !rolesNormalizados.includes(tipo)) {
+
+  if (!window.location.pathname.includes("validar")) {
+    window.location.href = "index.html";
+  }
+
+  return;
+}
 
     console.log("✅ Acceso permitido:", tipo);
 
-  } catch (err) {
-    console.error("🔥 Error en protegerPagina:", err);
+} catch (err) {
+  console.error("🔥 Error en protegerPagina:", err);
+
+  // 🔥 permitir validar sin sesión
+  if (!window.location.pathname.includes("validar")) {
     window.location.href = "login.html";
   }
+}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
