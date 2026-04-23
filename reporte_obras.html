@@ -231,17 +231,13 @@ async function enviarReporte() {
   descripcion: descripcion,
   trabajador_id: trabajador_id || null,
   obra_id: obra_id,
-
   privada: residente.privada,
   casa: residente.casa,
-
   residente_id: residente.id,
 
   // 🔥 NUEVO (CLAVE)
   creado_por: residente.id,
   rol_creador: "residente",
-  origen: "residente",
-
   fecha_reporte: new Date().toISOString(),
   estatus: "nuevo"
 };
