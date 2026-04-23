@@ -302,10 +302,10 @@ vigilantes?.forEach(r=> todos.push({
 
     grupos[tipo].forEach(r => {
 
-      console.log("ID ACTUAL:", r.id_real);
-
       let esEvaluable = ["obra","vecinal","vigilante"].includes(r.tipo);
-      let puede = esEvaluable && !evaluados.has(String(r.id_real));
+      const id = r.id_real || r.id;
+      console.log("ID ACTUAL:", id);
+      let puede = esEvaluable && !evaluados.has(String(id));
       let habilitado = puede && pasaron5Dias(r.fecha);
 
       bloque += `
@@ -315,7 +315,7 @@ vigilantes?.forEach(r=> todos.push({
         <div class="fecha">${formatMXDate(r.fecha)}</div>
 
         ${puede ? `
-        <button onclick="${habilitado?`abrir('${r.id_real}')`:''}"
+        <button onclick="${habilitado?`abrir('${id}')`:''}""
         ${!habilitado?'disabled':''}>
         Evaluar atención
         </button>`:""}
