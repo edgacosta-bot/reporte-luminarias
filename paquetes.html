@@ -202,34 +202,62 @@ function render(data) {
 
   data.forEach(r => {
 
-    const esValido = r.recibe_paquetes && ['corriente','atraso_1'].includes(r.estado_pago);
-
     const div = document.createElement("div");
-    div.className = "item";
+div.className = "item";
 
-    if (esValido) {
-      div.classList.add("ok");
+let puedeRegistrar = false;
+let mensaje = "";
+let clase = "";
 
-      div.innerHTML = `
-        <span>Privada ${r.privada} - Lote ${r.casa}</span>
-        <button class="button" onclick="registrar('${r.id}','${r.privada}','${r.casa}')">
-          Registrar
-        </button>
-      `;
+// 🔹 No autorizó paquetes
+if (!r.recibe_paquetes) {
+  mensaje = "⚠ No autorizó recepción";
+  clase = "warn";
+}
 
-      contA.appendChild(div);
+// 🔹 MOROSO → bloqueado
+else if (r.estado_pago === "moroso") {
+  mensaje = "❌ No disponible por adeudo";
+  clase = "error";
+}
 
-    } else {
+// 🔹 RETRASO → permitido con alerta
+else if (r.estado_pago === "retraso_1") {
+  mensaje = "⚠ Tiene adeudo";
+  clase = "warn";
+  puedeRegistrar = true;
+}
 
-      let texto = "";
+// 🔹 CORRIENTE → permitido sin mensaje
+else if (r.estado_pago === "corriente") {
+  clase = "ok";
+  puedeRegistrar = true;
+}
 
-      if (!r.recibe_paquetes) {
-        div.classList.add("warn");
-        texto = "⚠ No autorizó recepción";
-      } else {
-        div.classList.add("error");
-        texto = "❌ No disponible por adeudo";
-      }
+// 🔹 fallback
+else {
+  mensaje = "❌ Estado desconocido";
+  clase = "error";
+}
+
+div.classList.add(clase);
+
+if (puedeRegistrar) {
+  div.innerHTML = `
+    <span>Privada ${r.privada} - Lote ${r.casa}</span>
+    <div>
+      ${mensaje ? `<div style="font-size:12px">${mensaje}</div>` : ""}
+      <button class="button" onclick="registrar('${r.id}','${r.privada}','${r.casa}')">
+        Registrar
+      </button>
+    </div>
+  `;
+} else {
+  div.innerHTML = `
+    <span>Privada ${r.privada} - Lote ${r.casa}</span>
+    <span style="font-size:12px">${mensaje}</span>
+  `;
+}
 
       div.innerHTML = `
         <span>Privada ${r.privada} - Lote ${r.casa}</span>
