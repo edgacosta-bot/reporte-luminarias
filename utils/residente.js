@@ -16,7 +16,7 @@ window.getResidente = async function () {
 
   const { data: residente, error } = await supabaseClient
     .from("residentes")
-    .select("id, privada, casa")
+    .select("id, privada, casa, estado_pago, recibe_paquetes")
     .eq("user_id", user.id)
     .single();
 
