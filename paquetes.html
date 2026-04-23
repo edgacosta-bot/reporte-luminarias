@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -110,6 +111,7 @@ input {
   width: 100%;
 }
 </style>
+
 </head>
 
 <body>
@@ -138,7 +140,7 @@ const { createClient } = supabase;
 
 const supabaseClient = createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 );
 
 if (!localStorage.getItem("usuario_valido")) {
@@ -203,67 +205,58 @@ function render(data) {
   data.forEach(r => {
 
     const div = document.createElement("div");
-div.className = "item";
+    div.className = "item";
 
-let puedeRegistrar = false;
-let mensaje = "";
-let clase = "";
+    let puedeRegistrar = false;
+    let mensaje = "";
+    let clase = "";
 
-// 🔹 No autorizó paquetes
-if (!r.recibe_paquetes) {
-  mensaje = "⚠ No autorizó recepción";
-  clase = "warn";
-}
+    if (!r.recibe_paquetes) {
+      mensaje = "⚠ No autorizó recepción";
+      clase = "warn";
+    }
 
-// 🔹 MOROSO → bloqueado
-else if (r.estado_pago === "moroso") {
-  mensaje = "❌ No disponible por adeudo";
-  clase = "error";
-}
+    else if (r.estado_pago === "moroso") {
+      mensaje = "❌ No disponible por adeudo";
+      clase = "error";
+    }
 
-// 🔹 RETRASO → permitido con alerta
-else if (r.estado_pago === "atraso_1") {
-  mensaje = "⚠ Tiene adeudo";
-  clase = "warn";
-  puedeRegistrar = true;
-}
+    else if (r.estado_pago === "atraso_1") {
+      mensaje = "⚠ Tiene adeudo";
+      clase = "warn";
+      puedeRegistrar = true;
+    }
 
-// 🔹 CORRIENTE → permitido sin mensaje
-else if (r.estado_pago === "corriente") {
-  clase = "ok";
-  puedeRegistrar = true;
-}
+    else if (r.estado_pago === "corriente") {
+      clase = "ok";
+      puedeRegistrar = true;
+    }
 
-// 🔹 fallback
-else {
-  mensaje = "❌ Estado desconocido";
-  clase = "error";
-}
+    else {
+      mensaje = "❌ Estado desconocido";
+      clase = "error";
+    }
 
-div.classList.add(clase);
+    div.classList.add(clase);
 
-if (puedeRegistrar) {
-  div.innerHTML = `
-    <span>Privada ${r.privada} - Lote ${r.casa}</span>
-    <div>
-      ${mensaje ? `<div style="font-size:12px">${mensaje}</div>` : ""}
-      <button class="button" onclick="registrar('${r.id}','${r.privada}','${r.casa}')">
-        Registrar
-      </button>
-    </div>
-  `;
-} else {
-  div.innerHTML = `
-    <span>Privada ${r.privada} - Lote ${r.casa}</span>
-    <span style="font-size:12px">${mensaje}</span>
-  `;
-}
+    if (puedeRegistrar) {
+      div.innerHTML = `
+        <span>Privada ${r.privada} - Lote ${r.casa}</span>
+        <div>
+          ${mensaje ? `<div style="font-size:12px">${mensaje}</div>` : ""}
+          <button class="button" onclick="registrar('${r.id}','${r.privada}','${r.casa}')">
+            Registrar
+          </button>
+        </div>
+      `;
+      contA.appendChild(div);
+
+    } else {
 
       div.innerHTML = `
         <span>Privada ${r.privada} - Lote ${r.casa}</span>
-        <span style="font-size:12px">${texto}</span>
+        <span style="font-size:12px">${mensaje}</span>
       `;
-
       contN.appendChild(div);
     }
 
@@ -305,7 +298,7 @@ async function registrar(id, privada, casa) {
 function abrirWhats() {
 
   const mensaje = encodeURIComponent(
-    "Estimado residente, tiene un paquete en caseta. Favor de recogerlo a la brevedad o mañana será entregado a la administración. Gracias"
+    "Estimado residente, tiene un paquete en caseta..."
   );
 
   window.open(`https://wa.me/?text=${mensaje}`, '_blank');
@@ -316,7 +309,6 @@ function confirmarNotificacion() {
 }
 
 setInterval(cargar, 10000);
-
 cargar();
 </script>
 
