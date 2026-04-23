@@ -29,11 +29,16 @@ yaValidado = true;
     }
 
     // 🔹 3. Si no hay usuario → login
-    if (!user) {
-      console.warn("❌ Sin sesión");
-      window.location.href = "login.html";
-      return;
-    }
+   if (!user) {
+  console.warn("❌ Sin sesión");
+
+  // 🔥 permitir acceso a validar (QR)
+  if (!window.location.pathname.includes("validar")) {
+    window.location.href = "login.html";
+  }
+
+  return;
+}
 
     const userId = user.id;
 
