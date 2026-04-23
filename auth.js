@@ -6,123 +6,92 @@ const supabaseClient = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
 );
 
-// 🔥 ESTA LÍNEA ES LA SOLUCIÓN
+// 🔥 Exponer globalmente
 window.supabaseClient = supabaseClient;
 
 // 🔹 Protección de páginas por rol
 let yaValidado = false;
+
 async function protegerPagina(rolesPermitidos) {
 
-if (yaValidado) return;
-yaValidado = true;  
+  if (yaValidado) return;
+  yaValidado = true;
 
   try {
 
-    // 🔹 1. Obtener sesión (rápido)
+    // 🔹 1. Obtener sesión
     let { data: sessionData } = await supabaseClient.auth.getSession();
     let user = sessionData?.session?.user;
 
-    // 🔹 2. Fallback móvil (CRÍTICO)
+    // 🔹 2. Fallback móvil
     if (!user) {
       const { data: userData } = await supabaseClient.auth.getUser();
       user = userData?.user;
     }
 
-    // 🔹 3. Si no hay usuario → login
-   if (!user) {
-  console.warn("❌ Sin sesión");
+    // 🔹 3. Sin sesión → login
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
 
-  // 🔥 permitir acceso a validar (QR)
-  if (!window.location.pathname.includes("validar")) {
-    window.location.href = "login.html";
-  }
-
-  return;
-}
-
-    const userId = user.id;
-
-    // 🔹 4. Obtener rol desde residentes
-    const { data: residente, error } = await supabaseClient
+    // 🔹 4. Obtener rol
+    const { data: residente } = await supabaseClient
       .from("residentes")
       .select("tipo")
-      .eq("user_id", userId)
+      .eq("user_id", user.id)
       .maybeSingle();
 
-    console.log("👤 RESIDENTE:", residente);
-    console.log("⚠️ ERROR:", error);
-    console.log("🎯 ROLES PERMITIDOS:", rolesPermitidos);
-
-    // 🔹 5. Normalizar rol
+    // 🔹 5. Validar rol
     const tipo = residente?.tipo?.trim().toLowerCase();
-
-    // 🔹 6. Normalizar roles permitidos
     const rolesNormalizados = rolesPermitidos.map(r => r.toLowerCase());
 
-    // 🔹 7. Validación
-   if (!residente || !rolesNormalizados.includes(tipo)) {
+    if (!residente || !rolesNormalizados.includes(tipo)) {
+      window.location.href = "index.html";
+      return;
+    }
 
-  if (!window.location.pathname.includes("validar")) {
-    window.location.href = "index.html";
-  }
-
-  return;
-}
-
-    console.log("✅ Acceso permitido:", tipo);
-
-} catch (err) {
-  console.error("🔥 Error en protegerPagina:", err);
-
-  // 🔥 permitir validar sin sesión
-  if (!window.location.pathname.includes("validar")) {
+  } catch (err) {
+    console.error("Error en protegerPagina:", err);
     window.location.href = "login.html";
   }
-}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // 🔥 UTILIDADES DE FECHA (ESTANDARIZADAS)
 ////////////////////////////////////////////////////////////////////////////////
 
-// 🔹 Inicio del día en UTC
 function fechaInicioUTC(fecha){
   const d = new Date(fecha);
   d.setHours(0,0,0,0);
   return d.toISOString();
 }
 
-// 🔹 Fin del día en UTC
 function fechaFinUTC(fecha){
   const d = new Date(fecha);
   d.setHours(23,59,59,999);
   return d.toISOString();
 }
 
-// 🔹 Formato visual México
 function formatoMX(fecha){
   if(!fecha) return "";
   return new Date(fecha).toLocaleString("es-MX");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 🔥 AJUSTE TEMPORAL PARA reportes_obras (CORREGIDO)
+// 🔥 AJUSTE TEMPORAL PARA reportes_obras
 ////////////////////////////////////////////////////////////////////////////////
-
-// ⚠️ NOTA:
-// Esta tabla guarda fechas desplazadas +6h
-// Aquí las regresamos correctamente al día real
 
 function fechaInicioAjustada(fecha){
   const d = new Date(fecha);
   d.setHours(0,0,0,0);
-  d.setHours(d.getHours() - 6); // 🔥 CORRECCIÓN
+  d.setHours(d.getHours() - 6);
   return d.toISOString();
 }
 
 function fechaFinAjustada(fecha){
   const d = new Date(fecha);
   d.setHours(23,59,59,999);
-  d.setHours(d.getHours() - 6); // 🔥 CORRECCIÓN
+  d.setHours(d.getHours() - 6);
   return d.toISOString();
 }
