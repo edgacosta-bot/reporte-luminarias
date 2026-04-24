@@ -38,7 +38,7 @@ h1 { text-align: center; }
 
 .kpis {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 10px;
   margin-bottom: 20px;
 }
@@ -177,6 +177,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     <h3>Fugas</h3>
     <p id="fugas">0</p>
   </div>
+<div class="card">
+  <h3>Baja presión</h3>
+  <p id="bajaPresion">0</p>
+</div>
 </div>
 
 <div class="filtros">
@@ -291,13 +295,28 @@ document.getElementById("filtroTipo").addEventListener("change", aplicarFiltroTi
 
 function renderTodo(data) {
 
+  // 🔢 TOTAL
   document.getElementById("total").innerText = data.length;
 
-  document.getElementById("sinServicio").innerText =
-    data.filter(r => normalizar(r.tipo_falla) === "sin_servicio").length;
+  // 🔥 CONTADOR DINÁMICO
+  let conteo = {};
 
-  document.getElementById("fugas").innerText =
-    data.filter(r => normalizar(r.tipo_falla) === "fuga").length;
+  data.forEach(r => {
+    const tipo = normalizar(r.tipo_falla);
+
+    if (!conteo[tipo]) {
+      conteo[tipo] = 0;
+    }
+
+    conteo[tipo]++;
+  });
+
+  // 🔢 KPIs
+  document.getElementById("sinServicio").innerText = conteo["sin_servicio"] || 0;
+  document.getElementById("fugas").innerText = conteo["fuga"] || 0;
+
+  // 🔥 NUEVO KPI
+  document.getElementById("bajaPresion").innerText = conteo["baja_presion"] || 0;
 
   renderTabla(data);
 }
@@ -321,7 +340,7 @@ function renderTabla(data) {
         <td>${formatearFecha(r.fecha_reporte)}</td>
         <td>${r.numero_reporte || "-"}</td>
         <td>${r.privada || "-"}</td>
-        <td>${r.numero_exterior || "-"}</td>
+        <td>${r.casa || "-"}</td>
         <td><span class="tipo ${tipo}">${formatearTipo(tipo)}</span></td>
       </tr>
     `;
