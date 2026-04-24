@@ -272,9 +272,10 @@ function render(data) {
 
         <td class="${
           l.estado_automatico === 'Prever reemplazo próximo' ? 'warn' :
-          l.estado_automatico === 'Reemplazar' ? 'fail' : 'ok'
+          l.estado_automatico === 'Reemplazar' ? 'fail' :
           l.estado_automatico === 'Atender reporte' ? 'atender' :
-        }">
+          'ok'
+          }">
           ${l.estado_automatico}
         </td>
       </tr>
