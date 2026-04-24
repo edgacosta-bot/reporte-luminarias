@@ -92,11 +92,13 @@ Registra el número de reporte proporcionado por CAASIM junto con los datos corr
 
 <input id="numero_reporte" placeholder="Número de reporte">
 
-<label style="font-size:12px; color:#9ca3af;">
-  Seleccione la fecha en que hizo el reporte
-</label>
-
-<input type="date" id="fecha_reporte">
+<input 
+  type="text" 
+  id="fecha_reporte" 
+  placeholder="Seleccione la fecha en que hizo el reporte"
+  onfocus="this.type='date'"
+  onblur="if(!this.value)this.type='text'"
+>
 
 <select id="tipo_falla">
   <option value="">Tipo de falla</option>
