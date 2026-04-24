@@ -122,7 +122,11 @@ button {
   <div class="card">
     <h3>Renovar periodo</h3>
 
-    <input type="date" id="fechaNueva">
+    <label>Inicio</label>
+    <input type="date" id="fechaInicioNueva">
+
+    <label>Fin</label>
+    <input type="date" id="fechaFinNueva">
 
     <div class="botones">
       <button onclick="confirmarRenovar()" class="btn-on">Guardar</button>
@@ -268,9 +272,11 @@ function abrirRenovar(id, fechaActual) {
 
   trabajadorSeleccionado = id;
 
-  const modal = document.getElementById("modalRenovar");
-  const input = document.getElementById("fechaNueva");
+  const inputInicio = document.getElementById("fechaInicioNueva");
+const inputFin = document.getElementById("fechaFinNueva");
 
+inputInicio.value = ""; // o puedes cargar fecha_inicio si quieres
+inputFin.value = fechaActual || "";
   input.value = fechaActual || "";
   modal.classList.remove("hidden");
 }
@@ -280,23 +286,25 @@ function abrirRenovar(id, fechaActual) {
 }
 
 function confirmarRenovar(){
-  const nueva = document.getElementById("fechaNueva").value;
+  const inicio = document.getElementById("fechaInicioNueva").value;
+const fin = document.getElementById("fechaFinNueva").value;
 
-  if(!nueva){
-    alert("Selecciona una fecha válida");
-    return;
-  }
+if (!inicio || !fin) {
+  alert("Debes seleccionar inicio y fin");
+  return;
+}
 
-  renovar(nueva);
+  renovar(inicio, fin);
   cerrarRenovar();
 }
 
-async function renovar(nuevaFecha) {
+async function renovar(inicio, fin) {
 
   const { error } = await supabaseClient
     .from("trabajadores_hogar")
     .update({
-      fecha_fin: nuevaFecha,
+      fecha_inicio: inicio,
+      fecha_fin: fin,
       activo: true
     })
     .eq("id", trabajadorSeleccionado);
@@ -306,6 +314,9 @@ async function renovar(nuevaFecha) {
     alert("Error al renovar");
     return;
   }
+
+  cargar();
+}
 
   cargar();
 }
