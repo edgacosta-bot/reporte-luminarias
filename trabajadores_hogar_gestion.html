@@ -305,14 +305,15 @@ async function renovar(inicio, fin) {
 
   console.log("INTENTO UPDATE:", inicio, fin, trabajadorSeleccionado);
 
-  const { error } = await supabaseClient
-    .from("trabajadores_hogar")
-    .update({
-      fecha_inicio: inicio,
-      fecha_fin: fin,
-      activo: true
-    })
-    .eq("id", trabajadorSeleccionado);
+ const { data, error } = await supabaseClient
+  .from("trabajadores_hogar")
+  .update({
+    fecha_inicio: inicio,
+    fecha_fin: fin,
+    activo: true
+  })
+  .eq("id", trabajadorSeleccionado)
+  .select();
 
   if (error) {
   console.error("ERROR RENOVAR:", error);
@@ -320,6 +321,7 @@ async function renovar(inicio, fin) {
   return;
 } else {
   console.log("UPDATE OK");
+  console.log("FILAS AFECTADAS:", data);
 }
 
   setTimeout(() => {
