@@ -10,56 +10,75 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
+  background: #0f172a;
   color: white;
   text-align: center;
 }
 
 .container {
+  max-width: 420px;
+  margin: auto;
   padding: 20px;
-  max-width: 340px;
-  width: 100%;
 }
 
-.logo {
-  width: 70px;
-  margin: 0 auto 10px;
+/* 🔥 TARJETA COMO VISITANTE */
+.card {
+  background: white;
+  color: black;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
-.logo img {
-  width: 100%;
+.header {
+  background: #1e293b;
+  color: white;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  font-weight: bold;
 }
 
-h1 {
-  font-size: 16px;
-  color: #94a3b8;
-  margin-bottom: 5px;
-}
-
-h2 {
-  font-size: 20px;
-  margin: 0;
-}
-
+/* DATOS */
 .nombre {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: bold;
   margin-top: 10px;
 }
 
 .detalle {
-  color: #9ca3af;
+  color: #374151;
   margin-bottom: 15px;
+  font-size: 14px;
 }
 
+/* QR ESTILO VISITANTE */
 #qr {
   margin-top: 15px;
 }
 
+.qr-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: #f9fafb;
+  padding: 15px;
+  border-radius: 12px;
+}
+
+.qr-logo {
+  width: 50px;
+  margin-bottom: -10px;
+}
+
+.qr-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: #1e293b;
+}
+
+/* BOTÓN */
 .btn-wa {
   margin-top: 20px;
   padding: 14px;
@@ -78,23 +97,23 @@ h2 {
 <body>
 
 <div class="container">
+  <div class="card">
 
-  <div class="logo">
-    <img src="/icono-512.png">
+    <div class="header">
+      Villas de la Concepción<br>
+      Acceso propietario
+    </div>
+
+    <div class="nombre" id="nombre"></div>
+    <div class="detalle" id="detalle"></div>
+
+    <div id="qr"></div>
+
+    <button id="btnWA" class="btn-wa">
+      📲 Enviar por WhatsApp
+    </button>
+
   </div>
-
-  <h1>Villas de la Concepción</h1>
-  <h2>Acceso propietario</h2>
-
-  <div class="nombre" id="nombre"></div>
-  <div class="detalle" id="detalle"></div>
-
-  <div id="qr"></div>
-
-  <button id="btnWA" class="btn-wa">
-    📲 Enviar por WhatsApp
-  </button>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
@@ -118,9 +137,17 @@ if (!codigo) {
 // 🔐 URL REAL DE ACCESO
 const urlQR = `${window.location.origin}/acceso_propietario.html?qr=${codigo}`;
 
-// 🎯 GENERAR QR
-QRCode.toCanvas(urlQR, { width: 220 }, function (err, canvas) {
-  document.getElementById("qr").appendChild(canvas);
+// 🎯 RENDER QR ESTILO VISITANTE
+document.getElementById("qr").innerHTML = `
+  <div class="qr-wrapper">
+    <img src="/icono-512.png" class="qr-logo">
+    <div id="qrCanvas"></div>
+    <div class="qr-title">Villas de la Concepción</div>
+  </div>
+`;
+
+QRCode.toCanvas(urlQR, { width: 200 }, function (err, canvas) {
+  document.getElementById("qrCanvas").appendChild(canvas);
 });
 
 // 🧾 DATOS
