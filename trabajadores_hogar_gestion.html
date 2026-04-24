@@ -208,7 +208,7 @@ async function cargar() {
         ${t.activo ? 'Desactivar' : 'Activar'}
         </button>
 
-        <button onclick="abrirRenovar('${t.id}', '${t.fecha_fin || ''}')">
+        <button onclick="abrirRenovar('${t.id}', '${t.fecha_inicio || ''}', '${t.fecha_fin || ''}')"
         Renovar
         </button>
 
@@ -266,21 +266,22 @@ async function eliminar(id) {
   cargar();
 }
 
-function abrirRenovar(id, fechaActual) {
+function abrirRenovar(id, fechaInicio, fechaFin) {
 
   if (residente.estado_pago === "moroso") return;
 
   trabajadorSeleccionado = id;
 
   const inputInicio = document.getElementById("fechaInicioNueva");
-const inputFin = document.getElementById("fechaFinNueva");
+  const inputFin = document.getElementById("fechaFinNueva");
+  const modal = document.getElementById("modalRenovar");
 
-inputInicio.value = ""; // o puedes cargar fecha_inicio si quieres
-inputFin.value = fechaActual || "";
-  input.value = fechaActual || "";
+  inputInicio.value = fechaInicio || "";
+  inputFin.value = fechaFin || "";
+
   modal.classList.remove("hidden");
 }
-
+  
   function cerrarRenovar(){
   document.getElementById("modalRenovar").classList.add("hidden");
 }
@@ -317,9 +318,8 @@ async function renovar(inicio, fin) {
 
   cargar();
 }
+ 
 
-  cargar();
-}
 
 </script>
 
