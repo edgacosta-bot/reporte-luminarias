@@ -88,18 +88,15 @@ init();
 
 async function init(){
 
-  const { data } = await supabaseClient
-    .from("trabajadores_hogar")
-    .select("*")
-    .eq("qr_codigo", qr)
-    .maybeSingle();
+     const { data } = await supabaseClient
+  .rpc("validar_trabajador_hogar", { qr });
 
   if(!data){
     pintar("QR inválido","error");
     return;
   }
 
-  trabajador = data;
+  trabajador = Array.isArray(data) ? data[0] : data;
   console.log("RPC DATA:", data);
   console.log("TRABAJADOR:", trabajador);
 
@@ -120,9 +117,7 @@ const res = resData[0];
   const { data: abiertoData } = await supabaseClient
   .rpc("obtener_acceso_abierto", { trab_id: trabajador.id });
 
-const abierto = abiertoData && abiertoData.length ? abiertoData[0] : null;
-
-  accesoAbierto = abierto && abierto.length ? abierto[0] : null;
+accesoAbierto = abiertoData && abiertoData.length ? abiertoData[0] : null;
 
   tipoAccion = accesoAbierto ? "salida" : "entrada";
 
@@ -212,8 +207,8 @@ btnRegistrar.onclick = async () => {
   btnRegistrar.innerText = "Procesando...";
 
   const { error } = await supabaseClient
-    .from("accesos_trabajadores_hogar")
-    .update({
+  .from("accesos_trabajadores_hogar")
+  .update({
       fecha_hora_salida: ahora,
       estatus: "fuera",
       vigilante_salida_id: vigilante.id
