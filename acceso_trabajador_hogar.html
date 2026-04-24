@@ -145,11 +145,6 @@ if (!pinData || pinData.length === 0) {
 
 const data = pinData[0];
 
-  if(!data){
-    ui.error("PIN incorrecto");
-    return;
-  }
-
   vigilante = data;
 
   ocultarValidacion();
@@ -198,7 +193,6 @@ function evaluarEstadoEntrada(){
 // 🔹 REGISTRAR
 btnRegistrar.onclick = async () => {
 
-  const ahora = new Date().toISOString();
 
   // 🔥 SALIDA
  if(tipoAccion === "salida"){
@@ -206,15 +200,10 @@ btnRegistrar.onclick = async () => {
   btnRegistrar.disabled = true;
   btnRegistrar.innerText = "Procesando...";
 
-  const { error } = await supabaseClient
-  .from("accesos_trabajadores_hogar")
-  .update({
-      fecha_hora_salida: ahora,
-      estatus: "fuera",
-      vigilante_salida_id: vigilante.id
-    })
-    .eq("id", accesoAbierto.id);
-
+  const { error } = await supabaseClient.rpc("registrar_salida_trabajador", {
+  p_acceso_id: accesoAbierto.id
+});
+     
   if (error) {
     console.error("ERROR UPDATE:", error);
 
@@ -237,14 +226,10 @@ btnRegistrar.onclick = async () => {
 }
 
   // 🔹 ENTRADA
-const { error } = await supabaseClient
-  .from("accesos_trabajadores_hogar")
-  .insert([{
-    trabajador_id: trabajador.id,
-    fecha_hora_entrada: ahora,
-    estatus: "dentro",
-    vigilante_entrada_id: vigilante.id
-  }]);
+const { error } = await supabaseClient.rpc("registrar_entrada_trabajador", {
+  p_trabajador_id: trabajador.id,
+  p_vigilante_id: vigilante.id
+});
 
 if (error) {
   console.error("ERROR INSERT:", error);
