@@ -103,7 +103,6 @@ Registra el número de reporte proporcionado por CAASIM junto con los datos corr
 
 <select id="calle"></select>
 
-<input id="numero_exterior" placeholder="Número exterior">
 
 <select id="medio_reporte">
   <option value="">Medio de reporte</option>
@@ -175,13 +174,12 @@ async function guardar(){
   const fecha_reporte = document.getElementById("fecha_reporte").value;
   const tipo_falla = document.getElementById("tipo_falla").value;
   const calle_id = document.getElementById("calle").value;
-  const numero_exterior = document.getElementById("numero_exterior").value.trim();
   const medio_reporte = document.getElementById("medio_reporte").value;
   const observaciones = document.getElementById("observaciones").value.trim();
 
   const msg = document.getElementById("msg");
 
-  if(!numero_reporte || !tipo_falla || !calle_id || !fecha_reporte || !numero_exterior || !medio_reporte){
+ if(!numero_reporte || !tipo_falla || !calle_id || !fecha_reporte || !medio_reporte){
     msg.innerText = "Completa los campos requeridos";
     return;
   }
@@ -200,7 +198,6 @@ async function guardar(){
       residente_id: residenteGlobal.id,
       privada: residenteGlobal.privada,
       casa: residenteGlobal.casa,
-      numero_exterior: numero_exterior,
       calle_id,
       numero_reporte,
       tipo_falla,
@@ -219,7 +216,6 @@ async function guardar(){
   msg.innerText = "Reporte guardado correctamente";
 
   document.getElementById("numero_reporte").value = "";
-  document.getElementById("numero_exterior").value = "";
   document.getElementById("observaciones").value = "";
 
   const hoy = new Date();
