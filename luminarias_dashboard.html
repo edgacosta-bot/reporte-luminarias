@@ -13,6 +13,12 @@ protegerPagina(["colono","residente","admin","administracion"]);
 <title>Dashboard Luminarias</title>
 
 <style>
+
+.atender {
+  color: #ffffff;
+  font-weight: bold;
+}
+  
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -159,6 +165,10 @@ th:nth-child(4), td:nth-child(4) { width: 35%; }
     <div>Prever reemplazo prox.</div>
     <div id="kpiPrev">0</div>
   </div>
+  <div class="card">
+  <div>Atender reporte</div>
+  <div id="kpiAtender">0</div>
+</div>
 </div>
 
 <!-- 📋 TABLA -->
@@ -239,12 +249,14 @@ function render(data) {
   let ok = 0;
   let fail = 0;
   let prev = 0;
+  let atender = 0;
 
   data.forEach(l => {
 
     if (l.situacion === "Operativo") ok++;
     if (l.situacion === "Fuera de servicio") fail++;
     if (l.estado_automatico === "Prever reemplazo próximo") prev++;
+    if (l.estado_automatico === "Atender reporte") atender++;
 
     tabla.innerHTML += `
       <tr>
@@ -261,6 +273,7 @@ function render(data) {
         <td class="${
           l.estado_automatico === 'Prever reemplazo próximo' ? 'warn' :
           l.estado_automatico === 'Reemplazar' ? 'fail' : 'ok'
+          l.estado_automatico === 'Atender reporte' ? 'atender' :
         }">
           ${l.estado_automatico}
         </td>
@@ -272,6 +285,7 @@ function render(data) {
   document.getElementById("kpiOk").innerText = ok;
   document.getElementById("kpiFail").innerText = fail;
   document.getElementById("kpiPrev").innerText = prev;
+  document.getElementById("kpiAtender").innerText = atender;
 }
 
 // 🚀 INICIO
