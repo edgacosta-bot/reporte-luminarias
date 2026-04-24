@@ -242,16 +242,22 @@ contenedor.appendChild(card);
 
 async function toggle(id, estadoActual) {
 
-if (residente.estado_pago === "moroso") return;
+  if (residente.estado_pago === "moroso") return;
 
-await supabaseClient
-.from("trabajadores_hogar")
-.update({ activo: !estadoActual })
-.eq("id", id);
+  const { error } = await supabaseClient
+    .from("trabajadores_hogar")
+    .update({ activo: !estadoActual })
+    .eq("id", id);
 
-cargar();
+  if (error) {
+    console.error("ERROR TOGGLE:", error);
+    alert("No se pudo actualizar el estado");
+    return;
+  }
+
+  cargar();
 }
-
+  
 async function eliminar(id) {
 
 if (residente.estado_pago === "moroso") return;
