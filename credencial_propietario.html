@@ -123,30 +123,6 @@ body {
 
 <script>
 
-// 🔥 CONTROL TOTAL DE WHATSAPP
-let permitirWA = false;
-
-// 🚫 BLOQUEAR ejecuciones automáticas (AQUÍ VA)
-window.open = new Proxy(window.open, {
-  apply(target, thisArg, args) {
-    if (!permitirWA) {
-      console.warn("🚫 Bloqueado intento automático de WA");
-      return null;
-    }
-    return Reflect.apply(target, thisArg, args);
-  }
-});
-
-// 🔽 DESPUÉS de esto sigue tu código normal
-const params = new URLSearchParams(window.location.search);  
-// 🔥 AQUÍ VA (ARRIBA DE TODO)
-let waProtegido = true;
-
-window.addEventListener("load", () => {
-  waProtegido = false;
-});
-
-// 🔽 luego sigue tu código normal
 const params = new URLSearchParams(window.location.search);
 
 const codigo = params.get("qr");
@@ -155,16 +131,16 @@ const privada = params.get("privada");
 const casa = params.get("casa");
 const origen = params.get("origen");
 
-// 🔐 VALIDACIÓN BÁSICA
+// 🔐 VALIDACIÓN
 if (!codigo) {
   document.body.innerHTML = "QR inválido";
   throw new Error("QR inválido");
 }
 
-// 🔐 URL REAL DE ACCESO
+// 🔐 URL QR
 const urlQR = `${window.location.origin}/acceso_propietario.html?qr=${codigo}`;
 
-// 🎯 RENDER QR ESTILO VISITANTE
+// 🎯 RENDER QR
 document.getElementById("qr").innerHTML = `
   <div class="qr-wrapper">
     <img src="/icono-512.png" class="qr-logo">
@@ -182,20 +158,13 @@ document.getElementById("nombre").innerText = nombre || "";
 document.getElementById("detalle").innerText =
   `Privada ${privada || ""} - Lote ${casa || ""}`;
 
-// 🔥 OCULTAR BOTÓN SI NO ES ADMIN
+// 🔒 OCULTAR BOTÓN SI NO ES ADMIN
 if (origen !== "admin") {
   document.getElementById("btnWA").style.display = "none";
 }
 
-// 📲 WHATSAPP
-const btnWA = document.getElementById("btnWA");
-
-btnWA.addEventListener("click", (e) => {
-
-  e.preventDefault();
-  e.stopPropagation();
-
-  permitirWA = true; // 🔥 SOLO aquí se permite
+// 📲 BOTÓN WHATSAPP
+document.getElementById("btnWA").addEventListener("click", () => {
 
   const link =
     `${window.location.origin}/credencial_propietario.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
@@ -206,10 +175,11 @@ btnWA.addEventListener("click", (e) => {
     `Ubicación: Privada ${privada} - Lote ${casa}\n\n` +
     `Presenta este código en caseta:\n${link}`;
 
-  const wa = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensaje)}`;
-
-  window.location.href = wa;
+  window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
 });
+
+</script>
+
   
 </script>
 
