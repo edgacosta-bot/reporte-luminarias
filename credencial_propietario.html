@@ -120,6 +120,14 @@ body {
 
 <script>
 
+// 🔥 AQUÍ VA (ARRIBA DE TODO)
+let waProtegido = true;
+
+window.addEventListener("load", () => {
+  waProtegido = false;
+});
+
+// 🔽 luego sigue tu código normal
 const params = new URLSearchParams(window.location.search);
 
 const codigo = params.get("qr");
@@ -161,7 +169,12 @@ if (origen !== "admin") {
 }
 
 // 📲 WHATSAPP
-document.getElementById("btnWA").addEventListener("click", () => {
+const btnWA = document.getElementById("btnWA");
+
+btnWA.addEventListener("click", (e) => {
+
+  e.preventDefault();
+  e.stopPropagation();
 
   const link =
     `${window.location.origin}/credencial_propietario.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
@@ -174,7 +187,10 @@ document.getElementById("btnWA").addEventListener("click", () => {
 
   const wa = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
 
-  window.open(wa, "_blank");
+  // 🔥 ejecutar SOLO en click real
+  setTimeout(() => {
+    window.open(wa, "_blank");
+  }, 100);
 });
 
 </script>
