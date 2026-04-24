@@ -185,14 +185,12 @@ btnWA.addEventListener("click", (e) => {
     `Ubicación: Privada ${privada} - Lote ${casa}\n\n` +
     `Presenta este código en caseta:\n${link}`;
 
-  const wa = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+  const wa = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensaje)}`;
 
-  // 🔥 ejecutar SOLO en click real
-  setTimeout(() => {
-    window.open(wa, "_blank");
-  }, 100);
+  // 🔥 navegación directa (evita auto-loop)
+  window.location.href = wa;
 });
-
+  
 </script>
 
 </body>
