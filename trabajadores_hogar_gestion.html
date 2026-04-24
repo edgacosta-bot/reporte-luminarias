@@ -287,9 +287,10 @@ function abrirRenovar(id, fechaInicio, fechaFin) {
 }
 
 function confirmarRenovar(){
-  console.log("RENOVAR:", inicio, fin, trabajadorSeleccionado);
+  
   const inicio = document.getElementById("fechaInicioNueva").value;
 const fin = document.getElementById("fechaFinNueva").value;
+  console.log("RENOVAR:", inicio, fin, trabajadorSeleccionado);
 
 if (!inicio || !fin) {
   alert("Debes seleccionar inicio y fin");
@@ -302,6 +303,8 @@ if (!inicio || !fin) {
 
 async function renovar(inicio, fin) {
 
+  console.log("INTENTO UPDATE:", inicio, fin, trabajadorSeleccionado);
+
   const { error } = await supabaseClient
     .from("trabajadores_hogar")
     .update({
@@ -312,10 +315,12 @@ async function renovar(inicio, fin) {
     .eq("id", trabajadorSeleccionado);
 
   if (error) {
-    console.error("ERROR RENOVAR:", error);
-    alert("Error al renovar");
-    return;
-  }
+  console.error("ERROR RENOVAR:", error);
+  alert(error.message);
+  return;
+} else {
+  console.log("UPDATE OK");
+}
 
   cargar();
 }
