@@ -163,9 +163,9 @@ async function crearAcceso() {
 
   resultado.innerText = "Acceso creado correctamente";
 
-  urlCredencial = `${window.location.origin}/credencial_propietario.html?qr=${identificador}&nombre=${encodeURIComponent(nombre)}&privada=${residente.privada}&casa=${residente.casa}&origen=admin`;
+  urlCredencial = `${window.location.origin}/credencial_propietario.html?qr=${identificador}&nombre=${encodeURIComponent(nombre)}&privada=${encodeURIComponent(residente.privada)}&casa=${encodeURIComponent(residente.casa)}&origen=admin`;
 
-  urlParaEnviar = `${window.location.origin}/credencial_propietario.html?qr=${identificador}&nombre=${encodeURIComponent(nombre)}&privada=${residente.privada}&casa=${residente.casa}`;
+  urlParaEnviar = `${window.location.origin}/credencial_propietario.html?qr=${identificador}&nombre=${encodeURIComponent(nombre)}&privada=${encodeURIComponent(residente.privada)}&casa=${encodeURIComponent(residente.casa)}`;
 
   generarQR(urlCredencial);
   prepararWhatsApp(nombre, residente.privada, residente.casa);
