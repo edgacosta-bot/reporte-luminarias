@@ -208,9 +208,9 @@ async function cargar() {
         ${t.activo ? 'Desactivar' : 'Activar'}
         </button>
 
-        <button class="btn-on" onclick="abrirRenovar('${t.id}', '${t.fecha_inicio || ''}', '${t.fecha_fin || ''}')"
-        Renovar
-        </button>
+       <button class="btn-on" onclick="abrirRenovar('${t.id}', '${t.fecha_inicio || ''}', '${t.fecha_fin || ''}')">
+  Renovar
+</button>
 
         <button class="btn-del" onclick="eliminar('${t.id}')">
         Eliminar
