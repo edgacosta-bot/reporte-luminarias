@@ -88,6 +88,10 @@ init();
 
 async function init(){
 
+   // 🔍 PRUEBA DE SESIÓN (PEGA AQUÍ)
+  const { data: sessionData } = await supabaseClient.auth.getSession();
+  console.log("SESSION:", sessionData);
+
      const { data } = await supabaseClient
   .rpc("validar_trabajador_hogar", { qr });
 
