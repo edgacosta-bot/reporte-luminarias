@@ -338,9 +338,15 @@ function renderDetalle(){
   `;
 }
 
-function pintar(texto,color){
+function pintar(texto, color){
   document.body.className = color;
   estado.innerText = texto;
+
+  // 🔥 OCULTAR TODO EL FLUJO
+  pin.style.display = "none";
+  btnValidar.style.display = "none";
+  btnRegistrar.classList.add("hidden");
+  btnNotificar.classList.add("hidden");
 }
 
 function ocultarValidacion(){
