@@ -118,6 +118,8 @@ body {
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
+let permitirWA = false;
+
 <script>
 
 // 🔥 AQUÍ VA (ARRIBA DE TODO)
@@ -176,6 +178,8 @@ btnWA.addEventListener("click", (e) => {
   e.preventDefault();
   e.stopPropagation();
 
+  permitirWA = true; // 🔥 SOLO AQUÍ se permite
+
   const link =
     `${window.location.origin}/credencial_propietario.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
 
@@ -187,7 +191,6 @@ btnWA.addEventListener("click", (e) => {
 
   const wa = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensaje)}`;
 
-  // 🔥 navegación directa (evita auto-loop)
   window.location.href = wa;
 });
   
