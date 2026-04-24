@@ -139,12 +139,12 @@ if (error) {
   return;
 }
 
-  if(!data){
-    pintar("QR inválido","error");
-    return;
-  }
+  if (!data || data.length === 0) {
+  pintar("QR inválido o trabajador inactivo","error");
+  return;
+}
 
-  trabajador = Array.isArray(data) ? data[0] : data;
+trabajador = data[0];
 
  
   // 🔹 RESIDENTE
