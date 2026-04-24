@@ -89,13 +89,19 @@ init();
 async function init(){
 
   console.log("🔥 INIT CARGADO");
-  
-   // 🔍 PRUEBA DE SESIÓN (PEGA AQUÍ)
+
   const { data: sessionData } = await supabaseClient.auth.getSession();
   console.log("SESSION:", sessionData);
 
-     const { data } = await supabaseClient
-  .rpc("validar_trabajador_hogar", { qr });
+  // 🔹 VALIDAR QR
+  const { data, error } = await supabaseClient
+    .rpc("validar_trabajador_hogar", { qr });
+
+  if(error){
+    console.error("ERROR VALIDAR QR:", error);
+    pintar("Error al validar QR","error");
+    return;
+  }
 
   if(!data){
     pintar("QR inválido","error");
@@ -103,29 +109,45 @@ async function init(){
   }
 
   trabajador = Array.isArray(data) ? data[0] : data;
-  console.log("RPC DATA:", data);
+
   console.log("TRABAJADOR:", trabajador);
 
- const { data: resData } = await supabaseClient
-  .rpc("obtener_residente_para_acceso", { res_id: trabajador.residente_id });
+  // 🔹 RESIDENTE
+  const { data: resData, error: resError } = await supabaseClient
+    .rpc("obtener_residente_para_acceso", { res_id: trabajador.residente_id });
 
-if (!resData || resData.length === 0) {
-  ui.error("Error al obtener residente");
-  return;
-}
+  if (resError) {
+    console.error("ERROR RESIDENTE:", resError);
+    ui.error("Error obteniendo residente");
+    return;
+  }
 
-const res = resData[0];
+  if (!resData || resData.length === 0) {
+    ui.error("Residente no encontrado");
+    return;
+  }
 
-  residente = res;
-  estadoPago = (res.estado_pago || "").toLowerCase();
+  residente = resData[0];
+  estadoPago = (residente.estado_pago || "").toLowerCase();
 
-  // 🔥 DETECTAR SI YA ESTÁ DENTRO
-  const { data: abiertoData } = await supabaseClient
-  .rpc("obtener_acceso_abierto", { trab_id: trabajador.id });
+  console.log("RESIDENTE:", residente);
 
-accesoAbierto = abiertoData && abiertoData.length ? abiertoData[0] : null;
+  // 🔹 ACCESO ABIERTO
+  const { data: abiertoData, error: abiertoError } = await supabaseClient
+    .rpc("obtener_acceso_abierto", { trab_id: trabajador.id });
+
+  if (abiertoError) {
+    console.error("ERROR ACCESO ABIERTO:", abiertoError);
+    ui.error("Error consultando acceso");
+    return;
+  }
+
+  accesoAbierto = abiertoData && abiertoData.length ? abiertoData[0] : null;
 
   tipoAccion = accesoAbierto ? "salida" : "entrada";
+
+  console.log("ACCESO ABIERTO:", accesoAbierto);
+  console.log("TIPO ACCION:", tipoAccion);
 
   renderDetalle();
   estado.innerText = "Validar acceso";
@@ -141,21 +163,26 @@ btnValidar.onclick = async () => {
     return;
   }
 
-  const { data: pinData } = await supabaseClient
-  .rpc("validar_pin_vigilante", { pin_input: pin });
+  const { data: pinData, error: pinError } = await supabaseClient
+    .rpc("validar_pin_vigilante", { pin_input: pin });
 
-if (!pinData || pinData.length === 0) {
-  ui.error("PIN incorrecto");
-  return;
-}
+  if(pinError){
+    console.error("ERROR PIN:", pinError);
+    ui.error("Error validando PIN");
+    return;
+  }
 
-const data = pinData[0];
+  if (!pinData || pinData.length === 0) {
+    ui.error("PIN incorrecto");
+    return;
+  }
 
-  vigilante = data;
+  vigilante = pinData[0];
+
+  console.log("VIGILANTE:", vigilante);
 
   ocultarValidacion();
 
-  // 🔥 FLUJO SALIDA
   if(tipoAccion === "salida"){
     document.body.className = "warn";
     estado.innerText = "Autorizar salida";
@@ -166,24 +193,23 @@ const data = pinData[0];
   evaluarEstadoEntrada();
 };
 
-// 🔹 ENTRADA (NO MODIFICADO)
+// 🔹 ENTRADA
 function evaluarEstadoEntrada(){
 
- if(estadoPago === "moroso"){
+  if(estadoPago === "moroso"){
 
-  document.body.className = "error";
-  estado.innerText = "Acceso NO permitido por irregularidad en cuotas";
+    document.body.className = "error";
+    estado.innerText = "Acceso NO permitido por irregularidad en cuotas";
 
-  btnRegistrar.innerText = "Registrar acceso con presencia del residente";
+    btnRegistrar.innerText = "Registrar acceso con presencia del residente";
 
-  btnRegistrar.classList.remove("hidden");
-  btnNotificar.classList.remove("hidden");
+    btnRegistrar.classList.remove("hidden");
+    btnNotificar.classList.remove("hidden");
 
-  // 🔥 ORDEN CORRECTO: primero Notificar
-  btnNotificar.parentNode.insertBefore(btnNotificar, btnRegistrar);
+    btnNotificar.parentNode.insertBefore(btnNotificar, btnRegistrar);
 
-  return;
-}
+    return;
+  }
 
   if(estadoPago === "atraso_1"){
     document.body.className = "warn";
@@ -199,86 +225,73 @@ function evaluarEstadoEntrada(){
 // 🔹 REGISTRAR
 btnRegistrar.onclick = async () => {
 
-
   // 🔥 SALIDA
- if(tipoAccion === "salida"){
+  if(tipoAccion === "salida"){
 
-  btnRegistrar.disabled = true;
-  btnRegistrar.innerText = "Procesando...";
+    btnRegistrar.disabled = true;
+    btnRegistrar.innerText = "Procesando...";
 
-  const { error } = await supabaseClient.rpc("registrar_salida_trabajador", {
-  p_acceso_id: accesoAbierto.id
-});
-     
-  if (error) {
-    console.error("ERROR UPDATE:", error);
+    const { error } = await supabaseClient.rpc("registrar_salida_trabajador", {
+      p_acceso_id: accesoAbierto.id
+    });
 
-    ui.error("❌ Error al registrar salida");
+    if (error) {
+      console.error("ERROR SALIDA:", error);
+      ui.error("❌ Error al registrar salida");
+      btnRegistrar.disabled = false;
+      btnRegistrar.innerText = "Registrar";
+      return;
+    }
 
-    btnRegistrar.disabled = false;
-    btnRegistrar.innerText = "Registrar";
+    estado.innerText = "Salida registrada";
+
+    const mensaje = `Estimado Residente, en este momento su empleado doméstico ${trabajador.nombre}, acaba de salir del fraccionamiento. Gracias.`;
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
 
     return;
   }
 
-  estado.innerText = "Salida registrada";
-
-  // 🔥 WhatsApp solo si TODO salió bien
-  const mensaje = `Estimado Residente, en este momento su empleado doméstico ${trabajador.nombre}, acaba de salir del fraccionamiento. Gracias.`;
-
-  window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
-
-  return;
-}
-
   // 🔹 ENTRADA
-const { error } = await supabaseClient.rpc("registrar_entrada_trabajador", {
-  p_trabajador_id: trabajador.id,
-  p_vigilante_id: vigilante.id
-});
+  const { error } = await supabaseClient.rpc("registrar_entrada_trabajador", {
+    p_trabajador_id: trabajador.id,
+    p_vigilante_id: vigilante.id
+  });
 
-if (error) {
-  console.error("ERROR INSERT:", error);
+  if (error) {
+    console.error("ERROR ENTRADA:", error);
+    ui.error("❌ Error al registrar acceso");
+    btnRegistrar.disabled = false;
+    btnRegistrar.innerText = "Registrar";
+    return;
+  }
 
-  ui.error("❌ Error al registrar acceso");
+  estado.innerText = "Acceso registrado";
 
-  btnRegistrar.disabled = false;
-  btnRegistrar.innerText = "Registrar";
+  btnRegistrar.classList.add("hidden");
+  btnNotificar.classList.add("hidden");
 
-  return;
-}
+  if(estadoPago === "moroso"){
+    setTimeout(() => window.close(), 1500);
+    return;
+  }
 
-estado.innerText = "Acceso registrado";
-
-// 🔥 LIMPIAR UI COMPLETAMENTE
-btnRegistrar.classList.add("hidden");
-btnNotificar.classList.add("hidden");
-
-// 🔴 CASO MOROSO → TERMINAR FLUJO
-if(estadoPago === "moroso"){
-  setTimeout(() => {
-    window.close();
-  }, 1500);
-  return;
-}
-
-// 🟢 / 🟡 flujo normal
-btnNotificar.classList.remove("hidden");
+  btnNotificar.classList.remove("hidden");
 };
 
-// 🔹 NOTIFICAR (ENTRADA)
+// 🔹 NOTIFICAR
 btnNotificar.onclick = () => {
 
   let mensaje = "";
 
   if(estadoPago === "moroso"){
-    mensaje = `Estimado residente, su empleado ${trabajador.nombre} se encuentra en caseta, le solicitamos su asistencia para permitírsele el acceso; asimismo, lo invitamos a regularizar sus pagos para el acceso controlado a sus empleados sin generarle molestias. Gracias`;
+    mensaje = `Estimado residente, su empleado ${trabajador.nombre} se encuentra en caseta, le solicitamos su asistencia...`;
   }
   else if(estadoPago === "atraso_1"){
-    mensaje = `Estimado residente, su empleado doméstico ${trabajador.nombre} ingresó en este momento al fraccionamiento. Lo invitamos a regularizar el atraso en su cuota para evitar molestias en el acceso a sus empleados. Gracias`;
+    mensaje = `Estimado residente, su empleado doméstico ${trabajador.nombre} ingresó...`;
   }
   else{
-    mensaje = `Estimado residente, su empleado doméstico ${trabajador.nombre} ingresó en este momento al fraccionamiento. Gracias`;
+    mensaje = `Estimado residente, su empleado doméstico ${trabajador.nombre} ingresó...`;
   }
 
   window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
