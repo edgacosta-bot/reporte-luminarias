@@ -166,8 +166,7 @@ if (origen !== "admin") {
 // 📲 BOTÓN WHATSAPP
 document.getElementById("btnWA").addEventListener("click", () => {
 
-  const link =
-    `${window.location.origin}/credencial_propietario.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
+  const link = window.location.href;
 
   const mensaje =
     `🔐 Acceso al fraccionamiento\n\n` +
