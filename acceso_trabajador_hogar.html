@@ -117,13 +117,10 @@ const res = resData[0];
   estadoPago = (res.estado_pago || "").toLowerCase();
 
   // 🔥 DETECTAR SI YA ESTÁ DENTRO
-  const { data: abierto } = await supabaseClient
-    .from("accesos_trabajadores_hogar")
-    .select("*")
-    .eq("trabajador_id", trabajador.id)
-    .is("fecha_hora_salida", null)
-    .order("fecha_hora_entrada", { ascending:false })
-    .limit(1);
+  const { data: abiertoData } = await supabaseClient
+  .rpc("obtener_acceso_abierto", { trab_id: trabajador.id });
+
+const abierto = abiertoData && abiertoData.length ? abiertoData[0] : null;
 
   accesoAbierto = abierto && abierto.length ? abierto[0] : null;
 
