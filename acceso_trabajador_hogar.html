@@ -101,11 +101,15 @@ async function init(){
 
   trabajador = data;
 
-  const { data: res } = await supabaseClient
-    .from("residentes")
-    .select("estado_pago, privada, casa")
-    .eq("id", trabajador.residente_id)
-    .single();
+ const { data: resData } = await supabaseClient
+  .rpc("obtener_residente_para_acceso", { res_id: trabajador.residente_id });
+
+if (!resData || resData.length === 0) {
+  ui.error("Error al obtener residente");
+  return;
+}
+
+const res = resData[0];
 
   residente = res;
   estadoPago = (res.estado_pago || "").toLowerCase();
@@ -137,13 +141,15 @@ btnValidar.onclick = async () => {
     return;
   }
 
-  const { data } = await supabaseClient
-    .from("residentes")
-    .select("id")
-    .eq("pin_vigilante", pin)
-    .eq("tipo","vigilante")
-    .eq("activo", true)
-    .maybeSingle();
+  const { data: pinData } = await supabaseClient
+  .rpc("validar_pin_vigilante", { pin_input: pin });
+
+if (!pinData || pinData.length === 0) {
+  ui.error("PIN incorrecto");
+  return;
+}
+
+const data = pinData[0];
 
   if(!data){
     ui.error("PIN incorrecto");
