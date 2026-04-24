@@ -92,13 +92,14 @@ async function init(){
   const { data: sessionData } = await supabaseClient.auth.getSession();
   
   // 🔹 VALIDAR QR
-  const { data, error } = await supabaseClient
-    .rpc("validar_trabajador_hogar", { qr });
+ const { data, error } = await supabaseClient
+  .rpc("validar_trabajador_hogar", { qr });
 
-  if(error){
-    pintar("Error al validar QR","error");
-    return;
-  }
+if (error) {
+  console.error("ERROR VALIDAR QR:", error);
+  pintar("Error al validar QR","error");
+  return;
+}
 
   if(!data){
     pintar("QR inválido","error");
@@ -110,12 +111,13 @@ async function init(){
  
   // 🔹 RESIDENTE
   const { data: resData, error: resError } = await supabaseClient
-    .rpc("obtener_residente_para_acceso", { res_id: trabajador.residente_id });
+  .rpc("obtener_residente_para_acceso", { res_id: trabajador.residente_id });
 
-  if (resError) {
-    ui.error("Error obteniendo residente");
-    return;
-  }
+if (resError) {
+  console.error("ERROR RESIDENTE:", resError);
+  ui.error("Error obteniendo residente");
+  return;
+}
 
   if (!resData || resData.length === 0) {
     ui.error("Residente no encontrado");
@@ -128,12 +130,13 @@ async function init(){
 
   // 🔹 ACCESO ABIERTO
   const { data: abiertoData, error: abiertoError } = await supabaseClient
-    .rpc("obtener_acceso_abierto", { trab_id: trabajador.id });
+  .rpc("obtener_acceso_abierto", { trab_id: trabajador.id });
 
-  if (abiertoError) {
-    ui.error("Error consultando acceso");
-    return;
-  }
+if (abiertoError) {
+  console.error("ERROR ACCESO ABIERTO:", abiertoError);
+  ui.error("Error consultando acceso");
+  return;
+}
 
   accesoAbierto = abiertoData && abiertoData.length ? abiertoData[0] : null;
 
@@ -156,12 +159,13 @@ btnValidar.onclick = async () => {
   }
 
   const { data: pinData, error: pinError } = await supabaseClient
-    .rpc("validar_pin_vigilante", { pin_input: pin });
+  .rpc("validar_pin_vigilante", { pin_input: pin });
 
-  if(pinError){
-    ui.error("Error validando PIN");
-    return;
-  }
+if (pinError) {
+  console.error("ERROR PIN:", pinError);
+  ui.error("Error validando PIN");
+  return;
+}
 
   if (!pinData || pinData.length === 0) {
     ui.error("PIN incorrecto");
@@ -222,16 +226,16 @@ btnRegistrar.onclick = async () => {
     btnRegistrar.innerText = "Procesando...";
 
     const { error } = await supabaseClient.rpc("registrar_salida_trabajador", {
-      p_acceso_id: accesoAbierto.id
-    });
+  p_acceso_id: accesoAbierto.id
+});
 
-    if (error) {
-      
-      ui.error("❌ Error al registrar salida");
-      btnRegistrar.disabled = false;
-      btnRegistrar.innerText = "Registrar";
-      return;
-    }
+if (error) {
+  console.error("ERROR SALIDA:", error);
+  ui.error("❌ Error al registrar salida");
+  btnRegistrar.disabled = false;
+  btnRegistrar.innerText = "Registrar";
+  return;
+}
 
     estado.innerText = "Salida registrada";
 
@@ -244,16 +248,17 @@ btnRegistrar.onclick = async () => {
 
   // 🔹 ENTRADA
   const { error } = await supabaseClient.rpc("registrar_entrada_trabajador", {
-    p_trabajador_id: trabajador.id,
-    p_vigilante_id: vigilante.id
-  });
+  p_trabajador_id: trabajador.id,
+  p_vigilante_id: vigilante.id
+});
 
-  if (error) {
-    ui.error("❌ Error al registrar acceso");
-    btnRegistrar.disabled = false;
-    btnRegistrar.innerText = "Registrar";
-    return;
-  }
+if (error) {
+  console.error("ERROR ENTRADA:", error);
+  ui.error("❌ Error al registrar acceso");
+  btnRegistrar.disabled = false;
+  btnRegistrar.innerText = "Registrar";
+  return;
+}
 
   estado.innerText = "Acceso registrado";
 
