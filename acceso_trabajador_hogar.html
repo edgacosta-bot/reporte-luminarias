@@ -99,7 +99,9 @@ async function init(){
     return;
   }
 
-  trabajador = data;
+  trabajador = data[0];
+  console.log("RPC DATA:", data);
+  console.log("TRABAJADOR:", trabajador);
 
  const { data: resData } = await supabaseClient
   .rpc("obtener_residente_para_acceso", { res_id: trabajador.residente_id });
