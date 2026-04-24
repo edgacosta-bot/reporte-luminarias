@@ -359,7 +359,7 @@ if(privadaFiltro){
 }
 
 if(loteFiltro){
-  queryAgua = queryAgua.eq("numero_exterior", loteFiltro);
+  queryAgua = queryAgua.eq("casa", loteFiltro);
 }
 
 let { data: agua } = await queryAgua;
@@ -371,7 +371,7 @@ let { data: agua } = await queryAgua;
     titulo:`Reporte ${i.numero_reporte}`,
     descripcion:i.tipo_falla,
     hora: i.fecha_reporte || i.fecha_registro, // 🔥 FIX REAL
-    origen:`${i.privada}-${i.numero_exterior}`
+    origen:`${i.privada}-${i.casa}`
   });
 });
 
