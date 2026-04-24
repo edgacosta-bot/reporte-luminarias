@@ -88,17 +88,14 @@ init();
 
 async function init(){
 
-  console.log("🔥 INIT CARGADO");
-
+  
   const { data: sessionData } = await supabaseClient.auth.getSession();
-  console.log("SESSION:", sessionData);
-
+  
   // 🔹 VALIDAR QR
   const { data, error } = await supabaseClient
     .rpc("validar_trabajador_hogar", { qr });
 
   if(error){
-    console.error("ERROR VALIDAR QR:", error);
     pintar("Error al validar QR","error");
     return;
   }
@@ -110,14 +107,12 @@ async function init(){
 
   trabajador = Array.isArray(data) ? data[0] : data;
 
-  console.log("TRABAJADOR:", trabajador);
-
+ 
   // 🔹 RESIDENTE
   const { data: resData, error: resError } = await supabaseClient
     .rpc("obtener_residente_para_acceso", { res_id: trabajador.residente_id });
 
   if (resError) {
-    console.error("ERROR RESIDENTE:", resError);
     ui.error("Error obteniendo residente");
     return;
   }
@@ -130,14 +125,12 @@ async function init(){
   residente = resData[0];
   estadoPago = (residente.estado_pago || "").toLowerCase();
 
-  console.log("RESIDENTE:", residente);
 
   // 🔹 ACCESO ABIERTO
   const { data: abiertoData, error: abiertoError } = await supabaseClient
     .rpc("obtener_acceso_abierto", { trab_id: trabajador.id });
 
   if (abiertoError) {
-    console.error("ERROR ACCESO ABIERTO:", abiertoError);
     ui.error("Error consultando acceso");
     return;
   }
@@ -146,8 +139,7 @@ async function init(){
 
   tipoAccion = accesoAbierto ? "salida" : "entrada";
 
-  console.log("ACCESO ABIERTO:", accesoAbierto);
-  console.log("TIPO ACCION:", tipoAccion);
+  
 
   renderDetalle();
   estado.innerText = "Validar acceso";
@@ -167,7 +159,6 @@ btnValidar.onclick = async () => {
     .rpc("validar_pin_vigilante", { pin_input: pin });
 
   if(pinError){
-    console.error("ERROR PIN:", pinError);
     ui.error("Error validando PIN");
     return;
   }
@@ -179,8 +170,7 @@ btnValidar.onclick = async () => {
 
   vigilante = pinData[0];
 
-  console.log("VIGILANTE:", vigilante);
-
+ 
   ocultarValidacion();
 
   if(tipoAccion === "salida"){
@@ -236,7 +226,7 @@ btnRegistrar.onclick = async () => {
     });
 
     if (error) {
-      console.error("ERROR SALIDA:", error);
+      
       ui.error("❌ Error al registrar salida");
       btnRegistrar.disabled = false;
       btnRegistrar.innerText = "Registrar";
@@ -259,7 +249,6 @@ btnRegistrar.onclick = async () => {
   });
 
   if (error) {
-    console.error("ERROR ENTRADA:", error);
     ui.error("❌ Error al registrar acceso");
     btnRegistrar.disabled = false;
     btnRegistrar.innerText = "Registrar";
