@@ -264,7 +264,8 @@ btnRegistrar.onclick = async () => {
     btnRegistrar.innerText = "Procesando...";
 
     const { error } = await supabaseClient.rpc("registrar_salida_trabajador", {
-  p_acceso_id: accesoAbierto.id
+  p_acceso_id: accesoAbierto.id,
+  p_vigilante_id: vigilante.id
 });
 
 if (error) {
