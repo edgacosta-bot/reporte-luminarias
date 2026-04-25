@@ -145,6 +145,17 @@ if (error) {
 }
 
 trabajador = data[0];
+  
+const hoy = new Date().toISOString().split("T")[0];
+
+// ❌ FUERA DE VIGENCIA
+if (
+  (trabajador.fecha_inicio && trabajador.fecha_inicio > hoy) ||
+  (trabajador.fecha_fin && trabajador.fecha_fin < hoy)
+) {
+  pintar("QR fuera de vigencia","error");
+  return;
+}  
 
  
   // 🔹 RESIDENTE
@@ -184,6 +195,8 @@ if (abiertoError) {
 
   renderDetalle();
   estado.innerText = "Validar acceso";
+  btnRegistrar.classList.add("hidden");
+  btnNotificar.classList.add("hidden");
 }
 
 // 🔹 VALIDAR PIN
@@ -252,6 +265,10 @@ function evaluarEstadoEntrada(){
   }
 
   btnRegistrar.classList.remove("hidden");
+
+// asegurar orden correcto
+btnRegistrar.style.order = "2";
+btnNotificar.style.order = "1";
 }
 
 // 🔹 REGISTRAR
@@ -303,6 +320,7 @@ if (error) {
 
   btnRegistrar.classList.add("hidden");
   btnNotificar.classList.add("hidden");
+  btnRegistrar.disabled = false;
 
   if(estadoPago === "moroso"){
     setTimeout(() => window.close(), 1500);
