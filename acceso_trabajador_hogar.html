@@ -295,7 +295,7 @@ if (error) {
 
     estado.innerText = "Salida registrada";
 
-    const mensaje = `Estimado Residente, en este momento su empleado doméstico ${trabajador.nombre}, acaba de salir del fraccionamiento. Gracias.`;
+    const mensaje = `Estimado Residente, en este momento su empleado doméstico ${trabajador.nombre}, salió del fraccionamiento. Gracias.`;
 
     window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
 
@@ -336,7 +336,7 @@ btnNotificar.onclick = () => {
   let mensaje = "";
 
   if(estadoPago === "moroso"){
-    mensaje = `Estimado residente, su empleado ${trabajador.nombre} se encuentra en caseta, le solicitamos su asistencia...`;
+    mensaje = `Estimado residente, su empleado ${trabajador.nombre} se encuentra en caseta, le solicitamos su asistencia para que pueda permitírsele el acceso. Gracias`;
   }
   else if(estadoPago === "atraso_1"){
     mensaje = `Estimado residente, en este momento su empleado doméstico ${trabajador.nombre} ingresó al fraccionamiento. Gracias`;
