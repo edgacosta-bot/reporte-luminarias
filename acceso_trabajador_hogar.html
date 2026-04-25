@@ -98,7 +98,7 @@ button {
 
 <div class="container">
 
-<h2>🏠 Acceso hogar</h2>
+<h2 id="titulo">🏠 Acceso hogar</h2>
 
 <h1 id="estado">Validando...</h1>
 <div id="detalle"></div>
@@ -196,7 +196,12 @@ if (abiertoError) {
   
 
   renderDetalle();
-  estado.innerText = "Validar acceso";
+  estado.innerText = tipoAccion === "salida"
+  ? "Validar salida"
+  : "Validar acceso";
+  titulo.innerText = tipoAccion === "salida"
+  ? "🏠 Salida trabajador"
+  : "🏠 Acceso hogar";
   btnRegistrar.classList.add("hidden");
   btnNotificar.classList.add("hidden");
 }
