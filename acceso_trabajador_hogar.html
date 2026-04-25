@@ -339,10 +339,10 @@ btnNotificar.onclick = () => {
     mensaje = `Estimado residente, su empleado ${trabajador.nombre} se encuentra en caseta, le solicitamos su asistencia...`;
   }
   else if(estadoPago === "atraso_1"){
-    mensaje = `Estimado residente, su empleado doméstico ${trabajador.nombre} ingresó...`;
+    mensaje = `Estimado residente, en este momento su empleado doméstico ${trabajador.nombre} ingresó al fraccionamiento. Gracias`;
   }
   else{
-    mensaje = `Estimado residente, su empleado doméstico ${trabajador.nombre} ingresó...`;
+    mensaje = `Estimado residente, su empleado doméstico ${trabajador.nombre} ingresó al fraccionamiento. Gracias.`;
   }
 
   window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
