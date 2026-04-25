@@ -1,13 +1,16 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Acceso Trabajador</title>
+<title>Acceso Obra</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script src="auth.js"></script>
+
 <script src="/utils/ui.js"></script>
 
 <style>
@@ -22,21 +25,34 @@ body {
 }
 
 body.ok { background: #16a34a; color: white; }
-body.error { background: #dc2626; color: white; }
 body.warn { background: #f59e0b; color: #111827; }
+body.error { background: #dc2626; color: white; }
 
 .container {
-  max-width: 320px;
-  width: 90%;
-  padding: 0 10px;
+  max-width: 360px;
+  width: 92%;
+  padding: 20px;
 }
 
 input, button {
   width: 100%;
-  padding: 14px;
-  border-radius: 10px;
+  height: 52px;
+  padding: 0 16px;
+  margin-top: 12px;
+  border-radius: 14px;
   border: none;
+  font-size: 16px;
+  font-weight: 600;
   box-sizing: border-box;
+}
+
+button {
+  background: #2563eb;
+  color: white;
+}
+
+button:disabled {
+  opacity: 0.6;
 }
 
 input {
@@ -44,121 +60,101 @@ input {
   color: white;
   text-align: center;
   font-size: 18px;
+  letter-spacing: 2px;
 }
 
-button {
-  background: #2563eb;
-  color: white;
-  font-weight: bold;
-}
-
-.hidden { display: none; }
-
-.info {
-  font-size: 12px;
-  margin-top: 10px;
-  opacity: 0.8;
-}
+.hidden { display:none; }
 </style>
+
 </head>
 
 <body>
 
 <div class="container">
 
-  <h2>🚧 Acceso trabajador</h2>
+<h2 id="titulo">🚧 Acceso obra</h2>
 
-  <h1 id="estado">Validando...</h1>
-  <div id="detalle"></div>
+<h1 id="estado">Validando...</h1>
+<div id="detalle"></div>
 
-  <div class="info">
-    Horario permitido:<br>
-    L-V 08:00 a 18:00<br>
-    Sáb 09:00 a 14:00
-  </div>
+<input type="password" id="pin" placeholder="Ingrese PIN del vigilante">
+<button id="btnValidar">Validar</button>
 
-  <input type="password" id="pin" placeholder="Ingrese PIN del vigilante">
-  <button id="btnValidar">Validar</button>
-
-  <button id="btnRegistrar" class="hidden">Registrar</button>
-  <button id="btnAceptar" class="hidden">Aceptar</button>
+<button id="btnRegistrar" class="hidden">Registrar</button>
 
 </div>
 
 <script>
 
-const params = new URLSearchParams(window.location.search);
-const qr = params.get("qr");
+const qr = new URLSearchParams(window.location.search).get("qr");
 
-let trabajadorGlobal = null;
-let accesoActual = null;
-let tipoAccion = "";
+let trabajador = null;
 let vigilante = null;
-
-const btnRegistrar = document.getElementById("btnRegistrar");
+let accesoAbierto = null;
+let tipoAccion = "";
 
 init();
 
 async function init(){
 
   if (!qr){
-    pintarErrorFinal("QR inválido");
+    pintar("QR inválido","error");
     return;
   }
 
-  const { data: trabajador } = await supabaseClient
-    .from("trabajadores_obra")
-    .select("*")
-    .eq("qr_codigo", qr)
-    .maybeSingle();
+  const { data, error } = await supabaseClient
+    .rpc("validar_acceso_trabajador_obra", { qr });
 
-  if (!trabajador){
-    pintarErrorFinal("QR inválido");
+  if (error || !data || data.length === 0){
+    pintar("QR inválido o no autorizado","error");
     return;
   }
 
-  trabajadorGlobal = trabajador;
-  renderDetalle();
+  trabajador = data[0];
 
   if (!trabajador.activo){
-    pintarErrorFinal("Acceso cancelado");
+    pintar("Trabajador inactivo","error");
     return;
   }
 
   const hoy = new Date().toISOString().split("T")[0];
 
-  if (trabajador.fecha_inicio && hoy < trabajador.fecha_inicio){
-    pintarErrorFinal("Acceso aún no inicia");
+  if (
+    (trabajador.fecha_inicio && trabajador.fecha_inicio > hoy) ||
+    (trabajador.fecha_fin && trabajador.fecha_fin < hoy)
+  ){
+    pintar("Fuera de vigencia","error");
     return;
   }
 
-  if (trabajador.fecha_fin && hoy > trabajador.fecha_fin){
-    pintarErrorFinal("Acceso vencido");
+  if (!trabajador.obra_activa){
+    pintar("Obra no activa","error");
     return;
   }
 
-  const { data: acceso } = await supabaseClient
-    .from("accesos_trabajadores")
-    .select("*")
-    .eq("trabajador_id", trabajador.id)
-    .is("fecha_hora_salida", null)
-    .order("fecha_hora_entrada", { ascending:false })
-    .limit(1);
-
-  accesoActual = acceso && acceso.length ? acceso[0] : null;
-
-  if(accesoActual){
-    tipoAccion = "salida";
-    document.getElementById("estado").innerText = "Registrar salida";
-  } else {
-    tipoAccion = "entrada";
-    document.getElementById("estado").innerText = "Validar acceso";
+  if (!trabajador.obra_aprobada){
+    pintar("Obra no aprobada","error");
+    return;
   }
 
+  accesoAbierto = trabajador.acceso_abierto_id;
+  tipoAccion = accesoAbierto ? "salida" : "entrada";
+
+  renderDetalle();
+
+  estado.innerText = tipoAccion === "salida"
+    ? "Validar salida"
+    : "Validar acceso";
+
+  titulo.innerText = tipoAccion === "salida"
+    ? "🚧 Salida trabajador"
+    : "🚧 Acceso obra";
+
+  btnRegistrar.classList.add("hidden");
 }
 
-// 🔹 VALIDAR PIN
-document.getElementById("btnValidar").onclick = async () => {
+// VALIDAR PIN
+btnValidar.onclick = async () => {
 
   const pin = document.getElementById("pin").value.trim();
 
@@ -167,196 +163,90 @@ document.getElementById("btnValidar").onclick = async () => {
     return;
   }
 
-  const { data } = await supabaseClient
-    .from("residentes")
-    .select("id")
-    .eq("pin_vigilante", pin)
-    .eq("tipo","vigilante")
-    .eq("activo", true)
-    .maybeSingle();
+  const { data, error } = await supabaseClient
+    .rpc("validar_pin_vigilante", { pin_input: pin });
 
-  if(!data){
+  if (error || !data || data.length === 0){
     ui.error("PIN incorrecto");
     return;
   }
 
-  vigilante = data;
-
-  document.getElementById("estado").innerText =
-    tipoAccion === "entrada" ? "Registrar entrada" : "Confirmar salida";
+  vigilante = data[0];
 
   ocultarValidacion();
-  document.getElementById("btnRegistrar").classList.remove("hidden");
-
-};
-
-// 🔹 FECHA UTC ESTÁNDAR
-function fechaUTC(){
-  return new Date().toISOString();
-}
-
-// 🔹 VALIDAR ENTRADA
-function esEntradaPermitida(){
-
-  const ahora = new Date();
-  const dia = ahora.getDay();
-  const hora = ahora.getHours();
-
-  if (dia === 0) return false;
-
-  if (dia >= 1 && dia <= 5){
-    return (hora >= 8 && hora <= 18);
-  }
-
-  if (dia === 6){
-    return (hora >= 9 && hora <= 14);
-  }
-
-  return false;
-}
-
-// 🔹 VALIDAR SALIDA
-function esFueraDeHorario(){
-
-  const ahora = new Date();
-  const dia = ahora.getDay();
-  const hora = ahora.getHours();
-
-  if (dia === 0) return true;
-
-  if (dia >= 1 && dia <= 5){
-    return (hora < 8 || hora > 18);
-  }
-
-  if (dia === 6){
-    return (hora < 9 || hora > 14);
-  }
-
-  return true;
-}
-
-// 🔹 REGISTRAR
-document.getElementById("btnRegistrar").onclick = async () => {
-
-  // 🔥 BLOQUEO UX PRO
-  btnRegistrar.disabled = true;
-  btnRegistrar.innerText = "Procesando...";
-
-  if(tipoAccion === "entrada"){
-
-    if(!esEntradaPermitida()){
-      pintarErrorFinal("Horario no permitido");
-
-      // 🔥 REACTIVAR
-      btnRegistrar.disabled = false;
-      btnRegistrar.innerText = "Registrar";
-
-      return;
-    }
-
-    const { error } = await supabaseClient
-      .from("accesos_trabajadores")
-      .insert([{
-        trabajador_id: trabajadorGlobal.id,
-        fecha_hora_entrada: fechaUTC(),
-        estatus: "dentro",
-        vigilante_entrada_id: vigilante.id
-      }]);
-
-    if (error) {
-      console.error("ERROR INSERT:", error);
-      ui.error("❌ Error al registrar entrada");
-
-      // 🔥 REACTIVAR
-      btnRegistrar.disabled = false;
-      btnRegistrar.innerText = "Registrar";
-
-      return;
-    }
-
-    pintarFinal("ENTRADA REGISTRADA","ok");
-  }
 
   if(tipoAccion === "salida"){
 
-    const fueraHorario = esFueraDeHorario();
+    document.body.className = "warn";
+    estado.innerText = "Autorizar salida";
 
-    const { error } = await supabaseClient
-      .from("accesos_trabajadores")
-      .update({
-        fecha_hora_salida: fechaUTC(),
-        estatus: "fuera",
-        vigilante_salida_id: vigilante.id
-      })
-      .eq("id", accesoActual.id);
+    btnRegistrar.innerText = "Registrar salida";
+    btnRegistrar.classList.remove("hidden");
 
-    if (error) {
-      console.error("ERROR UPDATE:", error);
-      ui.error("❌ Error al registrar salida");
+    return;
+  }
 
-      // 🔥 REACTIVAR
+  document.body.className = "ok";
+  estado.innerText = "Acceso permitido";
+
+  btnRegistrar.innerText = "Registrar entrada";
+  btnRegistrar.classList.remove("hidden");
+};
+
+// REGISTRAR
+btnRegistrar.onclick = async () => {
+
+  btnRegistrar.disabled = true;
+  btnRegistrar.innerText = "Procesando...";
+
+  if(tipoAccion === "salida"){
+
+    const { error } = await supabaseClient.rpc("registrar_salida_trabajador", {
+      p_acceso_id: accesoAbierto,
+      p_vigilante_id: vigilante.id
+    });
+
+    if (error){
+      ui.error("Error al registrar salida");
       btnRegistrar.disabled = false;
       btnRegistrar.innerText = "Registrar";
-
       return;
     }
 
-    if(fueraHorario){
-
-      const { error: errorReporte } = await supabaseClient
-        .from("reportes_obras")
-        .insert([{
-          tipo: "salida_extemporanea",
-          descripcion: "Salida fuera de horario detectada en caseta",
-          trabajador_id: trabajadorGlobal.id,
-          obra_id: trabajadorGlobal.obra_id,
-          privada: trabajadorGlobal.privada,
-          casa: trabajadorGlobal.casa,
-          fecha_reporte: fechaUTC(),
-          estatus: "nuevo",
-          origen: "vigilante",
-          residente_id: null
-        }]);
-
-      if(errorReporte){
-        console.error("ERROR REPORTE:", errorReporte);
-      }
-    }
-
-    pintarFinal("SALIDA REGISTRADA","warn");
+    estado.innerText = "Salida registrada";
+    return;
   }
 
+  const { error } = await supabaseClient.rpc("registrar_entrada_trabajador", {
+    p_trabajador_id: trabajador.id,
+    p_vigilante_id: vigilante.id
+  });
+
+  if (error){
+    ui.error("Error al registrar entrada");
+    btnRegistrar.disabled = false;
+    btnRegistrar.innerText = "Registrar";
+    return;
+  }
+
+  estado.innerText = "Acceso registrado";
+  btnRegistrar.classList.add("hidden");
 };
 
-// 🔴 ERROR FINAL
-function pintarErrorFinal(msg){
-  document.body.className = "error";
-  document.getElementById("estado").innerText = msg;
-  ocultarValidacion();
-  document.getElementById("btnAceptar").classList.remove("hidden");
-}
-
-// 🔹 ACEPTAR
-document.getElementById("btnAceptar").onclick = () => {
-  window.close();
-};
-
-// 🔹 UI FINAL
-function pintarFinal(texto,color){
-  document.body.className = color;
-  document.getElementById("estado").innerText = texto;
-  renderDetalle();
-  document.getElementById("btnRegistrar").classList.add("hidden");
-}
-
+// UI
 function renderDetalle(){
-  document.getElementById("detalle").innerHTML =
-    `<p><b>${trabajadorGlobal?.nombre || ""}</b></p>`;
+  detalle.innerHTML = `<p><b>${trabajador.nombre}</b></p>`;
+}
+
+function pintar(texto, color){
+  document.body.className = color;
+  estado.innerText = texto;
+  ocultarValidacion();
 }
 
 function ocultarValidacion(){
-  document.getElementById("pin").style.display = "none";
-  document.getElementById("btnValidar").style.display = "none";
+  pin.style.display = "none";
+  btnValidar.style.display = "none";
 }
 
 </script>
