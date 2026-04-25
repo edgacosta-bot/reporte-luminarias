@@ -230,12 +230,21 @@ if (pinError) {
  
   ocultarValidacion();
 
-  if(tipoAccion === "salida"){
-    document.body.className = "warn";
-    estado.innerText = "Autorizar salida";
-    btnRegistrar.classList.remove("hidden");
-    return;
-  }
+ if(tipoAccion === "salida"){
+
+  console.log("FLUJO: SALIDA");
+
+  document.body.className = "warn";
+  estado.innerText = "Autorizar salida";
+
+  btnRegistrar.innerText = "Registrar salida";
+  btnRegistrar.classList.remove("hidden");
+
+  // 🔥 BLOQUEO TOTAL DE FLUJO DE ENTRADA
+  btnNotificar.classList.add("hidden");
+
+  return;
+}
 
   evaluarEstadoEntrada();
 };
