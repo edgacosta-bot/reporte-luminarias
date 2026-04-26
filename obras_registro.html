@@ -46,7 +46,7 @@ input, select {
   color: white;
 }
 
-/* 🔥 Mejora visibilidad icono calendario */
+/* Mejora visibilidad icono calendario */
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
   cursor: pointer;
@@ -98,7 +98,7 @@ button {
 <input id="fecha_fin" type="date" placeholder="Introduce fecha final">
 
 <div class="helper">
-Introduce el periodo de vigencia de la aprobación de la obra
+Introduce el periodo de vigencia de la aprobación de la obra. Este periodo podrá cambiarse posteriormente.
 </div>
 
 <button onclick="registrar()">Guardar</button>
@@ -114,7 +114,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   await cargarPrivadas();
 });
 
-// 🔹 CARGAR PRIVADAS (SIN ADMIN Y SEG)
+// 🔹 CARGAR PRIVADAS
 async function cargarPrivadas(){
 
   const { data, error } = await supabaseClient
@@ -142,15 +142,20 @@ async function cargarPrivadas(){
   });
 }
 
-// 🔹 CARGAR LOTES SEGÚN PRIVADA
-document.getElementById("privada").addEventListener("change", async (e) => {
+// 🔹 CARGAR LOTES SOLO AL HACER CLICK (NO EN CHANGE)
+document.getElementById("lote").addEventListener("focus", async () => {
 
-  const privada = e.target.value;
+  const privada = document.getElementById("privada").value;
   const selectLote = document.getElementById("lote");
 
-  selectLote.innerHTML = `<option value="">Introduce el número de lote</option>`;
+  // 🔒 si no hay privada, no hace nada
+  if(!privada){
+    selectLote.innerHTML = `<option value="">Selecciona primero la privada</option>`;
+    return;
+  }
 
-  if(!privada) return;
+  // 🧹 limpiar antes de cargar
+  selectLote.innerHTML = `<option value="">Cargando lotes...</option>`;
 
   const { data, error } = await supabaseClient
     .from("lotes")
@@ -159,8 +164,11 @@ document.getElementById("privada").addEventListener("change", async (e) => {
 
   if(error){
     console.log(error);
+    selectLote.innerHTML = `<option value="">Error al cargar lotes</option>`;
     return;
   }
+
+  selectLote.innerHTML = `<option value="">Introduce el número de lote</option>`;
 
   data.forEach(l => {
     const option = document.createElement("option");
@@ -175,7 +183,7 @@ document.getElementById("privada").addEventListener("change", async (e) => {
 
 });
 
-// 🔹 REGISTRAR OBRA
+// 🔹 REGISTRAR
 async function registrar(){
 
   const loteData = document.getElementById("lote").value;
