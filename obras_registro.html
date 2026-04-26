@@ -47,25 +47,21 @@ input, select {
   color: white;
 }
 
-/* Mejora visibilidad icono calendario */
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
   cursor: pointer;
 }
 
-/* 🔹 Espaciado visual */
 .field-group {
   margin-bottom: 10px;
 }
 
-/* 🔹 CONTENEDOR DE BOTÓN (alineado a la derecha) */
 .button-group {
   display: flex;
   justify-content: flex-end;
   margin-top: 24px;
 }
 
-/* 🔹 BOTÓN UNIFICADO */
 button {
   width: 180px;
   padding: 14px;
@@ -77,12 +73,10 @@ button {
   cursor: pointer;
 }
 
-/* 🔹 Hover */
 button:hover {
   background: #1d4ed8;
 }
 
-/* 🔹 Mensajes */
 .msg {
   margin-top: 18px;
   font-weight: bold;
@@ -130,11 +124,11 @@ button:hover {
 </div>
 
 <div class="field-group">
-<input id="fecha_inicio" type="date" placeholder="Introduce fecha de inicio">
+<input id="fecha_inicio" type="date">
 </div>
 
 <div class="field-group">
-<input id="fecha_fin" type="date" placeholder="Introduce fecha final">
+<input id="fecha_fin" type="date">
 </div>
 
 <div class="helper">
@@ -156,22 +150,16 @@ window.addEventListener("DOMContentLoaded", async () => {
   await cargarPrivadas();
 });
 
-// 🔹 CARGAR PRIVADAS
 async function cargarPrivadas(){
-
   const { data, error } = await supabaseClient
     .from("lotes")
     .select("privada");
 
-  if(error){
-    console.log(error);
-    return;
-  }
+  if(error) return;
 
   const privadas = [...new Set(
-    data
-      .map(l => l.privada)
-      .filter(p => p && p !== "ADMIN" && p !== "SEG")
+    data.map(l => l.privada)
+    .filter(p => p && p !== "ADMIN" && p !== "SEG")
   )];
 
   const select = document.getElementById("privada");
@@ -184,7 +172,6 @@ async function cargarPrivadas(){
   });
 }
 
-// 🔹 CARGAR LOTES
 document.getElementById("lote").addEventListener("focus", async () => {
 
   const privada = document.getElementById("privada").value;
@@ -195,7 +182,7 @@ document.getElementById("lote").addEventListener("focus", async () => {
     return;
   }
 
-  selectLote.innerHTML = `<option value="">Cargando lotes...</option>`;
+  selectLote.innerHTML = `<option value="">Cargando...</option>`;
 
   const { data, error } = await supabaseClient
     .from("lotes")
@@ -203,8 +190,7 @@ document.getElementById("lote").addEventListener("focus", async () => {
     .eq("privada", privada);
 
   if(error){
-    console.error("ERROR LOTES:", error);
-    selectLote.innerHTML = `<option value="">Error al cargar lotes</option>`;
+    selectLote.innerHTML = `<option>Error</option>`;
     return;
   }
 
@@ -214,16 +200,14 @@ document.getElementById("lote").addEventListener("focus", async () => {
     const option = document.createElement("option");
     option.value = JSON.stringify({
       id: l.id,
-      privada: privada,
+      privada,
       lote: l.lote
     });
     option.text = `Lote ${l.lote}`;
     selectLote.appendChild(option);
   });
-
 });
 
-// 🔹 REGISTRAR
 async function registrar(){
 
   const loteData = document.getElementById("lote").value;
@@ -243,19 +227,19 @@ async function registrar(){
 
   const lote = JSON.parse(loteData);
 
-  // 🔒 VALIDAR SI YA EXISTE OBRA EN ESE LOTE
-const { data: existente } = await supabaseClient
-  .from("obras")
-  .select("id")
-  .eq("privada", privada)
-  .eq("casa", casa)
-  .maybeSingle();
+  const { data: existente } = await supabaseClient
+    .from("obras")
+    .select("id")
+    .eq("privada", lote.privada)
+    .eq("casa", lote.lote)
+    .maybeSingle();
 
-if (existente) {
-  ui.error("Ya existe una obra registrada para este lote");
-  return;
-}
-  
+  if (existente) {
+    msg.innerText = "Ya existe una obra registrada para este lote";
+    msg.classList.add("error");
+    return;
+  }
+
   const { error } = await supabaseClient
     .from("obras")
     .insert([{
@@ -270,7 +254,6 @@ if (existente) {
     }]);
 
   if(error){
-    console.log(error);
     msg.innerText = "Error al registrar obra";
     msg.classList.add("error");
     return;
