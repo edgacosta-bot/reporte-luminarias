@@ -36,16 +36,13 @@ h2 {
   margin-bottom: 20px;
 }
 
-input, select, button {
+input, select {
   width: 100%;
   padding: 14px;
   margin-top: 14px;
   border-radius: 12px;
   border: none;
   font-size: 15px;
-}
-
-input, select {
   background: #1e293b;
   color: white;
 }
@@ -56,20 +53,31 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
-/* 🔹 Espaciado visual por bloques */
+/* 🔹 Espaciado visual */
 .field-group {
   margin-bottom: 10px;
 }
 
-/* 🔹 Botón separado visualmente */
+/* 🔹 CONTENEDOR DE BOTÓN (alineado a la derecha) */
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+/* 🔹 BOTÓN UNIFICADO */
 button {
+  width: 180px;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-size: 15px;
   background: #2563eb;
   color: white;
   cursor: pointer;
-  margin-top: 22px;
 }
 
-/* 🔹 Estado hover */
+/* 🔹 Hover */
 button:hover {
   background: #1d4ed8;
 }
@@ -79,6 +87,7 @@ button:hover {
   margin-top: 18px;
   font-weight: bold;
   line-height: 1.4;
+  text-align: center;
 }
 
 .ok { color: #22c55e; }
@@ -132,7 +141,9 @@ button:hover {
 Introduce el periodo de vigencia de la aprobación de la obra. Este periodo podrá cambiarse posteriormente.
 </div>
 
+<div class="button-group">
 <button onclick="registrar()">Guardar</button>
+</div>
 
 <div id="msg" class="msg"></div>
 
