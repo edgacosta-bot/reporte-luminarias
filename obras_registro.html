@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 
@@ -7,6 +8,7 @@
 <title>Registro de Obra</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script src="auth.js"></script>
 
 <style>
@@ -21,9 +23,16 @@ body {
   padding: 20px;
   max-width: 500px;
   margin: auto;
+  text-align: center;
 }
 
-input, button {
+.logo {
+  width: 120px;
+  margin: 10px auto 20px;
+  display: block;
+}
+
+input, select, button {
   width: 100%;
   padding: 12px;
   margin-top: 10px;
@@ -32,7 +41,7 @@ input, button {
   font-size: 15px;
 }
 
-input {
+input, select {
   background: #1e293b;
   color: white;
 }
@@ -50,6 +59,13 @@ button {
 
 .ok { color: #22c55e; }
 .error { color: #ef4444; }
+
+.helper {
+  font-size: 13px;
+  color: #cbd5f5;
+  margin-top: 5px;
+  text-align: left;
+}
 </style>
 
 </head>
@@ -58,13 +74,22 @@ button {
 
 <div class="container">
 
+<img src="/logo.png" class="logo">
+
 <h2>Registrar Obra</h2>
 
-<input id="privada" placeholder="Privada">
-<input id="casa" placeholder="Lote / Casa">
+<select id="lote">
+  <option value="">Selecciona privada y lote</option>
+</select>
+
 <input id="dro" placeholder="Nombre del DRO">
+
 <input id="fecha_inicio" type="date">
 <input id="fecha_fin" type="date">
+
+<div class="helper">
+Introduce el periodo de vigencia de la aprobación de la obra
+</div>
 
 <button onclick="registrar()">Guardar</button>
 
@@ -76,19 +101,33 @@ button {
 
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["admin","administracion"]);
-
-  // 🔁 recuperar contexto si viene de rechazo
-  const privada = localStorage.getItem("privada_rechazo");
-  const casa = localStorage.getItem("casa_rechazo");
-
-  if (privada) document.getElementById("privada").value = privada;
-  if (casa) document.getElementById("casa").value = casa;
+  await cargarLotes();
 });
+
+async function cargarLotes(){
+
+  const { data, error } = await supabaseClient
+    .from("lotes")
+    .select("id, privada, casa");
+
+  if(error){
+    console.log(error);
+    return;
+  }
+
+  const select = document.getElementById("lote");
+
+  data.forEach(l => {
+    const option = document.createElement("option");
+    option.value = JSON.stringify(l);
+    option.text = `${l.privada} - Lote ${l.casa}`;
+    select.appendChild(option);
+  });
+}
 
 async function registrar(){
 
-  const privada = document.getElementById("privada").value.trim();
-  const casa = document.getElementById("casa").value.trim();
+  const loteData = document.getElementById("lote").value;
   const dro = document.getElementById("dro").value.trim();
   const fecha_inicio = document.getElementById("fecha_inicio").value;
   const fecha_fin = document.getElementById("fecha_fin").value;
@@ -97,17 +136,20 @@ async function registrar(){
   msg.innerText = "";
   msg.className = "msg";
 
-  if(!privada || !casa || !dro || !fecha_inicio){
+  if(!loteData || !dro || !fecha_inicio){
     msg.innerText = "Completa todos los campos obligatorios";
     msg.classList.add("error");
     return;
   }
 
+  const lote = JSON.parse(loteData);
+
   const { error } = await supabaseClient
     .from("obras")
     .insert([{
-      privada,
-      casa,
+      privada: lote.privada,
+      casa: lote.casa,
+      lote_id: lote.id,
       dro_nombre: dro,
       fecha_inicio,
       fecha_fin,
@@ -122,18 +164,13 @@ async function registrar(){
     return;
   }
 
-  msg.innerText = "Obra registrada correctamente";
+  msg.innerText = `Registro exitoso de la obra de la privada ${lote.privada} lote ${lote.casa}. Es necesario informar al comité de diseño para su aprobación para poder dar de alta a los trabajadores. Gracias.`;
   msg.classList.add("ok");
 
-  // 🧹 limpiar
-  document.getElementById("privada").value = "";
-  document.getElementById("casa").value = "";
+  document.getElementById("lote").value = "";
   document.getElementById("dro").value = "";
   document.getElementById("fecha_inicio").value = "";
   document.getElementById("fecha_fin").value = "";
-
-  localStorage.removeItem("privada_rechazo");
-  localStorage.removeItem("casa_rechazo");
 }
 
 </script>
