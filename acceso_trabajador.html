@@ -212,10 +212,13 @@ btnRegistrar.onclick = async () => {
   // ⚠️ fallback si BD sí ejecutó
   estado.innerText = "Salida registrada";
   btnRegistrar.classList.add("hidden");
+  document.body.className = "ok";    
   return;
 }
-    estado.innerText = "Salida registrada";
-    return;
+   estado.innerText = "Salida registrada";
+   btnRegistrar.classList.add("hidden");
+   document.body.className = "ok";
+  return;
   }
 
   const { error } = await supabaseClient.rpc("registrar_entrada_trabajador", {
@@ -232,6 +235,7 @@ btnRegistrar.onclick = async () => {
 
   estado.innerText = "Acceso registrado";
   btnRegistrar.classList.add("hidden");
+  document.body.className = "ok";
 };
 
 // UI
