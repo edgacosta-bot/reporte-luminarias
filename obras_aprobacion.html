@@ -254,9 +254,12 @@ document.getElementById("btnAccion").onclick = async () => {
   };
 
   if (accion === "aprobar") {
-    updateData.aprobada = true;
-    updateData.fecha_autorizacion = hoy;
-  } else {
+  updateData.aprobada = true;
+  updateData.estatus = "aprobada"; // 🔥 CLAVE
+  updateData.fecha_autorizacion = hoy;
+}
+  
+  else {
     const motivo = document.getElementById("motivo").value.trim();
 
     if (!motivo) {
