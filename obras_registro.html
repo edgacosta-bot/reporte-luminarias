@@ -2,106 +2,73 @@
 <html lang="es">
 <head>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js"></script>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reporte General</title>
+<title>Registro de Obra</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 
 <style>
 body {
   margin: 0;
-  font-family: 'Segoe UI', Arial;
-  background: linear-gradient(135deg, #e0f2fe, #f8fafc);
-  color: #0f172a;
-}
-.container { max-width: 520px; margin: auto; padding: 20px; }
-h2 { text-align: center; }
-
-.section-title {
-  margin-top: 25px;
-  margin-bottom: 10px;
-  font-size: 16px;
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
 }
 
-.label { font-size: 13px; color: #475569; }
-.input-group { margin-bottom: 15px; }
+.container {
+  padding: 20px;
+  max-width: 500px;
+  margin: auto;
+}
+
+input, button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: none;
+  font-size: 15px;
+}
 
 input {
-  width: 100%;
-  padding: 14px;
-  border-radius: 14px;
-  border: 1px solid #cbd5e1;
+  background: #1e293b;
+  color: white;
 }
 
 button {
-  width: 100%;
-  padding: 15px;
-  border-radius: 16px;
-  border: none;
-  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  background: #2563eb;
   color: white;
+  cursor: pointer;
+}
+
+.msg {
+  margin-top: 12px;
   font-weight: bold;
 }
 
-.kpis {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin: 25px 0;
-}
-
-.kpi { padding: 18px; border-radius: 18px; color: white; text-align: center; font-weight: bold; }
-.incidencia { background: #ef4444; }
-.agua { background: #f59e0b; color: #111; }
-.luminaria { background: #10b981; }
-.total { background: #0f172a; }
-
-.item {
-  background: white;
-  padding: 16px;
-  border-radius: 18px;
-  margin-bottom: 12px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-  border-left: 6px solid;
-}
-
-.item.incidencia { border-color: #ef4444; }
-.item.agua { border-color: #f59e0b; }
-.item.luminaria { border-color: #10b981; }
-
-.hora { font-size: 12px; color: #64748b; }
-.extra { font-size: 14px; margin-top: 4px; }
+.ok { color: #22c55e; }
+.error { color: #ef4444; }
 </style>
+
 </head>
 
 <body>
 
 <div class="container">
 
-<h2>📊 Reporte General</h2>
+<h2>Registrar Obra</h2>
 
-<div class="input-group">
-  <div class="label">Fecha inicio</div>
-  <input type="date" id="inicio">
-</div>
+<input id="privada" placeholder="Privada">
+<input id="casa" placeholder="Lote / Casa">
+<input id="dro" placeholder="Nombre del DRO">
+<input id="fecha_inicio" type="date">
+<input id="fecha_fin" type="date">
 
-<div class="input-group">
-  <div class="label">Fecha fin</div>
-  <input type="date" id="fin">
-</div>
+<button onclick="registrar()">Guardar</button>
 
-<button onclick="cargar()">Consultar</button>
-
-<div class="kpis">
-  <div class="kpi incidencia" id="inc">0 Incidencias</div>
-  <div class="kpi agua" id="agua">0 Agua</div>
-  <div class="kpi luminaria" id="lum">0 Luminarias</div>
-  <div class="kpi total" id="total">0 Total</div>
-</div>
-
-<div id="lista"></div>
+<div id="msg" class="msg"></div>
 
 </div>
 
@@ -109,164 +76,64 @@ button {
 
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["admin","administracion"]);
+
+  // 🔁 recuperar contexto si viene de rechazo
+  const privada = localStorage.getItem("privada_rechazo");
+  const casa = localStorage.getItem("casa_rechazo");
+
+  if (privada) document.getElementById("privada").value = privada;
+  if (casa) document.getElementById("casa").value = casa;
 });
 
-async function cargar(){
+async function registrar(){
 
-  const inicio = document.getElementById("inicio").value;
-  const fin = document.getElementById("fin").value;
+  const privada = document.getElementById("privada").value.trim();
+  const casa = document.getElementById("casa").value.trim();
+  const dro = document.getElementById("dro").value.trim();
+  const fecha_inicio = document.getElementById("fecha_inicio").value;
+  const fecha_fin = document.getElementById("fecha_fin").value;
 
-  if(!inicio || !fin){
-    alert("Selecciona fechas");
+  const msg = document.getElementById("msg");
+  msg.innerText = "";
+  msg.className = "msg";
+
+  if(!privada || !casa || !dro || !fecha_inicio){
+    msg.innerText = "Completa todos los campos obligatorios";
+    msg.classList.add("error");
     return;
   }
 
-  let registros=[];
+  const { error } = await supabaseClient
+    .from("obras")
+    .insert([{
+      privada,
+      casa,
+      dro_nombre: dro,
+      fecha_inicio,
+      fecha_fin,
+      estatus: "pendiente",
+      aprobada: false
+    }]);
 
-  try {
-
-    // 🔴 VECINAL
-    let {data:inc} = await supabaseClient
-      .from("incidencias_vecinales")
-      .select("*")
-      .gte("fecha_local", inicio+"T00:00:00")
-      .lte("fecha_local", fin+"T23:59:59");
-
-    inc?.forEach(i=>{
-      registros.push({
-        tipo:"incidencia",
-        grupo:"vecinal",
-        titulo:"Incidencia vecinal",
-        descripcion:i.descripcion,
-        hora:i.fecha_local,
-        origen:`${i.privada}-${i.casa}`
-      });
-    });
-
-    // 🔴 TRABAJADORES
-    let {data:trab} = await supabaseClient
-      .from("incidencias_trabajadores")
-      .select("*")
-      .gte("fecha", inicio+"T00:00:00")
-      .lte("fecha", fin+"T23:59:59");
-
-    const ids = [...new Set((trab || []).map(i=>i.trabajador_id).filter(Boolean))];
-
-    let mapaTrab = {};
-
-    if(ids.length > 0){
-      const {data:trabajadores} = await supabaseClient
-        .from("trabajadores_obra")
-        .select("id, nombre, privada, casa")
-        .in("id", ids);
-
-      trabajadores?.forEach(t=> mapaTrab[t.id]=t);
-    }
-
-    (trab || []).forEach(i=>{
-      const t = mapaTrab[i.trabajador_id];
-
-      registros.push({
-        tipo:"incidencia",
-        grupo:"trabajador",
-        titulo:"Incidencia trabajador",
-        subtipo:i.tipo,
-        descripcion:i.descripcion,
-        hora:i.fecha_local || i.fecha,
-        trabajador:t?.nombre,
-        obra: t ? `Privada ${t.privada} - Casa ${t.casa}` : null
-      });
-    });
-
-    // 💧 AGUA
-    let {data:agua} = await supabaseClient
-      .from("reportes_agua_caasim")
-      .select("*");
-
-    agua?.forEach(i=>{
-      if(i.fecha_registro >= inicio+"T00:00:00" &&
-         i.fecha_registro <= fin+"T23:59:59"){
-        registros.push({
-          tipo:"agua",
-          grupo:"agua",
-          titulo:"Reporte agua",
-          descripcion:i.tipo_falla,
-          hora:i.fecha_registro,
-          origen:`${i.privada}-${i.numero_exterior}`
-        });
-      }
-    });
-
-    // 💡 LUMINARIAS
-    let {data:luminarias} = await supabaseClient
-      .from("vista_reportes_luminarias")
-      .select("*");
-
-    luminarias?.forEach(i=>{
-      if(i.fecha_reporte >= inicio+"T00:00:00" &&
-         i.fecha_reporte <= fin+"T23:59:59"){
-        registros.push({
-          tipo:"luminaria",
-          grupo:"luminaria",
-          titulo:`Luminaria #${i.no_luminaria}`,
-          descripcion:i.descripcion,
-          hora:i.fecha_reporte
-        });
-      }
-    });
-
-  } catch (e) {
-    console.error(e);
+  if(error){
+    console.log(error);
+    msg.innerText = "Error al registrar obra";
+    msg.classList.add("error");
+    return;
   }
 
-  // KPIs
-  document.getElementById("inc").innerText =
-    registros.filter(r=>r.tipo==="incidencia").length+" Incidencias";
+  msg.innerText = "Obra registrada correctamente";
+  msg.classList.add("ok");
 
-  document.getElementById("agua").innerText =
-    registros.filter(r=>r.tipo==="agua").length+" Agua";
+  // 🧹 limpiar
+  document.getElementById("privada").value = "";
+  document.getElementById("casa").value = "";
+  document.getElementById("dro").value = "";
+  document.getElementById("fecha_inicio").value = "";
+  document.getElementById("fecha_fin").value = "";
 
-  document.getElementById("lum").innerText =
-    registros.filter(r=>r.tipo==="luminaria").length+" Luminarias";
-
-  document.getElementById("total").innerText =
-    registros.length+" Total";
-
-  let html="";
-
-  function renderGrupo(grupo, titulo){
-
-    const datos = registros
-      .filter(r=>r.grupo===grupo)
-      .sort((a,b)=> new Date(b.hora)-new Date(a.hora));
-
-    if(!datos.length) return;
-
-    html += `<div class="section-title">${titulo}</div>`;
-
-    datos.forEach(r=>{
-      const fechaLocal = new Date(r.hora).toLocaleString("es-MX");
-
-      html+=`<div class="item ${r.tipo}">
-        <b>${r.titulo}</b>
-        <div class="hora">${fechaLocal}</div>
-
-        ${r.trabajador ? `<div class="extra">👷 ${r.trabajador}</div>`:""}
-        ${r.obra ? `<div class="extra">📍 ${r.obra}</div>`:""}
-        ${r.subtipo ? `<div class="extra">⚠️ ${r.subtipo}</div>`:""}
-        ${r.origen ? `<div class="extra">🏠 ${r.origen}</div>`:""}
-
-        <div class="extra">${r.descripcion}</div>
-      </div>`;
-    });
-  }
-
-  renderGrupo("vecinal","🚨 Incidencias vecinales");
-  renderGrupo("trabajador","👷 Incidencias trabajadores");
-  renderGrupo("agua","💧 Reportes de agua");
-  renderGrupo("luminaria","💡 Luminarias");
-
-  document.getElementById("lista").innerHTML = html || "Sin resultados";
+  localStorage.removeItem("privada_rechazo");
+  localStorage.removeItem("casa_rechazo");
 }
 
 </script>
