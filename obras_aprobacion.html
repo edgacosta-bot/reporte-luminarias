@@ -175,8 +175,7 @@ async function cargarObras() {
   const { data } = await supabaseClient
     .from("obras")
     .select("*")
-    .eq("aprobada", false)
-    .eq("estatus", "activa");
+    .eq("estatus", "pendiente")
 
   const contenedor = document.getElementById("lista");
   contenedor.innerHTML = "";
