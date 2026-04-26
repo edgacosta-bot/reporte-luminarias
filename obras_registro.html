@@ -159,7 +159,7 @@ document.getElementById("lote").addEventListener("focus", async () => {
 
   const { data, error } = await supabaseClient
     .from("lotes")
-    .select("id, casa")
+    select("id, lote, privada")
     .eq("privada", privada);
 
   if(error){
@@ -175,9 +175,9 @@ document.getElementById("lote").addEventListener("focus", async () => {
     option.value = JSON.stringify({
       id: l.id,
       privada: privada,
-      casa: l.casa
+      lote: l.lote
     });
-    option.text = `Lote ${l.casa}`;
+    option.text = `Lote ${l.lote}`;
     selectLote.appendChild(option);
   });
 
@@ -207,7 +207,7 @@ async function registrar(){
     .from("obras")
     .insert([{
       privada: lote.privada,
-      casa: lote.casa,
+      casa: lote.lote,
       lote_id: lote.id,
       dro_nombre: dro,
       fecha_inicio,
@@ -223,7 +223,7 @@ async function registrar(){
     return;
   }
 
-  msg.innerText = `Registro exitoso de la obra de la privada ${lote.privada} lote ${lote.casa}. Es necesario informar al comité de diseño para su aprobación para poder dar de alta a los trabajadores. Gracias.`;
+  msg.innerText = `Registro exitoso de la obra de la privada ${lote.privada} lote ${lote.lote}. Es necesario informar al comité de diseño para su aprobación para poder dar de alta a los trabajadores. Gracias.`;
   msg.classList.add("ok");
 
   document.getElementById("privada").value = "";
