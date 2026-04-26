@@ -150,18 +150,21 @@ async function validarComite() {
   const { data: userData } = await supabaseClient.auth.getUser();
   const user = userData?.user;
 
-  const { data: comite } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("comite_diseno")
     .select("*")
     .eq("user_id", user.id)
-    .eq("activo", true)
-    .maybeSingle();
+    .eq("activo", true);
 
-  if (!comite) {
+  // 🔴 VALIDACIÓN CORRECTA
+  if (!data || data.length === 0) {
     document.getElementById("lista").style.display = "none";
     document.getElementById("noComite").style.display = "block";
     return false;
   }
+
+  // 🔴 TOMAMOS EL PRIMER REGISTRO
+  const comite = data[0];
 
   usuarioNombre = comite.nombre;
   esResponsable = comite.rol === "responsable";
