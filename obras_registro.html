@@ -20,7 +20,7 @@ body {
 }
 
 .container {
-  padding: 20px;
+  padding: 30px 20px;
   max-width: 500px;
   margin: auto;
   text-align: center;
@@ -28,15 +28,19 @@ body {
 
 .logo {
   width: 120px;
-  margin: 10px auto 20px;
+  margin: 10px auto 25px;
   display: block;
+}
+
+h2 {
+  margin-bottom: 20px;
 }
 
 input, select, button {
   width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 10px;
+  padding: 14px;
+  margin-top: 14px;
+  border-radius: 12px;
   border: none;
   font-size: 15px;
 }
@@ -52,15 +56,29 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
+/* 🔹 Espaciado visual por bloques */
+.field-group {
+  margin-bottom: 10px;
+}
+
+/* 🔹 Botón separado visualmente */
 button {
   background: #2563eb;
   color: white;
   cursor: pointer;
+  margin-top: 22px;
 }
 
+/* 🔹 Estado hover */
+button:hover {
+  background: #1d4ed8;
+}
+
+/* 🔹 Mensajes */
 .msg {
-  margin-top: 12px;
+  margin-top: 18px;
   font-weight: bold;
+  line-height: 1.4;
 }
 
 .ok { color: #22c55e; }
@@ -69,8 +87,10 @@ button {
 .helper {
   font-size: 13px;
   color: #cbd5f5;
-  margin-top: 5px;
+  margin-top: 8px;
+  margin-bottom: 8px;
   text-align: left;
+  line-height: 1.4;
 }
 </style>
 
@@ -84,18 +104,29 @@ button {
 
 <h2>Registrar Obra</h2>
 
+<div class="field-group">
 <select id="privada">
   <option value="">Introduce la privada</option>
 </select>
+</div>
 
+<div class="field-group">
 <select id="lote">
   <option value="">Introduce el número de lote</option>
 </select>
+</div>
 
+<div class="field-group">
 <input id="dro" placeholder="Nombre del DRO">
+</div>
 
+<div class="field-group">
 <input id="fecha_inicio" type="date" placeholder="Introduce fecha de inicio">
+</div>
+
+<div class="field-group">
 <input id="fecha_fin" type="date" placeholder="Introduce fecha final">
+</div>
 
 <div class="helper">
 Introduce el periodo de vigencia de la aprobación de la obra. Este periodo podrá cambiarse posteriormente.
@@ -142,7 +173,7 @@ async function cargarPrivadas(){
   });
 }
 
-// 🔹 CARGAR LOTES SOLO AL HACER CLICK (CORREGIDO)
+// 🔹 CARGAR LOTES
 document.getElementById("lote").addEventListener("focus", async () => {
 
   const privada = document.getElementById("privada").value;
