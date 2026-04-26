@@ -180,7 +180,7 @@ async function validarAcceso(){
   const { data: userData } = await supabaseClient.auth.getUser();
   const user = userData?.user;
 
-  // ADMIN
+  // ADMIN (solo visualiza)
   const { data: residente } = await supabaseClient
     .from("residentes")
     .select("tipo")
@@ -188,7 +188,7 @@ async function validarAcceso(){
     .maybeSingle();
 
   if (residente && ["admin","administracion"].includes((residente.tipo || "").toLowerCase())) {
-    esResponsable = true;
+    esResponsable = false; // 🔥 CLAVE: admin NO aprueba
     usuarioNombre = "Administración";
     return true;
   }
@@ -210,6 +210,11 @@ async function validarAcceso(){
   esResponsable = comite.rol === "responsable";
 
   return true;
+}
+
+function formatearFecha(fecha){
+  if(!fecha) return "";
+  return fecha.split("T")[0]; // 🔥 solo YYYY-MM-DD
 }
 
 async function cargarObras(){
@@ -243,14 +248,14 @@ function pintar(id, lista, permitirAccion){
     if (o.estatus === "rechazada") {
       extra = `
         <br><b>Motivo:</b> ${o.motivo_rechazo || "N/A"}
-        <br><b>Fecha:</b> ${o.fecha_autorizacion || ""}
+        <br><b>Fecha:</b> ${formatearFecha(o.fecha_autorizacion)}
         <br><b>Responsable:</b> ${o.responsable_autorizacion || ""}
       `;
     }
 
     if (o.estatus === "aprobada") {
       extra = `
-        <br><b>Fecha aprobación:</b> ${o.fecha_autorizacion || ""}
+        <br><b>Fecha aprobación:</b> ${formatearFecha(o.fecha_autorizacion)}
         <br><b>Responsable:</b> ${o.responsable_autorizacion || ""}
       `;
     }
@@ -313,7 +318,7 @@ document.getElementById("btnAccion").onclick = async () => {
 
   if (!obraSeleccionada) return;
 
-  const hoy = new Date().toLocaleDateString('sv-SE');
+  const hoy = new Date().toISOString().split("T")[0];
 
   let updateData = {
     responsable_autorizacion: usuarioNombre
