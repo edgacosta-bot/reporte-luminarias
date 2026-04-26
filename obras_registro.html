@@ -142,28 +142,26 @@ async function cargarPrivadas(){
   });
 }
 
-// 🔹 CARGAR LOTES SOLO AL HACER CLICK (NO EN CHANGE)
+// 🔹 CARGAR LOTES SOLO AL HACER CLICK (CORREGIDO)
 document.getElementById("lote").addEventListener("focus", async () => {
 
   const privada = document.getElementById("privada").value;
   const selectLote = document.getElementById("lote");
 
-  // 🔒 si no hay privada, no hace nada
   if(!privada){
     selectLote.innerHTML = `<option value="">Selecciona primero la privada</option>`;
     return;
   }
 
-  // 🧹 limpiar antes de cargar
   selectLote.innerHTML = `<option value="">Cargando lotes...</option>`;
 
   const { data, error } = await supabaseClient
     .from("lotes")
-    select("id, lote, privada")
+    .select("id, lote")
     .eq("privada", privada);
 
   if(error){
-    console.log(error);
+    console.error("ERROR LOTES:", error);
     selectLote.innerHTML = `<option value="">Error al cargar lotes</option>`;
     return;
   }
