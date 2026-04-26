@@ -243,6 +243,19 @@ async function registrar(){
 
   const lote = JSON.parse(loteData);
 
+  // 🔒 VALIDAR SI YA EXISTE OBRA EN ESE LOTE
+const { data: existente } = await supabaseClient
+  .from("obras")
+  .select("id")
+  .eq("privada", privada)
+  .eq("casa", casa)
+  .maybeSingle();
+
+if (existente) {
+  ui.error("Ya existe una obra registrada para este lote");
+  return;
+}
+  
   const { error } = await supabaseClient
     .from("obras")
     .insert([{
