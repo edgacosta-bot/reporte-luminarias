@@ -46,6 +46,12 @@ input, select {
   color: white;
 }
 
+/* 🔥 Mejora visibilidad icono calendario */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
 button {
   background: #2563eb;
   color: white;
@@ -74,18 +80,22 @@ button {
 
 <div class="container">
 
-<img src="/logo.png" class="logo">
+<img src="/icono-512.png" class="logo">
 
 <h2>Registrar Obra</h2>
 
+<select id="privada">
+  <option value="">Introduce la privada</option>
+</select>
+
 <select id="lote">
-  <option value="">Selecciona privada y lote</option>
+  <option value="">Introduce el número de lote</option>
 </select>
 
 <input id="dro" placeholder="Nombre del DRO">
 
-<input id="fecha_inicio" type="date">
-<input id="fecha_fin" type="date">
+<input id="fecha_inicio" type="date" placeholder="Introduce fecha de inicio">
+<input id="fecha_fin" type="date" placeholder="Introduce fecha final">
 
 <div class="helper">
 Introduce el periodo de vigencia de la aprobación de la obra
@@ -101,30 +111,71 @@ Introduce el periodo de vigencia de la aprobación de la obra
 
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["admin","administracion"]);
-  await cargarLotes();
+  await cargarPrivadas();
 });
 
-async function cargarLotes(){
+// 🔹 CARGAR PRIVADAS (SIN ADMIN Y SEG)
+async function cargarPrivadas(){
 
   const { data, error } = await supabaseClient
     .from("lotes")
-    .select("id, privada, casa");
+    .select("privada");
 
   if(error){
     console.log(error);
     return;
   }
 
-  const select = document.getElementById("lote");
+  const privadas = [...new Set(
+    data
+      .map(l => l.privada)
+      .filter(p => p && p !== "ADMIN" && p !== "SEG")
+  )];
 
-  data.forEach(l => {
+  const select = document.getElementById("privada");
+
+  privadas.forEach(p => {
     const option = document.createElement("option");
-    option.value = JSON.stringify(l);
-    option.text = `${l.privada} - Lote ${l.casa}`;
+    option.value = p;
+    option.text = p;
     select.appendChild(option);
   });
 }
 
+// 🔹 CARGAR LOTES SEGÚN PRIVADA
+document.getElementById("privada").addEventListener("change", async (e) => {
+
+  const privada = e.target.value;
+  const selectLote = document.getElementById("lote");
+
+  selectLote.innerHTML = `<option value="">Introduce el número de lote</option>`;
+
+  if(!privada) return;
+
+  const { data, error } = await supabaseClient
+    .from("lotes")
+    .select("id, casa")
+    .eq("privada", privada);
+
+  if(error){
+    console.log(error);
+    return;
+  }
+
+  data.forEach(l => {
+    const option = document.createElement("option");
+    option.value = JSON.stringify({
+      id: l.id,
+      privada: privada,
+      casa: l.casa
+    });
+    option.text = `Lote ${l.casa}`;
+    selectLote.appendChild(option);
+  });
+
+});
+
+// 🔹 REGISTRAR OBRA
 async function registrar(){
 
   const loteData = document.getElementById("lote").value;
@@ -167,7 +218,8 @@ async function registrar(){
   msg.innerText = `Registro exitoso de la obra de la privada ${lote.privada} lote ${lote.casa}. Es necesario informar al comité de diseño para su aprobación para poder dar de alta a los trabajadores. Gracias.`;
   msg.classList.add("ok");
 
-  document.getElementById("lote").value = "";
+  document.getElementById("privada").value = "";
+  document.getElementById("lote").innerHTML = `<option value="">Introduce el número de lote</option>`;
   document.getElementById("dro").value = "";
   document.getElementById("fecha_inicio").value = "";
   document.getElementById("fecha_fin").value = "";
