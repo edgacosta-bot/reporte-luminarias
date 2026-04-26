@@ -21,6 +21,13 @@ body {
 
 .container {
   padding: 20px;
+  text-align: center;
+}
+
+.logo {
+  width: 120px;
+  margin: 10px auto 20px;
+  display: block;
 }
 
 h2 {
@@ -29,6 +36,7 @@ h2 {
 
 .seccion {
   margin-top: 25px;
+  text-align: left;
 }
 
 .card {
@@ -109,6 +117,8 @@ textarea {
 
 <div class="container">
 
+<img src="/icono-512.png" class="logo">
+
 <h2>Gestión de Obras</h2>
 
 <div id="noAcceso">
@@ -180,7 +190,6 @@ async function validarAcceso(){
   const { data: userData } = await supabaseClient.auth.getUser();
   const user = userData?.user;
 
-  // ADMIN (solo visualiza)
   const { data: residente } = await supabaseClient
     .from("residentes")
     .select("tipo")
@@ -188,12 +197,11 @@ async function validarAcceso(){
     .maybeSingle();
 
   if (residente && ["admin","administracion"].includes((residente.tipo || "").toLowerCase())) {
-    esResponsable = false; // 🔥 CLAVE: admin NO aprueba
+    esResponsable = false;
     usuarioNombre = "Administración";
     return true;
   }
 
-  // COMITÉ
   const { data } = await supabaseClient
     .from("comite_diseno")
     .select("*")
@@ -214,7 +222,7 @@ async function validarAcceso(){
 
 function formatearFecha(fecha){
   if(!fecha) return "";
-  return fecha.split("T")[0]; // 🔥 solo YYYY-MM-DD
+  return fecha.split("T")[0];
 }
 
 async function cargarObras(){
@@ -249,14 +257,14 @@ function pintar(id, lista, permitirAccion){
       extra = `
         <br><b>Motivo:</b> ${o.motivo_rechazo || "N/A"}
         <br><b>Fecha:</b> ${formatearFecha(o.fecha_autorizacion)}
-        <br><b>Responsable:</b> ${o.responsable_autorizacion || ""}
+        <br><b>Dictaminó:</b> ${o.responsable_autorizacion || ""}
       `;
     }
 
     if (o.estatus === "aprobada") {
       extra = `
         <br><b>Fecha aprobación:</b> ${formatearFecha(o.fecha_autorizacion)}
-        <br><b>Responsable:</b> ${o.responsable_autorizacion || ""}
+        <br><b>Responsable aprobación:</b> ${o.responsable_autorizacion || ""}
       `;
     }
 
