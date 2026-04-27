@@ -43,38 +43,53 @@ body {
 
 <script>
 
-// 🔐 Protección de acceso
+// 🔐 Protección
 window.addEventListener("load", () => {
   protegerPagina(["administracion", "mesa_directiva"]);
 });
 
-// 🚀 Cargar datos reales
+// 🚀 Cargar datos
 async function cargarDatos() {
 
-  const { data, error } = await supabaseClient
+  // 1️⃣ Traer reportes
+  const { data: reportes, error: err1 } = await supabaseClient
     .from("reportes_vigilantes")
-    .select(`
-      tipo,
-      fecha_reporte,
-      rol_creador,
-      vigilante:residentes(nombre, tipo)
-    `);
+    .select("vigilante_id, tipo, fecha_reporte, rol_creador");
 
-  if (error) {
-    console.error("ERROR:", error);
+  if (err1) {
+    console.error("ERROR REPORTES:", err1);
     return;
   }
 
-  // 🔎 Filtrar solo vigilantes
-  const datos = data.filter(d => d.vigilante?.tipo === "vigilante");
+  // 2️⃣ Traer vigilantes
+  const { data: residentes, error: err2 } = await supabaseClient
+    .from("residentes")
+    .select("id, nombre, tipo");
 
-  console.log("DATOS FILTRADOS:", datos);
+  if (err2) {
+    console.error("ERROR RESIDENTES:", err2);
+    return;
+  }
+
+  // 3️⃣ Crear mapa de vigilantes
+  const mapaVigilantes = {};
+
+  residentes.forEach(r => {
+    if (r.tipo === "vigilante") {
+      mapaVigilantes[r.id] = r.nombre;
+    }
+  });
+
+  // 4️⃣ Filtrar solo reportes de vigilantes válidos
+  const datos = reportes.filter(r => mapaVigilantes[r.vigilante_id]);
+
+  console.log("DATOS LIMPIOS:", datos);
 
   // 📊 1. Reportes por vigilante
   const porVigilante = {};
 
   datos.forEach(d => {
-    const nombre = d.vigilante.nombre;
+    const nombre = mapaVigilantes[d.vigilante_id];
     porVigilante[nombre] = (porVigilante[nombre] || 0) + 1;
   });
 
