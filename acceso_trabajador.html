@@ -227,9 +227,9 @@ btnRegistrar.onclick = async () => {
   console.log("DEBUG vigilante.id:", vigilante?.id);
 
   const { error } = await supabaseClient.rpc("entrada_trabajador", {
-    trabajador: trabajador.trabajador_id,
-    vigilante: vigilante.id
-  });
+  trabajador: trabajador.trabajador_id,
+  vigilante: vigilante.id
+});
 
   if (error){
     console.error("ERROR ENTRADA:", error);
