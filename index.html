@@ -179,14 +179,9 @@ body {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+<script src="auth.js"></script>
+  
 <script>
-const { createClient } = supabase;
-
-const supabaseClient = createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
 
 async function iniciarSistema() {
 
@@ -210,9 +205,9 @@ if (!residente) {
   return;
 }
 
-let rol = residente.tipo;
-if (rol === "residente") rol = "colono";
-if (rol === "administracion") rol = "admin";
+const rol = residente.tipo?.trim().toLowerCase();
+
+document.getElementById("rolTexto").innerText = rol.replaceAll("_", " ").toUpperCase()
 
 aplicarUI(rol);
 
@@ -224,11 +219,27 @@ if (residente.privada && residente.casa) {
 
 function aplicarUI(rol) {
 
+const secciones = [
+  "colono-section",
+  "hogar-section",
+  "reportes-section",
+  "servicios-section",
+  "infraestructura-section",
+  "vigilante-section",
+  "admin-section"
+];
+
+// ocultar todo primero
+secciones.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.style.display = "none";
+});
+  
 const reportesContainer = document.getElementById("reportesContainer");
 reportesContainer.innerHTML = "";
 
 // 🔥 CORRECCIÓN DE RUTAS
-if (rol === "colono") {
+if (rol === "residente") {
   reportesContainer.innerHTML = `
     <a href="incidencia_vecinal.html" class="button btn-reportes">🚨 Incidencia vecinal</a>
     <a href="formulario_luminarias.html" class="button btn-reportes">💡 Luminarias</a>
@@ -243,27 +254,46 @@ if (rol === "vigilante") {
   `;
 }
 
-if (rol === "admin") {
+if (rol === "administracion" || rol === "mesa_directiva" || rol === "soporte") {
   reportesContainer.innerHTML = `
     <a href="admin_reporte_general.html" class="button btn-reportes">📊 Reporte general</a>
   `;
 }
 
-const adminSection = document.getElementById("admin-section");
-const vigilanteSection = document.getElementById("vigilante-section");
 
-if (rol === "colono") {
-  adminSection.style.display = "none";
-  vigilanteSection.style.display = "none";
+if (rol === "residente") {
+  mostrar([
+    "colono-section",
+    "hogar-section",
+    "reportes-section",
+    "servicios-section",
+    "infraestructura-section"
+  ]);
 }
 
 if (rol === "vigilante") {
-  adminSection.style.display = "none";
+  mostrar([
+    "vigilante-section",
+    "reportes-section"
+  ]);
 }
 
-if (rol === "admin") {
-  vigilanteSection.style.display = "none";
+if (rol === "administracion" || rol === "mesa_directiva" || rol === "soporte") {
+  mostrar([
+    "admin-section",
+    "reportes-section",
+    "servicios-section",
+    "infraestructura-section"
+  ]);
 }
+
+function mostrar(ids) {
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "block";
+  });
+}
+  
 }
 
 async function logout() {
