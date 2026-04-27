@@ -2,12 +2,12 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Vigilantes</title>
+<title>Desempeño Vigilantes</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
-<script src="utils/residente.js"></script>  
 
 <style>
 body {
@@ -17,8 +17,8 @@ body {
   padding: 20px;
 }
 
-/* 🔥 KPIs */
-.kpis {
+/* KPI */
+.kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 15px;
@@ -26,50 +26,23 @@ body {
 }
 
 .kpi {
-  background: #111827;
+  background: #1f2937;
   padding: 15px;
   border-radius: 12px;
+  text-align: center;
 }
 
 .kpi h3 {
   margin: 0;
-  font-size: 14px;
-  color: #9ca3af;
-}
-
-.kpi p {
-  margin: 5px 0 0;
   font-size: 22px;
-  font-weight: bold;
 }
 
-/* 🎛 filtros */
-.filtros {
-  background: #111827;
-  padding: 15px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+.kpi span {
+  color: #9ca3af;
+  font-size: 12px;
 }
 
-.filtros input, .filtros select {
-  padding: 8px;
-  border-radius: 8px;
-  border: none;
-}
-
-.filtros button {
-  background: #22c55e;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-/* 📊 grid */
+/* GRID */
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -77,65 +50,91 @@ body {
 }
 
 .card {
-  background: #111827;
+  background: #1f2937;
   padding: 15px;
   border-radius: 12px;
 }
+
+/* TABLA */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+td {
+  padding: 8px;
+}
+
+/* SEMÁFORO */
+.bad { color: #9F2241; font-weight: bold; }
+.warn { color: #BC955C; font-weight: bold; }
+.good { color: #235B4E; font-weight: bold; }
+
 </style>
 </head>
 
 <body>
 
-<h2>📊 Dashboard Vigilantes</h2>
+<h2>📊 Desempeño de Vigilantes</h2>
 
-<!-- 🔥 KPIs -->
-<div class="kpis">
-  <div class="kpi"><h3>Total reportes</h3><p id="kpiTotal">0</p></div>
-  <div class="kpi"><h3>Más reportado</h3><p id="kpiVigilante">-</p></div>
-  <div class="kpi"><h3>Tipo más frecuente</h3><p id="kpiTipo">-</p></div>
-  <div class="kpi"><h3>Día más activo</h3><p id="kpiDia">-</p></div>
+<!-- KPIs -->
+<div class="kpi-grid">
+  <div class="kpi"><h3 id="kpiTotal">0</h3><span>Total reportes</span></div>
+  <div class="kpi"><h3 id="kpiPromedio">0</h3><span>Promedio por vigilante</span></div>
+  <div class="kpi"><h3 id="kpiTop">-</h3><span>Más reportado</span></div>
+  <div class="kpi"><h3 id="kpiAlertas">0</h3><span>Alertas</span></div>
 </div>
 
-<!-- 🔥 filtros -->
-<div class="filtros">
-  <input type="date" id="fechaInicio">
-  <input type="date" id="fechaFin">
-  <select id="filtroVigilante">
-    <option value="">Todos los vigilantes</option>
-  </select>
-  <button onclick="cargarDatos()">Aplicar</button>
-</div>
-
-<!-- 📊 gráficas -->
 <div class="grid">
   <div class="card"><canvas id="chartVigilantes"></canvas></div>
   <div class="card"><canvas id="chartTipos"></canvas></div>
   <div class="card"><canvas id="chartTiempo"></canvas></div>
   <div class="card"><canvas id="chartRol"></canvas></div>
+
+  <div class="card">
+    <h3>🏆 Ranking</h3>
+    <table id="ranking"></table>
+  </div>
+
+  <div class="card">
+    <h3>🚨 Alertas</h3>
+    <ul id="alertas"></ul>
+  </div>
 </div>
 
 <script>
 
-// 🔐 INIT
+// 🎨 Paleta institucional
+const colores = [
+  "#9F2241","#235B4E","#DDC9A3","#98989A",
+  "#691C32","#10312B","#BC955C","#6F7271"
+];
+
+// 🎯 Estilo global
+Chart.defaults.color = "#FFFFFF";
+Chart.defaults.borderColor = "#374151";
+
+// 🔐 Protección + carga
 window.addEventListener("load", async () => {
-  await protegerPagina(["administracion", "mesa_directiva", "soporte"]);
-  await cargarDatos(true);
+
+  let intentos = 0;
+  while (!window.supabase && intentos < 10) {
+    await new Promise(r => setTimeout(r, 100));
+    intentos++;
+  }
+
+  if (!window.supabase) return;
+
+  await protegerPagina(["administracion","mesa_directiva","soporte"]);
+  await cargarDatos();
 });
 
-async function cargarDatos(init=false){
+// 🚀 DATA
+async function cargarDatos(){
 
-  const fechaInicio = document.getElementById("fechaInicio").value;
-  const fechaFin = document.getElementById("fechaFin").value;
-  const vigilanteFiltro = document.getElementById("filtroVigilante").value;
-
-  let query = supabaseClient
+  const { data: reportes } = await supabaseClient
     .from("reportes_vigilantes")
     .select("vigilante_id, tipo, fecha_reporte, rol_creador");
-
-  if (fechaInicio) query = query.gte("fecha_reporte", fechaInicio);
-  if (fechaFin) query = query.lte("fecha_reporte", fechaFin);
-
-  const { data: reportes } = await query;
 
   const { data: residentes } = await supabaseClient
     .from("residentes")
@@ -143,100 +142,107 @@ async function cargarDatos(init=false){
 
   const mapa = {};
   residentes.forEach(r=>{
-    if(r.tipo==="vigilante"){
-      mapa[r.id]=r.nombre;
+    if(r.tipo==="vigilante") mapa[r.id]=r.nombre;
+  });
 
-      if(init){
-        const opt=document.createElement("option");
-        opt.value=r.id;
-        opt.textContent=r.nombre;
-        document.getElementById("filtroVigilante").appendChild(opt);
-      }
+  const datos = reportes.filter(r=>mapa[r.vigilante_id]);
+
+  // 📊 AGRUPACIONES
+  const porVigilante={}, porTipo={}, porMes={}, porRol={};
+
+  datos.forEach(d=>{
+    const nombre = mapa[d.vigilante_id];
+
+    porVigilante[nombre]=(porVigilante[nombre]||0)+1;
+    porTipo[d.tipo]=(porTipo[d.tipo]||0)+1;
+    porRol[d.rol_creador]=(porRol[d.rol_creador]||0)+1;
+
+    const mes = new Date(d.fecha_reporte).toLocaleDateString("es-MX",{month:"short"});
+    porMes[mes]=(porMes[mes]||0)+1;
+  });
+
+  // 📊 RENDER
+  render("chartVigilantes","bar",porVigilante);
+  render("chartTipos","pie",porTipo);
+  render("chartTiempo","line",porMes);
+  render("chartRol","doughnut",porRol);
+
+  // 🔢 KPIs
+  const total = datos.length;
+  const vigilantes = Object.keys(porVigilante).length;
+
+  document.getElementById("kpiTotal").innerText = total;
+  document.getElementById("kpiPromedio").innerText = (total/vigilantes).toFixed(1);
+
+  const top = Object.entries(porVigilante).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById("kpiTop").innerText = top ? top[0] : "-";
+
+  // 🏆 RANKING + SEMÁFORO
+  const ranking = Object.entries(porVigilante)
+    .sort((a,b)=>b[1]-a[1]);
+
+  const tabla = document.getElementById("ranking");
+  tabla.innerHTML = "";
+
+  ranking.forEach(([nombre,total])=>{
+    let clase = "good";
+    if(total>=4) clase="bad";
+    else if(total>=2) clase="warn";
+
+    tabla.innerHTML += `
+      <tr>
+        <td>${nombre}</td>
+        <td>${total}</td>
+        <td class="${clase}">${clase==="bad"?"🔴":"🟡"}</td>
+      </tr>
+    `;
+  });
+
+  // 🚨 ALERTAS
+  const alertas = document.getElementById("alertas");
+  alertas.innerHTML = "";
+
+  let totalAlertas = 0;
+
+  ranking.forEach(([nombre,total])=>{
+    if(total>=3){
+      alertas.innerHTML += `<li>⚠️ ${nombre} tiene ${total} reportes</li>`;
+      totalAlertas++;
     }
   });
 
-  let datos=(reportes||[]).filter(r=>mapa[r.vigilante_id]);
-
-  if(vigilanteFiltro){
-    datos=datos.filter(d=>d.vigilante_id===vigilanteFiltro);
-  }
-
-  //////////////////////////////////////////////////
-  // 🎯 KPI
-  //////////////////////////////////////////////////
-  document.getElementById("kpiTotal").innerText = datos.length;
-
-  const conteoVig={}, conteoTipo={}, conteoDia={};
-
-  datos.forEach(d=>{
-    const v=mapa[d.vigilante_id];
-    conteoVig[v]=(conteoVig[v]||0)+1;
-
-    conteoTipo[d.tipo]=(conteoTipo[d.tipo]||0)+1;
-
-    const f=new Date(d.fecha_reporte).toLocaleDateString();
-    conteoDia[f]=(conteoDia[f]||0)+1;
-  });
-
-  document.getElementById("kpiVigilante").innerText =
-    getMax(conteoVig);
-
-  document.getElementById("kpiTipo").innerText =
-    getMax(conteoTipo);
-
-  document.getElementById("kpiDia").innerText =
-    getMax(conteoDia);
-
-  //////////////////////////////////////////////////
-  // 🎨 PALETA PRO
-  //////////////////////////////////////////////////
-  const colores=["#22c55e","#7c3aed","#4ade80","#a78bfa","#166534","#5b21b6"];
-
-  //////////////////////////////////////////////////
-  // 📊 GRAFICAS
-  //////////////////////////////////////////////////
-  render("chartVigilantes","bar",conteoVig,colores);
-  render("chartTipos","pie",conteoTipo,colores);
-  render("chartTiempo","line",conteoDia,colores);
-  render("chartRol","doughnut",
-    countBy(datos,"rol_creador"),
-    colores
-  );
+  document.getElementById("kpiAlertas").innerText = totalAlertas;
 }
 
-////////////////////////////////////////////////
-// helpers
-////////////////////////////////////////////////
-function getMax(obj){
-  return Object.keys(obj).reduce((a,b)=>obj[a]>obj[b]?a:b,"-");
-}
+// 📊 FUNC RENDER
+function render(id,tipo,obj){
 
-function countBy(arr,key){
-  const r={};
-  arr.forEach(i=>{
-    const k=i[key]||"desconocido";
-    r[k]=(r[k]||0)+1;
-  });
-  return r;
-}
+  const canvas = document.getElementById(id);
 
-function render(id,tipo,obj,colores){
+  if(canvas.chart) canvas.chart.destroy();
 
-  const canvas=document.getElementById(id);
-
-  if(canvas.chart){
-    canvas.chart.destroy();
-  }
-
-  canvas.chart=new Chart(canvas,{
-    type:tipo,
+  canvas.chart = new Chart(canvas,{
+    type: tipo,
     data:{
       labels:Object.keys(obj),
       datasets:[{
         data:Object.values(obj),
         backgroundColor:colores
       }]
-    }
+    },
+    options:{
+      plugins:{
+        legend:{ labels:{color:"#fff"} },
+        datalabels:{
+          color:"#fff",
+          anchor:"end",
+          align:"top",
+          font:{weight:"bold"},
+          formatter:v=>v
+        }
+      }
+    },
+    plugins:[ChartDataLabels]
   });
 }
 
