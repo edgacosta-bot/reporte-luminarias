@@ -313,7 +313,7 @@ if (error) {
 
 // 🔴 VALIDACIÓN REAL
 if (!data || !data[0]?.actualizado) {
-  ui.error("❌ No se actualizó la salida");
+  ui.warn("⚠️ Este trabajador ya tenía salida registrada");
   btnRegistrar.disabled = false;
   btnRegistrar.innerText = "Registrar";
   return;
@@ -348,6 +348,7 @@ if (error) {
 
     document.body.className = "ok";
     estado.innerText = "Salida registrada correctamente";
+    btnRegistrar.classList.add("hidden");
 
     const mensaje = `Estimado Residente, en este momento su empleado doméstico ${trabajador.nombre}, salió del fraccionamiento. Gracias.`;
 
