@@ -103,7 +103,7 @@ async function init(){
   }
 
   const { data, error } = await supabaseClient
-    .rpc("validar_acceso_trabajador_obra", { qr });
+    .rpc("validar_acceso_trabajador_obra", { p_qr: qr })
 
   if (error){
   console.error(error);
