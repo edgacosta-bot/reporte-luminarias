@@ -274,15 +274,21 @@ const { data: agua } = await queryAgua;
   id_real: r.id,
   tipo:"obra",
   descripcion:r.descripcion,
-  fecha:r.fecha_reporte
-}));
+  fecha:r.fecha_reporte,
 
+  // 🔥 NUEVO
+  ubicacion: `Privada ${r.privada || ""} - Lote ${r.casa || ""}`
+}));
+  
 vecinales?.forEach(r=> todos.push({
   id:"vec-"+r.id,
   id_real: r.id,
   tipo:"vecinal",
   descripcion:r.descripcion,
-  fecha:r.fecha_reporte
+  fecha:r.fecha_reporte,
+
+  // 🔥 NUEVO
+  ubicacion: `Privada ${r.privada || ""} - Lote ${r.casa || ""}`
 }));
 
 vigilantes?.forEach(r=> todos.push({
@@ -332,6 +338,18 @@ vigilantes?.forEach(r=> todos.push({
       bloque += `
   <div class="item ${clase}">
     <b>${titulo}</b>
+
+    ${r.tipo === "obra" ? `
+  <div style="margin-top:6px; font-size:14px; color:#DDC9A3;">
+    <strong>Obra reportada:</strong> ${r.ubicacion}
+  </div>
+` : ""}
+
+${r.tipo === "vecinal" ? `
+  <div style="margin-top:6px; font-size:14px; color:#DDC9A3;">
+    <strong>Lote reportado:</strong> ${r.ubicacion}
+  </div>
+` : ""}
 
     ${r.vigilante_nombre ? `
       <div style="
