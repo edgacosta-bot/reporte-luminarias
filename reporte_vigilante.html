@@ -132,12 +132,13 @@ async function cargarCatalogo(){
   });
 }
 
-/* 👮 LISTA DE VIGILANTES */
+/* 👮 LISTA DE VIGILANTES (CORREGIDO) */
 async function cargarVigilantes(){
 
   const { data, error } = await supabaseClient
-    .from("vigilantes")
+    .from("residentes")
     .select("id,nombre")
+    .eq("tipo","vigilante")
     .eq("activo", true)
     .order("nombre");
 
@@ -184,22 +185,21 @@ async function enviar(){
   const { error } = await supabaseClient
     .from("reportes_vigilantes")
     .insert([{
-  vigilante_id,
-  tipo,
-  descripcion,
+      vigilante_id,
+      tipo,
+      descripcion,
 
-  privada: residente.privada,
-  casa: residente.casa,
+      privada: residente.privada,
+      casa: residente.casa,
 
-  residente_id: residente.id,
+      residente_id: residente.id,
 
-  // 🔥 TRAZABILIDAD (IGUAL QUE LOS OTROS)
-  creado_por: residente.id,
-  rol_creador: "residente",
+      creado_por: residente.id,
+      rol_creador: "residente",
 
-  fecha_reporte: new Date().toISOString(),
-  estatus: "nuevo"
-}]);
+      fecha_reporte: new Date().toISOString(),
+      estatus: "nuevo"
+    }]);
   
   if(error){
     console.error(error);
