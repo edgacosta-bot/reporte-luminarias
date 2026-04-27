@@ -17,6 +17,37 @@ body {
   padding: 20px;
 }
 
+h2 {
+  margin-bottom: 10px;
+}
+
+/* 🔥 FILTROS */
+.filtros {
+  background: #111827;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filtros input, .filtros select {
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+}
+
+.filtros button {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* 🔥 GRID */
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -35,6 +66,16 @@ body {
 
 <h2>📊 Desempeño de Vigilantes</h2>
 
+<!-- 🔥 FILTROS -->
+<div class="filtros">
+  <input type="date" id="fechaInicio">
+  <input type="date" id="fechaFin">
+  <select id="filtroVigilante">
+    <option value="">Todos los vigilantes</option>
+  </select>
+  <button onclick="cargarDatos()">Aplicar</button>
+</div>
+
 <div class="grid">
   <div class="card"><canvas id="chartVigilantes"></canvas></div>
   <div class="card"><canvas id="chartTipos"></canvas></div>
@@ -44,53 +85,82 @@ body {
 
 <script>
 
-// 🔐 Protección + carga
+// 🔐 INIT
 window.addEventListener("load", async () => {
   await protegerPagina(["administracion", "mesa_directiva", "soporte"]);
-  await cargarDatos();
+  await cargarDatos(true);
 });
 
-async function cargarDatos() {
+/////////////////////////////////////////////////////////
+// 🚀 CARGA
+/////////////////////////////////////////////////////////
+async function cargarDatos(init = false) {
 
   if (typeof supabaseClient === "undefined") {
     console.error("❌ SupabaseClient no disponible");
     return;
   }
 
-  // 🔹 1. Reportes
-  const { data: reportes, error: err1 } = await supabaseClient
+  const fechaInicio = document.getElementById("fechaInicio").value;
+  const fechaFin = document.getElementById("fechaFin").value;
+  const vigilanteFiltro = document.getElementById("filtroVigilante").value;
+
+  // 🔹 REPORTES
+  let query = supabaseClient
     .from("reportes_vigilantes")
     .select("vigilante_id, tipo, fecha_reporte, rol_creador");
 
+  if (fechaInicio) query = query.gte("fecha_reporte", fechaInicio);
+  if (fechaFin) query = query.lte("fecha_reporte", fechaFin);
+
+  const { data: reportes, error: err1 } = await query;
+
   if (err1) {
-    console.error("ERROR REPORTES:", err1);
+    console.error(err1);
     return;
   }
 
-  // 🔹 2. Vigilantes
-  const { data: residentes, error: err2 } = await supabaseClient
+  // 🔹 RESIDENTES (vigilantes)
+  const { data: residentes } = await supabaseClient
     .from("residentes")
     .select("id, nombre, tipo");
 
-  if (err2) {
-    console.error("ERROR RESIDENTES:", err2);
-    return;
-  }
-
-  // 🔹 mapa vigilantes
   const mapaVigilantes = {};
   residentes.forEach(r => {
     if (r.tipo === "vigilante") {
       mapaVigilantes[r.id] = r.nombre;
+
+      // 🔥 llenar filtro solo una vez
+      if (init) {
+        const opt = document.createElement("option");
+        opt.value = r.id;
+        opt.textContent = r.nombre;
+        document.getElementById("filtroVigilante").appendChild(opt);
+      }
     }
   });
 
-  const datos = (reportes || []).filter(r => mapaVigilantes[r.vigilante_id]);
+  // 🔥 FILTRAR
+  let datos = (reportes || []).filter(r => mapaVigilantes[r.vigilante_id]);
 
-  console.log("DATOS LIMPIOS:", datos);
+  if (vigilanteFiltro) {
+    datos = datos.filter(d => d.vigilante_id === vigilanteFiltro);
+  }
 
   /////////////////////////////////////////////////////////
-  // 📊 1. POR VIGILANTE
+  // 🎨 PALETA (VERDE + MORADO)
+  /////////////////////////////////////////////////////////
+  const colores = [
+    "#22c55e", // verde
+    "#7c3aed", // morado
+    "#4ade80",
+    "#a78bfa",
+    "#16a34a",
+    "#6d28d9"
+  ];
+
+  /////////////////////////////////////////////////////////
+  // 📊 POR VIGILANTE
   /////////////////////////////////////////////////////////
   const porVigilante = {};
   datos.forEach(d => {
@@ -101,11 +171,11 @@ async function cargarDatos() {
   renderChart("chartVigilantes", "bar",
     Object.keys(porVigilante),
     Object.values(porVigilante),
-    "Reportes por vigilante"
+    colores
   );
 
   /////////////////////////////////////////////////////////
-  // 🧾 2. POR TIPO
+  // 🧾 POR TIPO
   /////////////////////////////////////////////////////////
   const porTipo = {};
   datos.forEach(d => {
@@ -115,11 +185,11 @@ async function cargarDatos() {
   renderChart("chartTipos", "pie",
     Object.keys(porTipo),
     Object.values(porTipo),
-    "Tipos de reporte"
+    colores
   );
 
   /////////////////////////////////////////////////////////
-  // 📈 3. POR FECHA
+  // 📈 POR FECHA
   /////////////////////////////////////////////////////////
   const porFecha = {};
   datos.forEach(d => {
@@ -130,11 +200,11 @@ async function cargarDatos() {
   renderChart("chartTiempo", "line",
     Object.keys(porFecha),
     Object.values(porFecha),
-    "Reportes por día"
+    colores
   );
 
   /////////////////////////////////////////////////////////
-  // 👥 4. POR ROL
+  // 👥 POR ROL
   /////////////////////////////////////////////////////////
   const porRol = {};
   datos.forEach(d => {
@@ -145,14 +215,14 @@ async function cargarDatos() {
   renderChart("chartRol", "doughnut",
     Object.keys(porRol),
     Object.values(porRol),
-    "Quién reporta"
+    colores
   );
 }
 
 /////////////////////////////////////////////////////////
-// 🔥 FUNCIÓN ÚNICA DE GRÁFICAS (LIMPIA)
+// 🔥 RENDER
 /////////////////////////////////////////////////////////
-function renderChart(id, tipo, labels, data, label) {
+function renderChart(id, tipo, labels, data, colores) {
 
   const canvas = document.getElementById(id);
 
@@ -165,8 +235,8 @@ function renderChart(id, tipo, labels, data, label) {
     data: {
       labels,
       datasets: [{
-        label,
-        data
+        data,
+        backgroundColor: colores
       }]
     }
   });
