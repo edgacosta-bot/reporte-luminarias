@@ -222,7 +222,7 @@ btnRegistrar.onclick = async () => {
     return;
   }
 
-  const { error } = await supabaseClient.rpc("registrar_entrada_trabajador", {
+  const { error } = await supabaseClient.rpc("registrar_entrada_trabajador_v2", {
     p_trabajador_id: trabajador.id,
     p_vigilante_id: vigilante.id
   });
