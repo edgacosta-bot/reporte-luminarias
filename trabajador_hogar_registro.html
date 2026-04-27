@@ -196,8 +196,12 @@ if (inicio && fin && fin < inicio) {
     return;
   }
 
-  window.location.href =
-    `credencial_trabajador_hogar.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${residenteGlobal.privada}&casa=${residenteGlobal.casa}&origen=residente`;
+mensaje.innerText = "✅ Acceso generado correctamente";
+mensaje.className = "mensaje";
+mensaje.style.display = "block";
+
+btn.disabled = false;
+btn.innerText = "Generar QR";
 
 }
 
