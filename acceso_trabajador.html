@@ -118,7 +118,6 @@ async function init(){
 
   trabajador = data[0];
 
-  // 🔥 YA VALIDADO EN BACKEND → no duplicar lógica incorrecta
   if (!trabajador.obra_aprobada){
     pintar("Obra no aprobada","error");
     return;
@@ -224,21 +223,21 @@ btnRegistrar.onclick = async () => {
 
   console.log("DEBUG trabajador:", trabajador);
   console.log("DEBUG vigilante:", vigilante);
-  console.log("DEBUG trabajador.id:", trabajador?.id);
+  console.log("DEBUG trabajador.trabajador_id:", trabajador?.trabajador_id);
   console.log("DEBUG vigilante.id:", vigilante?.id);
-  
+
   const { error } = await supabaseClient.rpc("entrada_trabajador", {
-  trabajador: trabajador.trabajador_id,
-  vigilante: vigilante.id
-});
+    trabajador: trabajador.trabajador_id,
+    vigilante: vigilante.id
+  });
 
   if (error){
-  console.error("ERROR ENTRADA:", error);
-  ui.error(error.message || "Error al registrar entrada");
-  btnRegistrar.disabled = false;
-  btnRegistrar.innerText = "Registrar";
-  return;
-}
+    console.error("ERROR ENTRADA:", error);
+    ui.error(error.message || "Error al registrar entrada");
+    btnRegistrar.disabled = false;
+    btnRegistrar.innerText = "Registrar";
+    return;
+  }
 
   estado.innerText = "Acceso registrado";
   btnRegistrar.classList.add("hidden");
