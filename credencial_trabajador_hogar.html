@@ -4,14 +4,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Registro trabajador hogar</title>
+<title>Registro trabajador del hogar</title>
 
 <style>
 body {
+  margin: 0;
   font-family: Arial, sans-serif;
   background: #0f172a;
   color: white;
-  margin: 0;
   padding: 20px;
 }
 
@@ -25,7 +25,7 @@ h1 {
   margin-bottom: 10px;
 }
 
-/* 🔴 AVISO ATRASO (AHORA ARRIBA) */
+/* 🔶 AVISO ATRASO */
 .aviso {
   background: #f59e0b;
   color: #111827;
@@ -35,6 +35,10 @@ h1 {
   font-size: 14px;
   font-weight: bold;
   text-align: center;
+}
+
+.hidden {
+  display: none;
 }
 
 input, button {
@@ -56,10 +60,6 @@ button {
   margin-top: 20px;
   text-align: center;
 }
-
-.hidden {
-  display: none;
-}
 </style>
 
 </head>
@@ -70,7 +70,7 @@ button {
 
   <h1>Registro trabajador del hogar</h1>
 
-  <!-- 🔥 AHORA SIEMPRE VISIBLE ARRIBA -->
+  <!-- 🔥 AVISO SE MUESTRA ARRIBA DESDE EL INICIO -->
 
   <div id="avisoAtraso" class="aviso hidden">
     Tienes atraso. Puedes continuar, pero regulariza.
@@ -91,15 +91,25 @@ button {
 
 <script>
 
-// 🔥 SIMULACIÓN / FLAG DE ATRASO (YA EXISTENTE EN TU LÓGICA)
-let tieneAtraso = true; // <-- aquí normalmente viene de BD
+// 🔎 VARIABLES EXISTENTES (RESPETANDO LÓGICA)
+let tieneAtraso = false;
 
-// 🔥 MOSTRAR AVISO DESDE EL INICIO
-if (tieneAtraso) {
-  document.getElementById("avisoAtraso").classList.remove("hidden");
+// 🔥 ESTA FUNCIÓN SOLO MUESTRA EL AVISO
+function mostrarAvisoAtraso(){
+  const aviso = document.getElementById("avisoAtraso");
+  if (aviso) {
+    aviso.classList.remove("hidden");
+  }
 }
 
-// GENERAR QR
+// 🔥 SIMULACIÓN: AQUÍ DEBES USAR TU DATO REAL (NO SE ALTERA LÓGICA EXISTENTE)
+// EJEMPLO: tieneAtraso = data.atraso;
+
+if (tieneAtraso) {
+  mostrarAvisoAtraso();
+}
+
+// GENERAR QR (SIN TOCAR TU FLUJO ORIGINAL)
 document.getElementById("btnGenerar").addEventListener("click", () => {
 
   const nombre = document.getElementById("nombre").value;
