@@ -98,7 +98,7 @@ init();
 async function init(){
 
   if (!qr){
-    pintar("QR inválido","error");
+    pintar("Escanee un QR para continuar","error");
     return;
   }
 
@@ -222,7 +222,7 @@ btnRegistrar.onclick = async () => {
     btnRegistrar.classList.add("hidden");
 
     setTimeout(() => {
-      window.location.href = window.location.pathname;
+      resetPantalla();
     }, 2000);
 
     return;
@@ -242,16 +242,23 @@ btnRegistrar.onclick = async () => {
     return;
   }
 
-  // ✅ CONFIRMACIÓN LIMPIA (SIN SALTO A SALIDA)
   document.body.className = "ok";
   estado.innerText = "Acceso registrado correctamente";
   detalle.innerHTML = `<p><b>${trabajador.nombre}</b></p><p>Entrada registrada</p>`;
   btnRegistrar.classList.add("hidden");
 
   setTimeout(() => {
-    window.location.href = window.location.pathname;
+    resetPantalla();
   }, 2000);
 };
+
+// 🔥 LIMPIAR PANTALLA SIN ERROR
+function resetPantalla(){
+  document.body.className = "";
+  estado.innerText = "Escanee siguiente QR";
+  detalle.innerHTML = "";
+  location.search = "";
+}
 
 // UI
 function renderDetalle(){
