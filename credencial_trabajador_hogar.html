@@ -4,56 +4,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Registro trabajador del hogar</title>
+<title>Credencial Trabajador Hogar</title>
 
 <style>
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #0f172a;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
   color: white;
-  padding: 20px;
+  text-align: center;
 }
 
 .container {
-  max-width: 420px;
-  margin: auto;
+  padding: 20px;
+  max-width: 320px;
+  width: 100%;
+}
+
+.logo {
+  margin-bottom: 15px;
+}
+
+.logo img {
+  width: 90px;
+  height: auto;
+  border-radius: 20px;
 }
 
 h1 {
-  text-align: center;
-  margin-bottom: 10px;
+  font-size: 18px;
+  margin-bottom: 5px;
+  color: #94a3b8;
 }
 
-/* 🔶 AVISO ATRASO */
-.aviso {
-  background: #f59e0b;
-  color: #111827;
-  padding: 12px;
-  border-radius: 10px;
-  margin-bottom: 15px;
-  font-size: 14px;
+h2 {
+  font-size: 22px;
+  margin: 0;
+}
+
+.nombre {
+  font-size: 24px;
   font-weight: bold;
-  text-align: center;
-}
-
-.hidden {
-  display: none;
-}
-
-input, button {
-  width: 100%;
-  padding: 12px;
   margin-top: 10px;
-  border-radius: 10px;
-  border: none;
-  font-size: 14px;
 }
 
-button {
-  background: #2563eb;
+.detalle {
+  color: #9ca3af;
+  margin-bottom: 15px;
+}
+
+#qr {
+  margin-top: 15px;
+}
+
+.btn-wa {
+  margin-top: 20px;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #25D366;
   color: white;
+  font-size: 16px;
   font-weight: bold;
+  width: 100%;
+  cursor: pointer;
 }
 </style>
 
@@ -63,45 +81,94 @@ button {
 
 <div class="container">
 
-  <h1>Registro trabajador del hogar</h1>
-
-  <!-- 🔥 AHORA ARRIBA -->
-
-  <div id="avisoAtraso" class="aviso hidden">
-    ⚠️ Tienes atraso. Puedes continuar, pero regulariza.
+  <div class="logo">
+    <img src="icono-512.png" alt="Logo">
   </div>
 
-  <!-- 🔽 TU FORMULARIO ORIGINAL (NO TOCADO) -->
+  <h1>Villas de la Concepción</h1>
+  <h2>Acceso trabajador hogar</h2>
 
-  <input type="text" id="nombre" placeholder="Nombre completo">
-  <input type="text" id="telefono" placeholder="Teléfono">
+  <div class="nombre" id="nombre"></div>
+  <div class="detalle" id="detalle"></div>
 
-<button id="btnGenerar">Generar QR</button>
+  <div id="qr"></div>
+
+  <button id="btnWA" class="btn-wa">
+    📲 Enviar por WhatsApp
+  </button>
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
 <script>
 
-// 🔴 ESTA VARIABLE DEBE VENIR DE TU LÓGICA REAL (NO INVENTADA)
-let tieneAtraso = false;
+// 🔎 PARAMETROS
+const params = new URLSearchParams(window.location.search);
 
-// 🔥 SOLO MOSTRAR AVISO (NO DENTRO DEL CLICK)
-function mostrarAvisoAtraso(){
-  const aviso = document.getElementById("avisoAtraso");
-  if (aviso) {
-    aviso.classList.remove("hidden");
-  }
+const codigo = params.get("qr");
+const nombre = params.get("nombre");
+const privada = params.get("privada");
+const casa = params.get("casa");
+const origen = params.get("origen");
+
+// 🔐 VALIDACIÓN FLEXIBLE
+if (!codigo) {
+  document.body.innerHTML = "QR inválido";
+  throw new Error("QR inválido");
 }
 
-// 🔥 SE EJECUTA AL CARGAR
-window.addEventListener("DOMContentLoaded", () => {
-  if (tieneAtraso) {
-    mostrarAvisoAtraso();
+// 🔥 BASE URL
+const baseURL = window.location.origin;
+
+// 🔥 URL REAL DE ACCESO (CASSETA)
+const urlQR = `${baseURL}/acceso_trabajador_hogar.html?qr=${codigo}`;
+
+// 🎯 GENERAR QR
+QRCode.toCanvas(urlQR, {
+  width: 240,
+  margin: 2,
+  color: {
+    dark: "#000000",
+    light: "#ffffff"
+  }
+}, function (err, canvas) {
+  if (!err) {
+    document.getElementById("qr").appendChild(canvas);
   }
 });
 
-// 🔴 NO TOCAR TU LÓGICA DEL BOTÓN
-// (Aquí se queda EXACTAMENTE como ya la tienes en tu sistema)
+// 🧾 DATOS
+document.getElementById("nombre").innerText = nombre || "";
+document.getElementById("detalle").innerText =
+  `Privada ${privada || ""} • Lote ${casa || ""}`;
+
+// 🔥 CONTROL BOTÓN WA
+if (origen !== "admin" && origen !== "residente") {
+  document.getElementById("btnWA").style.display = "none";
+}
+
+// 📲 WHATSAPP
+document.getElementById("btnWA").addEventListener("click", () => {
+
+  const linkCredencial =
+    `${baseURL}/credencial_trabajador_hogar.html` +
+    `?qr=${codigo}` +
+    `&nombre=${encodeURIComponent(nombre || "")}` +
+    `&privada=${privada || ""}` +
+    `&casa=${casa || ""}` +
+    `&origen=admin`;
+
+  const mensaje =
+    `👷 Credencial de acceso\n\n` +
+    `Nombre: ${nombre || ""}\n` +
+    `Ubicación: Privada ${privada || ""} - Lote ${casa || ""}\n\n` +
+    `Presenta este código en caseta:\n${linkCredencial}`;
+
+  const wa = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+
+  window.open(wa, "_blank");
+});
 
 </script>
 
