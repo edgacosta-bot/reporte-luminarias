@@ -16,51 +16,61 @@ body {
   justify-content: center;
   height: 100vh;
   color: white;
-  text-align: center;
 }
 
-.container {
-  padding: 20px;
-  max-width: 320px;
-  width: 100%;
-}
-
-.logo {
-  margin-bottom: 15px;
-}
-
-.logo img {
-  width: 90px;
-  height: auto;
+/* 🔥 TARJETA */
+.card {
+  background: #111827;
   border-radius: 20px;
+  padding: 25px 20px;
+  width: 90%;
+  max-width: 340px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
 }
 
+/* 🔷 LOGO */
+.logo img {
+  width: 80px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+
+/* 🔤 TEXTOS */
 h1 {
-  font-size: 18px;
+  font-size: 14px;
+  color: #9ca3af;
   margin-bottom: 5px;
-  color: #94a3b8;
 }
 
 h2 {
-  font-size: 22px;
+  font-size: 20px;
   margin: 0;
+  margin-bottom: 10px;
 }
 
 .nombre {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: bold;
   margin-top: 10px;
 }
 
 .detalle {
+  font-size: 14px;
   color: #9ca3af;
   margin-bottom: 15px;
 }
 
-#qr {
-  margin-top: 15px;
+/* 🔲 QR CONTENEDOR */
+.qr-box {
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  display: inline-block;
+  margin-top: 10px;
 }
 
+/* 🟢 BOTÓN */
 .btn-wa {
   margin-top: 20px;
   padding: 14px;
@@ -73,13 +83,20 @@ h2 {
   width: 100%;
   cursor: pointer;
 }
+
+/* 📝 TEXTO FINAL */
+.footer {
+  margin-top: 15px;
+  font-size: 12px;
+  color: #9ca3af;
+}
 </style>
 
 </head>
 
 <body>
 
-<div class="container">
+<div class="card">
 
   <div class="logo">
     <img src="icono-512.png" alt="Logo">
@@ -91,11 +108,17 @@ h2 {
   <div class="nombre" id="nombre"></div>
   <div class="detalle" id="detalle"></div>
 
-  <div id="qr"></div>
+  <div class="qr-box">
+    <div id="qr"></div>
+  </div>
 
   <button id="btnWA" class="btn-wa">
     📲 Enviar por WhatsApp
   </button>
+
+  <div class="footer">
+    Deberá mostrar este código al ingresar y salir del fraccionamiento
+  </div>
 
 </div>
 
@@ -112,7 +135,7 @@ const privada = params.get("privada");
 const casa = params.get("casa");
 const origen = params.get("origen");
 
-// 🔐 VALIDACIÓN FLEXIBLE
+// 🔐 VALIDACIÓN
 if (!codigo) {
   document.body.innerHTML = "QR inválido";
   throw new Error("QR inválido");
@@ -121,17 +144,13 @@ if (!codigo) {
 // 🔥 BASE URL
 const baseURL = window.location.origin;
 
-// 🔥 URL REAL DE ACCESO (CASSETA)
+// 🔥 URL REAL DE ACCESO
 const urlQR = `${baseURL}/acceso_trabajador_hogar.html?qr=${codigo}`;
 
 // 🎯 GENERAR QR
 QRCode.toCanvas(urlQR, {
-  width: 240,
-  margin: 2,
-  color: {
-    dark: "#000000",
-    light: "#ffffff"
-  }
+  width: 220,
+  margin: 1
 }, function (err, canvas) {
   if (!err) {
     document.getElementById("qr").appendChild(canvas);
@@ -143,7 +162,7 @@ document.getElementById("nombre").innerText = nombre || "";
 document.getElementById("detalle").innerText =
   `Privada ${privada || ""} • Lote ${casa || ""}`;
 
-// 🔥 CONTROL BOTÓN WA
+// 🔥 OCULTAR BOTÓN EN WA
 if (origen !== "admin" && origen !== "residente") {
   document.getElementById("btnWA").style.display = "none";
 }
@@ -157,7 +176,7 @@ document.getElementById("btnWA").addEventListener("click", () => {
   `&nombre=${encodeURIComponent(nombre || "")}` +
   `&privada=${privada || ""}` +
   `&casa=${casa || ""}` +
-  `&origen=wa`; 
+  `&origen=wa`;
 
   const mensaje =
     `👷 Credencial de acceso\n\n` +
