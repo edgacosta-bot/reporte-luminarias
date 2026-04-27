@@ -240,8 +240,11 @@ btnRegistrar.onclick = async () => {
   }
 
   estado.innerText = "Acceso registrado";
-  btnRegistrar.classList.add("hidden");
-  document.body.className = "ok";
+document.body.className = "ok";
+
+setTimeout(() => {
+  window.location.reload();
+}, 1500);
 };
 
 // UI
