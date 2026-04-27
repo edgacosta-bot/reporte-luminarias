@@ -98,7 +98,7 @@ init();
 async function init(){
 
   if (!qr){
-    pintar("Escanee un QR para continuar","error");
+    pintar("QR inválido","error");
     return;
   }
 
@@ -221,11 +221,8 @@ btnRegistrar.onclick = async () => {
     detalle.innerHTML = `<p><b>${trabajador.nombre}</b></p><p>Salida registrada</p>`;
     btnRegistrar.classList.add("hidden");
 
-    setTimeout(() => {
-      resetPantalla();
-    }, 2000);
+    return; // 🔥 NO HACER NADA MÁS
 
-    return;
   }
 
   // 🟢 ENTRADA
@@ -247,18 +244,8 @@ btnRegistrar.onclick = async () => {
   detalle.innerHTML = `<p><b>${trabajador.nombre}</b></p><p>Entrada registrada</p>`;
   btnRegistrar.classList.add("hidden");
 
-  setTimeout(() => {
-    resetPantalla();
-  }, 2000);
+  return; // 🔥 NO CAMBIAR PANTALLA
 };
-
-// 🔥 LIMPIAR PANTALLA SIN ERROR
-function resetPantalla(){
-  document.body.className = "";
-  estado.innerText = "Escanee siguiente QR";
-  detalle.innerHTML = "";
-  location.search = "";
-}
 
 // UI
 function renderDetalle(){
