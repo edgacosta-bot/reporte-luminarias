@@ -17,6 +17,19 @@ body {
   padding: 20px;
 }
 
+/* FILTRO */
+.filtros {
+  margin-bottom: 20px;
+}
+
+select {
+  padding: 8px;
+  border-radius: 8px;
+  background: #1f2937;
+  color: white;
+  border: none;
+}
+
 /* KPI */
 .kpi-grid {
   display: grid;
@@ -77,6 +90,12 @@ td {
 
 <h2>📊 Desempeño de Vigilantes</h2>
 
+<!-- 🔽 FILTRO -->
+<div class="filtros">
+  <label>Filtrar vigilante:</label>
+  <select id="filtroVigilante" multiple size="3"></select>
+</div>
+
 <!-- KPIs -->
 <div class="kpi-grid">
   <div class="kpi"><h3 id="kpiTotal">0</h3><span>Total reportes</span></div>
@@ -104,17 +123,17 @@ td {
 
 <script>
 
-// 🎨 Paleta institucional
 const colores = [
   "#9F2241","#235B4E","#DDC9A3","#98989A",
   "#691C32","#10312B","#BC955C","#6F7271"
 ];
 
-// 🎯 Estilo global
 Chart.defaults.color = "#FFFFFF";
 Chart.defaults.borderColor = "#374151";
 
-// 🔐 Protección + carga
+let DATA_GLOBAL = [];
+let MAPA = {};
+
 window.addEventListener("load", async () => {
 
   let intentos = 0;
@@ -123,14 +142,12 @@ window.addEventListener("load", async () => {
     intentos++;
   }
 
-  if (!window.supabase) return;
-
   await protegerPagina(["administracion","mesa_directiva","soporte"]);
-  await cargarDatos();
+  await cargarDatosBase();
+  aplicarFiltro();
 });
 
-// 🚀 DATA
-async function cargarDatos(){
+async function cargarDatosBase(){
 
   const { data: reportes } = await supabaseClient
     .from("reportes_vigilantes")
@@ -140,18 +157,44 @@ async function cargarDatos(){
     .from("residentes")
     .select("id, nombre, tipo");
 
-  const mapa = {};
   residentes.forEach(r=>{
-    if(r.tipo==="vigilante") mapa[r.id]=r.nombre;
+    if(r.tipo==="vigilante") MAPA[r.id]=r.nombre;
   });
 
-  const datos = reportes.filter(r=>mapa[r.vigilante_id]);
+  DATA_GLOBAL = reportes.filter(r=>MAPA[r.vigilante_id]);
 
-  // 📊 AGRUPACIONES
+  // 🔽 llenar filtro
+  const select = document.getElementById("filtroVigilante");
+  select.innerHTML = "";
+
+  Object.entries(MAPA).forEach(([id,nombre])=>{
+    const opt = document.createElement("option");
+    opt.value = id;
+    opt.textContent = nombre;
+    opt.selected = true;
+    select.appendChild(opt);
+  });
+
+  select.addEventListener("change", aplicarFiltro);
+}
+
+function aplicarFiltro(){
+
+  const seleccionados = Array.from(
+    document.getElementById("filtroVigilante").selectedOptions
+  ).map(o=>o.value);
+
+  const datos = DATA_GLOBAL.filter(r=>seleccionados.includes(r.vigilante_id));
+
+  construirDashboard(datos);
+}
+
+function construirDashboard(datos){
+
   const porVigilante={}, porTipo={}, porMes={}, porRol={};
 
   datos.forEach(d=>{
-    const nombre = mapa[d.vigilante_id];
+    const nombre = MAPA[d.vigilante_id];
 
     porVigilante[nombre]=(porVigilante[nombre]||0)+1;
     porTipo[d.tipo]=(porTipo[d.tipo]||0)+1;
@@ -161,31 +204,28 @@ async function cargarDatos(){
     porMes[mes]=(porMes[mes]||0)+1;
   });
 
-  // 📊 RENDER
   render("chartVigilantes","bar",porVigilante);
   render("chartTipos","pie",porTipo);
   render("chartTiempo","line",porMes);
   render("chartRol","doughnut",porRol);
 
-  // 🔢 KPIs
+  // KPIs
   const total = datos.length;
   const vigilantes = Object.keys(porVigilante).length;
 
   document.getElementById("kpiTotal").innerText = total;
-  document.getElementById("kpiPromedio").innerText = (total/vigilantes).toFixed(1);
+  document.getElementById("kpiPromedio").innerText = vigilantes ? (total/vigilantes).toFixed(1) : 0;
 
-  const top = Object.entries(porVigilante).sort((a,b)=>b[1]-a[1])[0];
-  document.getElementById("kpiTop").innerText = top ? top[0] : "-";
+  const ranking = Object.entries(porVigilante).sort((a,b)=>b[1]-a[1]);
 
-  // 🏆 RANKING + SEMÁFORO
-  const ranking = Object.entries(porVigilante)
-    .sort((a,b)=>b[1]-a[1]);
+  document.getElementById("kpiTop").innerText = ranking[0]?.[0] || "-";
 
+  // Ranking
   const tabla = document.getElementById("ranking");
   tabla.innerHTML = "";
 
   ranking.forEach(([nombre,total])=>{
-    let clase = "good";
+    let clase="good";
     if(total>=4) clase="bad";
     else if(total>=2) clase="warn";
 
@@ -198,7 +238,7 @@ async function cargarDatos(){
     `;
   });
 
-  // 🚨 ALERTAS
+  // Alertas
   const alertas = document.getElementById("alertas");
   alertas.innerHTML = "";
 
@@ -214,7 +254,6 @@ async function cargarDatos(){
   document.getElementById("kpiAlertas").innerText = totalAlertas;
 }
 
-// 📊 FUNC RENDER
 function render(id,tipo,obj){
 
   const canvas = document.getElementById(id);
@@ -237,7 +276,10 @@ function render(id,tipo,obj){
           color:"#fff",
           anchor:"end",
           align:"top",
-          font:{weight:"bold"},
+          font:{
+            size:16,   // 🔥 AQUÍ EL CAMBIO (ANTES PEQUEÑO)
+            weight:"bold"
+          },
           formatter:v=>v
         }
       }
