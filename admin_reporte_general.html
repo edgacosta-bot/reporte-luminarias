@@ -208,14 +208,17 @@ const loteFiltro = document.getElementById("filtroCasa").value;
   let registros=[];
 
   // 🔵 MAPA VIGILANTES (SEGURO)
-  let mapaVigilantes = {};
-  const { data: vigilantesLista } = await supabaseClient
-    .from("vigilantes")
-    .select("id,nombre");
+   // 🔵 MAPA VIGILANTES (AHORA DESDE RESIDENTES)
+let mapaVigilantes = {};
 
-  vigilantesLista?.forEach(v=>{
-    mapaVigilantes[v.id] = v.nombre;
-  });
+const { data: residentesLista } = await supabaseClient
+  .from("residentes")
+  .select("id, nombre, tipo")
+  .eq("tipo", "vigilante");
+
+residentesLista?.forEach(r=>{
+  mapaVigilantes[r.id] = r.nombre;
+});
 
   // 🔴 VECINALES
   let queryVecinal = supabaseClient
