@@ -330,10 +330,21 @@ vigilantes?.forEach(r=> todos.push({
       let habilitado = puede && pasaron5Dias(r.fecha);
 
       bloque += `
-      <div class="item ${clase}">
-        <b>${titulo}</b>
-        <div>${r.descripcion}</div>
-        <div class="fecha">${formatMXDate(r.fecha)}</div>
+  <div class="item ${clase}">
+    <b>${titulo}</b>
+
+    ${r.vigilante_nombre ? `
+      <div style="
+        margin-top:6px;
+        font-size:14px;
+        color:#DDC9A3;
+      ">
+        <strong>Vigilante reportado:</strong> ${r.vigilante_nombre}
+      </div>
+    ` : ""}
+
+    <div>${r.descripcion}</div>
+    <div class="fecha">${formatMXDate(r.fecha)}</div>
 
         ${puede ? `
         <button onclick="${habilitado?`abrir('${id}')`:''}""
