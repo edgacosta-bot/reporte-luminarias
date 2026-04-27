@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Desempeño Vigilantes</title>
+<title>Dashboard Vigilantes</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -17,11 +17,33 @@ body {
   padding: 20px;
 }
 
-h2 {
-  margin-bottom: 10px;
+/* 🔥 KPIs */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
-/* 🔥 FILTROS */
+.kpi {
+  background: #111827;
+  padding: 15px;
+  border-radius: 12px;
+}
+
+.kpi h3 {
+  margin: 0;
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.kpi p {
+  margin: 5px 0 0;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+/* 🎛 filtros */
 .filtros {
   background: #111827;
   padding: 15px;
@@ -47,7 +69,7 @@ h2 {
   cursor: pointer;
 }
 
-/* 🔥 GRID */
+/* 📊 grid */
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -64,9 +86,17 @@ h2 {
 
 <body>
 
-<h2>📊 Desempeño de Vigilantes</h2>
+<h2>📊 Dashboard Vigilantes</h2>
 
-<!-- 🔥 FILTROS -->
+<!-- 🔥 KPIs -->
+<div class="kpis">
+  <div class="kpi"><h3>Total reportes</h3><p id="kpiTotal">0</p></div>
+  <div class="kpi"><h3>Más reportado</h3><p id="kpiVigilante">-</p></div>
+  <div class="kpi"><h3>Tipo más frecuente</h3><p id="kpiTipo">-</p></div>
+  <div class="kpi"><h3>Día más activo</h3><p id="kpiDia">-</p></div>
+</div>
+
+<!-- 🔥 filtros -->
 <div class="filtros">
   <input type="date" id="fechaInicio">
   <input type="date" id="fechaFin">
@@ -76,6 +106,7 @@ h2 {
   <button onclick="cargarDatos()">Aplicar</button>
 </div>
 
+<!-- 📊 gráficas -->
 <div class="grid">
   <div class="card"><canvas id="chartVigilantes"></canvas></div>
   <div class="card"><canvas id="chartTipos"></canvas></div>
@@ -91,21 +122,12 @@ window.addEventListener("load", async () => {
   await cargarDatos(true);
 });
 
-/////////////////////////////////////////////////////////
-// 🚀 CARGA
-/////////////////////////////////////////////////////////
-async function cargarDatos(init = false) {
-
-  if (typeof supabaseClient === "undefined") {
-    console.error("❌ SupabaseClient no disponible");
-    return;
-  }
+async function cargarDatos(init=false){
 
   const fechaInicio = document.getElementById("fechaInicio").value;
   const fechaFin = document.getElementById("fechaFin").value;
   const vigilanteFiltro = document.getElementById("filtroVigilante").value;
 
-  // 🔹 REPORTES
   let query = supabaseClient
     .from("reportes_vigilantes")
     .select("vigilante_id, tipo, fecha_reporte, rol_creador");
@@ -113,130 +135,106 @@ async function cargarDatos(init = false) {
   if (fechaInicio) query = query.gte("fecha_reporte", fechaInicio);
   if (fechaFin) query = query.lte("fecha_reporte", fechaFin);
 
-  const { data: reportes, error: err1 } = await query;
+  const { data: reportes } = await query;
 
-  if (err1) {
-    console.error(err1);
-    return;
-  }
-
-  // 🔹 RESIDENTES (vigilantes)
   const { data: residentes } = await supabaseClient
     .from("residentes")
     .select("id, nombre, tipo");
 
-  const mapaVigilantes = {};
-  residentes.forEach(r => {
-    if (r.tipo === "vigilante") {
-      mapaVigilantes[r.id] = r.nombre;
+  const mapa = {};
+  residentes.forEach(r=>{
+    if(r.tipo==="vigilante"){
+      mapa[r.id]=r.nombre;
 
-      // 🔥 llenar filtro solo una vez
-      if (init) {
-        const opt = document.createElement("option");
-        opt.value = r.id;
-        opt.textContent = r.nombre;
+      if(init){
+        const opt=document.createElement("option");
+        opt.value=r.id;
+        opt.textContent=r.nombre;
         document.getElementById("filtroVigilante").appendChild(opt);
       }
     }
   });
 
-  // 🔥 FILTRAR
-  let datos = (reportes || []).filter(r => mapaVigilantes[r.vigilante_id]);
+  let datos=(reportes||[]).filter(r=>mapa[r.vigilante_id]);
 
-  if (vigilanteFiltro) {
-    datos = datos.filter(d => d.vigilante_id === vigilanteFiltro);
+  if(vigilanteFiltro){
+    datos=datos.filter(d=>d.vigilante_id===vigilanteFiltro);
   }
 
-  /////////////////////////////////////////////////////////
-  // 🎨 PALETA (VERDE + MORADO)
-  /////////////////////////////////////////////////////////
-  const colores = [
-    "#22c55e", // verde
-    "#7c3aed", // morado
-    "#4ade80",
-    "#a78bfa",
-    "#16a34a",
-    "#6d28d9"
-  ];
+  //////////////////////////////////////////////////
+  // 🎯 KPI
+  //////////////////////////////////////////////////
+  document.getElementById("kpiTotal").innerText = datos.length;
 
-  /////////////////////////////////////////////////////////
-  // 📊 POR VIGILANTE
-  /////////////////////////////////////////////////////////
-  const porVigilante = {};
-  datos.forEach(d => {
-    const nombre = mapaVigilantes[d.vigilante_id];
-    porVigilante[nombre] = (porVigilante[nombre] || 0) + 1;
+  const conteoVig={}, conteoTipo={}, conteoDia={};
+
+  datos.forEach(d=>{
+    const v=mapa[d.vigilante_id];
+    conteoVig[v]=(conteoVig[v]||0)+1;
+
+    conteoTipo[d.tipo]=(conteoTipo[d.tipo]||0)+1;
+
+    const f=new Date(d.fecha_reporte).toLocaleDateString();
+    conteoDia[f]=(conteoDia[f]||0)+1;
   });
 
-  renderChart("chartVigilantes", "bar",
-    Object.keys(porVigilante),
-    Object.values(porVigilante),
-    colores
-  );
+  document.getElementById("kpiVigilante").innerText =
+    getMax(conteoVig);
 
-  /////////////////////////////////////////////////////////
-  // 🧾 POR TIPO
-  /////////////////////////////////////////////////////////
-  const porTipo = {};
-  datos.forEach(d => {
-    porTipo[d.tipo] = (porTipo[d.tipo] || 0) + 1;
-  });
+  document.getElementById("kpiTipo").innerText =
+    getMax(conteoTipo);
 
-  renderChart("chartTipos", "pie",
-    Object.keys(porTipo),
-    Object.values(porTipo),
-    colores
-  );
+  document.getElementById("kpiDia").innerText =
+    getMax(conteoDia);
 
-  /////////////////////////////////////////////////////////
-  // 📈 POR FECHA
-  /////////////////////////////////////////////////////////
-  const porFecha = {};
-  datos.forEach(d => {
-    const fecha = new Date(d.fecha_reporte).toLocaleDateString();
-    porFecha[fecha] = (porFecha[fecha] || 0) + 1;
-  });
+  //////////////////////////////////////////////////
+  // 🎨 PALETA PRO
+  //////////////////////////////////////////////////
+  const colores=["#22c55e","#7c3aed","#4ade80","#a78bfa","#166534","#5b21b6"];
 
-  renderChart("chartTiempo", "line",
-    Object.keys(porFecha),
-    Object.values(porFecha),
-    colores
-  );
-
-  /////////////////////////////////////////////////////////
-  // 👥 POR ROL
-  /////////////////////////////////////////////////////////
-  const porRol = {};
-  datos.forEach(d => {
-    const rol = d.rol_creador || "desconocido";
-    porRol[rol] = (porRol[rol] || 0) + 1;
-  });
-
-  renderChart("chartRol", "doughnut",
-    Object.keys(porRol),
-    Object.values(porRol),
+  //////////////////////////////////////////////////
+  // 📊 GRAFICAS
+  //////////////////////////////////////////////////
+  render("chartVigilantes","bar",conteoVig,colores);
+  render("chartTipos","pie",conteoTipo,colores);
+  render("chartTiempo","line",conteoDia,colores);
+  render("chartRol","doughnut",
+    countBy(datos,"rol_creador"),
     colores
   );
 }
 
-/////////////////////////////////////////////////////////
-// 🔥 RENDER
-/////////////////////////////////////////////////////////
-function renderChart(id, tipo, labels, data, colores) {
+////////////////////////////////////////////////
+// helpers
+////////////////////////////////////////////////
+function getMax(obj){
+  return Object.keys(obj).reduce((a,b)=>obj[a]>obj[b]?a:b,"-");
+}
 
-  const canvas = document.getElementById(id);
+function countBy(arr,key){
+  const r={};
+  arr.forEach(i=>{
+    const k=i[key]||"desconocido";
+    r[k]=(r[k]||0)+1;
+  });
+  return r;
+}
 
-  if (canvas.chart) {
+function render(id,tipo,obj,colores){
+
+  const canvas=document.getElementById(id);
+
+  if(canvas.chart){
     canvas.chart.destroy();
   }
 
-  canvas.chart = new Chart(canvas, {
-    type: tipo,
-    data: {
-      labels,
-      datasets: [{
-        data,
-        backgroundColor: colores
+  canvas.chart=new Chart(canvas,{
+    type:tipo,
+    data:{
+      labels:Object.keys(obj),
+      datasets:[{
+        data:Object.values(obj),
+        backgroundColor:colores
       }]
     }
   });
