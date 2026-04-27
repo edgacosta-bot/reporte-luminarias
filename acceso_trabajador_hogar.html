@@ -298,7 +298,7 @@ btnRegistrar.onclick = async () => {
     btnRegistrar.disabled = true;
     btnRegistrar.innerText = "Procesando...";
 
-    const { error } = await supabaseClient.rpc("registrar_salida_trabajador", {
+const { data, error } = await supabaseClient.rpc("registrar_salida_trabajador", {
   p_acceso_id: accesoAbierto.id,
   p_vigilante_id: vigilante.id
 });
@@ -311,7 +311,43 @@ if (error) {
   return;
 }
 
-    estado.innerText = "Salida registrada";
+// 🔴 VALIDACIÓN REAL
+if (!data || !data[0]?.actualizado) {
+  ui.error("❌ No se actualizó la salida");
+  btnRegistrar.disabled = false;
+  btnRegistrar.innerText = "Registrar";
+  return;
+}
+
+    
+console.log("RESPUESTA SALIDA:", data);
+
+if (error) {
+  console.error("ERROR SALIDA:", error);
+  ui.error("❌ Error al registrar salida");
+  btnRegistrar.disabled = false;
+  btnRegistrar.innerText = "Registrar";
+  return;
+}
+
+// 🔴 VALIDACIÓN REAL (CLAVE)
+if (!data || data.length === 0) {
+  ui.error("❌ No se pudo registrar salida (registro no encontrado)");
+  btnRegistrar.disabled = false;
+  btnRegistrar.innerText = "Registrar";
+  return;
+}
+
+if (error) {
+  console.error("ERROR SALIDA:", error);
+  ui.error("❌ Error al registrar salida");
+  btnRegistrar.disabled = false;
+  btnRegistrar.innerText = "Registrar";
+  return;
+}
+
+    document.body.className = "ok";
+    estado.innerText = "Salida registrada correctamente";
 
     const mensaje = `Estimado Residente, en este momento su empleado doméstico ${trabajador.nombre}, salió del fraccionamiento. Gracias.`;
 
