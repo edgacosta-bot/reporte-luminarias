@@ -222,6 +222,11 @@ btnRegistrar.onclick = async () => {
     return;
   }
 
+  console.log("DEBUG trabajador:", trabajador);
+  console.log("DEBUG vigilante:", vigilante);
+  console.log("DEBUG trabajador.id:", trabajador?.id);
+  console.log("DEBUG vigilante.id:", vigilante?.id);
+  
   const { error } = await supabaseClient.rpc("entrada_trabajador", {
   trabajador: trabajador.id,
   vigilante: vigilante.id
