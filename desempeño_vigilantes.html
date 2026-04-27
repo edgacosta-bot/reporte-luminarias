@@ -5,8 +5,8 @@
 <title>Desempeño Vigilantes</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
+<script src="utils/residente.js"></script>  
 
 <style>
 body {
@@ -44,12 +44,18 @@ body {
 <script>
 
 // 🔐 Protección
-window.addEventListener("load", () => {
-  protegerPagina(["administracion", "mesa_directiva"]);
+window.addEventListener("load", async () => {
+  await protegerPagina(["administracion", "mesa_directiva", "soporte"]);
+  await cargarDatos();
 });
 
 // 🚀 Cargar datos
 async function cargarDatos() {
+
+if (!supabaseClient) {
+  console.error("❌ Supabase no inicializado");
+  return;
+}  
 
   // 1️⃣ Traer reportes
   const { data: reportes, error: err1 } = await supabaseClient
@@ -81,11 +87,15 @@ async function cargarDatos() {
   });
 
   // 4️⃣ Filtrar solo reportes de vigilantes válidos
-  const datos = reportes.filter(r => mapaVigilantes[r.vigilante_id]);
-
+  const datos = (reportes || []).filter(r => mapaVigilantes[r.vigilante_id]);
+  
   console.log("DATOS LIMPIOS:", datos);
 
   // 📊 1. Reportes por vigilante
+if (!datos.length) {
+  console.warn("⚠️ No hay datos para graficar");
+}
+  
   const porVigilante = {};
 
   datos.forEach(d => {
@@ -93,20 +103,25 @@ async function cargarDatos() {
     porVigilante[nombre] = (porVigilante[nombre] || 0) + 1;
   });
 
-  new Chart(document.getElementById("chartVigilantes"), {
-    type: "bar",
-    data: {
-      labels: Object.keys(porVigilante),
-      datasets: [{
-        label: "Reportes por vigilante",
-        data: Object.values(porVigilante)
-      }]
-    }
-  });
+  const ctx = document.getElementById("chartVigilantes").getContext("2d");
+  
+if (ctx.chart) {
+  ctx.chart.destroy();
+}
+
+ctx.chart = new Chart(ctx, {
+  type: "bar",
+  data: {
+    labels: Object.keys(porVigilante),
+    datasets: [{
+      label: "Reportes por vigilante",
+      data: Object.values(porVigilante)
+    }]
+  }
+});
 
 }
 
-cargarDatos();
 
 </script>
 
