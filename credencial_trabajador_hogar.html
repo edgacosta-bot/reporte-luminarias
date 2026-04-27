@@ -152,12 +152,12 @@ if (origen !== "admin" && origen !== "residente") {
 document.getElementById("btnWA").addEventListener("click", () => {
 
   const linkCredencial =
-    `${baseURL}/credencial_trabajador_hogar.html` +
-    `?qr=${codigo}` +
-    `&nombre=${encodeURIComponent(nombre || "")}` +
-    `&privada=${privada || ""}` +
-    `&casa=${casa || ""}` +
-    `&origen=admin`;
+  `${baseURL}/credencial_trabajador_hogar.html` +
+  `?qr=${codigo}` +
+  `&nombre=${encodeURIComponent(nombre || "")}` +
+  `&privada=${privada || ""}` +
+  `&casa=${casa || ""}` +
+  `&origen=wa`; 
 
   const mensaje =
     `👷 Credencial de acceso\n\n` +
