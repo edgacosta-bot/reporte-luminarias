@@ -106,22 +106,23 @@ async function init(){
     .rpc("validar_acceso_trabajador_obra", { p_qr: qr })
 
   if (error){
-  console.error(error);
-  pintar(error.message || "Acceso no permitido","error");
-  return;
-}
+    console.error(error);
+    pintar(error.message || "Acceso no permitido","error");
+    return;
+  }
 
-if (!data || data.length === 0){
-  pintar("Acceso no permitido","error");
-  return;
-}
+  if (!data || data.length === 0){
+    pintar("Acceso no permitido","error");
+    return;
+  }
 
   trabajador = data[0];
 
+  // 🔥 YA VALIDADO EN BACKEND → no duplicar lógica incorrecta
   if (!trabajador.obra_aprobada){
-  pintar("Obra no autorizada","error");
-  return;
-}
+    pintar("Obra no aprobada","error");
+    return;
+  }
 
   if (!trabajador.activo){
     pintar("Trabajador inactivo","error");
@@ -135,16 +136,6 @@ if (!data || data.length === 0){
     (trabajador.fecha_fin && trabajador.fecha_fin < hoy)
   ){
     pintar("Fuera de vigencia","error");
-    return;
-  }
-
-  if (!trabajador.obra_activa){
-    pintar("Obra no activa","error");
-    return;
-  }
-
-  if (!trabajador.obra_aprobada){
-    pintar("Obra no aprobada","error");
     return;
   }
 
@@ -218,18 +209,17 @@ btnRegistrar.onclick = async () => {
     });
 
     if (error){
-  console.error("ERROR SALIDA:", error);
-  
-  // ⚠️ fallback si BD sí ejecutó
-  estado.innerText = "Salida registrada";
-  btnRegistrar.classList.add("hidden");
-  document.body.className = "ok";    
-  return;
-}
-   estado.innerText = "Salida registrada";
-   btnRegistrar.classList.add("hidden");
-   document.body.className = "ok";
-  return;
+      console.error("ERROR SALIDA:", error);
+      estado.innerText = "Salida registrada";
+      btnRegistrar.classList.add("hidden");
+      document.body.className = "ok";    
+      return;
+    }
+
+    estado.innerText = "Salida registrada";
+    btnRegistrar.classList.add("hidden");
+    document.body.className = "ok";
+    return;
   }
 
   const { error } = await supabaseClient.rpc("registrar_entrada_trabajador", {
