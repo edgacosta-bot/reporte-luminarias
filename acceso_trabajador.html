@@ -105,12 +105,23 @@ async function init(){
   const { data, error } = await supabaseClient
     .rpc("validar_acceso_trabajador_obra", { qr });
 
-  if (error || !data || data.length === 0){
-    pintar("QR inválido o no autorizado","error");
-    return;
-  }
+  if (error){
+  console.error(error);
+  pintar(error.message || "Acceso no permitido","error");
+  return;
+}
+
+if (!data || data.length === 0){
+  pintar("Acceso no permitido","error");
+  return;
+}
 
   trabajador = data[0];
+
+  if (!trabajador.obra_aprobada){
+  pintar("Obra no autorizada","error");
+  return;
+}
 
   if (!trabajador.activo){
     pintar("Trabajador inactivo","error");
