@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Desempeño Vigilantes</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  padding: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.card {
+  background: #111827;
+  padding: 15px;
+  border-radius: 12px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>📊 Desempeño de Vigilantes</h2>
+
+<div class="grid">
+  <div class="card"><canvas id="chartVigilantes"></canvas></div>
+  <div class="card"><canvas id="chartTipos"></canvas></div>
+  <div class="card"><canvas id="chartTiempo"></canvas></div>
+  <div class="card"><canvas id="chartRol"></canvas></div>
+</div>
+
+</body>
+</html>
