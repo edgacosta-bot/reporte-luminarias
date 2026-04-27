@@ -46,6 +46,20 @@ body {
 
 // 🔐 Protección
 window.addEventListener("load", async () => {
+
+  // 🔥 esperar a que supabase esté listo
+  let intentos = 0;
+
+  while (!window.supabase && intentos < 10) {
+    await new Promise(r => setTimeout(r, 100));
+    intentos++;
+  }
+
+  if (!window.supabase) {
+    console.error("❌ Supabase nunca cargó");
+    return;
+  }
+
   await protegerPagina(["administracion", "mesa_directiva", "soporte"]);
   await cargarDatos();
 });
@@ -53,11 +67,10 @@ window.addEventListener("load", async () => {
 // 🚀 Cargar datos
 async function cargarDatos() {
 
-if (!supabaseClient) {
-  console.error("❌ Supabase no inicializado");
+if (typeof supabaseClient === "undefined" || !supabaseClient) {
+  console.error("❌ SupabaseClient no disponible");
   return;
-}  
-
+}
   // 1️⃣ Traer reportes
   const { data: reportes, error: err1 } = await supabaseClient
     .from("reportes_vigilantes")
@@ -104,13 +117,13 @@ if (!datos.length) {
     porVigilante[nombre] = (porVigilante[nombre] || 0) + 1;
   });
 
-  const ctx = document.getElementById("chartVigilantes").getContext("2d");
-  
-if (ctx.chart) {
-  ctx.chart.destroy();
+  const canvas = document.getElementById("chartVigilantes");
+
+if (canvas.chart) {
+  canvas.chart.destroy();
 }
 
-ctx.chart = new Chart(ctx, {
+canvas.chart = new Chart(canvas, {
   type: "bar",
   data: {
     labels: Object.keys(porVigilante),
