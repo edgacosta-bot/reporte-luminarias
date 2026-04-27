@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -6,7 +7,11 @@
 <title>Trabajador del hogar</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
 <script src="auth.js"></script>
+
 <script src="utils/residente.js"></script>
 
 <script>
@@ -81,30 +86,26 @@ button {
 
 <div class="card">
 
-  <!-- 🔥 LOGO -->
   <div style="text-align:center; margin-bottom:15px;">
     <img src="icono-512.png" alt="Logo"
          style="width:90px; height:auto; border-radius:20px;">
   </div>
 
-<h2>Registro trabajador del hogar</h2>
+  <h2>Registro trabajador del hogar</h2>
 
-<label>Nombre</label>
-<input id="nombre">
+  <!-- 🔥 AVISO FIJO ARRIBA -->
 
-<label>Fecha de inicio de vigencia</label>
-<input id="inicio" type="date">
+  <div id="avisoAtraso" class="mensaje warning" style="display:none;"></div>
 
-<small style="color:#6b7280;">Desde cuándo es válido el acceso</small>
+<label>Nombre</label> <input id="nombre">
 
-<label style="margin-top:10px;">Fecha de término de vigencia</label>
-<input id="fin" type="date">
+<label>Fecha de inicio de vigencia</label> <input id="inicio" type="date"> <small style="color:#6b7280;">Desde cuándo es válido el acceso</small>
 
-<small style="color:#6b7280;">Hasta cuándo es válido el acceso</small>
+<label style="margin-top:10px;">Fecha de término de vigencia</label> <input id="fin" type="date"> <small style="color:#6b7280;">Hasta cuándo es válido el acceso</small>
 
 <button id="btnRegistrar" onclick="registrar()">Generar QR</button>
 
-<div id="mensaje" class="mensaje"></div>
+  <div id="mensaje" class="mensaje"></div>
 
 </div>
 
@@ -112,7 +113,6 @@ button {
 
 let residenteGlobal = null;
 
-// 🔐 INIT
 window.addEventListener("DOMContentLoaded", async () => {
 
   residenteGlobal = await getResidente();
@@ -120,6 +120,14 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (!residenteGlobal) {
     alert("Sesión no válida");
     return;
+  }
+
+  const aviso = document.getElementById("avisoAtraso");
+  const estado = (residenteGlobal.estado_pago || "").toLowerCase();
+
+  if (estado === "atraso_1") {
+    aviso.innerText = "⚠️ Tienes atraso. Puedes continuar, pero regulariza.";
+    aviso.style.display = "block";
   }
 
 });
@@ -131,13 +139,13 @@ async function registrar() {
   const fin = document.getElementById("fin").value;
   const mensaje = document.getElementById("mensaje");
   const btn = document.getElementById("btnRegistrar");
-  // 🔥 VALIDACIÓN DE RANGO DE FECHAS
-if (inicio && fin && fin < inicio) {
-  mensaje.innerText = "La fecha fin no puede ser menor a inicio";
-  mensaje.className = "mensaje error";
-  mensaje.style.display = "block";
-  return;
-}
+
+  if (inicio && fin && fin < inicio) {
+    mensaje.innerText = "La fecha fin no puede ser menor a inicio";
+    mensaje.className = "mensaje error";
+    mensaje.style.display = "block";
+    return;
+  }
 
   mensaje.style.display = "none";
 
@@ -157,7 +165,6 @@ if (inicio && fin && fin < inicio) {
 
   const estado = (residenteGlobal.estado_pago || "").toLowerCase();
 
-  // 🔴 BLOQUEO
   if (estado === "moroso") {
     mensaje.innerText = "⛔ No puedes generar accesos. Regulariza tu pago.";
     mensaje.className = "mensaje error";
@@ -165,14 +172,9 @@ if (inicio && fin && fin < inicio) {
     return;
   }
 
-  // 🟡 ADVERTENCIA
-  if (estado === "atraso_1") {
-    mensaje.innerText = "⚠️ Tienes atraso. Puedes continuar, pero regulariza.";
-    mensaje.className = "mensaje warning";
-    mensaje.style.display = "block";
-  }
   btn.disabled = true;
   btn.innerText = "Generando...";
+
   const codigo = crypto.randomUUID();
 
   const { error } = await supabaseClient
@@ -189,19 +191,48 @@ if (inicio && fin && fin < inicio) {
   if (error) {
     btn.disabled = false;
     btn.innerText = "Generar QR";
-    console.error(error);
     mensaje.innerText = "Error al registrar";
     mensaje.className = "mensaje error";
     mensaje.style.display = "block";
     return;
   }
 
-mensaje.innerText = "✅ Acceso generado correctamente";
-mensaje.className = "mensaje";
-mensaje.style.display = "block";
+  mensaje.innerHTML = `
+    <div style="text-align:center;">
+      <div style="margin-bottom:10px;">✅ Acceso generado correctamente</div>
+      <canvas id="qrCanvas"></canvas>
+      <button id="btnWA" style="margin-top:10px;">📲 Enviar por WhatsApp</button>
+    </div>
+  `;
 
-btn.disabled = false;
-btn.innerText = "Generar QR";
+  mensaje.style.display = "block";
+
+  const urlQR =
+    `${window.location.origin}/acceso_trabajador_hogar.html?qr=${codigo}`;
+
+  QRCode.toCanvas(document.getElementById("qrCanvas"), urlQR, { width: 200 });
+
+  document.getElementById("btnWA").onclick = () => {
+
+    const linkCredencial =
+      `${window.location.origin}/credencial_trabajador_hogar.html` +
+      `?qr=${codigo}` +
+      `&nombre=${encodeURIComponent(nombre)}` +
+      `&privada=${residenteGlobal.privada}` +
+      `&casa=${residenteGlobal.casa}` +
+      `&origen=residente`;
+
+    const mensajeWA =
+      `👷 Credencial de acceso\n\n` +
+      `Nombre: ${nombre}\n` +
+      `Ubicación: Privada ${residenteGlobal.privada} - Lote ${residenteGlobal.casa}\n\n` +
+      `Presenta este código en caseta:\n${linkCredencial}`;
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensajeWA)}`, "_blank");
+  };
+
+  btn.disabled = false;
+  btn.innerText = "Generar QR";
 
 }
 
