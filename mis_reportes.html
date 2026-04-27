@@ -289,8 +289,11 @@ vigilantes?.forEach(r=> todos.push({
   id:"vig-"+r.id,
   id_real: r.id,
   tipo:"vigilante",
-  descripcion:r.descripcion,
-  fecha:r.fecha_reporte
+  descripcion: r.descripcion,
+  fecha: r.fecha_reporte,
+
+  // 🔥 NUEVO
+  vigilante_nombre: mapaVigilantes[r.vigilante_id] || "Vigilante desconocido"
 }));
   
   luminarias?.forEach(r=> todos.push({
