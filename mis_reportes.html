@@ -220,6 +220,24 @@ async function cargar(){
   let queryVigilantes = supabaseClient.from("reportes_vigilantes").select("*").eq("residente_id", residenteId);
   if (inicio && fin) queryVigilantes = queryVigilantes.gte("fecha_reporte", fechaInicioUTC(inicio)).lte("fecha_reporte", fechaFinUTC(fin));
   const { data: vigilantes } = await queryVigilantes;
+  
+  // 🔵 MAPA DE VIGILANTES DESDE RESIDENTES
+let mapaVigilantes = {};
+
+const { data: listaVigilantes, error: errVig } = await supabaseClient
+  .from("residentes")
+  .select("id, nombre")
+  .eq("tipo", "vigilante");
+
+if (errVig) {
+  console.error("Error cargando vigilantes:", errVig);
+}
+
+listaVigilantes?.forEach(v => {
+  mapaVigilantes[v.id] = v.nombre;
+});
+
+console.log("MAPA VIGILANTES:", mapaVigilantes);
 
   let queryLuminarias = supabaseClient.from("reportes_vecinales").select("*").eq("residente_id", residenteId);
   if (inicio && fin) queryLuminarias = queryLuminarias.gte("fecha_reporte", fechaInicioUTC(inicio)).lte("fecha_reporte", fechaFinUTC(fin));
