@@ -228,11 +228,12 @@ btnRegistrar.onclick = async () => {
   });
 
   if (error){
-    ui.error("Error al registrar entrada");
-    btnRegistrar.disabled = false;
-    btnRegistrar.innerText = "Registrar";
-    return;
-  }
+  console.error("ERROR ENTRADA:", error);
+  ui.error(error.message || "Error al registrar entrada");
+  btnRegistrar.disabled = false;
+  btnRegistrar.innerText = "Registrar";
+  return;
+}
 
   estado.innerText = "Acceso registrado";
   btnRegistrar.classList.add("hidden");
