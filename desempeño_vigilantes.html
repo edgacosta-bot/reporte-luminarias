@@ -6,6 +6,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 
 <style>
 body {
@@ -39,6 +40,60 @@ body {
   <div class="card"><canvas id="chartTiempo"></canvas></div>
   <div class="card"><canvas id="chartRol"></canvas></div>
 </div>
+
+<script>
+
+// 🔐 Protección de acceso
+window.addEventListener("load", () => {
+  protegerPagina(["administracion", "mesa_directiva"]);
+});
+
+// 🚀 Cargar datos reales
+async function cargarDatos() {
+
+  const { data, error } = await supabaseClient
+    .from("reportes_vigilantes")
+    .select(`
+      tipo,
+      fecha_reporte,
+      rol_creador,
+      vigilante:residentes(nombre, tipo)
+    `);
+
+  if (error) {
+    console.error("ERROR:", error);
+    return;
+  }
+
+  // 🔎 Filtrar solo vigilantes
+  const datos = data.filter(d => d.vigilante?.tipo === "vigilante");
+
+  console.log("DATOS FILTRADOS:", datos);
+
+  // 📊 1. Reportes por vigilante
+  const porVigilante = {};
+
+  datos.forEach(d => {
+    const nombre = d.vigilante.nombre;
+    porVigilante[nombre] = (porVigilante[nombre] || 0) + 1;
+  });
+
+  new Chart(document.getElementById("chartVigilantes"), {
+    type: "bar",
+    data: {
+      labels: Object.keys(porVigilante),
+      datasets: [{
+        label: "Reportes por vigilante",
+        data: Object.values(porVigilante)
+      }]
+    }
+  });
+
+}
+
+cargarDatos();
+
+</script>
 
 </body>
 </html>
