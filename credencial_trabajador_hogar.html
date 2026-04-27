@@ -4,117 +4,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Credencial Trabajador Hogar</title>
+<title>Registro trabajador hogar</title>
 
 <style>
 body {
-  margin: 0;
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
+  font-family: Arial, sans-serif;
+  background: #0f172a;
   color: white;
+  margin: 0;
+  padding: 20px;
 }
 
-/* 🔷 TARJETA */
 .container {
-  padding: 22px;
-  max-width: 320px;
-  width: 92%;
-  background: #111827;
-  border-radius: 22px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-  text-align: center;
-  position: relative;
+  max-width: 420px;
+  margin: auto;
 }
 
-/* 🔷 MARCO INSTITUCIONAL */
-.container::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 22px;
-  padding: 2px;
-  background: linear-gradient(135deg, #22c55e, #2563eb);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-}
-
-/* 🔷 LOGO */
-.logo {
-  width: 70px;
-  margin: 0 auto 8px auto;
-  display: block;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
-}
-
-/* 🔷 ENCABEZADO */
 h1 {
-  font-size: 13px;
-  color: #94a3b8;
-  margin-bottom: 4px;
+  text-align: center;
+  margin-bottom: 10px;
 }
 
-h2 {
-  font-size: 18px;
-  margin: 0;
-  letter-spacing: 0.5px;
-}
-
-/* 🔷 NOMBRE */
-.nombre {
-  font-size: 22px;
-  font-weight: 700;
-  margin-top: 12px;
-}
-
-/* 🔷 UBICACIÓN */
-.detalle {
-  color: #9ca3af;
-  margin-bottom: 16px;
-  font-size: 13px;
-}
-
-/* 🔷 QR CON MARCO */
-.qr-box {
-  background: white;
+/* 🔴 AVISO ATRASO (AHORA ARRIBA) */
+.aviso {
+  background: #f59e0b;
+  color: #111827;
   padding: 12px;
-  border-radius: 16px;
-  display: inline-block;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-}
-
-#qr canvas {
-  display: block;
-}
-
-/* 🔷 INDICACIÓN */
-.indicacion {
-  margin-top: 14px;
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-/* 🔷 BOTÓN */
-.btn-wa {
-  margin-top: 18px;
-  padding: 14px;
-  border-radius: 14px;
-  border: none;
-  background: linear-gradient(135deg, #25D366, #16a34a);
-  color: white;
-  font-size: 15px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  font-size: 14px;
   font-weight: bold;
-  width: 100%;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  text-align: center;
 }
 
-.btn-wa:active {
-  transform: scale(0.97);
+input, button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+}
+
+button {
+  background: #2563eb;
+  color: white;
+  font-weight: bold;
+}
+
+#qrContainer {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.hidden {
+  display: none;
 }
 </style>
 
@@ -124,25 +68,22 @@ h2 {
 
 <div class="container">
 
-  <img src="icono-512.png" class="logo">
+  <h1>Registro trabajador del hogar</h1>
 
-  <h1>Villas de la Concepción</h1>
-  <h2>ACCESO TRABAJADOR</h2>
+  <!-- 🔥 AHORA SIEMPRE VISIBLE ARRIBA -->
 
-  <div class="nombre" id="nombre"></div>
-  <div class="detalle" id="detalle"></div>
-
-  <div class="qr-box">
-    <div id="qr"></div>
+  <div id="avisoAtraso" class="aviso hidden">
+    Tienes atraso. Puedes continuar, pero regulariza.
   </div>
 
-  <div class="indicacion">
-    Presentar este código en caseta
-  </div>
+  <input type="text" id="nombre" placeholder="Nombre completo">
+  <input type="text" id="telefono" placeholder="Teléfono">
 
-  <button id="btnWA" class="btn-wa">
-    📲 Enviar por WhatsApp
-  </button>
+<button id="btnGenerar">Generar QR</button>
+
+  <div id="qrContainer" class="hidden">
+    <canvas id="qr"></canvas>
+  </div>
 
 </div>
 
@@ -150,65 +91,29 @@ h2 {
 
 <script>
 
-// 🔎 PARAMETROS
-const params = new URLSearchParams(window.location.search);
+// 🔥 SIMULACIÓN / FLAG DE ATRASO (YA EXISTENTE EN TU LÓGICA)
+let tieneAtraso = true; // <-- aquí normalmente viene de BD
 
-const codigo = params.get("qr");
-const nombre = params.get("nombre");
-const privada = params.get("privada");
-const casa = params.get("casa");
-const origen = params.get("origen");
-
-// 🔐 VALIDACIÓN
-if (!codigo || !nombre || !privada || !casa) {
-  document.body.innerHTML = "Datos incompletos";
-  throw new Error("Datos incompletos");
+// 🔥 MOSTRAR AVISO DESDE EL INICIO
+if (tieneAtraso) {
+  document.getElementById("avisoAtraso").classList.remove("hidden");
 }
 
-// 🔗 BASE
-const baseURL = window.location.origin;
+// GENERAR QR
+document.getElementById("btnGenerar").addEventListener("click", () => {
 
-// 🔗 QR
-const urlQR = `${baseURL}/acceso_trabajador_hogar.html?qr=${codigo}`;
+  const nombre = document.getElementById("nombre").value;
 
-QRCode.toCanvas(urlQR, {
-  width: 200,
-  margin: 1,
-  color: {
-    dark: "#000000",
-    light: "#ffffff"
+  if (!nombre) {
+    alert("Ingrese nombre");
+    return;
   }
-}, function (err, canvas) {
-  if (!err) {
-    document.getElementById("qr").appendChild(canvas);
-  }
-});
 
-// 🧾 DATOS
-document.getElementById("nombre").innerText = nombre;
-document.getElementById("detalle").innerText =
-  `Privada ${privada} • Lote ${casa}`;
+  const qrData = `demo-${Date.now()}`;
 
-// 🔥 BOTÓN CONTROL
-if (origen !== "admin" && origen !== "residente") {
-  document.getElementById("btnWA").style.display = "none";
-}
+  QRCode.toCanvas(document.getElementById("qr"), qrData, { width: 200 });
 
-// 📲 WHATSAPP
-document.getElementById("btnWA").addEventListener("click", () => {
-
-  const linkCredencial =
-    `${baseURL}/credencial_trabajador_hogar.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
-
-  const mensaje =
-    `👷 Credencial de acceso\n\n` +
-    `Nombre: ${nombre}\n` +
-    `Ubicación: Privada ${privada} - Lote ${casa}\n\n` +
-    `Presenta este código en caseta:\n${linkCredencial}`;
-
-  const wa = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
-
-  window.open(wa, "_blank");
+  document.getElementById("qrContainer").classList.remove("hidden");
 });
 
 </script>
