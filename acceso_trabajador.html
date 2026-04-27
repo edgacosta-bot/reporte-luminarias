@@ -200,6 +200,7 @@ btnRegistrar.onclick = async () => {
   btnRegistrar.disabled = true;
   btnRegistrar.innerText = "Procesando...";
 
+  // 🔴 SALIDA
   if(tipoAccion === "salida"){
 
     const { error } = await supabaseClient.rpc("registrar_salida_trabajador", {
@@ -209,42 +210,47 @@ btnRegistrar.onclick = async () => {
 
     if (error){
       console.error("ERROR SALIDA:", error);
-      estado.innerText = "Salida registrada";
-      btnRegistrar.classList.add("hidden");
-      document.body.className = "ok";    
+      ui.error("Error al registrar salida");
+      btnRegistrar.disabled = false;
+      btnRegistrar.innerText = "Registrar salida";
       return;
     }
 
-    estado.innerText = "Salida registrada";
-    btnRegistrar.classList.add("hidden");
     document.body.className = "ok";
+    estado.innerText = "Salida registrada correctamente";
+    detalle.innerHTML = `<p><b>${trabajador.nombre}</b></p><p>Salida registrada</p>`;
+    btnRegistrar.classList.add("hidden");
+
+    setTimeout(() => {
+      window.location.href = window.location.pathname;
+    }, 2000);
+
     return;
   }
 
-  console.log("DEBUG trabajador:", trabajador);
-  console.log("DEBUG vigilante:", vigilante);
-  console.log("DEBUG trabajador.trabajador_id:", trabajador?.trabajador_id);
-  console.log("DEBUG vigilante.id:", vigilante?.id);
-
+  // 🟢 ENTRADA
   const { error } = await supabaseClient.rpc("entrada_trabajador", {
-  trabajador: trabajador.trabajador_id,
-  vigilante: vigilante.id
-});
+    trabajador: trabajador.trabajador_id,
+    vigilante: vigilante.id
+  });
 
   if (error){
     console.error("ERROR ENTRADA:", error);
     ui.error(error.message || "Error al registrar entrada");
     btnRegistrar.disabled = false;
-    btnRegistrar.innerText = "Registrar";
+    btnRegistrar.innerText = "Registrar entrada";
     return;
   }
 
-  estado.innerText = "Acceso registrado";
-document.body.className = "ok";
+  // ✅ CONFIRMACIÓN LIMPIA (SIN SALTO A SALIDA)
+  document.body.className = "ok";
+  estado.innerText = "Acceso registrado correctamente";
+  detalle.innerHTML = `<p><b>${trabajador.nombre}</b></p><p>Entrada registrada</p>`;
+  btnRegistrar.classList.add("hidden");
 
-setTimeout(() => {
-  window.location.reload();
-}, 1500);
+  setTimeout(() => {
+    window.location.href = window.location.pathname;
+  }, 2000);
 };
 
 // UI
