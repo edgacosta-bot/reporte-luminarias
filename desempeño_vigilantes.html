@@ -44,34 +44,20 @@ body {
 
 <script>
 
-// 🔐 Protección
+// 🔐 Protección + carga
 window.addEventListener("load", async () => {
-
-  // 🔥 esperar a que supabase esté listo
-  let intentos = 0;
-
-  while (!window.supabase && intentos < 10) {
-    await new Promise(r => setTimeout(r, 100));
-    intentos++;
-  }
-
-  if (!window.supabase) {
-    console.error("❌ Supabase nunca cargó");
-    return;
-  }
-
   await protegerPagina(["administracion", "mesa_directiva", "soporte"]);
   await cargarDatos();
 });
 
-// 🚀 Cargar datos
 async function cargarDatos() {
 
-if (typeof supabaseClient === "undefined" || !supabaseClient) {
-  console.error("❌ SupabaseClient no disponible");
-  return;
-}
-  // 1️⃣ Traer reportes
+  if (typeof supabaseClient === "undefined") {
+    console.error("❌ SupabaseClient no disponible");
+    return;
+  }
+
+  // 🔹 1. Reportes
   const { data: reportes, error: err1 } = await supabaseClient
     .from("reportes_vigilantes")
     .select("vigilante_id, tipo, fecha_reporte, rol_creador");
@@ -81,7 +67,7 @@ if (typeof supabaseClient === "undefined" || !supabaseClient) {
     return;
   }
 
-  // 2️⃣ Traer vigilantes
+  // 🔹 2. Vigilantes
   const { data: residentes, error: err2 } = await supabaseClient
     .from("residentes")
     .select("id, nombre, tipo");
@@ -91,51 +77,100 @@ if (typeof supabaseClient === "undefined" || !supabaseClient) {
     return;
   }
 
-  // 3️⃣ Crear mapa de vigilantes
+  // 🔹 mapa vigilantes
   const mapaVigilantes = {};
-
   residentes.forEach(r => {
     if (r.tipo === "vigilante") {
       mapaVigilantes[r.id] = r.nombre;
     }
   });
 
-  // 4️⃣ Filtrar solo reportes de vigilantes válidos
   const datos = (reportes || []).filter(r => mapaVigilantes[r.vigilante_id]);
-  
+
   console.log("DATOS LIMPIOS:", datos);
 
-  // 📊 1. Reportes por vigilante
-if (!datos.length) {
-  console.warn("⚠️ No hay datos para graficar");
-}
-  
+  /////////////////////////////////////////////////////////
+  // 📊 1. POR VIGILANTE
+  /////////////////////////////////////////////////////////
   const porVigilante = {};
-
   datos.forEach(d => {
     const nombre = mapaVigilantes[d.vigilante_id];
     porVigilante[nombre] = (porVigilante[nombre] || 0) + 1;
   });
 
-  const canvas = document.getElementById("chartVigilantes");
+  renderChart("chartVigilantes", "bar",
+    Object.keys(porVigilante),
+    Object.values(porVigilante),
+    "Reportes por vigilante"
+  );
 
-if (canvas.chart) {
-  canvas.chart.destroy();
+  /////////////////////////////////////////////////////////
+  // 🧾 2. POR TIPO
+  /////////////////////////////////////////////////////////
+  const porTipo = {};
+  datos.forEach(d => {
+    porTipo[d.tipo] = (porTipo[d.tipo] || 0) + 1;
+  });
+
+  renderChart("chartTipos", "pie",
+    Object.keys(porTipo),
+    Object.values(porTipo),
+    "Tipos de reporte"
+  );
+
+  /////////////////////////////////////////////////////////
+  // 📈 3. POR FECHA
+  /////////////////////////////////////////////////////////
+  const porFecha = {};
+  datos.forEach(d => {
+    const fecha = new Date(d.fecha_reporte).toLocaleDateString();
+    porFecha[fecha] = (porFecha[fecha] || 0) + 1;
+  });
+
+  renderChart("chartTiempo", "line",
+    Object.keys(porFecha),
+    Object.values(porFecha),
+    "Reportes por día"
+  );
+
+  /////////////////////////////////////////////////////////
+  // 👥 4. POR ROL
+  /////////////////////////////////////////////////////////
+  const porRol = {};
+  datos.forEach(d => {
+    const rol = d.rol_creador || "desconocido";
+    porRol[rol] = (porRol[rol] || 0) + 1;
+  });
+
+  renderChart("chartRol", "doughnut",
+    Object.keys(porRol),
+    Object.values(porRol),
+    "Quién reporta"
+  );
 }
 
-canvas.chart = new Chart(canvas, {
-  type: "bar",
-  data: {
-    labels: Object.keys(porVigilante),
-    datasets: [{
-      label: "Reportes por vigilante",
-      data: Object.values(porVigilante)
-    }]
+/////////////////////////////////////////////////////////
+// 🔥 FUNCIÓN ÚNICA DE GRÁFICAS (LIMPIA)
+/////////////////////////////////////////////////////////
+function renderChart(id, tipo, labels, data, label) {
+
+  const canvas = document.getElementById(id);
+
+  if (canvas.chart) {
+    canvas.chart.destroy();
   }
-});
 
+  canvas.chart = new Chart(canvas, {
+    type: tipo,
+    data: {
+      labels,
+      datasets: [{
+        label,
+        data
+      }]
+    }
+  });
 }
-
 
 </script>
 
