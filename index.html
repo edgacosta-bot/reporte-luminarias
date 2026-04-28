@@ -18,6 +18,7 @@ body {
   color: white;
 }
 
+/* HEADER */
 .header {
   text-align: center;
   padding: 30px 20px 10px;
@@ -28,11 +29,17 @@ body {
   margin-bottom: 10px;
 }
 
+.header h1 {
+  margin: 5px 0;
+  font-size: 26px;
+}
+
 .rol {
   color: #cbd5f5;
   font-size: 14px;
 }
 
+/* BOTÓN SALIR */
 .logout {
   text-align: center;
   margin-bottom: 15px;
@@ -46,50 +53,106 @@ body {
   border-radius: 10px;
 }
 
+/* KPI */
+.kpis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  padding: 0 20px;
+}
+
+.kpi {
+  background: #111827;
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+}
+
+.kpi span {
+  font-size: 30px;
+  font-weight: 600;
+}
+
+/* BOTONES */
 .menu {
   padding: 20px 16px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 24px; /* 🔥 separación real */
 }
 
 .button {
+  border: 1px solid rgba(255,255,255,0.08);
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 22px;
+  margin: 6px 0; /* 🔥 evita efecto “pegado” */
+  width: 100%;
+  padding: 22px 24px;
+
   border-radius: 18px;
   text-decoration: none;
+
   font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+
+  letter-spacing: 0.3px;
+
   box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+
+  box-sizing: border-box;
+
+  transition: all 0.2s ease;
 }
 
+.button:hover {
+  transform: translateY(-2px);
+  opacity: 0.95;
+}  
+
+/* COLORES */
+.btn-vino { background: #9F2241; color: white; }
+
+.btn-verde { background: #235B4E; color: white; }
+
+.btn-beige { background: #DDC9A3; color: #1e293b; }
+
+.btn-gris { background: #98989A; color: white; }
+
+/* NUEVOS */
+.btn-vino-dark { background: #691C32; color: white; }
+
+.btn-verde-dark { background: #10312B; color: white; }
+
+.btn-oro { background: #BC955C; color: #1e293b; }
+
+.btn-gris-oscuro { background: #6F7271; color: white; }
+
+/* ICONOS */
 .icon {
-  font-size: 26px;
+  font-size: 28px;
+  width: 32px;
+  text-align: center;
 }
 
+/* SUBMENU */
 .submenu {
   display: none;
   flex-direction: column;
   gap: 10px;
+
   margin-left: 6px;
   margin-top: 8px;
   margin-bottom: 12px;
 }
 
-.submenu .button {
+ .submenu .button {
   background: rgba(255,255,255,0.05);
   font-size: 15px;
-  padding: 14px;
-}
-
-/* COLORES RESIDENTE */
-.btn-azul1 { background: #005187; color: white; }
-.btn-azul2 { background: #4d82bc; color: white; }
-.btn-azul3 { background: #84b6f4; color: white; }
-.btn-azul4 { background: #c4dafa; color: #0f172a; }
-.btn-blanco { background: #fcffff; color: #0f172a; }
-
+  padding: 14px 16px;
+  border-radius: 12px;
+} 
 </style>
 
 </head>
@@ -99,63 +162,110 @@ body {
 <div class="header">
   <img src="icono-512.png" class="logo">
   <h1>Villas de la Concepción</h1>
-  <div class="rol" id="rolTexto"></div>
+  <div class="rol" id="rolTexto">Cargando...</div>
 </div>
 
 <div class="logout">
   <button onclick="logout()">Cerrar sesión</button>
 </div>
 
+<!-- KPI -->
+
+<div class="kpis">
+  <div class="kpi">
+    🚨 Reportes hoy <br>
+    <span id="kpiReportes">0</span>
+  </div>
+
+  <div class="kpi">
+    📦 Paquetes pendientes <br>
+    <span>0</span>
+  </div>
+
+  <div class="kpi">
+    👷 Trabajadores dentro <br>
+    <span id="kpiTrabajadores">0</span>
+  </div>
+</div>
+
+<!-- ADMIN -->
+
+<div class="menu" id="menuAdmin" style="display:none;">
+
+  <a href="admin_reporte_general.html" class="button btn-vino">
+    <span class="icon">📊</span> Reporte general
+  </a>
+
+  <button class="button btn-verde" onclick="toggleMenu('obras')">
+    <span class="icon">🏗</span> Gestión de obras
+  </button>
+
+  <div id="obras" class="submenu">
+    <a href="obras_aprobacion.html" class="button btn-gris">Situación general</a>
+    <a href="obras_registro.html" class="button btn-gris">Registrar obra</a>
+    <a href="trabajadores_registro.html" class="button btn-gris">Alta trabajadores</a>
+    <a href="permisos_trabajadores.html" class="button btn-gris">Accesos trabajadores</a>
+    <a href="trabajadores_dentro.html" class="button btn-gris">Trabajadores dentro</a>
+  </div>
+
+  <button class="button btn-verde-dark" onclick="toggleMenu('qr')">
+    <span class="icon">🔐</span> Códigos QR
+  </button>
+
+  <div id="qr" class="submenu">
+    <a href="crear_qr.html" class="button btn-gris">Visitantes</a>
+    <a href="trabajador_qr.html" class="button btn-gris">Trabajadores</a>
+    <a href="reimpresion_trabajadores.html" class="button btn-gris">Reimpresión QR trabajadores obra</a>
+  </div>
+
+  <a href="admin_servicios.html" class="button btn-beige">
+    <span class="icon">🚚</span> Otros accesos autorizados
+  </a>
+
+  <button class="button btn-oro" onclick="toggleMenu('infra')">
+    <span class="icon">🏙</span> Infraestructura
+  </button>
+
+  <div id="infra" class="submenu">
+    <a href="luminarias_dashboard.html" class="button btn-gris">Luminarias</a>
+    <a href="videocamaras.html" class="button btn-gris">Videovigilancia</a>
+    <a href="cerco_electrico.html" class="button btn-gris">Cerco eléctrico</a>
+    <a href="agua.html" class="button btn-gris">Agua</a>
+  </div>
+
+  <a href="desempeño_vigilantes.html" class="button btn-vino-dark">
+    <span class="icon">📈</span> Desempeño vigilantes
+  </a>
+
+  <a href="aportaciones.html" class="button btn-gris">
+    <span class="icon">💰</span> Cuotas residentes
+  </a>
+
+</div>
+
+<!-- RESIDENTE -->
+
 <div class="menu" id="menuResidente" style="display:none;">
 
-<button class="button btn-azul1" onclick="toggleMenu('qr_res')">
-🔐 Generar QR
-</button>
-<div id="qr_res" class="submenu">
-<a href="crear_qr.html" class="button btn-azul3">Visitantes</a>
-<a href="trabajador_hogar_registro.html" class="button btn-azul3">Empleado doméstico</a>
-</div>
+  <a href="mis_reportes.html" class="button btn-vino">
+    <span class="icon">📋</span> Mis reportes
+  </a>
 
-<button class="button btn-azul2" onclick="toggleMenu('paq')">
-📦 Paquetería
-</button>
-<div id="paq" class="submenu">
-<a href="residente_paquetes.html" class="button btn-azul3">Autorizar recepción</a>
-<a href="mis_paquetes.html" class="button btn-azul3">Mis paquetes</a>
-</div>
+  <a href="reporte_vigilante.html" class="button btn-verde">
+    <span class="icon">👮</span> Reportar vigilante
+  </a>
 
-<a href="servicios_arribo.html" class="button btn-azul3">🚚 Accesos servicios</a>
+  <a href="reporte_vecinal.html" class="button btn-verde">
+    <span class="icon">🏠</span> Reporte vecinal
+  </a>
 
-<a href="trabajadores_hogar_gestion.html" class="button btn-azul3">👨‍🔧 Empleados domésticos</a>
+  <a href="reporte_luminaria.html" class="button btn-beige">
+    <span class="icon">💡</span> Luminaria
+  </a>
 
-<button class="button btn-azul1" onclick="toggleMenu('reportes')">
-🚨 Reportes
-</button>
-<div id="reportes" class="submenu">
-<a href="incidencia_vecinal.html" class="button btn-azul3">Vecinal</a>
-<a href="reporte_vigilante.html" class="button btn-azul3">Vigilante</a>
-<a href="reporte_obras.html" class="button btn-azul3">Obras</a>
-<a href="formulario_luminarias.html" class="button btn-azul3">Luminaria</a>
-<a href="formulario_agua.html" class="button btn-azul3">Agua</a>
-</div>
-
-<button class="button btn-azul2" onclick="toggleMenu('infra_res')">
-🏙 Infraestructura
-</button>
-<div id="infra_res" class="submenu">
-<a href="luminarias_dashboard.html" class="button btn-azul3">Luminarias</a>
-<a href="https://drive.google.com" class="button btn-azul3">Croquis</a>
-<a href="videocamaras.html" class="button btn-azul3">Videovigilancia</a>
-<a href="cerco_electrico.html" class="button btn-azul3">Cerco eléctrico</a>
-</div>
-
-<a href="https://drive.google.com" class="button btn-azul4">
-💰 Aportaciones luminarias
-</a>
-
-<a href="obras_aprobacion.html" class="button btn-blanco">
-🏗 Situación obras
-</a>
+  <a href="reporte_agua.html" class="button btn-beige">
+    <span class="icon">💧</span> Agua
+  </a>
 
 </div>
 
@@ -163,7 +273,9 @@ body {
 
 function toggleMenu(id){
   const el = document.getElementById(id);
+
   const isVisible = window.getComputedStyle(el).display !== "none";
+
   el.style.display = isVisible ? "none" : "block";
 }
 
@@ -188,16 +300,37 @@ window.addEventListener("load", async () => {
     .eq("user_id", user.id)
     .single();
 
-  document.getElementById("rolTexto").innerText = residente?.tipo?.toUpperCase();
+  const rol = residente?.tipo || "";
 
-  document.getElementById("menuResidente").style.display = "block";
+  document.getElementById("rolTexto").innerText = rol.toUpperCase();
 
-  ["qr_res","paq","reportes","infra_res"].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.style.display="none";
-  });
+  if (rol === "administracion") {
+    document.getElementById("menuAdmin").style.display = "block";
+  } 
+  else if (rol === "residente" || rol === "colono") {
+    document.getElementById("menuResidente").style.display = "block";
+  }
 
+  await cargarKPIs();
+  ["obras", "qr", "infra"].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.style.display = "none";
 });
+});
+
+async function cargarKPIs(){
+
+  const hoy = new Date();
+  hoy.setHours(0,0,0,0);
+
+  const { data } = await supabaseClient
+    .from("reportes_vigilantes")
+    .select("fecha_reporte");
+
+  const totalHoy = data?.filter(r => new Date(r.fecha_reporte) >= hoy).length || 0;
+
+  document.getElementById("kpiReportes").innerText = totalHoy;
+}
 
 </script>
 
