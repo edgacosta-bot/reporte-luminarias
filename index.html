@@ -24,13 +24,19 @@ body {
   padding: 30px 20px 10px;
 }
 
+.logo {
+  width: 90px;
+  margin-bottom: 10px;
+}
+
 .header h1 {
-  margin: 10px 0;
+  margin: 5px 0;
+  font-size: 26px;
 }
 
 .rol {
   color: #cbd5f5;
-  margin-bottom: 10px;
+  font-size: 14px;
 }
 
 /* BOTÓN SALIR */
@@ -40,12 +46,11 @@ body {
 }
 
 .logout button {
-  background: #7c2d12;
+  background: #9F2241;
   color: white;
   border: none;
   padding: 10px 18px;
   border-radius: 10px;
-  cursor: pointer;
 }
 
 /* KPI */
@@ -64,38 +69,42 @@ body {
 }
 
 .kpi span {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: bold;
 }
 
-/* MENÚ */
-.section {
+/* BOTONES */
+.menu {
   padding: 20px;
 }
 
-.section-title {
-  margin-top: 25px;
-  margin-bottom: 8px;
-  font-size: 13px;
-  color: #9ca3af;
-}
-
 .button {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 15px;
   width: 100%;
-  padding: 14px;
-  margin-bottom: 8px;
-  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 12px;
+  border-radius: 16px;
   text-decoration: none;
   color: white;
-  background: #1f2937;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-.button:hover {
-  background: #374151;
+/* COLORES */
+.btn-vino { background: #9F2241; }
+.btn-verde { background: #235B4E; }
+.btn-beige { background: #DDC9A3; color: #1e293b; }
+.btn-gris { background: #98989A; }
+
+/* ICONOS */
+.icon {
+  font-size: 26px;
 }
 
-/* SUBMENÚ */
+/* SUBMENU */
 .submenu {
   display: none;
   margin-left: 10px;
@@ -107,6 +116,7 @@ body {
 <body>
 
 <div class="header">
+  <img src="icono-512.png" class="logo">
   <h1>Villas de la Concepción</h1>
   <div class="rol" id="rolTexto">Cargando...</div>
 </div>
@@ -136,76 +146,96 @@ body {
 
 <!-- ADMIN -->
 
-<div class="section" id="menuAdmin" style="display:none;">
+<div class="menu" id="menuAdmin" style="display:none;">
 
-  <div class="section-title">GENERAL</div>
-  <a href="admin_reporte_general.html" class="button">📊 Reporte general</a>
+  <a href="admin_reporte_general.html" class="button btn-vino">
+    <span class="icon">📊</span> Reporte general
+  </a>
 
-  <div class="section-title">GESTIÓN DE OBRAS</div>
-  <button class="button" onclick="toggleMenu('obras')">🏗 Gestión de obras</button>
+  <button class="button btn-verde" onclick="toggleMenu('obras')">
+    <span class="icon">🏗</span> Gestión de obras
+  </button>
+
   <div id="obras" class="submenu">
-    <a href="obras_registro.html" class="button">Registrar obra</a>
-    <a href="trabajadores_registro.html" class="button">Alta trabajadores</a>
-    <a href="permisos_trabajadores.html" class="button">Gestionar accesos</a>
-    <a href="trabajadores_dentro.html" class="button">Trabajadores dentro</a>
+    <a href="obras_registro.html" class="button btn-gris">Registrar obra</a>
+    <a href="trabajadores_registro.html" class="button btn-gris">Alta trabajadores</a>
+    <a href="permisos_trabajadores.html" class="button btn-gris">Accesos trabajadores</a>
+    <a href="trabajadores_dentro.html" class="button btn-gris">Trabajadores dentro</a>
   </div>
 
-  <div class="section-title">CÓDIGOS QR</div>
-  <button class="button" onclick="toggleMenu('qr')">🔐 Códigos QR</button>
+  <button class="button btn-verde" onclick="toggleMenu('qr')">
+    <span class="icon">🔐</span> Códigos QR
+  </button>
+
   <div id="qr" class="submenu">
-    <a href="crear_qr.html" class="button">Visitantes</a>
-    <a href="trabajador_qr.html" class="button">Trabajadores obra</a>
-    <a href="reimpresion_trabajadores.html" class="button">Reimpresión QR</a>
+    <a href="crear_qr.html" class="button btn-gris">Visitantes</a>
+    <a href="trabajador_qr.html" class="button btn-gris">Trabajadores</a>
+    <a href="reimpresion_trabajadores.html" class="button btn-gris">Reimpresión</a>
   </div>
 
-  <div class="section-title">ACCESOS RECURRENTES</div>
-  <a href="admin_servicios.html" class="button">🚚 Accesos servicios</a>
+  <a href="admin_servicios.html" class="button btn-beige">
+    <span class="icon">🚚</span> Accesos servicios
+  </a>
 
-  <div class="section-title">INFRAESTRUCTURA</div>
-  <button class="button" onclick="toggleMenu('infra')">🏙 Infraestructura</button>
+  <button class="button btn-verde" onclick="toggleMenu('infra')">
+    <span class="icon">🏙</span> Infraestructura
+  </button>
+
   <div id="infra" class="submenu">
-    <a href="luminarias_dashboard.html" class="button">Luminarias</a>
-    <a href="videocamaras.html" class="button">Videovigilancia</a>
-    <a href="cerco_electrico.html" class="button">Cerco eléctrico</a>
-    <a href="agua.html" class="button">Agua</a>
+    <a href="luminarias_dashboard.html" class="button btn-gris">Luminarias</a>
+    <a href="videocamaras.html" class="button btn-gris">Videovigilancia</a>
+    <a href="cerco_electrico.html" class="button btn-gris">Cerco eléctrico</a>
+    <a href="agua.html" class="button btn-gris">Agua</a>
   </div>
 
-  <div class="section-title">SEGURIDAD</div>
-  <a href="desempeño_vigilantes.html" class="button">📈 Desempeño vigilantes</a>
+  <a href="desempeño_vigilantes.html" class="button btn-vino">
+    <span class="icon">📈</span> Desempeño vigilantes
+  </a>
 
-  <div class="section-title">CUOTAS</div>
-  <a href="aportaciones.html" class="button">💰 Cuotas residentes</a>
+  <a href="aportaciones.html" class="button btn-beige">
+    <span class="icon">💰</span> Cuotas residentes
+  </a>
 
 </div>
 
 <!-- RESIDENTE -->
 
-<div class="section" id="menuResidente" style="display:none;">
+<div class="menu" id="menuResidente" style="display:none;">
 
-  <div class="section-title">REPORTES</div>
-  <a href="mis_reportes.html" class="button">📋 Mis reportes</a>
-  <a href="reporte_vigilante.html" class="button">👮 Reportar vigilante</a>
-  <a href="reporte_vecinal.html" class="button">🏠 Reporte vecinal</a>
-  <a href="reporte_luminaria.html" class="button">💡 Luminaria</a>
-  <a href="reporte_agua.html" class="button">💧 Agua</a>
+  <a href="mis_reportes.html" class="button btn-vino">
+    <span class="icon">📋</span> Mis reportes
+  </a>
+
+  <a href="reporte_vigilante.html" class="button btn-verde">
+    <span class="icon">👮</span> Reportar vigilante
+  </a>
+
+  <a href="reporte_vecinal.html" class="button btn-verde">
+    <span class="icon">🏠</span> Reporte vecinal
+  </a>
+
+  <a href="reporte_luminaria.html" class="button btn-beige">
+    <span class="icon">💡</span> Luminaria
+  </a>
+
+  <a href="reporte_agua.html" class="button btn-beige">
+    <span class="icon">💧</span> Agua
+  </a>
 
 </div>
 
 <script>
 
-/* TOGGLE */
 function toggleMenu(id){
   const el = document.getElementById(id);
   el.style.display = el.style.display === "block" ? "none" : "block";
 }
 
-/* LOGOUT */
 async function logout(){
   await supabaseClient.auth.signOut();
   window.location.href = "login.html";
 }
 
-/* INIT */
 window.addEventListener("load", async () => {
 
   const { data } = await supabaseClient.auth.getSession();
@@ -236,7 +266,6 @@ window.addEventListener("load", async () => {
   await cargarKPIs();
 });
 
-/* KPI */
 async function cargarKPIs(){
 
   const hoy = new Date();
