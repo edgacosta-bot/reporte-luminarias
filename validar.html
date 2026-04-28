@@ -147,7 +147,7 @@ window.addEventListener("DOMContentLoaded", async ()=>{
   const { data } = await supabaseClient.auth.getSession();
 
   if (data.session) {
-    await protegerPagina(["vigilante","residente"]);
+    await protegerPagina(["vigilante","administracion","residente"]);
   }
 
   await validar();
