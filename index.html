@@ -21,15 +21,31 @@ body {
 /* HEADER */
 .header {
   text-align: center;
-  padding: 30px 20px;
+  padding: 30px 20px 10px;
 }
 
 .header h1 {
   margin: 10px 0;
 }
 
-.header .rol {
+.rol {
   color: #cbd5f5;
+  margin-bottom: 10px;
+}
+
+/* BOTÓN SALIR */
+.logout {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.logout button {
+  background: #7c2d12;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
 }
 
 /* KPI */
@@ -61,7 +77,6 @@ body {
   margin-top: 25px;
   margin-bottom: 8px;
   font-size: 13px;
-  letter-spacing: 1px;
   color: #9ca3af;
 }
 
@@ -73,9 +88,6 @@ body {
   border-radius: 12px;
   text-decoration: none;
   color: white;
-  border: none;
-  cursor: pointer;
-  text-align: left;
   background: #1f2937;
 }
 
@@ -88,7 +100,6 @@ body {
   display: none;
   margin-left: 10px;
 }
-
 </style>
 
 </head>
@@ -98,6 +109,10 @@ body {
 <div class="header">
   <h1>Villas de la Concepción</h1>
   <div class="rol" id="rolTexto">Cargando...</div>
+</div>
+
+<div class="logout">
+  <button onclick="logout()">Cerrar sesión</button>
 </div>
 
 <!-- KPI -->
@@ -119,7 +134,7 @@ body {
   </div>
 </div>
 
-<!-- MENÚ ADMIN -->
+<!-- ADMIN -->
 
 <div class="section" id="menuAdmin" style="display:none;">
 
@@ -163,18 +178,37 @@ body {
 
 </div>
 
+<!-- RESIDENTE -->
+
+<div class="section" id="menuResidente" style="display:none;">
+
+  <div class="section-title">REPORTES</div>
+  <a href="mis_reportes.html" class="button">📋 Mis reportes</a>
+  <a href="reporte_vigilante.html" class="button">👮 Reportar vigilante</a>
+  <a href="reporte_vecinal.html" class="button">🏠 Reporte vecinal</a>
+  <a href="reporte_luminaria.html" class="button">💡 Luminaria</a>
+  <a href="reporte_agua.html" class="button">💧 Agua</a>
+
+</div>
+
 <script>
 
-/* 🔽 Toggle menú */
+/* TOGGLE */
 function toggleMenu(id){
   const el = document.getElementById(id);
   el.style.display = el.style.display === "block" ? "none" : "block";
 }
 
-/* 🔐 INIT */
+/* LOGOUT */
+async function logout(){
+  await supabaseClient.auth.signOut();
+  window.location.href = "login.html";
+}
+
+/* INIT */
 window.addEventListener("load", async () => {
 
-  let { data } = await supabaseClient.auth.getSession();
+  const { data } = await supabaseClient.auth.getSession();
   const user = data?.session?.user;
 
   if (!user) {
@@ -194,12 +228,15 @@ window.addEventListener("load", async () => {
 
   if (rol === "administracion") {
     document.getElementById("menuAdmin").style.display = "block";
+  } 
+  else if (rol === "residente" || rol === "colono") {
+    document.getElementById("menuResidente").style.display = "block";
   }
 
   await cargarKPIs();
 });
 
-/* 📊 KPI */
+/* KPI */
 async function cargarKPIs(){
 
   const hoy = new Date();
