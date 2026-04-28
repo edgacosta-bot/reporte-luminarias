@@ -206,7 +206,7 @@ let residenteGlobal = null;
 // 🔐 INICIALIZACIÓN SEGURA
 window.addEventListener("DOMContentLoaded", async () => {
 
-  await protegerPagina(["administrador","colono","residente"]);
+  await protegerPagina(["administrador","administracion","colono","residente"]);
 
   const { data: { user } } = await supabaseClient.auth.getUser();
 
