@@ -332,12 +332,18 @@ if (rol === "administracion" || rol === "mesa_directiva" || rol === "soporte") {
 
 async function cargarDashboardAdmin() {
 
-  const hoy = new Date().toISOString().split("T")[0];
+  // 🔥 rango correcto de HOY (hora local)
+const inicio = new Date();
+inicio.setHours(0,0,0,0);
 
-  const { data: reportes } = await supabaseClient
-    .from("reportes_vigilantes")
-    .select("id")
-    .gte("fecha_reporte", hoy);
+const fin = new Date();
+fin.setHours(23,59,59,999);
+
+const { data: reportes } = await supabaseClient
+  .from("reportes_vigilantes")
+  .select("id")
+  .gte("fecha_reporte", inicio.toISOString())
+  .lte("fecha_reporte", fin.toISOString());
 
   document.getElementById("kpiReportes").innerText = reportes?.length || 0;
 
