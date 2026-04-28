@@ -75,29 +75,50 @@ body {
 
 /* BOTONES */
 .menu {
-  padding: 20px;
+  padding: 20px 16px;
 }
 
 .button {
   display: flex;
   align-items: center;
   gap: 15px;
+
   width: 100%;
-  padding: 18px;
-  margin-bottom: 12px;
+  padding: 18px 20px;
+
   border-radius: 16px;
   text-decoration: none;
-  color: white;
+
   font-size: 18px;
   font-weight: bold;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+
+  box-sizing: border-box; /* 🔥 CLAVE */
 }
 
+.button:hover {
+  transform: translateY(-2px);
+  opacity: 0.95;
+}  
+
 /* COLORES */
-.btn-vino { background: #9F2241; }
-.btn-verde { background: #235B4E; }
+.btn-vino { background: #9F2241; color: white; }
+
+.btn-verde { background: #235B4E; color: white; }
+
 .btn-beige { background: #DDC9A3; color: #1e293b; }
-.btn-gris { background: #98989A; }
+
+.btn-gris { background: #98989A; color: white; }
+
+/* NUEVOS */
+.btn-vino-dark { background: #691C32; color: white; }
+
+.btn-verde-dark { background: #10312B; color: white; }
+
+.btn-oro { background: #BC955C; color: #1e293b; }
+
+.btn-gris-oscuro { background: #6F7271; color: white; }
 
 /* ICONOS */
 .icon {
