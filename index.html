@@ -78,14 +78,14 @@ body {
   padding: 20px 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px; /* 🔥 separa botones */
+  gap: 18px; /* 🔥 separación real */
 }
 
 .button {
   display: flex;
   align-items: center;
   gap: 14px;
-
+  margin: 4px 0; /* 🔥 evita efecto “pegado” */
   width: 100%;
   padding: 20px 22px;
 
@@ -93,7 +93,8 @@ body {
   text-decoration: none;
 
   font-size: 17px;
-  font-weight: 500; /* 🔥 quitamos bold pesado */
+  font-weight: 500;
+  letter-spacing: 0.3px;
 
   letter-spacing: 0.3px;
 
@@ -138,8 +139,8 @@ body {
 .submenu {
   display: none;
   margin-left: 8px;
-  margin-top: -5px;
-  margin-bottom: 5px;
+  margin-top: 6px;
+  margin-bottom: 6px;
 
   display: flex;
   flex-direction: column;
@@ -213,11 +214,11 @@ body {
   <div id="qr" class="submenu">
     <a href="crear_qr.html" class="button btn-gris">Visitantes</a>
     <a href="trabajador_qr.html" class="button btn-gris">Trabajadores</a>
-    <a href="reimpresion_trabajadores.html" class="button btn-gris">Reimpresión</a>
+    <a href="reimpresion_trabajadores.html" class="button btn-gris">Reimpresión QR trabajadores obra</a>
   </div>
 
   <a href="admin_servicios.html" class="button btn-beige">
-    <span class="icon">🚚</span> Accesos servicios
+    <span class="icon">🚚</span> Otros accesos autorizados
   </a>
 
   <button class="button btn-oro" onclick="toggleMenu('infra')">
@@ -271,7 +272,12 @@ body {
 
 function toggleMenu(id){
   const el = document.getElementById(id);
-  el.style.display = el.style.display === "block" ? "none" : "block";
+
+  if (el.style.display === "block") {
+    el.style.display = "none";
+  } else {
+    el.style.display = "block";
+  }
 }
 
 async function logout(){
