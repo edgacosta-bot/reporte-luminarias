@@ -78,16 +78,17 @@ body {
   padding: 20px 16px;
   display: flex;
   flex-direction: column;
-  gap: 18px; /* 🔥 separación real */
+  gap: 24px; /* 🔥 separación real */
 }
 
 .button {
+  border: 1px solid rgba(255,255,255,0.08);
   display: flex;
   align-items: center;
   gap: 14px;
-  margin: 4px 0; /* 🔥 evita efecto “pegado” */
+  margin: 6px 0; /* 🔥 evita efecto “pegado” */
   width: 100%;
-  padding: 20px 22px;
+  padding: 22px 24px;
 
   border-radius: 18px;
   text-decoration: none;
@@ -138,13 +139,12 @@ body {
 /* SUBMENU */
 .submenu {
   display: none;
-  margin-left: 8px;
-  margin-top: 6px;
-  margin-bottom: 6px;
-
-  display: flex;
   flex-direction: column;
   gap: 10px;
+
+  margin-left: 6px;
+  margin-top: 8px;
+  margin-bottom: 12px;
 }
 
  .submenu .button {
@@ -273,11 +273,9 @@ body {
 function toggleMenu(id){
   const el = document.getElementById(id);
 
-  if (el.style.display === "block") {
-    el.style.display = "none";
-  } else {
-    el.style.display = "block";
-  }
+  const isVisible = window.getComputedStyle(el).display !== "none";
+
+  el.style.display = isVisible ? "none" : "block";
 }
 
 async function logout(){
@@ -313,6 +311,10 @@ window.addEventListener("load", async () => {
   }
 
   await cargarKPIs();
+  ["obras", "qr", "infra"].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.style.display = "none";
+});
 });
 
 async function cargarKPIs(){
