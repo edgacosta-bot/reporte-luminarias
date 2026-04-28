@@ -175,6 +175,59 @@ body {
 <!-- ADMIN (INTACTO) -->
 
 <div class="menu" id="menuAdmin" style="display:none;">
+
+  <!-- PEGAS AQUÍ TU BLOQUE ORIGINAL -->
+
+  <a href="admin_reporte_general.html" class="button btn-vino">
+    <span class="icon">📊</span> Reporte general
+  </a>
+
+  <button class="button btn-verde" onclick="toggleMenu('obras')">
+    <span class="icon">🏗</span> Gestión de obras
+  </button>
+
+  <div id="obras" class="submenu">
+    <a href="obras_aprobacion.html" class="button btn-gris">Situación general</a>
+    <a href="obras_registro.html" class="button btn-gris">Registrar obra</a>
+    <a href="trabajadores_registro.html" class="button btn-gris">Alta trabajadores</a>
+    <a href="permisos_trabajadores.html" class="button btn-gris">Accesos trabajadores</a>
+    <a href="trabajadores_dentro.html" class="button btn-gris">Trabajadores dentro</a>
+  </div>
+
+  <button class="button btn-verde-dark" onclick="toggleMenu('qr')">
+    <span class="icon">🔐</span> Códigos QR
+  </button>
+
+  <div id="qr" class="submenu">
+    <a href="crear_qr.html" class="button btn-gris">Visitantes</a>
+    <a href="trabajador_qr.html" class="button btn-gris">Trabajadores</a>
+    <a href="reimpresion_trabajadores.html" class="button btn-gris">Reimpresión QR trabajadores obra</a>
+  </div>
+
+  <a href="admin_servicios.html" class="button btn-beige">
+    <span class="icon">🚚</span> Otros accesos autorizados
+  </a>
+
+  <button class="button btn-oro" onclick="toggleMenu('infra')">
+    <span class="icon">🏙</span> Infraestructura
+  </button>
+
+  <div id="infra" class="submenu">
+    <a href="luminarias_dashboard.html" class="button btn-gris">Luminarias</a>
+    <a href="videocamaras.html" class="button btn-gris">Videovigilancia</a>
+    <a href="cerco_electrico.html" class="button btn-gris">Cerco eléctrico</a>
+    <a href="agua.html" class="button btn-gris">Agua</a>
+  </div>
+
+  <a href="desempeño_vigilantes.html" class="button btn-vino-dark">
+    <span class="icon">📈</span> Desempeño vigilantes
+  </a>
+
+  <a href="aportaciones.html" class="button btn-gris">
+    <span class="icon">💰</span> Cuotas residentes
+  </a>
+
+</div>
   <!-- NO SE MODIFICÓ NADA -->
   <!-- (tu bloque original sigue igual) -->
 </div>
