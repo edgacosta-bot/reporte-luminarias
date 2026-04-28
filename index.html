@@ -132,11 +132,7 @@ body {
       <strong id="kpiReportes">0</strong>
     </div>
 
-    <div class="card-kpi">
-      <div>👷 Trabajadores dentro</div>
-      <strong id="kpiTrabajadores">0</strong>
-    </div>
-
+    
     <div class="card-kpi">
       <div>📦 Paquetes pendientes</div>
       <strong id="kpiPaquetes">0</strong>
@@ -333,19 +329,67 @@ if (rol === "administracion" || rol === "mesa_directiva" || rol === "soporte") {
 async function cargarDashboardAdmin() {
 
   // 🔥 rango correcto de HOY (hora local)
+// 🔥 rango de hoy
 const inicio = new Date();
 inicio.setHours(0,0,0,0);
 
 const fin = new Date();
 fin.setHours(23,59,59,999);
 
-const { data: reportes } = await supabaseClient
-  .from("reportes_vigilantes")
-  .select("id")
-  .gte("fecha_reporte", inicio.toISOString())
-  .lte("fecha_reporte", fin.toISOString());
+const desde = inicio.toISOString();
+const hasta = fin.toISOString();
 
-  document.getElementById("kpiReportes").innerText = reportes?.length || 0;
+// 🔥 consultas paralelas
+const [
+  vigilantes,
+  obras,
+  vecinales,
+  luminarias,
+  agua
+] = await Promise.all([
+
+  supabaseClient
+    .from("reportes_vigilantes")
+    .select("id")
+    .gte("fecha_reporte", desde)
+    .lte("fecha_reporte", hasta),
+
+  supabaseClient
+    .from("reportes_obras")
+    .select("id")
+    .gte("fecha_reporte", desde)
+    .lte("fecha_reporte", hasta),
+
+  supabaseClient
+    .from("reportes_vecinales")
+    .select("id")
+    .gte("fecha_reporte", desde)
+    .lte("fecha_reporte", hasta),
+
+  supabaseClient
+    .from("reportes_luminarias")
+    .select("id")
+    .gte("fecha_reporte", desde)
+    .lte("fecha_reporte", hasta),
+
+  supabaseClient
+    .from("reportes_agua")
+    .select("id")
+    .gte("fecha_reporte", desde)
+    .lte("fecha_reporte", hasta)
+
+]);
+
+// 🔥 suma total
+const totalReportes =
+  (vigilantes.data?.length || 0) +
+  (obras.data?.length || 0) +
+  (vecinales.data?.length || 0) +
+  (luminarias.data?.length || 0) +
+  (agua.data?.length || 0);
+
+// 🔥 pintar KPI
+document.getElementById("kpiReportes").innerText = totalReportes;
 
   const { data: trabajadores } = await supabaseClient
     .from("accesos_trabajadores")
@@ -361,14 +405,7 @@ const { data: reportes } = await supabaseClient
 
   document.getElementById("kpiPaquetes").innerText = paquetes?.length || 0;
 
-  const { data: criticos } = await supabaseClient
-    .from("reportes_vigilantes")
-    .select("id")
-    .in("tipo", ["acceso_indebido", "incumplimiento_consignas"]);
-
-  document.getElementById("kpiCriticos").innerText = criticos?.length || 0;
-
-}
+  }
 
 async function logout() {
   await supabaseClient.auth.signOut();
