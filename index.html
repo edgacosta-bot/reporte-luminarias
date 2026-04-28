@@ -74,6 +74,19 @@ body {
   cursor: pointer;
 }
 
+.card-kpi {
+  background: #111827;
+  padding: 12px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.card-kpi strong {
+  display: block;
+  font-size: 22px;
+  margin-top: 5px;
+}
+
 .btn-visitas { background: #1e5b4f; }
 .btn-reportes { background: #9b2247; }
 .btn-servicios { background: #a57f2c; }
@@ -98,6 +111,7 @@ body {
 <div class="container">
 
 <div class="header">
+
   <div class="logo">
     <img src="/icono-512.png" alt="Logo">
   </div>
@@ -105,6 +119,38 @@ body {
   <h1>Villas de la Concepción</h1>
   <span id="rolTexto"></span>
   <div id="ubicacion"></div>
+
+</div>
+
+<!-- 🔥 DASHBOARD (FUERA DEL HEADER) -->
+<div id="dashboardAdmin" style="display:none; margin-top:20px;">
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+
+    <div class="card-kpi">
+      <div>🚨 Reportes hoy</div>
+      <strong id="kpiReportes">0</strong>
+    </div>
+
+    <div class="card-kpi">
+      <div>👷 Trabajadores dentro</div>
+      <strong id="kpiTrabajadores">0</strong>
+    </div>
+
+    <div class="card-kpi">
+      <div>📦 Paquetes pendientes</div>
+      <strong id="kpiPaquetes">0</strong>
+    </div>
+
+    <div class="card-kpi">
+      <div>🛡 Incidencias críticas</div>
+      <strong id="kpiCriticos">0</strong>
+    </div>
+
+  </div>
+
+  <div id="alertas" style="margin-top:15px;"></div>
+
 </div>
 
 <!-- VISITANTES -->
@@ -131,8 +177,8 @@ body {
 <div id="servicios-section" class="section">
   <div class="section-title">SERVICIOS</div>
   <a href="agua.html" class="button btn-servicios">💧 Ver reportes de agua</a>
-  <a id="btnPaquetesColono" href="residente_paquetes.html" class="button btn-servicios">📦 Autorizar recepción de paquetes</a>
-  <a id="btnServiciosArribo" href="servicios_arribo.html" class="button btn-servicios">🚚 Autorizar acceso de servicios</a>
+  <a href="residente_paquetes.html" class="button btn-servicios">📦 Autorizar recepción de paquetes</a>
+  <a href="servicios_arribo.html" class="button btn-servicios">🚚 Autorizar acceso de servicios</a>
   <a href="seguridad.html" class="button btn-servicios">🛡️ Seguridad</a>
 </div>
 
@@ -180,41 +226,46 @@ body {
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
-  
+
 <script>
 
 async function iniciarSistema() {
 
  const { data: userData } = await supabaseClient.auth.getUser();
 
-if (!userData?.user) {
+ if (!userData?.user) {
   window.location.href = "login.html";
   return;
-}
+ }
 
-const userId = userData.user.id;
+ const userId = userData.user.id;
 
-const { data: residente } = await supabaseClient
+ const { data: residente } = await supabaseClient
   .from("residentes")
   .select("tipo, privada, casa")
   .eq("user_id", userId)
   .maybeSingle();
 
-if (!residente) {
+ if (!residente) {
   window.location.href = "login.html";
   return;
-}
+ }
 
-const rol = residente.tipo?.trim().toLowerCase();
+ const rol = residente.tipo?.trim().toLowerCase();
 
-document.getElementById("rolTexto").innerText = rol.replaceAll("_", " ").toUpperCase()
+ document.getElementById("rolTexto").innerText = rol.replaceAll("_", " ").toUpperCase();
 
-aplicarUI(rol);
+ aplicarUI(rol);
 
-if (residente.privada && residente.casa) {
+ if (rol === "administracion" || rol === "mesa_directiva" || rol === "soporte") {
+  document.getElementById("dashboardAdmin").style.display = "block";
+  cargarDashboardAdmin();
+ }
+
+ if (residente.privada && residente.casa) {
   document.getElementById("ubicacion").innerText =
     `${residente.privada} - ${residente.casa}`;
-}
+ }
 }
 
 function aplicarUI(rol) {
@@ -229,16 +280,14 @@ const secciones = [
   "admin-section"
 ];
 
-// ocultar todo primero
 secciones.forEach(id => {
   const el = document.getElementById(id);
   if (el) el.style.display = "none";
 });
-  
+
 const reportesContainer = document.getElementById("reportesContainer");
 reportesContainer.innerHTML = "";
 
-// 🔥 CORRECCIÓN DE RUTAS
 if (rol === "residente") {
   reportesContainer.innerHTML = `
     <a href="incidencia_vecinal.html" class="button btn-reportes">🚨 Incidencia vecinal</a>
@@ -260,40 +309,59 @@ if (rol === "administracion" || rol === "mesa_directiva" || rol === "soporte") {
   `;
 }
 
-
-if (rol === "residente") {
-  mostrar([
-    "colono-section",
-    "hogar-section",
-    "reportes-section",
-    "servicios-section",
-    "infraestructura-section"
-  ]);
-}
-
-if (rol === "vigilante") {
-  mostrar([
-    "vigilante-section",
-    "reportes-section"
-  ]);
-}
-
-if (rol === "administracion" || rol === "mesa_directiva" || rol === "soporte") {
-  mostrar([
-    "admin-section",
-    "reportes-section",
-    "servicios-section",
-    "infraestructura-section"
-  ]);
-}
-
 function mostrar(ids) {
   ids.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "block";
   });
 }
-  
+
+if (rol === "residente") {
+  mostrar(["colono-section","hogar-section","reportes-section","servicios-section","infraestructura-section"]);
+}
+
+if (rol === "vigilante") {
+  mostrar(["vigilante-section","reportes-section"]);
+}
+
+if (rol === "administracion" || rol === "mesa_directiva" || rol === "soporte") {
+  mostrar(["admin-section","reportes-section","servicios-section","infraestructura-section"]);
+}
+
+}
+
+async function cargarDashboardAdmin() {
+
+  const hoy = new Date().toISOString().split("T")[0];
+
+  const { data: reportes } = await supabaseClient
+    .from("reportes_vigilantes")
+    .select("id")
+    .gte("fecha_reporte", hoy);
+
+  document.getElementById("kpiReportes").innerText = reportes?.length || 0;
+
+  const { data: trabajadores } = await supabaseClient
+    .from("accesos_trabajadores")
+    .select("id")
+    .is("fecha_hora_salida", null);
+
+  document.getElementById("kpiTrabajadores").innerText = trabajadores?.length || 0;
+
+  const { data: paquetes } = await supabaseClient
+    .from("paquetes")
+    .select("id")
+    .eq("estatus", "pendiente");
+
+  document.getElementById("kpiPaquetes").innerText = paquetes?.length || 0;
+
+  const { data: criticos } = await supabaseClient
+    .from("reportes_vigilantes")
+    .select("id")
+    .in("tipo", ["acceso_indebido", "incumplimiento_consignas"]);
+
+  document.getElementById("kpiCriticos").innerText = criticos?.length || 0;
+
 }
 
 async function logout() {
@@ -303,6 +371,7 @@ async function logout() {
 }
 
 iniciarSistema();
+
 </script>
 
 </body>
