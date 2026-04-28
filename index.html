@@ -97,8 +97,6 @@ body {
   font-weight: 500;
   letter-spacing: 0.3px;
 
-  letter-spacing: 0.3px;
-
   box-shadow: 0 6px 16px rgba(0,0,0,0.25);
 
   box-sizing: border-box;
@@ -247,24 +245,69 @@ body {
 
 <div class="menu" id="menuResidente" style="display:none;">
 
-  <a href="mis_reportes.html" class="button btn-vino">
-    <span class="icon">📋</span> Mis reportes
+  <!-- QR -->
+  <button class="button btn-verde" onclick="toggleMenu('qr_res')">
+    <span class="icon">🔐</span> Generar código QR
+  </button>
+
+  <div id="qr_res" class="submenu">
+    <a href="crear_qr.html" class="button btn-gris">Visitantes</a>
+    <a href="trabajador_hogar_registro.html" class="button btn-gris">Empleado doméstico</a>
+  </div>
+
+  <!-- PAQUETERÍA -->
+  <button class="button btn-verde-dark" onclick="toggleMenu('paq')">
+    <span class="icon">📦</span> Paquetería
+  </button>
+
+  <div id="paq" class="submenu">
+    <a href="residente_paquetes.html" class="button btn-gris">Autorizar recepción</a>
+    <a href="mis_paquetes.html" class="button btn-gris">Mis paquetes</a>
+  </div>
+
+  <!-- SERVICIOS -->
+  <a href="servicios_arribo.html" class="button btn-beige">
+    <span class="icon">🚚</span> Accesos a servicios
   </a>
 
-  <a href="reporte_vigilante.html" class="button btn-verde">
-    <span class="icon">👮</span> Reportar vigilante
+  <!-- EMPLEADOS -->
+  <a href="trabajadores_hogar_gestion.html" class="button btn-beige">
+    <span class="icon">👨‍🔧</span> Empleados domésticos
   </a>
 
-  <a href="reporte_vecinal.html" class="button btn-verde">
-    <span class="icon">🏠</span> Reporte vecinal
+  <!-- REPORTES -->
+  <button class="button btn-verde" onclick="toggleMenu('reportes')">
+    <span class="icon">🚨</span> Realizar reportes
+  </button>
+
+  <div id="reportes" class="submenu">
+    <a href="incidencia_vecinal.html" class="button btn-gris">Incidente vecinal</a>
+    <a href="reporte_vigilante.html" class="button btn-gris">Reportar vigilancia</a>
+    <a href="reporte_obras.html" class="button btn-gris">Reportar obra</a>
+    <a href="formulario_luminarias.html" class="button btn-gris">Reportar luminaria</a>
+    <a href="formulario_agua.html" class="button btn-gris">Reporte de agua</a>
+  </div>
+
+  <!-- INFRAESTRUCTURA -->
+  <button class="button btn-oro" onclick="toggleMenu('infra_res')">
+    <span class="icon">🏙</span> Infraestructura
+  </button>
+
+  <div id="infra_res" class="submenu">
+    <a href="luminarias_dashboard.html" class="button btn-gris">Luminarias</a>
+    <a href="https://drive.google.com/file/d/1Hy0MTPL1rRFXEhGrlPykBjIxqge7zfPf/view" class="button btn-gris">Croquis luminarias</a>
+    <a href="videocamaras.html" class="button btn-gris">Videovigilancia</a>
+    <a href="cerco_electrico.html" class="button btn-gris">Cerco eléctrico</a>
+  </div>
+
+  <!-- APORTACIONES -->
+  <a href="https://drive.google.com/file/d/1hr2B-nPESVbCyIroStiLybX-GDqRUqnO/view" class="button btn-gris">
+    <span class="icon">💰</span> Aportaciones luminarias
   </a>
 
-  <a href="reporte_luminaria.html" class="button btn-beige">
-    <span class="icon">💡</span> Luminaria
-  </a>
-
-  <a href="reporte_agua.html" class="button btn-beige">
-    <span class="icon">💧</span> Agua
+  <!-- OBRAS -->
+  <a href="obras_aprobacion.html" class="button btn-vino-dark">
+    <span class="icon">🏗</span> Situación de obras
   </a>
 
 </div>
@@ -312,9 +355,10 @@ window.addEventListener("load", async () => {
   }
 
   await cargarKPIs();
-  ["obras", "qr", "infra"].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.style.display = "none";
+ ["obras", "qr", "infra", "qr_res", "paq", "reportes", "infra_res"]
+  .forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
 });
 });
 
