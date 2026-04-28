@@ -107,7 +107,7 @@ body {
   opacity: 0.95;
 }
 
-/* ADMIN (NO TOCADO) */
+/* ADMIN */
 .btn-vino { background: #9F2241; color: white; }
 .btn-verde { background: #235B4E; color: white; }
 .btn-beige { background: #DDC9A3; color: #1e293b; }
@@ -117,7 +117,7 @@ body {
 .btn-oro { background: #BC955C; color: #1e293b; }
 .btn-gris-oscuro { background: #6F7271; color: white; }
 
-/* 🔵 RESIDENTE (AISLADO) */
+/* RESIDENTE */
 .btn-res-1 { background: #005187; color: white; }
 .btn-res-2 { background: #4d82bc; color: white; }
 .btn-res-3 { background: #84b6f4; color: white; }
@@ -147,7 +147,6 @@ body {
   padding: 14px 16px;
   border-radius: 12px;
 }
-
 </style>
 
 </head>
@@ -164,105 +163,41 @@ body {
   <button onclick="logout()">Cerrar sesión</button>
 </div>
 
-<!-- KPI -->
-
 <div class="kpis">
   <div class="kpi">🚨 Reportes hoy <br><span id="kpiReportes">0</span></div>
   <div class="kpi">📦 Paquetes pendientes <br><span>0</span></div>
   <div class="kpi">👷 Trabajadores dentro <br><span id="kpiTrabajadores">0</span></div>
 </div>
 
-<!-- ADMIN (INTACTO) -->
-
 <div class="menu" id="menuAdmin" style="display:none;">
-
-  <!-- PEGAS AQUÍ TU BLOQUE ORIGINAL -->
-
-  <a href="admin_reporte_general.html" class="button btn-vino">
-    <span class="icon">📊</span> Reporte general
-  </a>
-
-  <button class="button btn-verde" onclick="toggleMenu('obras')">
-    <span class="icon">🏗</span> Gestión de obras
-  </button>
-
-  <div id="obras" class="submenu">
-    <a href="obras_aprobacion.html" class="button btn-gris">Situación general</a>
-    <a href="obras_registro.html" class="button btn-gris">Registrar obra</a>
-    <a href="trabajadores_registro.html" class="button btn-gris">Alta trabajadores</a>
-    <a href="permisos_trabajadores.html" class="button btn-gris">Accesos trabajadores</a>
-    <a href="trabajadores_dentro.html" class="button btn-gris">Trabajadores dentro</a>
-  </div>
-
-  <button class="button btn-verde-dark" onclick="toggleMenu('qr')">
-    <span class="icon">🔐</span> Códigos QR
-  </button>
-
-  <div id="qr" class="submenu">
-    <a href="crear_qr.html" class="button btn-gris">Visitantes</a>
-    <a href="trabajador_qr.html" class="button btn-gris">Trabajadores</a>
-    <a href="reimpresion_trabajadores.html" class="button btn-gris">Reimpresión QR trabajadores obra</a>
-  </div>
-
-  <a href="admin_servicios.html" class="button btn-beige">
-    <span class="icon">🚚</span> Otros accesos autorizados
-  </a>
-
-  <button class="button btn-oro" onclick="toggleMenu('infra')">
-    <span class="icon">🏙</span> Infraestructura
-  </button>
-
-  <div id="infra" class="submenu">
-    <a href="luminarias_dashboard.html" class="button btn-gris">Luminarias</a>
-    <a href="videocamaras.html" class="button btn-gris">Videovigilancia</a>
-    <a href="cerco_electrico.html" class="button btn-gris">Cerco eléctrico</a>
-    <a href="agua.html" class="button btn-gris">Agua</a>
-  </div>
-
-  <a href="desempeño_vigilantes.html" class="button btn-vino-dark">
-    <span class="icon">📈</span> Desempeño vigilantes
-  </a>
-
-  <a href="aportaciones.html" class="button btn-gris">
-    <span class="icon">💰</span> Cuotas residentes
-  </a>
-
 </div>
-  <!-- NO SE MODIFICÓ NADA -->
-  <!-- (tu bloque original sigue igual) -->
-</div>
-
-<!-- RESIDENTE -->
 
 <div class="menu" id="menuResidente" style="display:none;">
 
-  <button class="button btn-res-1" onclick="toggleMenu('qr_res')">
-    🔐 Generar código QR
-  </button>
+<button class="button btn-res-1" onclick="toggleMenu('qr_res')">🔐 Generar código QR</button>
+
   <div id="qr_res" class="submenu">
     <a href="crear_qr.html" class="button btn-res-3">Visitantes</a>
     <a href="trabajador_hogar_registro.html" class="button btn-res-3">Empleado doméstico</a>
   </div>
 
-  <button class="button btn-res-2" onclick="toggleMenu('paq')">
-    📦 Paquetería
-  </button>
+<button class="button btn-res-2" onclick="toggleMenu('paq')">📦 Paquetería</button>
+
   <div id="paq" class="submenu">
     <a href="residente_paquetes.html" class="button btn-res-3">Autorizar recepción</a>
     <a href="mis_paquetes.html" class="button btn-res-3">Mis paquetes</a>
   </div>
 
-  <a href="servicios_arribo.html" class="button btn-res-3">
-    🚚 Autoriza accesos a servicios
-  </a>
+<a href="servicios_arribo.html" class="button btn-res-4">🚚 Autoriza accesos a servicios</a>
 
-  <a href="trabajadores_hogar_gestion.html" class="button btn-res-3">
-    👨‍🔧 Gestionar empleados domésticos
-  </a>
+<a href="trabajadores_hogar_gestion.html" class="button btn-res-3">👨‍🔧 Gestionar empleados domésticos</a>
 
-  <button class="button btn-res-1" onclick="toggleMenu('reportes')">
-    🚨 Realizar reportes
-  </button>
+  <!-- 🔥 NUEVO BOTÓN -->
+
+<a href="mis_reportes.html" class="button btn-res-2">📋 Ver mis reportes realizados</a>
+
+<button class="button btn-res-1" onclick="toggleMenu('reportes')">🚨 Realizar reportes</button>
+
   <div id="reportes" class="submenu">
     <a href="incidencia_vecinal.html" class="button btn-res-3">Incidente vecinal</a>
     <a href="reporte_vigilante.html" class="button btn-res-3">Reportar vigilancia</a>
@@ -271,9 +206,8 @@ body {
     <a href="formulario_agua.html" class="button btn-res-3">Reporte de agua</a>
   </div>
 
-  <button class="button btn-res-2" onclick="toggleMenu('infra_res')">
-    🏙 Infraestructura
-  </button>
+<button class="button btn-res-2" onclick="toggleMenu('infra_res')">🏙 Infraestructura</button>
+
   <div id="infra_res" class="submenu">
     <a href="luminarias_dashboard.html" class="button btn-res-3">Luminarias</a>
     <a href="https://drive.google.com/file/d/1Hy0MTPL1rRFXEhGrlPykBjIxqge7zfPf/view" class="button btn-res-3">Croquis luminarias</a>
@@ -281,22 +215,16 @@ body {
     <a href="cerco_electrico.html" class="button btn-res-3">Cerco eléctrico</a>
   </div>
 
-  <button class="button btn-res-4" onclick="toggleMenu('aportaciones')">
-    💰 Control de aportaciones
-  </button>
+<button class="button btn-res-4" onclick="toggleMenu('aportaciones')">💰 Control de aportaciones</button>
+
   <div id="aportaciones" class="submenu">
-    <a href="https://drive.google.com/file/d/1hr2B-nPESVbCyIroStiLybX-GDqRUqnO/view" class="button btn-res-5">
-      Luminarias 1/a. fase
-    </a>
+    <a href="https://drive.google.com/file/d/1hr2B-nPESVbCyIroStiLybX-GDqRUqnO/view" class="button btn-res-5">Luminarias 1/a. fase</a>
   </div>
 
-  <button class="button btn-res-5" onclick="toggleMenu('obras_res')">
-    🏗 Obras
-  </button>
+<button class="button btn-res-5" onclick="toggleMenu('obras_res')">🏗 Obras</button>
+
   <div id="obras_res" class="submenu">
-    <a href="obras_aprobacion.html" class="button btn-res-3">
-      Situación general de obras
-    </a>
+    <a href="obras_aprobacion.html" class="button btn-res-3">Situación general de obras</a>
   </div>
 
 </div>
@@ -339,8 +267,6 @@ window.addEventListener("load", async () => {
   } 
   else if (rol === "residente" || rol === "colono") {
     document.getElementById("menuResidente").style.display = "block";
-
-    // 🔥 ocultar KPIs SOLO residente
     document.querySelector(".kpis").style.display = "none";
   }
 
@@ -351,20 +277,6 @@ window.addEventListener("load", async () => {
     });
 
 });
-
-async function cargarKPIs(){
-
-  const hoy = new Date();
-  hoy.setHours(0,0,0,0);
-
-  const { data } = await supabaseClient
-    .from("reportes_vigilantes")
-    .select("fecha_reporte");
-
-  const totalHoy = data?.filter(r => new Date(r.fecha_reporte) >= hoy).length || 0;
-
-  document.getElementById("kpiReportes").innerText = totalHoy;
-}
 
 </script>
 
