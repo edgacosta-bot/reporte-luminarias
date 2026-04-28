@@ -1,99 +1,220 @@
-<!-- 🔥 ADMIN MENÚ REORGANIZADO -->
+<!DOCTYPE html>
 
-<div id="admin-section" class="section">
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inicio</title>
 
-  <!-- 1. REPORTE GENERAL -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="auth.js"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+}
+
+/* HEADER */
+.header {
+  text-align: center;
+  padding: 30px 20px;
+}
+
+.header h1 {
+  margin: 10px 0;
+}
+
+.header .rol {
+  color: #cbd5f5;
+}
+
+/* KPI */
+.kpis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  padding: 0 20px;
+}
+
+.kpi {
+  background: #111827;
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+}
+
+.kpi span {
+  font-size: 26px;
+  font-weight: bold;
+}
+
+/* MENÚ */
+.section {
+  padding: 20px;
+}
+
+.section-title {
+  margin-top: 25px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: #9ca3af;
+}
+
+.button {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: white;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  background: #1f2937;
+}
+
+.button:hover {
+  background: #374151;
+}
+
+/* SUBMENÚ */
+.submenu {
+  display: none;
+  margin-left: 10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+  <h1>Villas de la Concepción</h1>
+  <div class="rol" id="rolTexto">Cargando...</div>
+</div>
+
+<!-- KPI -->
+
+<div class="kpis">
+  <div class="kpi">
+    🚨 Reportes hoy <br>
+    <span id="kpiReportes">0</span>
+  </div>
+
+  <div class="kpi">
+    📦 Paquetes pendientes <br>
+    <span>0</span>
+  </div>
+
+  <div class="kpi">
+    👷 Trabajadores dentro <br>
+    <span id="kpiTrabajadores">0</span>
+  </div>
+</div>
+
+<!-- MENÚ ADMIN -->
+
+<div class="section" id="menuAdmin" style="display:none;">
 
   <div class="section-title">GENERAL</div>
-  <a href="admin_reporte_general.html" class="button btn-reportes">
-    📊 Reporte general
-  </a>
-
-  <!-- 2. GESTIÓN DE OBRAS -->
+  <a href="admin_reporte_general.html" class="button">📊 Reporte general</a>
 
   <div class="section-title">GESTIÓN DE OBRAS</div>
-
-  <button class="button btn-admin" onclick="toggleMenu('menuObras')">
-    🏗 Gestión de obras
-  </button>
-
-  <div id="menuObras" style="display:none; margin-left:10px;">
-    <a href="obras_registro.html" class="button btn-admin">➤ Registrar obra</a>
-    <a href="trabajadores_registro.html" class="button btn-admin">➤ Alta trabajadores</a>
-    <a href="permisos_trabajadores.html" class="button btn-admin">➤ Gestionar accesos</a>
-    <a href="trabajadores_dentro.html" class="button btn-admin">➤ Trabajadores dentro</a>
+  <button class="button" onclick="toggleMenu('obras')">🏗 Gestión de obras</button>
+  <div id="obras" class="submenu">
+    <a href="obras_registro.html" class="button">Registrar obra</a>
+    <a href="trabajadores_registro.html" class="button">Alta trabajadores</a>
+    <a href="permisos_trabajadores.html" class="button">Gestionar accesos</a>
+    <a href="trabajadores_dentro.html" class="button">Trabajadores dentro</a>
   </div>
-
-  <!-- 3. CÓDIGOS QR -->
 
   <div class="section-title">CÓDIGOS QR</div>
-
-  <button class="button btn-admin" onclick="toggleMenu('menuQR')">
-    🔐 Códigos QR
-  </button>
-
-  <div id="menuQR" style="display:none; margin-left:10px;">
-    <a href="crear_qr.html" class="button btn-admin">➤ Visitantes</a>
-    <a href="trabajador_qr.html" class="button btn-admin">➤ Trabajadores obra</a>
-    <a href="reimpresion_trabajadores.html" class="button btn-admin">➤ Reimpresión QR</a>
+  <button class="button" onclick="toggleMenu('qr')">🔐 Códigos QR</button>
+  <div id="qr" class="submenu">
+    <a href="crear_qr.html" class="button">Visitantes</a>
+    <a href="trabajador_qr.html" class="button">Trabajadores obra</a>
+    <a href="reimpresion_trabajadores.html" class="button">Reimpresión QR</a>
   </div>
-
-  <!-- 4. ACCESOS RECURRENTES -->
 
   <div class="section-title">ACCESOS RECURRENTES</div>
-  <a href="admin_servicios.html" class="button btn-servicios">
-    🚚 Gestión accesos servicios
-  </a>
-
-  <!-- 5. INFRAESTRUCTURA -->
+  <a href="admin_servicios.html" class="button">🚚 Accesos servicios</a>
 
   <div class="section-title">INFRAESTRUCTURA</div>
-
-  <button class="button btn-infra" onclick="toggleMenu('menuInfra')">
-    🏙 Infraestructura
-  </button>
-
-  <div id="menuInfra" style="display:none; margin-left:10px;">
-
-```
-<button class="button btn-infra" onclick="toggleMenu('menuLuminarias')">
-  💡 Luminarias
-</button>
-
-<div id="menuLuminarias" style="display:none; margin-left:10px;">
-  <a href="luminarias_dashboard.html" class="button btn-infra">➤ Estado luminarias</a>
-  <a href="https://drive.google.com/file/d/1Hy0MTPL1rRFXEhGrlPykBjIxqge7zfPf/view?usp=drive_link" target="_blank" class="button btn-infra">➤ Croquis / numeración</a>
-  <a href="https://drive.google.com/file/d/1hr2B-nPESVbCyIroStiLybX-GDqRUqnO/view?usp=drive_link" target="_blank" class="button btn-infra">➤ Aportaciones luminarias</a>
-</div>
-
-<a href="videocamaras.html" class="button btn-infra">📹 Videovigilancia</a>
-<a href="cerco_electrico.html" class="button btn-infra">⚡ Cerco eléctrico</a>
-<a href="agua.html" class="button btn-infra">💧 Reportes agua</a>
-```
-
+  <button class="button" onclick="toggleMenu('infra')">🏙 Infraestructura</button>
+  <div id="infra" class="submenu">
+    <a href="luminarias_dashboard.html" class="button">Luminarias</a>
+    <a href="videocamaras.html" class="button">Videovigilancia</a>
+    <a href="cerco_electrico.html" class="button">Cerco eléctrico</a>
+    <a href="agua.html" class="button">Agua</a>
   </div>
 
-  <!-- 6. DESEMPEÑO -->
-
   <div class="section-title">SEGURIDAD</div>
-  <a href="desempeño_vigilantes.html" class="button btn-admin">
-    📈 Desempeño de vigilantes
-  </a>
-
-  <!-- 7. CUOTAS (AL FINAL COMO PEDISTE) -->
+  <a href="desempeño_vigilantes.html" class="button">📈 Desempeño vigilantes</a>
 
   <div class="section-title">CUOTAS</div>
-  <a href="aportaciones.html" class="button btn-servicios">
-    💰 Gestión de cuotas residentes
-  </a>
+  <a href="aportaciones.html" class="button">💰 Cuotas residentes</a>
 
 </div>
 
-<!-- 🔥 SCRIPT PARA ACORDEÓN -->
-
 <script>
-function toggleMenu(id) {
+
+/* 🔽 Toggle menú */
+function toggleMenu(id){
   const el = document.getElementById(id);
-  el.style.display = (el.style.display === "none") ? "block" : "none";
+  el.style.display = el.style.display === "block" ? "none" : "block";
 }
+
+/* 🔐 INIT */
+window.addEventListener("load", async () => {
+
+  let { data } = await supabaseClient.auth.getSession();
+  const user = data?.session?.user;
+
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const { data: residente } = await supabaseClient
+    .from("residentes")
+    .select("tipo")
+    .eq("user_id", user.id)
+    .single();
+
+  const rol = residente?.tipo || "";
+
+  document.getElementById("rolTexto").innerText = rol.toUpperCase();
+
+  if (rol === "administracion") {
+    document.getElementById("menuAdmin").style.display = "block";
+  }
+
+  await cargarKPIs();
+});
+
+/* 📊 KPI */
+async function cargarKPIs(){
+
+  const hoy = new Date();
+  hoy.setHours(0,0,0,0);
+
+  const { data } = await supabaseClient
+    .from("reportes_vigilantes")
+    .select("fecha_reporte");
+
+  const totalHoy = data?.filter(r => new Date(r.fecha_reporte) >= hoy).length || 0;
+
+  document.getElementById("kpiReportes").innerText = totalHoy;
+}
+
 </script>
+
+</body>
+</html>
