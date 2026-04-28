@@ -1,9 +1,14 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Panel principal</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="auth.js"></script>
 
 <style>
 body {
@@ -51,7 +56,35 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
+
+.section {
+  margin-top: 25px;
+}
+
+.section-title {
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #98989A;
+  font-size: 13px;
+}
+
+.button {
+  display: block;
+  text-decoration: none;
+  padding: 16px;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.btn-admin { background: #002f2a; }
+.btn-reportes { background: #9b2247; }
+.btn-servicios { background: #a57f2c; }
+.btn-infra { background: #611232; }
 </style>
+
 </head>
 
 <body>
@@ -68,33 +101,42 @@ body {
 </div>
 
 <!-- 🔥 DASHBOARD -->
+
 <div id="dashboardAdmin" style="display:none;">
 
   <div class="grid-kpi">
 
-    <div class="card-kpi">
-      <div>🚨 Reportes hoy</div>
-      <strong id="kpiReportes">0</strong>
-    </div>
+```
+<div class="card-kpi">
+  <div>🚨 Reportes hoy</div>
+  <strong id="kpiReportes">0</strong>
+</div>
 
-    <div class="card-kpi">
-      <div>📦 Paquetes pendientes</div>
-      <strong id="kpiPaquetes">0</strong>
-    </div>
+<div class="card-kpi">
+  <div>📦 Paquetes pendientes</div>
+  <strong id="kpiPaquetes">0</strong>
+</div>
 
-    <div class="card-kpi">
-      <div>👷 Trabajadores dentro</div>
-      <strong id="kpiTrabajadores">0</strong>
-    </div>
+<div class="card-kpi">
+  <div>👷 Trabajadores dentro</div>
+  <strong id="kpiTrabajadores">0</strong>
+</div>
+```
 
   </div>
 
 </div>
 
+<!-- 🔥 BOTONES (NO TOCADOS) -->
+
+<div id="admin-section" class="section">
+  <div class="section-title">ADMINISTRACIÓN</div>
+
+<a href="admin_reporte_general.html" class="button btn-reportes">📊 Reporte general</a> <a href="desempeño_vigilantes.html" class="button btn-admin">📈 Desempeño vigilantes</a> <a href="aportaciones.html" class="button btn-servicios">💰 Aportaciones</a> <a href="luminarias.html" class="button btn-infra">💡 Luminarias</a>
+
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js"></script>
+</div>
 
 <script>
 
@@ -115,11 +157,6 @@ async function iniciarSistema() {
   .eq("user_id", userId)
   .maybeSingle();
 
- if (!residente) {
-  window.location.href = "login.html";
-  return;
- }
-
  const rol = residente.tipo?.trim().toLowerCase();
 
  document.getElementById("rolTexto").innerText = rol.toUpperCase();
@@ -129,15 +166,12 @@ async function iniciarSistema() {
   cargarDashboardAdmin();
  }
 
- if (residente.privada && residente.casa) {
-  document.getElementById("ubicacion").innerText =
-    `${residente.privada} - ${residente.casa}`;
- }
+ document.getElementById("ubicacion").innerText =
+  `${residente.privada} - ${residente.casa}`;
 }
 
 async function cargarDashboardAdmin() {
 
-  // 🔥 rango hoy
   const inicio = new Date();
   inicio.setHours(0,0,0,0);
 
@@ -147,7 +181,6 @@ async function cargarDashboardAdmin() {
   const desde = inicio.toISOString();
   const hasta = fin.toISOString();
 
-  // 🔥 REPORTES HOY (MULTI TABLA)
   const [
     vigilantes,
     obras,
@@ -156,48 +189,23 @@ async function cargarDashboardAdmin() {
     agua
   ] = await Promise.all([
 
-    supabaseClient
-      .from("reportes_vigilantes")
-      .select("id")
-      .gte("fecha_reporte", desde)
-      .lte("fecha_reporte", hasta),
-
-    supabaseClient
-      .from("reportes_obras")
-      .select("id")
-      .gte("fecha_reporte", desde)
-      .lte("fecha_reporte", hasta),
-
-    supabaseClient
-      .from("reportes_vecinales")
-      .select("id")
-      .gte("fecha_reporte", desde)
-      .lte("fecha_reporte", hasta),
-
-    supabaseClient
-      .from("reportes_luminarias")
-      .select("id")
-      .gte("fecha_reporte", desde)
-      .lte("fecha_reporte", hasta),
-
-    supabaseClient
-      .from("reportes_agua")
-      .select("id")
-      .gte("fecha_reporte", desde)
-      .lte("fecha_reporte", hasta)
+    supabaseClient.from("reportes_vigilantes").select("id").gte("fecha_reporte", desde).lte("fecha_reporte", hasta),
+    supabaseClient.from("reportes_obras").select("id").gte("fecha_reporte", desde).lte("fecha_reporte", hasta),
+    supabaseClient.from("reportes_vecinales").select("id").gte("fecha_reporte", desde).lte("fecha_reporte", hasta),
+    supabaseClient.from("reportes_luminarias").select("id").gte("fecha_reporte", desde).lte("fecha_reporte", hasta),
+    supabaseClient.from("reportes_agua").select("id").gte("fecha_reporte", desde).lte("fecha_reporte", hasta)
 
   ]);
 
-  const totalReportes =
+  const total =
     (vigilantes.data?.length || 0) +
     (obras.data?.length || 0) +
     (vecinales.data?.length || 0) +
     (luminarias.data?.length || 0) +
     (agua.data?.length || 0);
 
-  document.getElementById("kpiReportes").innerText = totalReportes;
+  document.getElementById("kpiReportes").innerText = total;
 
-  // 🔥 TRABAJADORES DENTRO
   const { data: trabajadores } = await supabaseClient
     .from("accesos_trabajadores")
     .select("id")
@@ -205,20 +213,12 @@ async function cargarDashboardAdmin() {
 
   document.getElementById("kpiTrabajadores").innerText = trabajadores?.length || 0;
 
-  // 🔥 PAQUETES
   const { data: paquetes } = await supabaseClient
     .from("paquetes")
     .select("id")
     .eq("estatus", "pendiente");
 
   document.getElementById("kpiPaquetes").innerText = paquetes?.length || 0;
-
-}
-
-async function logout() {
-  await supabaseClient.auth.signOut();
-  localStorage.clear();
-  window.location.href = "login.html";
 }
 
 iniciarSistema();
