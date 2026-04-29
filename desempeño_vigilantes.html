@@ -201,15 +201,12 @@ chipAll.className = "chip active";
 chipAll.textContent = "Todos";
 
 chipAll.onclick = () => {
-  const todosActivos = window.SELECCION_VIGILANTES.size === Object.keys(MAPA).length;
 
-  if (todosActivos) {
-    window.SELECCION_VIGILANTES.clear();
-    document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
-  } else {
-    window.SELECCION_VIGILANTES = new Set(Object.keys(MAPA));
-    document.querySelectorAll(".chip").forEach(c => c.classList.add("active"));
-  }
+  // 🔵 Siempre activar todos
+  window.SELECCION_VIGILANTES = new Set(Object.keys(MAPA));
+
+  // 🔵 Marcar todos los chips como activos
+  document.querySelectorAll(".chip").forEach(c => c.classList.add("active"));
 
   aplicarFiltro();
 };
