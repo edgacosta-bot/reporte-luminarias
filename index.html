@@ -168,7 +168,7 @@ body {
 
 <div class="kpis">
   <div class="kpi">🚨 Reportes hoy <br><span id="kpiReportes">0</span></div>
-  <div class="kpi">📦 Paquetes pendientes <br><span>0</span></div>
+  <div class="kpi">📦 Paquetes pendientes <br><span id="kpiPaquetes">0</span></div>
   <div class="kpi">👷 Trabajadores dentro <br><span id="kpiTrabajadores">0</span></div>
 </div>
 
@@ -323,6 +323,7 @@ window.addEventListener("load", async () => {
     return;
   }
 
+  
   const { data: residente } = await supabaseClient
     .from("residentes")
     .select("tipo")
@@ -335,6 +336,8 @@ window.addEventListener("load", async () => {
 
   if (rol === "administracion") {
     document.getElementById("menuAdmin").style.display = "block";
+
+    await cargarKPIs();
   } 
   else if (rol === "residente" || rol === "colono") {
     document.getElementById("menuResidente").style.display = "block";
@@ -353,16 +356,69 @@ window.addEventListener("load", async () => {
 
 async function cargarKPIs(){
 
-  const hoy = new Date();
-  hoy.setHours(0,0,0,0);
+  const hoy = new Date(
+  new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" })
+);
+hoy.setHours(0,0,0,0);
 
-  const { data } = await supabaseClient
+  let totalReportes = 0;
+
+  // 🔴 VECINALES
+  const { data: vecinal } = await supabaseClient
+    .from("incidencias_vecinales")
+    .select("fecha_reporte");
+
+  totalReportes += vecinal?.filter(r => new Date(r.fecha_reporte) >= hoy).length || 0;
+
+  // 🔵 VIGILANTES
+  const { data: vigilantes } = await supabaseClient
     .from("reportes_vigilantes")
     .select("fecha_reporte");
 
-  const totalHoy = data?.filter(r => new Date(r.fecha_reporte) >= hoy).length || 0;
+  totalReportes += vigilantes?.filter(r => new Date(r.fecha_reporte) >= hoy).length || 0;
 
-  document.getElementById("kpiReportes").innerText = totalHoy;
+  // 🟣 OBRAS
+  const { data: obras } = await supabaseClient
+    .from("reportes_obras")
+    .select("fecha_reporte");
+
+  totalReportes += obras?.filter(r => new Date(r.fecha_reporte) >= hoy).length || 0;
+
+  // 🟡 AGUA
+  const { data: agua } = await supabaseClient
+    .from("reportes_agua_caasim")
+    .select("fecha_registro");
+
+  totalReportes += agua?.filter(r => new Date(r.fecha_registro) >= hoy).length || 0;
+
+  // 🟢 LUMINARIAS
+  const { data: luminarias } = await supabaseClient
+    .from("vista_reportes_luminarias")
+    .select("fecha_reporte");
+
+  totalReportes += luminarias?.filter(r => new Date(r.fecha_reporte) >= hoy).length || 0;
+
+  document.getElementById("kpiReportes").innerText = totalReportes;
+
+  // 👷 TRABAJADORES DENTRO
+  const { data: trabajadores } = await supabaseClient
+    .from("accesos_trabajadores")
+    .select("id")
+    .is("fecha_hora_salida", null);
+
+  document.getElementById("kpiTrabajadores").innerText = trabajadores?.length || 0;
+
+  // 📦 PAQUETES
+  const { data: paquetes } = await supabaseClient
+    .from("paquetes")
+    .select("id")
+    .eq("entregado", false);
+
+  const kpiPaquetes = document.querySelectorAll(".kpi span")[1];
+  if (kpiPaquetes) {
+    kpiPaquetes.innerText = paquetes?.length || 0;
+  }
+
 }
 
 </script>
