@@ -138,14 +138,35 @@ async function init(){
     return;
   }
 
-  accesoAbierto = trabajador.acceso_abierto_id;
-  tipoAccion = accesoAbierto ? "salida" : "entrada";
+ accesoAbierto = trabajador.acceso_abierto_id;
+tipoAccion = accesoAbierto ? "salida" : "entrada";
 
-  renderDetalle();
+renderDetalle();
 
+// 🔥 evaluar horario
+let horaMX = null;
+
+if (tipoAccion === "salida") {
+
+  const ahora = new Date();
+
+  horaMX = new Date(
+    ahora.toLocaleString("en-US", { timeZone: "America/Mexico_City" })
+  ).getHours();
+
+  if (horaMX >= 18) {
+    document.body.className = "warn";
+    estado.innerText = "⚠️ Se realizará un reporte automático debido a que el trabajador sale fuera del horario permitido";
+  }
+
+}
+
+// 🔥 mensaje normal (solo si no es fuera de horario)
+if (!(tipoAccion === "salida" && horaMX >= 18)) {
   estado.innerText = tipoAccion === "salida"
     ? "Validar salida"
     : "Validar acceso";
+}
 
   titulo.innerText = tipoAccion === "salida"
     ? "🚧 Salida trabajador"
