@@ -438,14 +438,15 @@ const finISO = fin.toISOString();
 
 if (rolActual === "vigilante") {
 
-  const inicio = fechaInicioUTC(
-    new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" })
-  );
+  const { data, error } = await supabaseClient
+    .from("reportes_obras")
+    .select("id, fecha_reporte")
+    .eq("tipo", "salida_fuera_horario");
 
-  const fin = fechaFinUTC(
-  new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" })
-);
+  console.log("REPORTES OBRAS:", data);
 
+  totalReportes = data?.length || 0;
+}
   const { data, error } = await supabaseClient
     .from("reportes_obras")
     .select("id")
