@@ -439,7 +439,7 @@ const finISO = fin.toISOString();
 if (rolActual === "vigilante") {
 
   const inicio = fechaInicioUTC(
-    new Date().toISOString().split("T")[0]
+    new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" })
   );
 
   const fin = fechaFinUTC(
