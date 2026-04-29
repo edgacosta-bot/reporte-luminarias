@@ -203,7 +203,7 @@ btnRegistrar.onclick = async () => {
   // 🔴 SALIDA
   if(tipoAccion === "salida"){
 
-    const { error } = await supabaseClient.rpc("registrar_salida_trabajador", {
+    const { error } = await supabaseClient.rpc("registrar_salida_trabajador_obra", {
       p_acceso_id: accesoAbierto,
       p_vigilante_id: vigilante.id
     });
