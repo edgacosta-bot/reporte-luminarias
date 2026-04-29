@@ -78,6 +78,31 @@ td {
   padding: 8px;
 }
 
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.chip {
+  padding: 8px 14px;
+  border-radius: 20px;
+  background: #1f2937;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.chip:hover {
+  background: #374151;
+}
+
+.chip.active {
+  background: #9F2241;
+  color: white;
+}  
+
 /* SEMÁFORO */
 .bad { color: #9F2241; font-weight: bold; }
 .warn { color: #BC955C; font-weight: bold; }
@@ -93,7 +118,7 @@ td {
 <!-- 🔽 FILTRO -->
 <div class="filtros">
   <label>Filtrar vigilante:</label>
-  <select id="filtroVigilante" multiple size="3"></select>
+  <div id="filtroVigilante" class="chips"></div>
 </div>
 
 <!-- KPIs -->
@@ -164,25 +189,59 @@ async function cargarDatosBase(){
   DATA_GLOBAL = reportes.filter(r=>MAPA[r.vigilante_id]);
 
   // 🔽 llenar filtro
-  const select = document.getElementById("filtroVigilante");
-  select.innerHTML = "";
+  const contenedor = document.getElementById("filtroVigilante");
+contenedor.innerHTML = "";
 
-  Object.entries(MAPA).forEach(([id,nombre])=>{
-    const opt = document.createElement("option");
-    opt.value = id;
-    opt.textContent = nombre;
-    opt.selected = true;
-    select.appendChild(opt);
-  });
+// 🔥 estado global de selección
+window.SELECCION_VIGILANTES = new Set(Object.keys(MAPA));
 
-  select.addEventListener("change", aplicarFiltro);
-}
+// 🔵 botón "Todos"
+const chipAll = document.createElement("div");
+chipAll.className = "chip active";
+chipAll.textContent = "Todos";
+
+chipAll.onclick = () => {
+  const todosActivos = window.SELECCION_VIGILANTES.size === Object.keys(MAPA).length;
+
+  if (todosActivos) {
+    window.SELECCION_VIGILANTES.clear();
+    document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  } else {
+    window.SELECCION_VIGILANTES = new Set(Object.keys(MAPA));
+    document.querySelectorAll(".chip").forEach(c => c.classList.add("active"));
+  }
+
+  aplicarFiltro();
+};
+
+contenedor.appendChild(chipAll);
+
+  Object.entries(MAPA).forEach(([id,nombre]) => {
+
+  const chip = document.createElement("div");
+  chip.className = "chip active";
+  chip.textContent = nombre;
+
+  chip.onclick = () => {
+    if (window.SELECCION_VIGILANTES.has(id)) {
+      window.SELECCION_VIGILANTES.delete(id);
+      chip.classList.remove("active");
+    } else {
+      window.SELECCION_VIGILANTES.add(id);
+      chip.classList.add("active");
+    }
+
+    aplicarFiltro();
+  };
+
+  contenedor.appendChild(chip);
+});
+
+  }
 
 function aplicarFiltro(){
 
-  const seleccionados = Array.from(
-    document.getElementById("filtroVigilante").selectedOptions
-  ).map(o=>o.value);
+  const seleccionados = Array.from(window.SELECCION_VIGILANTES);
 
   const datos = DATA_GLOBAL.filter(r=>seleccionados.includes(r.vigilante_id));
 
