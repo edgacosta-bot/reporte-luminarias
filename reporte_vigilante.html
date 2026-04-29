@@ -105,6 +105,14 @@ button {
 /* 🔥 CATÁLOGO DINÁMICO */
 async function cargarCatalogo(){
 
+  // 🔴 LÍNEA CRÍTICA (faltaba)
+  const residente = await getResidente();
+
+  if (!residente) {
+    console.error("No se pudo obtener residente");
+    return;
+  }
+
   const { data, error } = await supabaseClient
     .from("catalogo_reportes")
     .select("subtipo")
@@ -119,6 +127,8 @@ async function cargarCatalogo(){
   }
 
   const select = document.getElementById("tipo");
+
+  select.innerHTML = '<option value="">Tipo de reporte</option>'; // reset limpio
 
   data?.forEach(i=>{
     const opt = document.createElement("option");
