@@ -335,10 +335,12 @@ window.addEventListener("load", async () => {
   document.getElementById("rolTexto").innerText = rol.toUpperCase();
 
   if (rol === "administracion") {
-    document.getElementById("menuAdmin").style.display = "block";
+  document.getElementById("menuAdmin").style.display = "block";
 
-    await cargarKPIs();
-  } 
+  await cargarKPIs();
+
+  setInterval(cargarKPIs, 30000); // 🔥 auto actualización cada 30s
+}
   else if (rol === "residente" || rol === "colono") {
     document.getElementById("menuResidente").style.display = "block";
 
