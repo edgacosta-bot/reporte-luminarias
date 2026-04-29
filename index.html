@@ -346,6 +346,7 @@ body {
 
 <script>
 
+let rolActual = "";  
 
 function toggleMenu(id){
   const el = document.getElementById(id);
@@ -376,6 +377,8 @@ window.addEventListener("load", async () => {
     .single();
 
   const rol = residente?.tipo || "";
+
+  rolActual = rol;
 
   document.getElementById("rolTexto").innerText = rol.toUpperCase();
 
@@ -416,7 +419,21 @@ async function cargarKPIs(){
 );
 hoy.setHours(0,0,0,0);
 
-  let totalReportes = 0;
+ let totalReportes = 0;
+
+if (rolActual === "vigilante") {
+
+  // 🚨 SOLO salidas fuera de horario
+  const { data } = await supabaseClient
+    .from("reportes_obras")
+    .select("fecha_reporte")
+    .eq("tipo", "salida_fuera_horario");
+
+  totalReportes = data?.filter(r =>
+    new Date(r.fecha_reporte) >= hoy
+  ).length || 0;
+
+} else {
 
   // 🔴 VECINALES
   const { data: vecinal } = await supabaseClient
@@ -453,7 +470,7 @@ hoy.setHours(0,0,0,0);
 
   totalReportes += luminarias?.filter(r => new Date(r.fecha_reporte) >= hoy).length || 0;
 
-  document.getElementById("kpiReportes").innerText = totalReportes;
+}
 
   // 👷 TRABAJADORES DENTRO
   const { data: trabajadores } = await supabaseClient
