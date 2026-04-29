@@ -62,25 +62,8 @@ h1 {
   color: #9ca3af;
 }
 
-.acciones button {
-  margin-top: 10px;
-  width: 100%;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-}
 
-.btn-reporte {
-  background: #dc2626;
-  color: white;
-}
 
-.btn-salida {
-  background: #2563eb;
-  color: white;
-}
 </style>
 </head>
 
@@ -240,16 +223,10 @@ async function cargar() {
       </div>
 
       ${esAlerta ? `
-        <div class="acciones">
-          <button class="btn-reporte" onclick="reportar('${item.trabajador_id}')">
-            🚨 Reportar incidencia
-          </button>
-
-          <button class="btn-salida" onclick="forzarSalida('${item.id}')">
-            🚪 Forzar salida
-          </button>
-        </div>
-      ` : ""}
+  <div class="detalle" style="margin-top:10px; color:#f87171; font-weight:bold;">
+    ⚠️ Requiere atención del vigilante
+  </div>
+` : ""}
     `;
 
     lista.appendChild(div);
@@ -265,40 +242,6 @@ async function cargar() {
   }
 }
 
-// 🚨 REPORTAR
-async function reportar(trabajador_id) {
-
-  await supabaseClient
-    .from("incidencias_trabajadores")
-    .insert([{
-      trabajador_id: trabajador_id,
-      tipo: "irregularidad",
-      descripcion: "Detectado por sistema",
-      registrado_por: "vigilante"
-    }]);
-
-  alert("Incidencia registrada");
-}
-
-// 🚪 FORZAR SALIDA
-async function forzarSalida(acceso_id) {
-
-  const ahoraLocal = new Date().toLocaleString("sv-SE", {
-    timeZone: "America/Mexico_City"
-  }).replace(" ", "T");
-
-  await supabaseClient
-    .from("accesos_trabajadores")
-    .update({
-      fecha_hora_salida_local: ahoraLocal,
-      estatus: "forzado"
-    })
-    .eq("id", acceso_id);
-
-  alert("Salida registrada");
-
-  cargar();
-}
 
 </script>
 
