@@ -415,6 +415,7 @@ window.addEventListener("load", async () => {
 });
 
 async function cargarKPIs(){
+  try {
 
   const hoy = new Date(
   new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" })
@@ -512,6 +513,10 @@ if (rolActual === "vigilante") {
   }
 
   document.getElementById("kpiReportes").innerText = totalReportes;
+
+    } catch (e) {
+    console.error("ERROR GENERAL KPI:", e);
+  }  
 
 }
 
