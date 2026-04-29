@@ -108,6 +108,10 @@ async function cargarCatalogo(){
   // 🔴 LÍNEA CRÍTICA (faltaba)
   const residente = await getResidente();
 
+  // 🔴 AQUÍ EXACTO van los logs
+  console.log("RESIDENTE COMPLETO:", residente);
+  console.log("TIPO EXACTO:", JSON.stringify(residente?.tipo));
+
   if (!residente) {
     console.error("No se pudo obtener residente");
     return;
