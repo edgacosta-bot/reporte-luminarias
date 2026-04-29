@@ -422,17 +422,6 @@ async function cargarKPIs(){
 hoy.setHours(0,0,0,0);
 
   // 🔥 NUEVO BLOQUE PARA FILTRO CORRECTO
-const tz = "America/Mexico_City";
-const now = new Date(new Date().toLocaleString("en-US", { timeZone: tz }));
-
-const inicio = new Date(now);
-inicio.setHours(0,0,0,0);
-
-const fin = new Date(now);
-fin.setHours(23,59,59,999);
-
-const inicioISO = inicio.toISOString();
-const finISO = fin.toISOString();
 
  let totalReportes = 0;
 
@@ -445,6 +434,9 @@ if (rolActual === "vigilante") {
   const inicio = fechaInicioUTC(fechaHoyMX);
   const fin = fechaFinUTC(fechaHoyMX);
 
+  console.log("inicio:", inicio);
+  console.log("fin:", fin);
+  
   const { data, error } = await supabaseClient
     .from("reportes_obras")
     .select("id")
@@ -453,13 +445,15 @@ if (rolActual === "vigilante") {
     .lte("fecha_reporte", fin);
 
   if (error) {
-    console.error("Error KPI vigilante:", error);
+    console.error(error);
     totalReportes = 0;
   } else {
     totalReportes = data?.length || 0;
   }
 
 } else {
+
+  // 🔴 TODO TU BLOQUE ORIGINAL DE ADMIN AQUÍ
 
   // 🔴 VECINALES
   const { data: vecinal } = await supabaseClient
