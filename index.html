@@ -241,6 +241,8 @@ body {
     <a href="trabajador_hogar_registro.html" class="button btn-res-3">Empleado doméstico</a>
   </div>
 
+  
+
   <button class="button btn-res-2" onclick="toggleMenu('paq')">
     📦 Paquetería
   </button>
@@ -298,8 +300,55 @@ body {
     </a>
   </div>
 
+</div>  <!-- FIN menuResidente -->
+
+
+<!-- 🔵 VIGILANTE -->
+<div class="menu" id="menuVigilante" style="display:none;">
+
+  <!-- ACCESOS RECURRENTES -->
+  <a href="vigilante_servicios.html" class="button btn-vino">
+    🚚 Accesos recurrentes
+  </a>
+
+  <!-- PAQUETERÍA -->
+  <button class="button btn-verde" onclick="toggleMenu('paq_vig')">
+    📦 Paquetería
+  </button>
+
+  <div id="paq_vig" class="submenu">
+    <a href="paquetes.html" class="button btn-gris">
+      Registrar paquete recibido
+    </a>
+    <a href="entrega_paquetes.html" class="button btn-gris">
+      Entregar paquete a residente
+    </a>
+  </div>
+
+  <!-- SERVICIOS PROGRAMADOS -->
+  <a href="servicios_arribo_vigilante.html" class="button btn-beige">
+    🛠 Acceso servicios programados
+  </a>
+
+  <!-- OBRAS -->
+  <button class="button btn-oro" onclick="toggleMenu('obras_vig')">
+    🏗 Obras
+  </button>
+
+  <div id="obras_vig" class="submenu">
+    <a href="trabajadores_dentro.html" class="button btn-gris">
+      Trabajadores en fraccionamiento
+    </a>
+  </div>
+
 </div>
 
+
+<script>
+
+
+
+  
 <script>
 
 function toggleMenu(id){
@@ -342,13 +391,21 @@ window.addEventListener("load", async () => {
   setInterval(cargarKPIs, 30000); // 🔥 auto actualización cada 30s
 }
   else if (rol === "residente" || rol === "colono") {
+  
     document.getElementById("menuResidente").style.display = "block";
 
     // 🔥 ocultar KPIs SOLO residente
     document.querySelector(".kpis").style.display = "none";
   }
 
-  ["obras", "qr", "infra", "qr_res", "paq", "reportes", "infra_res", "aportaciones", "obras_res"]
+  else if (rol === "vigilante") {
+  document.getElementById("menuVigilante").style.display = "block";
+
+  await cargarKPIs();
+  setInterval(cargarKPIs, 30000);
+}
+
+  ["obras", "qr", "infra", "qr_res", "paq", "reportes", "infra_res", "aportaciones", "obras_res","paq_vig", "obras_vig"]
     .forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = "none";
