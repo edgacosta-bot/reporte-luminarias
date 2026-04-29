@@ -443,8 +443,8 @@ if (rolActual === "vigilante") {
   );
 
   const fin = fechaFinUTC(
-    new Date().toISOString().split("T")[0]
-  );
+  new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" })
+);
 
   const { data, error } = await supabaseClient
     .from("reportes_obras")
