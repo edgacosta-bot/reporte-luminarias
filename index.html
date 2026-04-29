@@ -10,6 +10,8 @@
 
 <script src="auth.js"></script>
 
+<script src="utils/dates.js"></script>  
+
 <style>
 body {
   margin: 0;
@@ -436,19 +438,28 @@ const finISO = fin.toISOString();
 
 if (rolActual === "vigilante") {
 
-  // 🚨 SOLO salidas fuera de horario
-  const { count, error } = await supabaseClient
-  .from("reportes_obras")
-  .select("id", { count: "exact", head: true })
-  .eq("tipo", "salida_fuera_horario")
-  .gte("fecha_reporte", inicioISO)
-  .lte("fecha_reporte", finISO);
+  const inicio = fechaInicioUTC(
+    new Date().toISOString().split("T")[0]
+  );
 
-if (error) {
-  console.error("Error KPI vigilante:", error);
-  totalReportes = 0;
-} else {
-  totalReportes = count || 0;
+  const fin = fechaFinUTC(
+    new Date().toISOString().split("T")[0]
+  );
+
+  const { data, error } = await supabaseClient
+    .from("reportes_obras")
+    .select("id")
+    .eq("tipo", "salida_fuera_horario")
+    .gte("fecha_reporte", inicio)
+    .lte("fecha_reporte", fin);
+
+  if (error) {
+    console.error("Error KPI vigilante:", error);
+    totalReportes = 0;
+  } else {
+    totalReportes = data?.length || 0;
+  }
+
 }
 
 } else {
