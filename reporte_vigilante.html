@@ -121,7 +121,7 @@ async function cargarCatalogo(){
     .from("catalogo_reportes")
     .select("subtipo")
     .eq("categoria","seguridad")
-    .eq("actor_permitido", residente.tipo)
+    .in("actor_permitido", [residente.tipo, "residente"])
     .eq("activo", true)
     .order("subtipo");
 
