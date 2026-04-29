@@ -419,19 +419,37 @@ async function cargarKPIs(){
 );
 hoy.setHours(0,0,0,0);
 
+  // 🔥 NUEVO BLOQUE PARA FILTRO CORRECTO
+const tz = "America/Mexico_City";
+const now = new Date(new Date().toLocaleString("en-US", { timeZone: tz }));
+
+const inicio = new Date(now);
+inicio.setHours(0,0,0,0);
+
+const fin = new Date(now);
+fin.setHours(23,59,59,999);
+
+const inicioISO = inicio.toISOString();
+const finISO = fin.toISOString();
+
  let totalReportes = 0;
 
 if (rolActual === "vigilante") {
 
   // 🚨 SOLO salidas fuera de horario
-  const { data } = await supabaseClient
-    .from("reportes_obras")
-    .select("fecha_reporte")
-    .eq("tipo", "salida_fuera_horario");
+  const { count, error } = await supabaseClient
+  .from("reportes_obras")
+  .select("id", { count: "exact", head: true })
+  .eq("tipo", "salida_fuera_horario")
+  .gte("fecha_reporte", inicioISO)
+  .lte("fecha_reporte", finISO);
 
-  totalReportes = data?.filter(r =>
-    new Date(r.fecha_reporte) >= hoy
-  ).length || 0;
+if (error) {
+  console.error("Error KPI vigilante:", error);
+  totalReportes = 0;
+} else {
+  totalReportes = count || 0;
+}
 
 } else {
 
@@ -490,6 +508,8 @@ if (rolActual === "vigilante") {
   if (kpiPaquetes) {
     kpiPaquetes.innerText = paquetes?.length || 0;
   }
+
+  document.getElementById("kpiReportes").innerText = totalReportes;
 
 }
 
