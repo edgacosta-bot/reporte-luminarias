@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro adicional</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: #111827;
+      padding: 30px 20px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      text-align: center;
+    }
+
+    h2 { margin-bottom: 10px; }
+
+    p {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 20px;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      box-sizing: border-box;
+      background: #1f2937;
+      color: white;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .mensaje { margin-top: 15px; font-size: 14px; }
+    .error { color: #f87171; }
+    .ok { color: #34d399; }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Registro adicional</h2>
+  <p>Agrega otro usuario a tu vivienda</p>
+
+  <select id="privada">
+    <option value="">Selecciona privada</option>
+    <option value="I">Privada I</option>
+    <option value="II">Privada II</option>
+    <option value="III">Privada III</option>
+    <option value="IV">Privada IV</option>
+  </select>
+
+  <input type="text" id="casa" placeholder="Número de casa">
+  <input type="text" id="nombre" placeholder="Nombre del usuario">
+
+  <input type="password" id="clave" placeholder="Contraseña (mínimo 6 caracteres)">
+  <input type="password" id="confirmar_clave" placeholder="Confirmar contraseña">
+
+  <button onclick="registrar()">Registrar usuario</button>
+
+  <div id="mensaje" class="mensaje"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
+  "https://prjxmfhahnzosdwljode.supabase.co",
+  "TU_ANON_KEY"
+);
+
+async function registrar() {
+
+  const privada = document.getElementById("privada").value.trim().toUpperCase();
+  const casa = document.getElementById("casa").value.trim();
+  const nombre = document.getElementById("nombre").value.trim();
+  const clave = document.getElementById("clave").value;
+  const confirmar = document.getElementById("confirmar_clave").value;
+  const mensaje = document.getElementById("mensaje");
+
+  mensaje.className = "mensaje";
+
+  if (!privada || !casa || !nombre || !clave || !confirmar) {
+    mensaje.innerText = "Completa todos los campos";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  if (clave.length < 6) {
+    mensaje.innerText = "La contraseña debe tener al menos 6 caracteres";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  if (clave !== confirmar) {
+    mensaje.innerText = "Las contraseñas no coinciden";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  // 🔍 Validar vivienda
+  const { data: vivienda, error } = await supabaseClient
+    .from("residentes")
+    .select("id")
+    .eq("privada", privada)
+    .eq("casa", casa)
+    .maybeSingle();
+
+  if (error) {
+    mensaje.innerText = "Error validando vivienda";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  if (!vivienda) {
+    mensaje.innerText = "Vivienda no válida";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  // 🔐 Crear usuario auth
+  const email = `${privada.toLowerCase()}-${casa}-${Date.now()}@villas.com`;
+
+  const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+    email,
+    password: clave
+  });
+
+  if (authError) {
+    mensaje.innerText = authError.message || "Error al crear usuario";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  const user = authData.user || authData.session?.user;
+
+  if (!user || !user.id) {
+    mensaje.innerText = "Error al obtener usuario";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  // 🔥 Insertar en habitantes
+  const { error: errorHabitante } = await supabaseClient
+    .from("habitantes")
+    .insert([{
+      vivienda_id: vivienda.id,
+      nombre: nombre,
+      user_id: user.id,
+      tipo: "residente"
+    }]);
+
+  if (errorHabitante) {
+    console.error(errorHabitante);
+    mensaje.innerText = "Error al registrar habitante";
+    mensaje.classList.add("error");
+    return;
+  }
+
+  mensaje.innerText = "Usuario agregado correctamente ✅";
+  mensaje.classList.add("ok");
+
+  setTimeout(() => {
+    window.location.href = "login.html";
+  }, 1200);
+}
+</script>
+
+</body>
+</html>
