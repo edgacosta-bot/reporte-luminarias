@@ -94,11 +94,11 @@ const supabaseClient = createClient(
   }
 );
 
-// limpiar sesión
-supabaseClient.auth.signOut();
 
 async function registrar() {
-
+  
+supabaseClient.auth.signOut();
+  
   const privada = document.getElementById("privada").value.trim().toUpperCase();
   const casa = document.getElementById("casa").value.trim();
   const nombre = document.getElementById("nombre").value.trim();
@@ -147,27 +147,45 @@ async function registrar() {
 
   const email = `${privada.toLowerCase()}-${casa}@villas.com`;
 
-  const { data: authData, error: authError } =
-    await supabaseClient.auth.signUp({ email, password: clave });
+  let user;
 
-  if (authError) {
+const { data: authData, error: authError } =
+  await supabaseClient.auth.signUp({ email, password: clave });
 
-    if (authError.message.includes("already registered")) {
-      mensaje.innerHTML = `Ya existe<br><a href="login.html">Login</a>`;
-    } else {
-      mensaje.innerText = authError.message;
+if (authError) {
+
+  if (authError.message.includes("already registered")) {
+
+    // 🔥 INTENTAR LOGIN
+    const { data: loginData, error: loginError } =
+      await supabaseClient.auth.signInWithPassword({
+        email,
+        password: clave
+      });
+
+    if (loginError) {
+      mensaje.innerText = "Usuario ya existe, pero contraseña incorrecta";
+      mensaje.classList.add("error");
+      return;
     }
 
+    user = loginData.user;
+
+  } else {
+    mensaje.innerText = authError.message;
     mensaje.classList.add("error");
     return;
   }
 
-  const user = authData.user;
+} else {
+  user = authData.user;
+}
 
-  if (!user) {
-    mensaje.innerText = "Error creando usuario";
-    return;
-  }
+ if (!user) {
+  mensaje.innerText = "Error obteniendo usuario";
+  mensaje.classList.add("error");
+  return;
+}
 
   // 🔥 AQUÍ ESTÁ LA CLAVE
   const { error: rpcError } = await supabaseClient.rpc("registrar_vivienda", {
