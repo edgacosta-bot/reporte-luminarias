@@ -18,6 +18,8 @@ body {
   font-family: Arial;
   background: linear-gradient(135deg, #0f172a, #1e293b);
   color: white;
+
+  visibility: hidden; /* 🔥 agrega esta línea */
 }
 
 /* HEADER */
@@ -366,7 +368,7 @@ async function logout(){
   window.location.href = "login.html";
 }
 
-window.addEventListener("load", async () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
   const { data } = await supabaseClient.auth.getSession();
   const user = data?.session?.user;
@@ -411,11 +413,14 @@ window.addEventListener("load", async () => {
   setInterval(cargarKPIs, 30000);
 }
 
-  ["obras", "qr", "infra", "vig", "qr_res", "paq", "reportes", "infra_res", "aportaciones", "obras_res","paq_vig", "obras_vig"]
-    .forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = "none";
-    });
+ ["obras", "qr", "infra", "vig", "qr_res", "paq", "reportes", "infra_res", "aportaciones", "obras_res","paq_vig", "obras_vig"]
+  .forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
+
+// 🔥 MOSTRAR SOLO CUANDO YA SABES EL ROL
+document.body.style.visibility = "visible";
 
 });
 
