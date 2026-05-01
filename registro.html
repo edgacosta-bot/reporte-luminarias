@@ -102,7 +102,7 @@ const supabaseClient = createClient(
 
 async function registrar() {
 
-  const privada = document.getElementById("privada").value.trim();
+ const privada = document.getElementById("privada").value.trim().toUpperCase();
   const casa = document.getElementById("casa").value.trim();
   const nombre = document.getElementById("nombre").value.trim();
   const clave = document.getElementById("clave").value;
@@ -132,7 +132,7 @@ async function registrar() {
   // 🔍 Validar lote
   const { data, error } = await supabaseClient
     .from("residentes")
-    .select("*")
+    .select("id, habilitado_registro, registrado")
     .eq("privada", privada)
     .eq("casa", casa)
     .maybeSingle();
