@@ -130,18 +130,25 @@ async function registrar() {
   }
 
   // 🔍 Validar lote
-  const { data, error } = await supabaseClient
-    .from("residentes")
-    .select("id, habilitado_registro, registrado")
-    .eq("privada", privada)
-    .eq("casa", casa)
-    .maybeSingle();
+  const { data: vivienda, error } = await supabaseClient
+  .from("residentes")
+  .select("id, privada, casa")
+  .eq("privada", privada)
+  .eq("casa", casa)
+  .maybeSingle();
 
-  if (error) {
-    mensaje.innerText = "Error validando lote";
-    mensaje.classList.add("error");
-    return;
-  }
+console.log("DEBUG VIVIENDA:");
+console.log("privada enviada:", privada);
+console.log("casa enviada:", casa);
+console.log("resultado:", vivienda);
+console.log("error:", error);
+
+ if (error) {
+  console.error("ERROR REAL:", error);
+  mensaje.innerText = "Error validando vivienda";
+  mensaje.classList.add("error");
+  return;
+}
 
   if (!data) {
     mensaje.innerText = "Lote no válido";
