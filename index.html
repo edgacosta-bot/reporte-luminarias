@@ -380,16 +380,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   
   const { data: residente } = await supabaseClient
-    .from("residentes")
-    .select("tipo")
-    .eq("user_id", user.id)
-    .single();
+  .from("residentes")
+  .select("tipo, privada, casa")
+  .eq("user_id", user.id)
+  .single();
 
   const rol = residente?.tipo || "";
 
   rolActual = rol;
 
-  document.getElementById("rolTexto").innerText = rol.toUpperCase();
+  const vivienda = `${residente?.privada || ""}-${residente?.casa || ""}`;
+
+  document.getElementById("rolTexto").innerHTML =
+  `<strong>${vivienda}</strong> | ${rol.toUpperCase()}`;
 
   if (rol === "administracion") {
   document.getElementById("menuAdmin").style.display = "block";
