@@ -195,10 +195,23 @@ console.log("error:", error);
  if (authError) {
 
   if (authError.message.includes("already registered")) {
+
+    // 🔥 SINCRONIZAR RESIDENTE CON AUTH
+    await supabaseClient.auth.signOut();
+
+    await supabaseClient
+      .from("residentes")
+      .update({
+        registrado: true
+      })
+      .eq("privada", privada)
+      .eq("casa", casa);
+
     mensaje.innerHTML = `
       Esta vivienda ya fue registrada previamente.<br><br>
       <a href="login.html" style="color:#60a5fa;">Iniciar sesión</a>
     `;
+
   } else {
     mensaje.innerText = authError.message || "Error al crear usuario";
   }
