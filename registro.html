@@ -110,6 +110,9 @@ const supabaseClient = createClient(
 );
 
 console.log("SUPABASE URL:", supabaseClient.supabaseUrl);
+
+// 🔥 LIMPIAR SESIÓN AL CARGAR LA PÁGINA
+supabaseClient.auth.signOut();  
   
 async function registrar() {
 
