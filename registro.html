@@ -167,11 +167,11 @@ console.log("error:", error);
     return;
   }
 
-  if (!vivienda.habilitado_registro)
-    mensaje.innerText = "Este lote aún no está habilitado para registro.";
-    mensaje.classList.add("error");
-    return;
-  }
+ if (!vivienda.habilitado_registro) {
+  mensaje.innerText = "Este lote aún no está habilitado para registro.";
+  mensaje.classList.add("error");
+  return;
+}
 
  if (vivienda.registrado === true) {
     mensaje.innerHTML = `
