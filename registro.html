@@ -97,7 +97,16 @@ const { createClient } = supabase;
 
 const supabaseClient = createClient(
   "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs",
+  {
+
+    
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false
+    }
+  }
 );
 
 console.log("SUPABASE URL:", supabaseClient.supabaseUrl);
@@ -134,7 +143,7 @@ async function registrar() {
   // 🔍 Validar lote
   const { data: vivienda, error } = await supabaseClient
   .from("residentes")
-  .select("id, privada, casa")
+  .select("id, privada, casa, habilitado_registro, registrado")
   .eq("privada", privada)
   .eq("casa", casa)
   .maybeSingle();
@@ -152,19 +161,19 @@ console.log("error:", error);
   return;
 }
 
-  if (!data) {
+  if (!vivienda) {
     mensaje.innerText = "Lote no válido";
     mensaje.classList.add("error");
     return;
   }
 
-  if (!data.habilitado_registro) {
+  if (!vivienda.habilitado_registro)
     mensaje.innerText = "Este lote aún no está habilitado para registro.";
     mensaje.classList.add("error");
     return;
   }
 
-  if (data.registrado === true) {
+ if (vivienda.registrado === true) {
     mensaje.innerHTML = `
       Esta vivienda ya cuenta con registro.<br><br>
       <a href="login.html" style="color:#60a5fa;">Iniciar sesión</a>
