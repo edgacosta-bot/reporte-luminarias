@@ -189,6 +189,25 @@ async function cargar() {
   const contenedor = document.getElementById("lista");
   contenedor.innerHTML = "";
 
+  if (!trabajadores || trabajadores.length === 0) {
+
+  contenedor.innerHTML = `
+    <div style="
+      text-align:center;
+      background:#1f2937;
+      padding:20px;
+      border-radius:12px;
+      color:#cbd5f5;
+      font-size:14px;
+    ">
+      👷 Estimado residente,<br><br>
+      No cuentas con empleados del hogar registrados.
+    </div>
+  `;
+
+  return;
+}
+
   trabajadores?.forEach(t => {
 
     const card = document.createElement("div");
