@@ -192,11 +192,20 @@ console.log("error:", error);
     password: clave
   });
 
-  if (authError) {
+ if (authError) {
+
+  if (authError.message.includes("already registered")) {
+    mensaje.innerHTML = `
+      Esta vivienda ya fue registrada previamente.<br><br>
+      <a href="login.html" style="color:#60a5fa;">Iniciar sesión</a>
+    `;
+  } else {
     mensaje.innerText = authError.message || "Error al crear usuario";
-    mensaje.classList.add("error");
-    return;
   }
+
+  mensaje.classList.add("error");
+  return;
+}
 
  const user = authData.user || authData.session?.user;
 
