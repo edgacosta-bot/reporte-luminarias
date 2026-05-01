@@ -198,25 +198,28 @@ console.log("error:", error);
     return;
   }
 
-  const user = authData.user || authData.session?.user;
+ const user = authData.user || authData.session?.user;
 
-  if (!user || !user.id) {
-    mensaje.innerText = "Error al obtener usuario";
-    mensaje.classList.add("error");
-    return;
-  }
+if (!user || !user.id) {
+  mensaje.innerText = "Error al obtener usuario";
+  mensaje.classList.add("error");
+  return;
+}
 
-  // 🔒 ACTUALIZAR RESIDENTE (SIN GUARDAR PASSWORD)
-  const { error: errorUpdate } = await supabaseClient
-    .from("residentes")
-    .update({
-      nombre: nombre,
-      registrado: true,
-      tipo: "residente",
-      user_id: user.id
-    })
-    .eq("privada", privada)
-    .eq("casa", casa);
+// 🔥 SOLUCIÓN AQUÍ
+await supabaseClient.auth.signOut();
+
+// 🔒 ACTUALIZAR RESIDENTE
+const { error: errorUpdate } = await supabaseClient
+  .from("residentes")
+  .update({
+    nombre: nombre,
+    registrado: true,
+    tipo: "residente",
+    user_id: user.id
+  })
+  .eq("privada", privada)
+  .eq("casa", casa);
 
   if (errorUpdate) {
     mensaje.innerText = "Error al registrar";
