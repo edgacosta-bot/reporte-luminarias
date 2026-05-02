@@ -130,15 +130,13 @@ body {
 
 /* ICONOS */
 .icon {
-  width: 26px;
-  height: 26px;
+  width: 32px;              /* 🔥 ancho fijo */
+  min-width: 32px;          /* evita que se encoja */
   display: flex;
   align-items: center;
   justify-content: center;
-
-  background: rgba(255,255,255,0.15);
-  border-radius: 6px;
-  padding: 4px;
+  font-size: 22px; /* controla tamaño del emoji */
+  line-height: 1;
 }
 
  .icon svg {
