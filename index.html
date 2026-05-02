@@ -130,9 +130,18 @@ body {
 
 /* ICONOS */
 .icon {
-  font-size: 28px;
-  width: 32px;
-  text-align: center;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+  .icon svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+  fill: none;
 }
 
 /* SUBMENU */
@@ -251,8 +260,16 @@ body {
   </div>
 
   <a href="bitacora_visitantes.html" class="button btn-res-2">
-    📘 Bitácora de visitantes
-  </a>
+  <span class="icon">
+    <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 2h6a2 2 0 0 1 2 2v2H7V4a2 2 0 0 1 2-2z"/>
+      <path d="M7 6h10v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6z"/>
+      <line x1="9" y1="12" x2="15" y2="12"/>
+      <line x1="9" y1="16" x2="13" y2="16"/>
+    </svg>
+  </span>
+  Bitácora de visitantes
+</a>
 
   <a href="servicios_arribo.html" class="button btn-res-3">
     🚚 Autoriza accesos a servicios
