@@ -37,6 +37,22 @@ h1 {
 .protocolo h2 {
   margin-top: 0;
 }
+
+.btn-doc {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #2563eb;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.btn-doc:hover {
+  background: #1d4ed8;
+}
+  
 </style>
 </head>
 
@@ -84,6 +100,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     <div class="protocolo">
       <h2>${p.titulo}</h2>
       <div>${p.contenido}</div>
+
+${p.documento_url ? `
+  <a href="${p.documento_url}" target="_blank" class="btn-doc">
+    📄 Ver protocolo completo
+  </a>
+` : ''}
     </div>
   `).join("");
 
