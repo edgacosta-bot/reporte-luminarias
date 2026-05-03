@@ -60,6 +60,22 @@ body {
   font-size: 14px;
 }
 
+.logo-link {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.logo-sigvic {
+  width: 220px;
+  max-width: 85%;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.logo-sigvic {
+  cursor: pointer;
+}
+  
 /* BOTÓN SALIR */
 .logout {
   text-align: center;
@@ -184,12 +200,13 @@ body {
 <body>
 
 <div class="header">
-  <a href="index.html">
-    <img src="logo-sigvic.png" class="logo-sigvic">
+
+  <a href="index.html" class="logo-link">
+    <img src="logo-sigvic-dark.png" class="logo-sigvic">
   </a>
-  <div class="titulo-sistema">SIGVIC</div>
-  <div class="subtitulo-sistema">Sistema de Gestión Villas de la Concepción</div>
+
   <div class="rol" id="rolTexto">Cargando...</div>
+
 </div>
 
 <div class="logout">
