@@ -102,6 +102,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     .eq("activo", true)
     .order("orden", { ascending: true });
 
+  const params = new URLSearchParams(window.location.search);
+const moduloFiltro = params.get("modulo");
+
+let dataFiltrada = data;
+
+if (moduloFiltro) {
+  document.querySelector("h1").innerText = "📘 Información SIGVIC";
+  dataFiltrada = data.filter(p =>
+    (p.modulo || "").toLowerCase().trim() === moduloFiltro.toLowerCase().trim()
+  );
+}
+
   console.log("DATA:", data);
   console.log("ERROR:", error);
 
@@ -113,7 +125,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const contenedor = document.getElementById("listaProtocolos");
 
   // 🧠 Render dinámico
-  contenedor.innerHTML = data.map(p => `
+  contenedor.innerHTML = dataFiltrada.map(p => `
     <div class="protocolo">
       <h2>${p.titulo}</h2>
       <div>${p.contenido}</div>
