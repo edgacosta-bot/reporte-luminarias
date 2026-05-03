@@ -121,13 +121,18 @@ async function cargarCatalogo() {
 
   const select = document.getElementById("tipo");
 
-  const { data } = await supabaseClient
-    .from("catalogo_reportes")
-    .select("subtipo")
-    .eq("categoria", "vecinal")
-    .eq("actor_permitido", "colono")
-    .eq("activo", true)
-    .order("subtipo");
+  const { data, error } = await supabaseClient
+  .from("catalogo_reportes")
+  .select("subtipo")
+  .eq("categoria", "vecinal")
+  .eq("actor_permitido", "residente")
+  .eq("activo", true)
+  .order("subtipo");
+
+if (error) {
+  console.error("Error catálogo:", error);
+  return;
+}
 
   select.innerHTML = '<option value="">Tipo de incidente</option>';
 
