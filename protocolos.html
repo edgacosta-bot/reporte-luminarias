@@ -95,26 +95,37 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // 📥 Obtener protocolos
-  const { data, error } = await supabaseClient
-    .from("protocolos")
-    .select("*")
-    .eq("activo", true)
-    .order("orden", { ascending: true });
+ // 📥 Obtener protocolos
+const { data, error } = await supabaseClient
+  .from("protocolos")
+  .select("*")
+  .eq("activo", true)
+  .order("orden", { ascending: true });
 
-  const params = new URLSearchParams(window.location.search);
+// 🔴 PRIMERO validar error
+if (error) {
+  console.error("Error cargando protocolos:", error);
+  return;
+}
+
+console.log("DATA:", data);
+
+// 🔹 Obtener parámetro
+const params = new URLSearchParams(window.location.search);
 const moduloFiltro = params.get("modulo");
 
-let dataFiltrada = data;
+// 🔹 Asegurar array válido
+let dataFiltrada = data || [];
 
+// 🔹 Aplicar filtro
 if (moduloFiltro) {
-
-  dataFiltrada = data.filter(p =>
+  dataFiltrada = dataFiltrada.filter(p =>
     (p.modulo || "").toLowerCase().trim() === moduloFiltro.toLowerCase().trim()
   );
+}
 
-  // 🎯 Ajustes solo para "informacion"
- if (moduloFiltro === "informacion" || moduloFiltro === "privacidad") {
+// 🎯 Ajustes visuales
+if (moduloFiltro === "informacion" || moduloFiltro === "privacidad") {
 
   // Cambiar título
   if (moduloFiltro === "informacion") {
@@ -125,22 +136,14 @@ if (moduloFiltro) {
     document.querySelector("h1").innerText = "📄 Aviso de privacidad";
   }
 
- }
-
-  // Ocultar banner solo en información / privacidad
-if (moduloFiltro === "informacion" || moduloFiltro === "privacidad") {
+  // Ocultar banner
   const banner = document.getElementById("bannerProtocolos");
   if (banner) banner.style.display = "none";
 }
 
-  console.log("DATA:", data);
-  console.log("ERROR:", error);
-
-  if (error) {
-    console.error("Error cargando protocolos:", error);
-    return;
-  }
-
+// 🧪 Debug opcional
+console.log("Filtro:", moduloFiltro);
+console.log("Filtrados:", dataFiltrada);
   const contenedor = document.getElementById("listaProtocolos");
 
   // 🧠 Render dinámico
