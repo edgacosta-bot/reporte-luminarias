@@ -34,11 +34,15 @@ body {
 }
 
 .logo-sigvic {
-  width: 420px;   /* 🔥 casi el doble */
-  max-width: 95%;
-  margin-bottom: 10px;
+  width: 100%;
+  max-width: 480px;   /* 🔥 tamaño ideal */
+  margin: 0 auto 10px;
   display: block;
+  cursor: pointer;
 }
+
+
+  
 .titulo-sistema {
   font-size: 24px;
   font-weight: 600;
@@ -194,7 +198,15 @@ body {
   border-radius: 12px;
 }
 
+ @media (max-width: 480px) {
+  .logo-sigvic {
+    max-width: 320px;
+  }
+} 
+
+  
 </style>
+
 
 </head>
 
