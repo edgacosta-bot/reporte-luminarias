@@ -134,10 +134,21 @@ if (moduloFiltro) {
   const contenedor = document.getElementById("listaProtocolos");
 
   // 🧠 Render dinámico
-  contenedor.innerHTML = dataFiltrada.map(p => `
-    <div class="protocolo">
-      <h2>${p.titulo}</h2>
-      <div>${p.contenido}</div>
+ contenedor.innerHTML = dataFiltrada.map(p => `
+  <div class="protocolo">
+    
+    ${moduloFiltro === "informacion" ? "" : `<h2>${p.titulo}</h2>`}
+    
+    <div>${p.contenido}</div>
+
+${p.documento_url ? `
+  <a href="${p.documento_url}" target="_blank" class="btn-doc">
+    📄 Ver protocolo completo
+  </a>
+` : ''}
+
+  </div>
+`).join("");
 
 ${p.documento_url ? `
   <a href="${p.documento_url}" target="_blank" class="btn-doc">
