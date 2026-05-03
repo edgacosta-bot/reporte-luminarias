@@ -114,13 +114,23 @@ if (moduloFiltro) {
   );
 
   // 🎯 Ajustes solo para "informacion"
+ if (moduloFiltro === "informacion" || moduloFiltro === "privacidad") {
+
+  // Cambiar título
   if (moduloFiltro === "informacion") {
     document.querySelector("h1").innerText = "📘 ¿Qué es SIGVIC?";
-
-    const banner = document.getElementById("bannerProtocolos");
-    if (banner) banner.style.display = "none";
   }
 
+  if (moduloFiltro === "privacidad") {
+    document.querySelector("h1").innerText = "📄 Aviso de privacidad";
+  }
+
+ }
+
+  // Ocultar banner solo en información / privacidad
+if (moduloFiltro === "informacion" || moduloFiltro === "privacidad") {
+  const banner = document.getElementById("bannerProtocolos");
+  if (banner) banner.style.display = "none";
 }
 
   console.log("DATA:", data);
@@ -137,7 +147,7 @@ if (moduloFiltro) {
  contenedor.innerHTML = dataFiltrada.map(p => `
   <div class="protocolo">
     
-    ${moduloFiltro === "informacion" ? "" : `<h2>${p.titulo}</h2>`}
+   ${(moduloFiltro === "informacion" || moduloFiltro === "privacidad") ? "" : `<h2>${p.titulo}</h2>`}
     
     <div>${p.contenido}</div>
 
