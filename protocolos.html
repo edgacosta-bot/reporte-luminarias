@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <title>Protocolos SIGVIC</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
 <style>
 body {
   font-family: Arial;
@@ -16,6 +19,14 @@ h1 {
   text-align: center;
 }
 
+.banner {
+  background: #f59e0b;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  color: black;
+}
+
 .protocolo {
   background: #111827;
   padding: 15px;
@@ -23,24 +34,8 @@ h1 {
   margin-bottom: 15px;
 }
 
-details {
-  margin-top: 10px;
-  border: 1px solid #333;
-  padding: 10px;
-  border-radius: 8px;
-}
-
-summary {
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.banner {
-  background: #f59e0b;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  color: black;
+.protocolo h2 {
+  margin-top: 0;
 }
 </style>
 </head>
@@ -53,38 +48,44 @@ summary {
 ⚠️ Estos procedimientos son obligatorios y forman parte del sistema SIGVIC
 </div>
 
-<div class="protocolo">
+<div id="listaProtocolos"></div>
 
-<h2>Acceso de visitantes</h2>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
 
-<details open>
-<summary>Principio del protocolo</summary>
-<p>
-Todo acceso de visitantes requiere código QR válido y registro en SIGVIC, por motivos de seguridad y control operativo.<br><br>
-La única excepción será la autorización presencial del residente en caseta.
-</p>
-</details>
+  // 🔐 Validar sesión
+  const { data: sessionData } = await supabaseClient.auth.getSession();
+  const user = sessionData?.session?.user;
 
-<details>
-<summary>Responsabilidad del residente</summary>
-<ul>
-<li>Generar QR</li>
-<li>Proporcionarlo antes de llegada</li>
-<li>Registrar datos correctos</li>
-</ul>
-</details>
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
 
-<details>
-<summary>Acción del vigilante</summary>
-<ul>
-<li>Solicitar QR e identificación</li>
-<li>Escanear entrada y salida</li>
-<li>Usar PIN obligatorio</li>
-<li>Resguardar identificación</li>
-</ul>
-</details>
+  // 📥 Obtener protocolos
+  const { data, error } = await supabaseClient
+    .from("protocolos")
+    .select("*")
+    .eq("activo", true)
+    .order("orden", { ascending: true });
 
-</div>
+  if (error) {
+    console.error("Error cargando protocolos:", error);
+    return;
+  }
+
+  const contenedor = document.getElementById("listaProtocolos");
+
+  // 🧠 Render dinámico
+  contenedor.innerHTML = data.map(p => `
+    <div class="protocolo">
+      <h2>${p.titulo}</h2>
+      <div>${p.contenido}</div>
+    </div>
+  `).join("");
+
+});
+</script>
 
 </body>
 </html>
