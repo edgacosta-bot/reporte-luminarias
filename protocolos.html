@@ -69,6 +69,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     .eq("activo", true)
     .order("orden", { ascending: true });
 
+  console.log("DATA:", data);
+  console.log("ERROR:", error);
+
   if (error) {
     console.error("Error cargando protocolos:", error);
     return;
