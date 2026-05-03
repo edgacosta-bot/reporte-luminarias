@@ -117,6 +117,14 @@ const moduloFiltro = params.get("modulo");
 // 🔹 Asegurar array válido
 let dataFiltrada = data || [];
 
+// 🔥 SOLO mostrar módulos operativos en vista general
+if (!moduloFiltro) {
+  dataFiltrada = dataFiltrada.filter(p =>
+    p.modulo === "accesos" || p.modulo === "operacion"
+  );
+}  
+  
+
 // 🔹 Aplicar filtro
 if (moduloFiltro) {
   dataFiltrada = dataFiltrada.filter(p =>
