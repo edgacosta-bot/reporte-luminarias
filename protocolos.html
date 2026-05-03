@@ -77,7 +77,7 @@ h1 {
 
 <h1>📘 Protocolos SIGVIC</h1>
 
-<div class="banner">
+<div class="banner" id="bannerProtocolos">
 ⚠️ Estos procedimientos son obligatorios y forman parte del sistema SIGVIC
 </div>
 
@@ -108,10 +108,19 @@ const moduloFiltro = params.get("modulo");
 let dataFiltrada = data;
 
 if (moduloFiltro) {
-  document.querySelector("h1").innerText = "📘 Información SIGVIC";
+
   dataFiltrada = data.filter(p =>
     (p.modulo || "").toLowerCase().trim() === moduloFiltro.toLowerCase().trim()
   );
+
+  // 🎯 Ajustes solo para "informacion"
+  if (moduloFiltro === "informacion") {
+    document.querySelector("h1").innerText = "📘 ¿Qué es SIGVIC?";
+
+    const banner = document.getElementById("bannerProtocolos");
+    if (banner) banner.style.display = "none";
+  }
+
 }
 
   console.log("DATA:", data);
