@@ -251,21 +251,13 @@ body {
 <div class="menu" id="menuResidente" style="display:none;">
 
  <button class="button btn-res-1" onclick="toggleMenu('sigvic')">
-    🔐 Acerca de SIGVIC
+    📘 Acerca de SIGVIC
   </button>
   <div id="sigvic" class="submenu">
     <a href="protocolos.html?modulo=informacion" class="button btn-res-3">¿Qué es SIGVIC?</a>
     <a href="protocolos.html" class="button btn-res-3">Reglas SIGVIC</a>
     <a href="protocolos.html?modulo=privacidad" class="button btn-res-3">Aviso de privacidad</a>
   </div>
-
-
-
-  
-  
-  <a href="protocolos.html" class="button btn-res-1">
-  📘 Acerca de SIGVIC
-</a>
 
    <button class="button btn-res-2" onclick="toggleMenu('qr_res')">
     🔐 Generar código QR
@@ -275,21 +267,22 @@ body {
     <a href="trabajador_hogar_registro.html" class="button btn-res-3">Empleado doméstico</a>
   </div>
 
- <a href="trabajadores_hogar_gestion.html" class="button btn-res-3">
+    <button class="button btn-res-3" onclick="toggleMenu('sin_qr')">
+    🚚 Autoriza servicios
+  </button>
+  <div id="sin_qr" class="submenu">
+    <a href="servicios_arribo.html" class="button btn-res-3">Autorizar ingreso de Svs.</a>
+    <a href="residente_paquetes.html" class="button btn-res-3">Autoriza recepción paquetería en caseta</a>
+  </div>
+
+ <a href="mis_paquetes.html" class="button btn-res-5">
+    📦 Ver mis paquetes en caseta.
+  </a>
+
+ <a href="trabajadores_hogar_gestion.html" class="button btn-res-1">
     👨‍🔧 Gestionar empleados hogar
   </a>
 
- <a href="servicios_arribo.html" class="button btn-res-5">
-    🚚 Autoriza accesos a servicios
-  </a>
-
- <button class="button btn-res-1" onclick="toggleMenu('paq')">
-    📦 Paquetería
-  </button>
-  <div id="paq" class="submenu">
-    <a href="residente_paquetes.html" class="button btn-res-3">Autorizar recepción</a>
-    <a href="mis_paquetes.html" class="button btn-res-3">Mis paquetes</a>
-  </div>
   
 <a href="bitacora_visitantes.html" class="button btn-res-2">
   <span class="icon">
