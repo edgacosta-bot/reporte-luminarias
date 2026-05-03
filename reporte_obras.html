@@ -158,10 +158,13 @@ async function cargarObras() {
 
   const select = document.getElementById("obra");
 
-  const { data } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("obras")
     .select("id, privada, casa")
     .eq("estatus", "activa");
+
+  console.log("OBRAS DATA:", data);
+  console.log("OBRAS ERROR:", error);
 
   select.innerHTML = '<option value="">Selecciona obra</option>';
 
