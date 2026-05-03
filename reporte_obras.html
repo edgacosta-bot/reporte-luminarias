@@ -113,7 +113,7 @@ Trabajador (opcional)
 
 // 🔐 VARIABLES
 let actorInfo = document.getElementById("actorInfo");
-let actor = "colono";
+let actor = "residente";
 
 // 🔐 OBTENER RESIDENTE (NUEVO MODELO)
 async function inicializarResidente(){
@@ -138,7 +138,7 @@ async function cargarCatalogo() {
     .from("catalogo_reportes")
     .select("subtipo")
     .eq("categoria", "obras")
-    .eq("actor_permitido", actor)
+    
     .eq("activo", true);
 
   select.innerHTML = '<option value="">Tipo de reporte</option>';
