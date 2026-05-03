@@ -134,12 +134,17 @@ async function inicializarResidente(){
 async function cargarCatalogo() {
   const select = document.getElementById("tipo");
 
-  const { data } = await supabaseClient
-    .from("catalogo_reportes")
-    .select("subtipo")
-    .eq("categoria", "obras")
-    
-    .eq("activo", true);
+ const { data, error } = await supabaseClient
+  .from("catalogo_reportes")
+  .select("subtipo")
+  .eq("categoria", "obras")
+  .eq("actor_permitido", actor)
+  .eq("activo", true);
+
+if (error) {
+  console.error("Error cargando catálogo:", error);
+  return;
+}
 
   select.innerHTML = '<option value="">Tipo de reporte</option>';
 
@@ -161,11 +166,14 @@ async function cargarObras() {
   const { data, error } = await supabaseClient
     .from("obras")
     .select("id, privada, casa")
-    .eq("estatus", "aprobada")
+    .eq("estatus", "aprobada");
 
-  console.log("OBRAS DATA:", data);
-  console.log("OBRAS ERROR:", error);
+  if (error) {
+  console.error("Error cargando obras:", error);
+  return;
+}
 
+  
   select.innerHTML = '<option value="">Selecciona obra</option>';
 
   if (data) {
@@ -188,11 +196,16 @@ document.getElementById("obra").addEventListener("change", async (e) => {
 
   if (!obra_id) return;
 
-  const { data } = await supabaseClient
-    .from("trabajadores_obra")
-    .select("id, nombre")
-    .eq("obra_id", obra_id)
-    .eq("activo", true);
+ const { data, error } = await supabaseClient
+  .from("trabajadores_obra")
+  .select("id, nombre")
+  .eq("obra_id", obra_id)
+  .eq("activo", true);
+
+if (error) {
+  console.error("Error cargando trabajadores:", error);
+  return;
+}
 
   if (data) {
     data.forEach(item => {
@@ -214,11 +227,11 @@ async function enviarReporte() {
 
   const mensaje = document.getElementById("mensaje");
 
-  if (!tipo || !descripcion || !obra_id) {
-    mensaje.innerText = "Completa los campos obligatorios";
-    mensaje.className = "mensaje error";
-    return;
-  }
+ if (!tipo || !descripcion || !obra_id) {
+  mensaje.innerText = "Completa los campos obligatorios";
+  mensaje.className = "mensaje error";
+  return;
+}
 
   // 🔥 NUEVO: obtener residente
   const residente = await getResidente();
@@ -250,8 +263,8 @@ async function enviarReporte() {
     .insert([dataInsert]);
 
   if (error) {
-    console.error(error);
-    mensaje.innerText = "Error al enviar";
+    console.error("Error insert:", error);
+    mensaje.innerText = error.message || "Error al enviar";
     mensaje.className = "mensaje error";
     return;
   }
