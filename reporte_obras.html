@@ -161,7 +161,7 @@ async function cargarObras() {
   const { data, error } = await supabaseClient
     .from("obras")
     .select("id, privada, casa")
-    .eq("estatus", "activa");
+    .eq("estatus", "aprobada")
 
   console.log("OBRAS DATA:", data);
   console.log("OBRAS ERROR:", error);
