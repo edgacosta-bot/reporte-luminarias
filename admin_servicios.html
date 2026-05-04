@@ -151,7 +151,7 @@ select {
   }
 
   const lista = document.getElementById("tipo");
-  lista.innerHTML = "";
+  lista.innerHTML = '<option value="" selected disabled>Tipo (opcional)</option>';
 
  data.forEach(t=>{
   const option = document.createElement("option");
@@ -159,6 +159,8 @@ select {
   option.textContent = t.nombre;
   lista.appendChild(option);
 });
+
+    lista.value = "";  // 🔥 limpia selección al cargar
 }
 
 window.addEventListener("DOMContentLoaded", async ()=>{
