@@ -56,12 +56,15 @@ label {
 
 select, input {
   width: 100%;
-  padding: 14px;
+  height: 52px;            /* 🔥 fija altura uniforme */
+  padding: 0 14px;         /* 🔥 elimina padding vertical desigual */
   margin-bottom: 14px;
   border-radius: 12px;
   border: none;
   background: #1f2937;
   color: white;
+  font-size: 14px;
+  box-sizing: border-box;
 }
 
 button {
