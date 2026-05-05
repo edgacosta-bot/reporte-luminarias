@@ -10,28 +10,65 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
 <style>
-body {
+
+  body {
   font-family: Arial;
-  background: #161a1d;
+  background: #0f172a;
   color: white;
   margin: 0;
   padding: 20px;
 }
 
-h2 {
+.header {
   text-align: center;
+  margin-bottom: 20px;
 }
 
-select, input, button {
+.logo {
+  width: 180px;
+  max-width: 80%;
+  margin-bottom: 10px;
+}
+
+.titulo {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.container {
+  max-width: 420px;
+  margin: auto;
+}
+
+.card {
+  background: #111827;
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 15px;
+}
+
+label {
+  font-size: 13px;
+  color: #9ca3af;
+  margin-bottom: 6px;
+  display: block;
+}
+
+select, input {
   width: 100%;
   padding: 14px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   border-radius: 12px;
   border: none;
-  box-sizing: border-box;
+  background: #1f2937;
+  color: white;
 }
 
 button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
   background: #2563eb;
   color: white;
   cursor: pointer;
@@ -45,29 +82,58 @@ button {
 .btn-wa {
   background: #25D366;
 }
+
+.resultado {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.resultado.ok { color: #22c55e; }
+.resultado.error { color: #f87171; }
+  
 </style>
+
+  
 </head>
 
 <body>
 
-<h2>Generar accesos propietarios</h2>
-
-<select id="residente"></select>
-
-<input type="text" id="nombre" placeholder="Nombre">
-<input type="text" id="tipo" placeholder="Tipo (esposa, hijo, etc)">
-
-<button id="btnCrear" onclick="crearAcceso()">Generar acceso</button>
-
-<div id="resultado"></div>
-
-<div class="qr">
-  <canvas id="qr"></canvas>
+<div class="header">
+  <img src="logo-sigvic-dark.png" class="logo">
+  <div class="titulo">Accesos propietarios</div>
 </div>
 
-<button id="btnWA" class="btn-wa" style="display:none;">
-  📲 Enviar por WhatsApp
-</button>
+<div class="container">
+
+  <div class="card">
+
+    <label>Selecciona residente</label>
+    <select id="residente"></select>
+
+    <label>Nombre</label>
+    <input type="text" id="nombre" placeholder="Ej. Juan Pérez">
+
+    <label>Tipo</label>
+    <input type="text" id="tipo" placeholder="Ej. Esposa, hijo, etc">
+
+    <button id="btnCrear" onclick="crearAcceso()">
+      Generar acceso
+    </button>
+
+    <div id="resultado" class="resultado"></div>
+
+  </div>
+
+  <div class="card qr">
+    <canvas id="qr"></canvas>
+
+    <button id="btnWA" class="btn-wa" style="display:none;">
+      📲 Enviar por WhatsApp
+    </button>
+  </div>
+
+</div>
+
 
 <script>
 
@@ -117,8 +183,9 @@ async function crearAcceso() {
   const tipo = document.getElementById("tipo").value.trim();
   const resultado = document.getElementById("resultado");
 
-  if (!nombre) {
-    resultado.innerText = "Ingresa nombre";
+ if (!nombre) {
+  resultado.className = "resultado error";
+  resultado.innerText = "Ingresa nombre";
     reset();
     return;
   }
@@ -133,6 +200,7 @@ async function crearAcceso() {
     .maybeSingle();
 
   if(existente){
+    resultado.className = "resultado error";
     resultado.innerText = "Ya existe un acceso activo para esta persona";
     reset();
     return;
@@ -156,12 +224,16 @@ async function crearAcceso() {
     });
 
   if (error) {
+    resultado.className = "resultado error";
     resultado.innerText = "Error al crear acceso";
     reset();
     return;
   }
 
+  resultado.className = "resultado ok";
   resultado.innerText = "Acceso creado correctamente";
+  document.getElementById("nombre").value = "";
+  document.getElementById("tipo").value = "";
 
   urlCredencial = `${window.location.origin}/credencial_propietario.html?qr=${identificador}&nombre=${encodeURIComponent(nombre)}&privada=${encodeURIComponent(residente.privada)}&casa=${encodeURIComponent(residente.casa)}&origen=admin`;
 
