@@ -180,10 +180,15 @@ async function cargarDatosBase(){
 
   const { data: residentes } = await supabaseClient
     .from("residentes")
-    .select("id, nombre, tipo");
+    .select("id, nombre, tipo, casa");
 
   residentes.forEach(r=>{
-    if(r.tipo==="vigilante") MAPA[r.id]=r.nombre;
+   if(
+  r.tipo === "vigilante" &&
+  r.casa !== "1"
+){
+  MAPA[r.id] = r.nombre;
+}
   });
 
   DATA_GLOBAL = reportes.filter(r=>MAPA[r.vigilante_id]);
