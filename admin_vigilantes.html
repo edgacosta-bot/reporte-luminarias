@@ -378,17 +378,18 @@ async function guardarPin() {
     return;
   }
 
-  const { data: existe } = await supabaseClient
-    .from("residentes")
-    .select("id")
-    .eq("pin_vigilante", nuevo)
-    .neq("id", vigilanteSeleccionado)
-    .maybeSingle();
+  /*
+const { data: existe } = await supabaseClient
+  .from("residentes")
+  .select("id")
+  .eq("pin_vigilante", pin)
+  .maybeSingle();
 
-  if (existe) {
-    mostrarToast("PIN ya usado", "error");
-    return;
-  }
+if (existe) {
+  mostrarToast("PIN ya existe", "error");
+  return;
+}
+*/
 
   await supabaseClient
     .from("residentes")
