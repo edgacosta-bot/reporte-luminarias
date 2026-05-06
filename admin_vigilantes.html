@@ -215,6 +215,36 @@ button {
 
 </div>
 
+ <!-- MODAL ELIMINAR -->
+<div id="modalEliminar" class="modal">
+
+  <div class="modal-content">
+
+    <div class="modal-title">
+      ⚠️ Eliminar vigilante
+    </div>
+
+    <p style="color:#9ca3af; text-align:center; margin-bottom:20px;">
+      El vigilante será desactivado del sistema.
+    </p>
+
+    <div class="modal-botones">
+
+      <button onclick="cerrarModalEliminar()" class="btn-secundario">
+        Cancelar
+      </button>
+
+      <button onclick="confirmarEliminar()"
+        style="flex:1; background:#dc2626; color:white;">
+        Eliminar
+      </button>
+
+    </div>
+
+  </div>
+
+</div> 
+
 <!-- TOAST -->
 <div id="toast" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
 background:#111827; color:white; padding:14px 20px; border-radius:12px; opacity:0;"></div>
@@ -222,6 +252,7 @@ background:#111827; color:white; padding:14px 20px; border-radius:12px; opacity:
 <script>
 
 let vigilanteSeleccionado = null;
+let vigilanteEliminar = null;  
 
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["admin","administracion"]);
@@ -295,15 +326,29 @@ async function toggle(id, estadoActual) {
 }
 
 // 🗑️ ELIMINAR → 🔥 SOFT DELETE
-async function eliminar(id) {
-  if (!confirm("¿Eliminar vigilante?")) return;
+function eliminar(id) {
+
+  vigilanteEliminar = id;
+
+  document.getElementById("modalEliminar").style.display = "flex";
+}
+
+function cerrarModalEliminar() {
+
+  document.getElementById("modalEliminar").style.display = "none";
+}
+
+async function confirmarEliminar() {
 
   await supabaseClient
     .from("residentes")
     .update({ activo: false })
-    .eq("id", id);
+    .eq("id", vigilanteEliminar);
+
+  cerrarModalEliminar();
 
   mostrarToast("Vigilante desactivado");
+
   cargar();
 }
 
