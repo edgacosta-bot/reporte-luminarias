@@ -433,13 +433,30 @@ async function crearVigilante() {
     return;
   }
 
+// 🔢 OBTENER SIGUIENTE NÚMERO OPERATIVO
+
+const { data: ultimo } = await supabaseClient
+  .from("residentes")
+  .select("casa")
+  .eq("tipo", "vigilante")
+  .eq("privada", "SEG")
+  .order("created_at", { ascending: false })
+  .limit(1)
+  .maybeSingle();
+
+let siguienteNumero = 1;
+
+if (ultimo?.casa && !isNaN(parseInt(ultimo.casa))) {
+  siguienteNumero = parseInt(ultimo.casa) + 1;
+}
+    
  const { error } = await supabaseClient
   .from("residentes")
   .insert([{
     nombre,
     tipo: "vigilante",
     privada: "SEG",
-    casa: nombre,
+    casa: String(siguienteNumero),
     pin_vigilante: pin,
     activo: true,
     created_at: new Date().toISOString()
