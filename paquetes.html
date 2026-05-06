@@ -183,9 +183,16 @@ function mostrarModal(titulo, texto, privada, casa) {
 
   document.getElementById("modalContenido").innerHTML = `
     <h3>${titulo}</h3>
+
     <p>${texto}</p>
-    <button onclick="abrirWhats('${privada}','${casa}')">Abrir WhatsApp</button>
-    <button onclick="cerrarModal()">Cerrar</button>
+
+    <button onclick="abrirWhats('${privada}','${casa}')">
+      Abrir WhatsApp
+    </button>
+
+    <button onclick="confirmarNotificacion()">
+      ✅ Notificación realizada
+    </button>
   `;
 
   document.getElementById("modal").style.display = "flex";
@@ -378,7 +385,10 @@ function abrirWhats(privada, casa) {
 }
 
 function confirmarNotificacion() {
-  mostrarModal("Listo", "Paquete registrado correctamente");
+
+  cerrarModal();
+
+  window.location.href = "index.html";
 }
 
 window.addEventListener("load", () => {
