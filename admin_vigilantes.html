@@ -424,17 +424,23 @@ async function crearVigilante() {
     return;
   }
 
-  await supabaseClient
-    .from("residentes")
-    .insert([{
-      nombre,
-      tipo: "vigilante",
-      privada: "SEG",
-      casa: nombre,
-      pin_vigilante: pin,
-      activo: true,
-      created_at: new Date().toISOString() // 🔥 AJUSTE
-    }]);
+ const { error } = await supabaseClient
+  .from("residentes")
+  .insert([{
+    nombre,
+    tipo: "vigilante",
+    privada: "SEG",
+    casa: nombre,
+    pin_vigilante: pin,
+    activo: true,
+    created_at: new Date().toISOString()
+  }]);
+
+if (error) {
+  console.error(error);
+  mostrarToast("Error creando vigilante", "error");
+  return;
+}
 
   cerrarModalNuevo();
   mostrarToast("Vigilante creado");
