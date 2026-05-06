@@ -405,6 +405,8 @@ function cerrarModalNuevo() {
 
 async function crearVigilante() {
 
+  try {
+
   const nombre = document.getElementById("nombreNuevo").value;
   const pin = document.getElementById("pinNuevo").value;
 
@@ -438,13 +440,19 @@ async function crearVigilante() {
 
 if (error) {
   console.error(error);
-  mostrarToast("Error creando vigilante", "error");
+  alert(error.message);
   return;
 }
 
   cerrarModalNuevo();
   mostrarToast("Vigilante creado");
   cargar();
+
+} catch(err) {
+  console.error(err);
+  alert(err.message);
+}
+    
 }
 
 </script>
