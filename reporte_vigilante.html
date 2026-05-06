@@ -154,6 +154,7 @@ async function cargarVigilantes(){
     .select("id,nombre")
     .eq("tipo","vigilante")
     .eq("activo", true)
+    .neq("casa", "1")
     .order("nombre");
 
   if(error){
