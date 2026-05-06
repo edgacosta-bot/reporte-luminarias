@@ -61,6 +61,70 @@ button {
   cursor: pointer;
 }
 
+  .modal {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+
+.modal-content {
+  background:#111827;
+  width:90%;
+  max-width:360px;
+  border-radius:20px;
+  padding:24px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.45);
+  border:1px solid rgba(255,255,255,0.05);
+}
+
+.modal-title {
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+  margin-bottom:20px;
+}
+
+.input-moderno {
+  width:100%;
+  height:52px;
+  padding:0 14px;
+  margin-bottom:14px;
+  border:none;
+  border-radius:12px;
+  background:#1f2937;
+  color:white;
+  font-size:14px;
+  box-sizing:border-box;
+}
+
+.input-moderno:focus {
+  outline:none;
+  border:1px solid #2563eb;
+}
+
+.modal-botones {
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+}
+
+.btn-secundario {
+  flex:1;
+  background:#374151;
+  color:white;
+}
+
+.btn-primario {
+  flex:1;
+  background:#2563eb;
+  color:white;
+}
+
 .btn-on { background: #16a34a; color: white; }
 .btn-off { background: #6b7280; color: white; }
 .btn-del { background: #dc2626; color: white; }
@@ -83,30 +147,71 @@ button {
 <div id="lista"></div>
 
 <!-- MODAL PIN -->
-<div id="modalPin" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
-  <div style="background:#111827; padding:20px; border-radius:16px; width:90%; max-width:300px; text-align:center;">
-    <h3>🔐 Cambiar PIN</h3>
-    <input id="nuevoPinInput" type="number" placeholder="Nuevo PIN"
-      style="width:100%; padding:12px; border-radius:10px; border:none; margin-top:10px; text-align:center; font-size:18px;" />
-    <div style="display:flex; gap:10px; margin-top:15px;">
-      <button onclick="cerrarModal()" style="flex:1; background:#6b7280;">Cancelar</button>
-      <button onclick="guardarPin()" style="flex:1; background:#16a34a;">Guardar</button>
+<div id="modalPin" class="modal">
+
+  <div class="modal-content">
+
+    <div class="modal-title">
+      🔐 Cambiar PIN
     </div>
+
+    <input
+      id="nuevoPinInput"
+      class="input-moderno"
+      type="number"
+      placeholder="Nuevo PIN de 4 dígitos"
+    />
+
+    <div class="modal-botones">
+      <button onclick="cerrarModal()" class="btn-secundario">
+        Cancelar
+      </button>
+
+      <button onclick="guardarPin()" class="btn-primario">
+        Guardar
+      </button>
+    </div>
+
   </div>
+
 </div>
 
 <!-- MODAL NUEVO -->
-<div id="modalNuevo" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
-  <div style="background:#111827; padding:20px; border-radius:16px; width:90%; max-width:300px; text-align:center;">
-    <h3>👮 Nuevo vigilante</h3>
-    <input id="nombreNuevo" type="text" placeholder="Nombre">
-    <input id="pinNuevo" type="number" placeholder="PIN (4 dígitos)">
-    <div style="display:flex; gap:10px; margin-top:15px;">
-      <button onclick="cerrarModalNuevo()" style="flex:1; background:#6b7280;">Cancelar</button>
-      <button onclick="crearVigilante()" style="flex:1; background:#16a34a;">Guardar</button>
+<div id="modalNuevo" class="modal">
+
+  <div class="modal-content">
+
+    <div class="modal-title">
+      👮 Nuevo vigilante
     </div>
+
+    <input
+      id="nombreNuevo"
+      class="input-moderno"
+      type="text"
+      placeholder="Nombre del vigilante"
+    />
+
+    <input
+      id="pinNuevo"
+      class="input-moderno"
+      type="number"
+      placeholder="PIN de 4 dígitos"
+    />
+
+    <div class="modal-botones">
+
+      <button onclick="cerrarModalNuevo()" class="btn-secundario">
+        Cancelar
+      </button>
+
+      <button onclick="crearVigilante()" class="btn-primario">
+        Guardar
+      </button>
+
+    </div>
+
   </div>
-</div>
 
 </div>
 
