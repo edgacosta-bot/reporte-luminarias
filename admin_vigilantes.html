@@ -323,10 +323,21 @@ async function cargar() {
 
     card.innerHTML = `
       <div class="nombre">
-      ${v.nombre}
-      ${!v.activo ? '<span style="color:#f59e0b;">(Inactivo)</span>' : ''}
-      </div>
-      <div class="info">PIN: ${v.pin_vigilante || "No definido"}</div>
+  ${v.nombre}
+</div>
+
+<div class="info">
+  PIN: ${v.pin_vigilante || "No definido"}
+</div>
+
+<div style="
+  margin-bottom:12px;
+  font-size:14px;
+  font-weight:600;
+  color:${v.activo ? '#22c55e' : '#f59e0b'};
+">
+  ${v.activo ? '🟢 Activo' : '🟡 Inactivo'}
+</div>
 
       <div class="botones">
         <button class="${v.activo ? 'btn-off' : 'btn-on'}"
