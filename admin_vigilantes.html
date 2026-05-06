@@ -282,6 +282,7 @@ async function cargar() {
   .select("*")
   .eq("tipo", "vigilante")
   .neq("casa", "1")
+  .order("activo", { ascending: false })
   .order("created_at", { ascending: false });
 
   if (error) {
@@ -299,7 +300,10 @@ async function cargar() {
     card.className = "card";
 
     card.innerHTML = `
-      <div class="nombre">${v.nombre}</div>
+      <div class="nombre">
+      ${v.nombre}
+      ${!v.activo ? '<span style="color:#f59e0b;">(Inactivo)</span>' : ''}
+      </div>
       <div class="info">PIN: ${v.pin_vigilante || "No definido"}</div>
 
       <div class="botones">
@@ -312,9 +316,7 @@ async function cargar() {
           Cambiar PIN
         </button>
 
-        <button class="btn-del" onclick="eliminar('${v.id}')">
-          Eliminar
-        </button>
+        
       </div>
     `;
 
