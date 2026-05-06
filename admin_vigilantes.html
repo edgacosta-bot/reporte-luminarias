@@ -278,10 +278,12 @@ function mostrarToast(mensaje, tipo = "ok") {
 async function cargar() {
 
   const { data, error } = await supabaseClient
-    .from("residentes")
-    .select("*")
-    .eq("tipo", "vigilante")
-    .order("created_at", { ascending: false });
+  .from("residentes")
+  .select("*")
+  .eq("tipo", "vigilante")
+  .eq("activo", true)
+  .neq("casa", "1")
+  .order("created_at", { ascending: false });
 
   if (error) {
     console.error(error);
