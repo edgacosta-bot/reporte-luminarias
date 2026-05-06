@@ -438,6 +438,9 @@ async function crearVigilante() {
     created_at: new Date().toISOString()
   }]);
 
+    console.log("INSERT TERMINÓ");
+    console.log(error);
+
 if (error) {
   console.error(error);
   alert(error.message);
