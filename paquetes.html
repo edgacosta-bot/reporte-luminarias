@@ -135,6 +135,32 @@ input {
   <div class="modal-content" id="modalContenido"></div>
 </div>
 
+<!-- MODAL PIN OPERATIVO -->
+<div id="modalPin" class="modal">
+
+  <div class="modal-content">
+
+    <h3>👮 Identificación de vigilante</h3>
+
+    <p style="font-size:14px; color:#9ca3af;">
+      Ingresa tu PIN operativo para continuar.
+    </p>
+
+    <input
+      type="number"
+      id="pinOperativo"
+      placeholder="PIN de 4 dígitos"
+    />
+
+    <button onclick="validarPinOperativo()">
+      Continuar
+    </button>
+
+  </div>
+
+</div>
+
+  
 <script>
 const { createClient } = supabase;
 
@@ -170,6 +196,47 @@ function cerrarModal() {
   document.getElementById("modal").style.display = "none";
 }
 
+async function validarPinOperativo() {
+
+  const pin = document.getElementById("pinOperativo").value.trim();
+
+  if (!pin || pin.length !== 4) {
+    alert("PIN inválido");
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("residentes")
+    .select("id, nombre")
+    .eq("tipo", "vigilante")
+    .eq("activo", true)
+    .neq("casa", "1")
+    .eq("pin_vigilante", pin)
+    .maybeSingle();
+
+  if (error || !data) {
+    alert("PIN incorrecto o vigilante inactivo");
+    return;
+  }
+
+  // ✅ GUARDAR SESIÓN OPERATIVA
+  localStorage.setItem(
+    "vigilante_operativo_id",
+    data.id
+  );
+
+  localStorage.setItem(
+    "vigilante_operativo_nombre",
+    data.nombre
+  );
+
+  // ✅ CERRAR MODAL
+  document.getElementById("modalPin").style.display = "none";
+
+  // ✅ CARGAR MÓDULO
+  cargar();
+}
+  
 async function cargar() {
 
   const { data, error } = await supabaseClient
@@ -271,10 +338,12 @@ async function registrar(id, privada, casa) {
   const { error } = await supabaseClient
     .from('paquetes')
     .insert({
-      residente_id: id,
-      privada,
-      casa
-    });
+  residente_id: id,
+  privada,
+  casa,
+
+  recibido_por: localStorage.getItem("vigilante_operativo_id")
+});
 
   if (error) {
     mostrarModal("Error", "No se pudo registrar");
@@ -306,8 +375,12 @@ function confirmarNotificacion() {
   mostrarModal("Listo", "Paquete registrado correctamente");
 }
 
-setInterval(cargar, 10000);
-cargar();
+window.addEventListener("load", () => {
+
+  document.getElementById("modalPin").style.display = "flex";
+
+});
+  
 </script>
 
 </body>
