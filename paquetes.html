@@ -345,10 +345,16 @@ async function registrar(id, privada, casa) {
   recibido_por: localStorage.getItem("vigilante_operativo_id")
 });
 
-  if (error) {
-    mostrarModal("Error", "No se pudo registrar");
-    return;
-  }
+ if (error) {
+
+  console.error(error);
+
+  alert(error.message);
+
+  mostrarModal("Error", "No se pudo registrar");
+
+  return;
+}
 
   console.log("REGISTRADO OK", privada, casa);
   
