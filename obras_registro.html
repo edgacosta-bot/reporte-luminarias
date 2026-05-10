@@ -185,18 +185,20 @@ document.getElementById("lote").addEventListener("focus", async () => {
   selectLote.innerHTML = `<option value="">Cargando...</option>`;
 
   const { data, error } = await supabaseClient
-    .from("lotes")
-    .select("id, lote")
-    .eq("privada", privada);
+  .from("lotes")
+  .select("id, lote")
+  .eq("privada", privada);
 
-  if(error){
-    selectLote.innerHTML = `<option>Error</option>`;
-    return;
-  }
+if(error){
+  selectLote.innerHTML = `<option>Error</option>`;
+  return;
+}
 
-  selectLote.innerHTML = `<option value="">Introduce el número de lote</option>`;
+data.sort((a, b) => Number(a.lote) - Number(b.lote));
 
-  data.forEach(l => {
+selectLote.innerHTML = `<option value="">Introduce el número de lote</option>`;
+
+   data.forEach(l => {
     const option = document.createElement("option");
     option.value = JSON.stringify({
       id: l.id,
