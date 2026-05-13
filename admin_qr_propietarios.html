@@ -155,16 +155,44 @@ async function cargarResidentes() {
   const { data } = await supabaseClient
     .from("residentes")
     .select("id, privada, casa")
-    .eq("es_residente", false)
-    .order("privada");
+    .eq("es_residente", false);
 
   const select = document.getElementById("residente");
   select.innerHTML = "";
 
-  data.forEach(r => {
+  if (!data) return;
+
+  // 🔥 FILTRAR PRIVADAS TÉCNICAS
+  const filtrados = data.filter(r =>
+    r.privada !== "ADMIN" &&
+    r.privada !== "SEG"
+  );
+
+  // 🔥 ORDENAR PRIVADA + CASA NUMÉRICA
+  filtrados.sort((a, b) => {
+
+    // privada
+    const privadaA = a.privada || "";
+    const privadaB = b.privada || "";
+
+    if (privadaA !== privadaB) {
+      return privadaA.localeCompare(privadaB, 'es', { numeric: true });
+    }
+
+    // casa numérica
+    const casaA = parseInt(a.casa) || 0;
+    const casaB = parseInt(b.casa) || 0;
+
+    return casaA - casaB;
+  });
+
+  filtrados.forEach(r => {
+
     const option = document.createElement("option");
+
     option.value = r.id;
     option.text = `${r.privada} - ${r.casa}`;
+
     select.appendChild(option);
   });
 }
