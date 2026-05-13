@@ -103,10 +103,11 @@ async function init(){
   }
 
   const { data } = await supabaseClient
-    .from("accesos_propietarios")
-    .select("*")
-    .eq("identificador", qr)
-    .maybeSingle();
+  .from("accesos_propietarios")
+  .select("*")
+  .eq("identificador", qr)
+  .eq("activo", true)
+  .maybeSingle();
 
   if(!data){
     pintar("QR inválido","error");
