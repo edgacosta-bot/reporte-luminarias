@@ -222,7 +222,34 @@ async function cargar() {
     grupos[clave].push(t);
   });
 
-  Object.keys(grupos).forEach(clave => {
+  Object.keys(grupos)
+
+.sort((a, b) => {
+
+  const [privadaA, casaA] = a.split("-");
+  const [privadaB, casaB] = b.split("-");
+
+  // 🔥 ORDEN PRIVADAS
+  const ordenPrivadas = {
+    "I": 1,
+    "II": 2,
+    "III": 3,
+    "IV": 4
+  };
+
+  const privadaDiff =
+    (ordenPrivadas[privadaA] || 999)
+    -
+    (ordenPrivadas[privadaB] || 999);
+
+  if (privadaDiff !== 0) return privadaDiff;
+
+  // 🔥 ORDEN LOTES
+  return Number(casaA) - Number(casaB);
+
+})
+
+.forEach(clave => {
 
     const [privada, casa] = clave.split("-");
 
