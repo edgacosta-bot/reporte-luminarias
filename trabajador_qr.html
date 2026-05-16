@@ -71,6 +71,34 @@ select, input[type="date"] {
   color: #9ca3af;
 }
 
+ .obra-bloque {
+  margin-top: 12px;
+}
+
+.obra-header {
+  background: #1e293b;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+}
+
+.obra-contenido {
+  display: none;
+  margin-top: 8px;
+}
+
+.trabajador-item {
+  background: #1f2937;
+  padding: 12px;
+  border-radius: 10px;
+  margin-top: 8px;
+  cursor: pointer;
+} 
+
 button {
   margin-top: 15px;
   padding: 12px;
@@ -104,9 +132,7 @@ button {
   <option value="">Selecciona la privada</option>
 </select>
 
-<select id="trabajador">
-  <option value="">Cargando trabajadores...</option>
-</select>
+<div id="listaTrabajadores"></div>
 
 <!-- 🔥 NUEVO: FECHAS -->
 <label class="label">Fecha inicio de vigencia</label>
@@ -133,6 +159,20 @@ button {
 let trabajadorSeleccionado = null;
 let dataGlobal = [];
 
+function toggleObra(id, elemento) {
+
+  const contenido = document.getElementById(id);
+  const flecha = elemento.querySelector(".flecha");
+
+  if (contenido.style.display === "block") {
+    contenido.style.display = "none";
+    flecha.innerText = "▼";
+  } else {
+    contenido.style.display = "block";
+    flecha.innerText = "▲";
+  }
+}  
+
 // 🔥 SECUENCIA (RESPETADA)
 window.addEventListener("DOMContentLoaded", async () => {
   await protegerPagina(["administracion"]);
@@ -142,10 +182,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 // 🔥 CARGA BASE (RESPETADA)
 async function cargarTrabajadores() {
 
-  const select = document.getElementById("trabajador");
-
-  select.innerHTML = '<option value="">Cargando trabajadores...</option>';
-
+  
   const { data, error } = await supabaseClient
     .from("trabajadores_obra")
     .select("*")
@@ -155,12 +192,10 @@ async function cargarTrabajadores() {
 
   if (error) {
     console.log(error);
-    select.innerHTML = '<option>Error al cargar</option>';
     return;
   }
 
   if (!data || data.length === 0) {
-    select.innerHTML = '<option>No hay trabajadores</option>';
     return;
   }
 
@@ -168,6 +203,49 @@ async function cargarTrabajadores() {
 
   cargarFiltroPrivadas(data);
   renderTrabajadores();
+
+  }
+
+function seleccionarTrabajador(trabajador) {
+
+  const qrDiv = document.getElementById("qr");
+  const nombreDiv = document.getElementById("nombre");
+  const obraDiv = document.getElementById("obra");
+  const btn = document.getElementById("btnWA");
+
+  qrDiv.innerHTML = "";
+
+  trabajadorSeleccionado = trabajador;
+
+  document.getElementById("fechaInicio").value =
+    trabajador.fecha_inicio || "";
+
+  document.getElementById("fechaFin").value =
+    trabajador.fecha_fin || "";
+
+  const url =
+    `${window.location.origin}/credencial_trabajador.html` +
+    `?qr=${trabajador.qr_codigo}` +
+    `&nombre=${encodeURIComponent(trabajador.nombre)}` +
+    `&privada=${trabajador.privada}` +
+    `&casa=${trabajador.casa}`;
+
+  QRCode.toCanvas(url, { width: 200 }, function(err, canvas){
+
+    if(err){
+      console.error(err);
+      return;
+    }
+
+    qrDiv.appendChild(canvas);
+  });
+
+  nombreDiv.innerText = trabajador.nombre;
+
+  obraDiv.innerText =
+    `Privada ${trabajador.privada} - Lote ${trabajador.casa}`;
+
+  btn.style.display = "block";
 }
 
 // 🔥 FILTRO (RESPETADO + TEXTO AJUSTADO)
@@ -190,14 +268,16 @@ function cargarFiltroPrivadas(data) {
 // 🔥 RENDER (RESPETADO)
 function renderTrabajadores() {
 
-  const select = document.getElementById("trabajador");
+  const contenedor = document.getElementById("listaTrabajadores");
   const privadaSeleccionada = document.getElementById("filtroPrivada").value;
 
   const hoy = new Date().toLocaleDateString('sv-SE');
 
   let filtrados = dataGlobal.filter(t => {
+
     if (t.fecha_inicio && hoy < t.fecha_inicio) return false;
     if (t.fecha_fin && hoy > t.fecha_fin) return false;
+
     return true;
   });
 
@@ -205,74 +285,96 @@ function renderTrabajadores() {
     filtrados = filtrados.filter(t => t.privada === privadaSeleccionada);
   }
 
+  contenedor.innerHTML = "";
+
   if (filtrados.length === 0) {
-    select.innerHTML = '<option>No hay trabajadores disponibles</option>';
+    contenedor.innerHTML = "No hay trabajadores disponibles";
     return;
   }
 
-  select.innerHTML = '<option value="">Selecciona trabajador</option>';
+  // 🔥 AGRUPAR POR OBRA
+  const grupos = {};
 
   filtrados.forEach(t => {
-    const option = document.createElement("option");
-    option.value = t.qr_codigo;
-    option.textContent = t.nombre;
-    option.dataset.privada = t.privada;
-    option.dataset.casa = t.casa;
-    select.appendChild(option);
+
+    const clave = `${t.privada}-${t.casa}`;
+
+    if (!grupos[clave]) grupos[clave] = [];
+
+    grupos[clave].push(t);
+  });
+
+  // 🔥 ORDENAR
+  Object.keys(grupos)
+
+  .sort((a, b) => {
+
+    const [privadaA, casaA] = a.split("-");
+    const [privadaB, casaB] = b.split("-");
+
+    const ordenPrivadas = {
+      "I": 1,
+      "II": 2,
+      "III": 3,
+      "IV": 4
+    };
+
+    const privadaDiff =
+      (ordenPrivadas[privadaA] || 999)
+      -
+      (ordenPrivadas[privadaB] || 999);
+
+    if (privadaDiff !== 0) return privadaDiff;
+
+    return Number(casaA) - Number(casaB);
+  })
+
+  .forEach(clave => {
+
+    const [privada, casa] = clave.split("-");
+
+    const contenidoId = `obra_${privada}_${casa}`;
+
+    const bloque = document.createElement("div");
+    bloque.className = "obra-bloque";
+
+    bloque.innerHTML = `
+      <div class="obra-header"
+           onclick="toggleObra('${contenidoId}', this)">
+
+        <span>
+          🏗 Privada ${privada} - Lote ${casa}
+          (${grupos[clave].length})
+        </span>
+
+        <span class="flecha">▼</span>
+      </div>
+
+      <div class="obra-contenido" id="${contenidoId}">
+      </div>
+    `;
+
+    grupos[clave].forEach(t => {
+
+      const item = document.createElement("div");
+      item.className = "trabajador-item";
+
+      item.innerHTML = `👷 ${t.nombre}`;
+
+      item.onclick = () => seleccionarTrabajador(t);
+
+      bloque.querySelector(".obra-contenido")
+            .appendChild(item);
+    });
+
+    contenedor.appendChild(bloque);
   });
 }
 
 // 🔁 EVENTO FILTRO (RESPETADO)
 document.getElementById("filtroPrivada").addEventListener("change", renderTrabajadores);
 
-// 🎯 CAMBIO (RESPETADO + FECHAS)
-document.getElementById("trabajador").addEventListener("change", function() {
-
-  const qrDiv = document.getElementById("qr");
-  const nombreDiv = document.getElementById("nombre");
-  const obraDiv = document.getElementById("obra");
-  const btn = document.getElementById("btnWA");
-
-  qrDiv.innerHTML = "";
-
-  const selected = this.options[this.selectedIndex];
-
-  const codigo = selected.value;
-  const nombre = selected.textContent;
-  const privada = selected.dataset.privada;
-  const casa = selected.dataset.casa;
-
-  if (!codigo) {
-    btn.style.display = "none";
-    nombreDiv.innerText = "";
-    obraDiv.innerText = "";
-    return;
-  }
-
-  trabajadorSeleccionado = { codigo, nombre, privada, casa };
-
-  // 🔥 AUTOCARGAR FECHAS
-  const trabajador = dataGlobal.find(t => t.qr_codigo === codigo);
-
-  document.getElementById("fechaInicio").value = trabajador?.fecha_inicio || "";
-  document.getElementById("fechaFin").value = trabajador?.fecha_fin || "";
-
-  const url = `${window.location.origin}/credencial_trabajador.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
-
-  QRCode.toCanvas(url, { width: 200 }, function (err, canvas) {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    qrDiv.appendChild(canvas);
-  });
-
-  nombreDiv.innerText = nombre;
-  obraDiv.innerText = `Privada ${privada} - Lote ${casa}`;
-
-  btn.style.display = "block";
-});
-
+  
 // 📲 WHATSAPP (RESPETADO)
 document.getElementById("btnWA").addEventListener("click", () => {
 
