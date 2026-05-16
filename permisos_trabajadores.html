@@ -26,6 +26,22 @@ body {
 
 .obra { margin-top: 25px; }
 
+ .obra-header {
+  background: #1e293b;
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.obra-contenido {
+  display: none;
+  margin-top: 10px;
+} 
+
 .obra-titulo {
   font-weight: bold;
   font-size: 14px;
@@ -149,7 +165,22 @@ window.addEventListener("DOMContentLoaded", async () => {
 });
 
 let idCancelar = null;
+  
+function toggleObra(id, elemento) {
 
+  const contenido = document.getElementById(id);
+  const flecha = elemento.querySelector(".flecha");
+
+  if (contenido.style.display === "block") {
+    contenido.style.display = "none";
+    flecha.innerText = "▼";
+  } else {
+    contenido.style.display = "block";
+    flecha.innerText = "▲";
+  }
+}
+  
+  
 function toast(msg, tipo="ok") {
   const t = document.getElementById("toast");
   t.className = `toast-${tipo}`;
@@ -196,13 +227,19 @@ async function cargar() {
     const [privada, casa] = clave.split("-");
 
     const bloque = document.createElement("div");
-    bloque.className = "obra";
+bloque.className = "obra";
 
-    bloque.innerHTML = `
-      <div class="obra-titulo">
-        🏗 Privada ${privada} - Lote ${casa}
-      </div>
-    `;
+const contenidoId = `contenido_${privada}_${casa}`;
+
+bloque.innerHTML = `
+  <div class="obra-header" onclick="toggleObra('${contenidoId}', this)">
+    <span>🏗 Privada ${privada} - Lote ${casa} (${grupos[clave].length})</span>
+   <span class="flecha">▼</span>
+  </div>
+
+  <div class="obra-contenido" id="${contenidoId}">
+  </div>
+`;
 
     grupos[clave].forEach(t => {
 
@@ -241,7 +278,7 @@ async function cargar() {
         }
       `;
 
-      bloque.appendChild(card);
+      bloque.querySelector(".obra-contenido").appendChild(card);
     });
 
     lista.appendChild(bloque);
