@@ -282,6 +282,7 @@ async function cargar() {
   .select("*")
   .eq("tipo", "vigilante")
   .neq("casa", "1")
+  .neq("casa", "6")  
   .order("activo", { ascending: false })
   .order("created_at", { ascending: false });
 
