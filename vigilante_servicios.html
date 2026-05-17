@@ -142,8 +142,22 @@ input::placeholder {
 </div>
 
 <div class="container">
+
 <h2>🚧 Accesos recurrentes</h2>
-<div id="lista" class="vacio">Cargando servicios...</div>
+
+<div id="lista" class="vacio">
+  Cargando servicios...
+</div>
+
+<button
+  id="btnComunidad"
+  class="btn entrada"
+  style="display:none; margin-top:14px;"
+  onclick="notificarComunidad()">
+
+  📢 Notificar residentes
+</button>
+
 </div>
 
 <script>
@@ -170,6 +184,8 @@ async function validarNIP(pin){
 
 // 🔹 CARGAR SERVICIOS
 async function cargarServicios(){
+
+  document.getElementById("btnComunidad").style.display = "none";
 
   const contenedor = document.getElementById("lista");
   contenedor.innerHTML = "Cargando...";
@@ -303,22 +319,19 @@ async function registrarEntrada(servicio, btn){
 // 🔔 AVISO COMUNITARIO
 if(servicio.notificar_comunidad){
 
-  const mensaje =
-`🚛 SIGVIC informa:
+  localStorage.setItem(
+    "wa_comunidad",
+    `🚛 SIGVIC informa:
 
-Estimados residentes, el servicio de ${servicio.nombre} ha ingresado al fraccionamiento y comenzará su recorrido. Gracias`;
-
-  const url =
-`https://wa.me/?text=${encodeURIComponent(mensaje)}`;
-
-  if(confirm("¿Desea enviar aviso comunitario?")){
-    window.open(url, "_blank");
-  }
+El servicio de ${servicio.nombre} ha ingresado al fraccionamiento y comenzará su recorrido en breve.`
+  );
 }
-
 // ✅ MENSAJE VISUAL
 msg.className = "mensaje ok";
 msg.innerText = "Acceso registrado correctamente";
+if(servicio.notificar_comunidad){
+  document.getElementById("btnComunidad").style.display = "flex";
+}  
 
 // 🔄 REFRESCAR
 setTimeout(() => {
@@ -363,6 +376,21 @@ async function registrarSalida(id, btn){
   cargarServicios();
 }
 
+function notificarComunidad(){
+
+  const mensaje =
+    localStorage.getItem("wa_comunidad");
+
+  if(!mensaje) return;
+
+  const url =
+    `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+
+     document.getElementById("btnComunidad").style.display = "none";
+
+  window.open(url, "_blank");
+}
+  
 </script>
 
 </body>
