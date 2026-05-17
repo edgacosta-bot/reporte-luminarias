@@ -271,9 +271,23 @@ body {
     <a href="reimpresion_trabajadores.html" class="button btn-gris">Reimpresión QR trabajadores obra</a>
   </div>
 
-  <a href="admin_servicios.html" class="button btn-beige">
+  
+  <button class="button btn-beige" onclick="toggleMenu('otros_accesos')">
     <span class="icon">🚚</span> Otros accesos autorizados
-  </a>
+    </button>
+
+    <div id="otros_accesos" class="submenu">
+
+    <a href="admin_servicios.html" class="button btn-gris">
+     Gestionar permisos
+    </a>
+
+    <a href="servicios_historial.html" class="button btn-gris">
+    Historial ingresos de Svs.
+    </a>
+
+  </div>
+  
 
   <button class="button btn-oro" onclick="toggleMenu('infra')">
     <span class="icon">🏙</span> Infraestructura
@@ -369,6 +383,7 @@ body {
   <button class="button btn-res-1" onclick="toggleMenu('infra_res')">
     🏙 Infraestructura
   </button>
+  
   <div id="infra_res" class="submenu">
     <a href="luminarias_dashboard.html" class="button btn-res-3">Luminarias</a>
     <a href="https://drive.google.com/file/d/1Hy0MTPL1rRFXEhGrlPykBjIxqge7zfPf/view" class="button btn-res-3">Croquis luminarias</a>
@@ -499,7 +514,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   setInterval(cargarKPIs, 30000);
 }
 
- ["obras", "qr", "infra", "vig", "qr_res", "paq", "reportes", "infra_res", "aportaciones", "obras_res","paq_vig", "obras_vig"]
+ ["obras", "qr", "infra", "vig", "qr_res", "paq", "reportes", "infra_res", "aportaciones", "obras_res","paq_vig", "obras_vig", "otros_accesos"]
   .forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
