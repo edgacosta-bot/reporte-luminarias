@@ -228,7 +228,8 @@ async function cargarServicios(){
           <div id="msg_${s.id}" class="mensaje"></div>
 
           <button class="btn entrada"
-            onclick="registrarEntrada('${s.id}', this)">
+            onclick='registrarEntrada(${JSON.stringify(s)}, this)'>
+
             Registrar entrada
           </button>
         `
@@ -241,7 +242,9 @@ async function cargarServicios(){
 }
 
 // 🔹 ENTRADA
-async function registrarEntrada(servicio_id, btn){
+async function registrarEntrada(servicio, btn){
+  
+  const servicio_id = servicio.id; 
 
   btn.disabled = true;
 
@@ -289,15 +292,38 @@ async function registrarEntrada(servicio_id, btn){
   }
 
   await supabaseClient
-    .from("accesos_servicios")
-    .insert([{
-      servicio_id,
-      nombre_persona: nombre,
-      fecha_entrada: new Date().toISOString(),
-      vigilante_entrada_id: vigilante.id
-    }]);
+  .from("accesos_servicios")
+  .insert([{
+    servicio_id,
+    nombre_persona: nombre,
+    fecha_entrada: new Date().toISOString(),
+    vigilante_entrada_id: vigilante.id
+  }]);
 
+// 🔔 AVISO COMUNITARIO
+if(servicio.notificar_comunidad){
+
+  const mensaje =
+`🚛 SIGVIC informa:
+
+Estimados residentes, el servicio de ${servicio.nombre} ha ingresado al fraccionamiento y comenzará su recorrido. Gracias`;
+
+  const url =
+`https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+
+  if(confirm("¿Desea enviar aviso comunitario?")){
+    window.open(url, "_blank");
+  }
+}
+
+// ✅ MENSAJE VISUAL
+msg.className = "mensaje ok";
+msg.innerText = "Acceso registrado correctamente";
+
+// 🔄 REFRESCAR
+setTimeout(() => {
   cargarServicios();
+}, 1200);
 }
 
 // 🔹 SALIDA
