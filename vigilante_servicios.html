@@ -333,11 +333,8 @@ if(servicio.notificar_comunidad){
   document.getElementById("btnComunidad").style.display = "flex";
 }  
 
-// 🔄 REFRESCAR
-setTimeout(() => {
-  cargarServicios();
-}, 1200);
 }
+
 
 // 🔹 SALIDA
 async function registrarSalida(id, btn){
@@ -389,6 +386,9 @@ function notificarComunidad(){
      document.getElementById("btnComunidad").style.display = "none";
 
   window.open(url, "_blank");
+
+  cargarServicios();
+  
 }
   
 </script>
