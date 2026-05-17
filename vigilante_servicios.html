@@ -149,15 +149,58 @@ input::placeholder {
   Cargando servicios...
 </div>
 
-<button
-  id="btnComunidad"
-  class="btn entrada"
-  style="display:none; margin-top:14px;"
-  onclick="notificarComunidad()">
 
-  📢 Notificar residentes
-</button>
+<div
+  id="modalComunidad"
+  style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.65);
+    z-index:999;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  ">
 
+  <div style="
+    background:#111827;
+    width:100%;
+    max-width:420px;
+    border-radius:18px;
+    padding:22px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    text-align:center;
+  ">
+
+    <div style="font-size:18px; font-weight:bold;">
+      📢 Aviso comunitario
+    </div>
+
+    <div style="font-size:14px; color:#cbd5e1;">
+      ¿Desea notificar a residentes sobre el arribo del servicio?
+    </div>
+
+    <button
+      class="btn entrada"
+      onclick="notificarComunidad()">
+
+      Notificar por WhatsApp
+    </button>
+
+    <button
+      class="btn salida"
+      onclick="cerrarModalComunidad()">
+
+      Omitir
+    </button>
+
+  </div>
+
+</div>
+  
 </div>
 
 <script>
@@ -184,8 +227,6 @@ async function validarNIP(pin){
 
 // 🔹 CARGAR SERVICIOS
 async function cargarServicios(){
-
-  document.getElementById("btnComunidad").style.display = "none";
 
   const contenedor = document.getElementById("lista");
   contenedor.innerHTML = "Cargando...";
@@ -330,8 +371,11 @@ El servicio de ${servicio.nombre} ha ingresado al fraccionamiento y comenzará s
 msg.className = "mensaje ok";
 msg.innerText = "Acceso registrado correctamente";
 if(servicio.notificar_comunidad){
-  document.getElementById("btnComunidad").style.display = "flex";
-}  
+
+  document.getElementById(
+    "modalComunidad"
+  ).style.display = "flex";
+}
 
 }
 
@@ -383,12 +427,23 @@ function notificarComunidad(){
   const url =
     `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
 
-     document.getElementById("btnComunidad").style.display = "none";
+     document.getElementById(
+  "modalComunidad"
+).style.display = "none";
 
   window.open(url, "_blank");
 
   cargarServicios();
   
+}
+
+function cerrarModalComunidad(){
+
+  document.getElementById(
+    "modalComunidad"
+  ).style.display = "none";
+
+  cargarServicios();
 }
   
 </script>
