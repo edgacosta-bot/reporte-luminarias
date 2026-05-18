@@ -97,12 +97,21 @@ button {
 <textarea id="descripcion" placeholder="Describe el incidente..."></textarea>
 
 <select id="privada_afectada">
-  <option value="">Privada afectada (opcional)</option>
+  <option value="">Privada relacionada (opcional)</option>
 </select>
 
 <select id="lote_afectado">
-  <option value="">Lote afectado (opcional)</option>
+ <option value="">Lote relacionado (opcional)</option>
 </select>
+
+<p style="
+  font-size:12px;
+  color:#9ca3af;
+  margin-top:0;
+  margin-bottom:12px;
+">
+Opcionalmente puede indicar la residencia relacionada con el incidente reportado.
+</p>  
 
 <button onclick="reportar()">Enviar reporte</button>
 
@@ -172,7 +181,7 @@ function filtrarLotes() {
   const privada = document.getElementById("privada_afectada").value;
   const selectLote = document.getElementById("lote_afectado");
 
-  selectLote.innerHTML = '<option value="">Lote afectado (opcional)</option>';
+  selectLote.innerHTML = '<option value="">Lote relacionado (opcional)</option>';
 
   const filtrados = lotesGlobal.filter(l => l.privada === privada);
 
