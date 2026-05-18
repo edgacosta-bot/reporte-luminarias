@@ -183,12 +183,15 @@ async function cargarDatosBase(){
     .select("id, nombre, tipo, casa");
 
   residentes.forEach(r=>{
+   
    if(
   r.tipo === "vigilante" &&
-  r.casa !== "1"
+  r.casa !== "1" &&
+  r.casa !== "6"
 ){
   MAPA[r.id] = r.nombre;
 }
+  
   });
 
   DATA_GLOBAL = reportes.filter(r=>MAPA[r.vigilante_id]);
