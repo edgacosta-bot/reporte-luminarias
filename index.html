@@ -242,6 +242,32 @@ body {
 
 <div class="menu" id="menuAdmin" style="display:none;">
 
+  <button class="button btn-oro" onclick="toggleMenu('sigvic_admin')">
+  📘 Acerca de SIGVIC
+</button>
+
+<div id="sigvic_admin" class="submenu">
+
+  <a href="protocolos.html?modulo=informacion"
+     class="button btn-gris">
+
+     ¿Qué es SIGVIC?
+  </a>
+
+  <a href="protocolos.html"
+     class="button btn-gris">
+
+     Reglas SIGVIC
+  </a>
+
+  <a href="protocolos.html?modulo=privacidad"
+     class="button btn-gris">
+
+     Aviso de privacidad
+  </a>
+
+</div>
+
   <!-- PEGAS AQUÍ TU BLOQUE ORIGINAL -->
 
   <a href="admin_reporte_general.html" class="button btn-vino">
@@ -413,10 +439,10 @@ body {
 <!-- 🔵 VIGILANTE -->
 <div class="menu" id="menuVigilante" style="display:none;">
 
- <button class="button btn-oro" onclick="toggleMenu('sigvic')">
+ <button class="button btn-oro" onclick="toggleMenu('sigvic_vig')">
     📘 Acerca de SIGVIC
   </button>
-  <div id="sigvic" class="submenu">
+  <div id="sigvic_vig" class="submenu">
     <a href="protocolos.html?modulo=informacion" class="button btn-res-3">¿Qué es SIGVIC?</a>
     <a href="protocolos.html" class="button btn-res-3">Reglas SIGVIC</a>
     <a href="protocolos.html?modulo=privacidad" class="button btn-res-3">Aviso de privacidad</a>
@@ -537,7 +563,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   setInterval(cargarKPIs, 30000);
 }
 
- ["obras", "qr", "infra", "vig", "qr_res", "paq", "reportes", "infra_res", "aportaciones", "obras_res","paq_vig", "obras_vig", "otros_accesos", "servicios_vig"]
+ ["obras", "qr", "infra", "vig", "qr_res", "paq", "reportes", "infra_res", "aportaciones", "obras_res","paq_vig", "obras_vig", "otros_accesos", "servicios_vig", "sigvic_vig", "sigvic_admin"]
   .forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
