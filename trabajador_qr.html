@@ -380,9 +380,14 @@ document.getElementById("btnWA").addEventListener("click", () => {
 
   if (!trabajadorSeleccionado) return;
 
-  const { codigo, nombre, privada, casa } = trabajadorSeleccionado;
+  const {
+  qr_codigo,
+  nombre,
+  privada,
+  casa
+} = trabajadorSeleccionado;
 
-  const link = `${window.location.origin}/credencial_trabajador.html?qr=${codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
+  const link = `${window.location.origin}/credencial_trabajador.html?qr=${qr_codigo}&nombre=${encodeURIComponent(nombre)}&privada=${privada}&casa=${casa}`;
 
   const mensaje = `👷 Credencial de acceso\n\n` +
                   `Nombre: ${nombre}\n` +
