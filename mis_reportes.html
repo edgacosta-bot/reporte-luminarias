@@ -129,7 +129,7 @@ button {
 
 <div class="aviso">
 Estimado residente:<br><br>
-Después de 5 días de haber realizado su reporte, podrá evaluar la atención recibida por parte de la administración. (Reportes vecinales, de vigilantes y de Obras)<br><br>
+Después de 3 días de haber realizado tu reporte, podrás evaluar la atención recibida por parte de la administración. (Reportes vecinales, de vigilantes y de Obras)<br><br>
 Su evaluación nos ayuda a mejorar el servicio.<br><br>
 Gracias por su apoyo.
 </div>
@@ -173,11 +173,11 @@ Gracias por su apoyo.
 
 let residenteId, seleccionado=null;
 
-const MODO_PRUEBA_EVALUACION = true;
+const MODO_PRUEBA_EVALUACION = false;
 
 function pasaron5Dias(fecha){
   if (MODO_PRUEBA_EVALUACION) return true;
-  return (new Date() - new Date(fecha)) / 86400000 >= 5;
+  return (new Date() - new Date(fecha)) / 86400000 >= 3;
 }
 
 async function obtenerUsuario(){
@@ -366,7 +366,7 @@ ${r.tipo === "vecinal" ? `
     <div class="fecha">${formatMXDate(r.fecha)}</div>
 
         ${puede ? `
-        <button onclick="${habilitado?`abrir('${id}')`:''}""
+        <button onclick="${habilitado?`abrir('${id}')`:''}"
         ${!habilitado?'disabled':''}>
         Evaluar atención
         </button>`:""}
