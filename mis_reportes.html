@@ -227,7 +227,8 @@ let mapaVigilantes = {};
 const { data: listaVigilantes, error: errVig } = await supabaseClient
   .from("residentes")
   .select("id, nombre")
-  .eq("tipo", "vigilante");
+  .eq("tipo", "vigilante")
+  .not("casa", "in", "(1,6)");
 
 if (errVig) {
   console.error("Error cargando vigilantes:", errVig);
