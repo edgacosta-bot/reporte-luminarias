@@ -273,13 +273,7 @@ function renderTrabajadores() {
 
   const hoy = new Date().toLocaleDateString('sv-SE');
 
-  let filtrados = dataGlobal.filter(t => {
-
-    if (t.fecha_inicio && hoy < t.fecha_inicio) return false;
-    if (t.fecha_fin && hoy > t.fecha_fin) return false;
-
-    return true;
-  });
+  let filtrados = [...dataGlobal];
 
   if (privadaSeleccionada) {
     filtrados = filtrados.filter(t => t.privada === privadaSeleccionada);
