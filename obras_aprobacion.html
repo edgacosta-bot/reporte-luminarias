@@ -463,7 +463,10 @@ function cerrarModal(){
 
 document.getElementById("btnAccion").onclick = async () => {
 
-  if (!obraSeleccionada) return;
+  if (
+  !obraSeleccionada &&
+  !obraSuspender
+) return;
 
   const hoy = new Date().toISOString().split("T")[0];
 
