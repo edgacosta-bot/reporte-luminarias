@@ -40,6 +40,7 @@ h2 {
 .aprobada { color: #22c55e; }
 .rechazada { color: #ef4444; }
 .pendiente { color: #facc15; }
+.suspendida { color: #fb923c; }  
 
 .motivo {
   margin-top: 8px;
@@ -109,16 +110,30 @@ async function cargarHistorial() {
     let estadoTexto = "";
     let estadoClase = "";
 
-    if (o.aprobada) {
-      estadoTexto = "Aprobada";
-      estadoClase = "aprobada";
-    } else if (o.estatus === "rechazada") {
-      estadoTexto = "Rechazada";
-      estadoClase = "rechazada";
-    } else {
-      estadoTexto = "Pendiente";
-      estadoClase = "pendiente";
-    }
+    if (o.estatus === "suspendida") {
+
+  estadoTexto = "Suspendida";
+  estadoClase = "suspendida";
+
+}
+else if (o.aprobada) {
+
+  estadoTexto = "Aprobada";
+  estadoClase = "aprobada";
+
+}
+else if (o.estatus === "rechazada") {
+
+  
+  estadoTexto = "Rechazada";
+  estadoClase = "rechazada";
+
+}
+else {
+
+  estadoTexto = "Pendiente";
+  estadoClase = "pendiente";
+}
 
     div.innerHTML = `
       <b>Privada ${o.privada} - Lote ${o.casa}</b><br>
@@ -143,10 +158,94 @@ async function cargarHistorial() {
       `;
     }
 
+if (o.estatus === "suspendida") {
+
+  div.innerHTML += `
+    <div class="motivo">
+      Motivo suspensión:
+      ${o.motivo_suspension || "No especificado"}
+    </div>
+  `;
+}
+    
+  if (o.estatus === "aprobada") {
+
+  div.innerHTML += `
+    <button onclick="suspenderObra('${o.id}')">
+      ⏸ Suspender obra
+    </button>
+  `;
+}
+
+ if (o.estatus === "suspendida") {
+
+  div.innerHTML += `
+    <button onclick="reactivarObra('${o.id}')">
+      ▶ Reactivar obra
+    </button>
+  `;
+}
+    
     contenedor.appendChild(div);
+
+       
   });
 }
 
+async function suspenderObra(id) {
+
+  const motivo = prompt("Motivo de suspensión:");
+
+  if (!motivo || motivo.trim() === "") {
+    return;
+  }
+
+  const hoy = new Date().toISOString();
+
+  const { error } = await supabaseClient
+    .from("obras")
+    .update({
+      estatus: "suspendida",
+      motivo_suspension: motivo,
+      fecha_suspension: hoy,
+      responsable_suspension: "Administración"
+    })
+    .eq("id", id);
+
+  if (error) {
+    alert("Error al suspender");
+    console.log(error);
+    return;
+  }
+
+  await cargarHistorial();
+
+  alert("Obra suspendida correctamente");
+}
+
+  async function reactivarObra(id) {
+
+  const hoy = new Date().toISOString();
+
+  const { error } = await supabaseClient
+    .from("obras")
+    .update({
+      estatus: "aprobada",
+      fecha_reactivacion: hoy
+    })
+    .eq("id", id);
+
+  if (error) {
+    alert("Error al reactivar");
+    console.log(error);
+    return;
+  }
+
+  await cargarHistorial();
+
+  alert("Obra reactivada correctamente");
+}
+  
 // 🔁 NUEVA VERSIÓN
 function nuevaVersion(privada, casa) {
 
