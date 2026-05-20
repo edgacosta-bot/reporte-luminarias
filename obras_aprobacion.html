@@ -160,8 +160,41 @@ textarea {
     <p id="detalleModal"></p>
 
 
-<textarea id="motivo" placeholder="Motivo del rechazo..." style="display:none;"></textarea>
+ <textarea
+  id="motivo"
+  placeholder="Motivo del rechazo..."
+  style="display:none;">
+</textarea>
 
+<select
+  id="motivoSuspension"
+  style="
+    display:none;
+    width:100%;
+    margin-top:10px;
+    padding:10px;
+    border-radius:8px;
+  ">
+
+  <option value="">
+    Selecciona motivo de suspensión
+  </option>
+
+  <option value="Incumplimiento de pagos">
+    Incumplimiento de pagos
+  </option>
+
+  <option value="Modificaciones del proyecto sin autorización">
+    Modificaciones del proyecto sin autorización
+  </option>
+
+  <option value="Problemas con licencia municipal">
+    Problemas con licencia municipal
+  </option>
+
+</select>
+  
+  
 <button id="btnAccion"></button>
 <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
 
@@ -177,6 +210,7 @@ let usuarioNombre = "";
 let usuarioTipo = "";  
 let obraSeleccionada = null;
 let accion = null;
+let obraSuspender = null;  
 
 window.addEventListener("DOMContentLoaded", async () => {
 
@@ -332,36 +366,33 @@ function pintar(id, lista, permitirAccion){
   });
 }
 
-async function suspenderObra(id) {
+function suspenderObra(id){
 
-  const motivo = prompt("Motivo de suspensión:");
+  obraSuspender = id;
 
-  if (!motivo || motivo.trim() === "") {
-    return;
-  }
+  document.getElementById("tituloModal").innerText =
+    "Suspender obra";
 
-  const hoy = new Date().toISOString();
+  document.getElementById("detalleModal").innerHTML =
+    "Selecciona el motivo de suspensión";
 
-  const { error } = await supabaseClient
-    .from("obras")
-    .update({
-      estatus: "suspendida",
-      motivo_suspension: motivo,
-      fecha_suspension: hoy,
-      responsable_suspension: usuarioNombre
-    })
-    .eq("id", id);
+  document.getElementById("motivo").style.display = "none";
 
-  if (error) {
-    mostrarToast("Error al suspender", true);
-    console.log(error);
-    return;
-  }
+  document.getElementById("motivoSuspension").style.display =
+    "block";
 
-  mostrarToast("Obra suspendida");
-  cargarObras();
+  document.getElementById("btnAccion").innerText =
+    "Confirmar suspensión";
+
+  document.getElementById("btnAccion").className =
+    "btn-rechazar";
+
+  accion = "suspender";
+
+  document.getElementById("modal").style.display =
+    "flex";
 }
-
+  
 async function reactivarObra(id) {
 
   const hoy = new Date().toISOString();
@@ -418,6 +449,16 @@ function cerrarModal(){
   obraSeleccionada = null;
   document.getElementById("modal").style.display = "none";
   document.getElementById("motivo").value = "";
+
+    obraSuspender = null;
+
+  document.getElementById(
+    "motivoSuspension"
+  ).value = "";
+
+  document.getElementById(
+    "motivoSuspension"
+  ).style.display = "none";
 }
 
 document.getElementById("btnAccion").onclick = async () => {
@@ -434,7 +475,34 @@ document.getElementById("btnAccion").onclick = async () => {
     updateData.aprobada = true;
     updateData.estatus = "aprobada";
     updateData.fecha_autorizacion = hoy;
-  } else {
+  } 
+
+    else if (accion === "suspender") {
+
+  const motivo = document
+    .getElementById("motivoSuspension")
+    .value;
+
+  if (!motivo) {
+
+    mostrarToast(
+      "Selecciona motivo suspensión",
+      true
+    );
+
+    return;
+  }
+
+  updateData.estatus = "suspendida";
+
+  updateData.motivo_suspension = motivo;
+
+  updateData.fecha_suspension = hoy;
+
+  updateData.responsable_suspension =
+    usuarioNombre;
+}
+  else {
 
     const motivo = document.getElementById("motivo").value.trim();
 
@@ -451,7 +519,12 @@ document.getElementById("btnAccion").onclick = async () => {
   const { error } = await supabaseClient
     .from("obras")
     .update(updateData)
-    .eq("id", obraSeleccionada.id);
+    .eq(
+  "id",
+  accion === "suspender"
+    ? obraSuspender
+    : obraSeleccionada.id
+);
 
   if (error){
     mostrarToast("Error en la operación", true);
