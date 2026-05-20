@@ -174,6 +174,7 @@ textarea {
 
 let esResponsable = false;
 let usuarioNombre = "";
+let usuarioTipo = "";  
 let obraSeleccionada = null;
 let accion = null;
 
@@ -201,6 +202,7 @@ async function validarAcceso(){
     .maybeSingle();
 
   if (residente && ["admin","administracion"].includes((residente.tipo || "").toLowerCase())) {
+    usuarioTipo = (residente.tipo || "").toLowerCase();
     esResponsable = false;
     usuarioNombre = "Administración";
     return true;
@@ -219,6 +221,7 @@ async function validarAcceso(){
 
   const comite = data[0];
   usuarioNombre = comite.nombre;
+  usuarioTipo = "comite";
   esResponsable = comite.rol === "responsable";
 
   return true;
@@ -290,7 +293,11 @@ function pintar(id, lista, permitirAccion){
       ${extra}
     `;
 
-    if (!permitirAccion && esResponsable && o.estatus === "aprobada") {
+    if (
+  !permitirAccion &&
+  (esResponsable || usuarioTipo === "administracion") &&
+  o.estatus === "aprobada"
+) {
 
   div.innerHTML += `
     <button class="btn-rechazar"
@@ -300,7 +307,11 @@ function pintar(id, lista, permitirAccion){
   `;
 }
 
-    if (!permitirAccion && esResponsable && o.estatus === "suspendida") {
+    if (
+  !permitirAccion &&
+  (esResponsable || usuarioTipo === "administracion") &&
+  o.estatus === "suspendida"
+) {
 
   div.innerHTML += `
     <button class="btn-aprobar"
