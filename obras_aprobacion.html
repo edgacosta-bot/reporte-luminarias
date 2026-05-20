@@ -139,6 +139,11 @@ textarea {
   </div>
 
   <div class="seccion">
+  <h3>🟠 Suspendidas</h3>
+  <div id="suspendidas"></div>
+</div>
+  
+  <div class="seccion">
     <h3>🔴 Rechazadas</h3>
     <div id="rechazadas"></div>
   </div>
@@ -154,12 +159,11 @@ textarea {
     <h3 id="tituloModal"></h3>
     <p id="detalleModal"></p>
 
-```
+
 <textarea id="motivo" placeholder="Motivo del rechazo..." style="display:none;"></textarea>
 
 <button id="btnAccion"></button>
 <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
-```
 
   </div>
 </div>
@@ -234,10 +238,12 @@ async function cargarObras(){
 
   const pendientes = data.filter(o => o.estatus === "pendiente");
   const aprobadas = data.filter(o => o.estatus === "aprobada");
+  const suspendidas = data.filter(o => o.estatus === "suspendida");
   const rechazadas = data.filter(o => o.estatus === "rechazada");
 
   pintar("pendientes", pendientes, true);
   pintar("aprobadas", aprobadas, false);
+  pintar("suspendidas", suspendidas, false);
   pintar("rechazadas", rechazadas, false);
 }
 
@@ -268,6 +274,15 @@ function pintar(id, lista, permitirAccion){
       `;
     }
 
+    if (o.estatus === "suspendida") {
+
+  extra = `
+    <br><b>Motivo suspensión:</b> ${o.motivo_suspension || "N/A"}
+    <br><b>Fecha suspensión:</b> ${formatearFecha(o.fecha_suspension)}
+    <br><b>Responsable:</b> ${o.responsable_suspension || ""}
+  `;
+}
+
     div.innerHTML = `
       <b>Privada ${o.privada} - Lote ${o.casa}</b><br>
       ${o.dro_nombre}<br>
@@ -275,6 +290,26 @@ function pintar(id, lista, permitirAccion){
       ${extra}
     `;
 
+    if (!permitirAccion && esResponsable && o.estatus === "aprobada") {
+
+  div.innerHTML += `
+    <button class="btn-rechazar"
+      onclick="suspenderObra('${o.id}')">
+      ⏸ Suspender obra
+    </button>
+  `;
+}
+
+    if (!permitirAccion && esResponsable && o.estatus === "suspendida") {
+
+  div.innerHTML += `
+    <button class="btn-aprobar"
+      onclick="reactivarObra('${o.id}')">
+      ▶ Reactivar obra
+    </button>
+  `;
+}
+    
     if (permitirAccion && esResponsable) {
       div.innerHTML += `
         <button class="btn-aprobar" onclick="abrirModal('aprobar', ${JSON.stringify(o).replace(/"/g, '&quot;')})">Aprobar</button>
@@ -286,7 +321,59 @@ function pintar(id, lista, permitirAccion){
   });
 }
 
-function abrirModal(tipo, obra){
+async function suspenderObra(id) {
+
+  const motivo = prompt("Motivo de suspensión:");
+
+  if (!motivo || motivo.trim() === "") {
+    return;
+  }
+
+  const hoy = new Date().toISOString();
+
+  const { error } = await supabaseClient
+    .from("obras")
+    .update({
+      estatus: "suspendida",
+      motivo_suspension: motivo,
+      fecha_suspension: hoy,
+      responsable_suspension: usuarioNombre
+    })
+    .eq("id", id);
+
+  if (error) {
+    mostrarToast("Error al suspender", true);
+    console.log(error);
+    return;
+  }
+
+  mostrarToast("Obra suspendida");
+  cargarObras();
+}
+
+async function reactivarObra(id) {
+
+  const hoy = new Date().toISOString();
+
+  const { error } = await supabaseClient
+    .from("obras")
+    .update({
+      estatus: "aprobada",
+      fecha_reactivacion: hoy
+    })
+    .eq("id", id);
+
+  if (error) {
+    mostrarToast("Error al reactivar", true);
+    console.log(error);
+    return;
+  }
+
+  mostrarToast("Obra reactivada");
+  cargarObras();
+}
+  
+  function abrirModal(tipo, obra){
 
   obraSeleccionada = obra;
   accion = tipo;
