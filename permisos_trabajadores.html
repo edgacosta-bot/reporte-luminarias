@@ -83,6 +83,11 @@ button {
 .btn-cancelar { background: #dc2626; }
 .btn-reactivar { background: #16a34a; }
 
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}  
+
 .estado-verde { color: #34d399; }
 .estado-rojo { color: #f87171; }
 .estado-amarillo { color: #fbbf24; }
@@ -193,7 +198,12 @@ async function cargar() {
 
   const { data, error } = await supabaseClient
     .from("trabajadores_obra")
-    .select("*")
+    .select(`
+  *,
+  obras (
+    estatus
+  )
+`)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -271,37 +281,67 @@ bloque.innerHTML = `
     grupos[clave].forEach(t => {
 
       let estado = "🟢 Vigente";
+      const obraSuspendida =
+  t.obras?.estatus === "suspendida";
+      
       let clase = "estado-verde";
 
-      if (!t.activo) {
-        estado = "⛔ Cancelado";
-        clase = "estado-rojo";
-      }
-      else if (t.fecha_inicio && hoy < t.fecha_inicio) {
-        estado = "🟡 Aún no inicia";
-        clase = "estado-amarillo";
-      }
-      else if (t.fecha_fin && hoy > t.fecha_fin) {
-        estado = "🔴 Vencido";
-        clase = "estado-rojo";
-      }
+     if (obraSuspendida) {
+
+  estado = "⛔ Obra suspendida";
+  clase = "estado-rojo";
+
+}
+else if (!t.activo) {
+
+  estado = "⛔ Cancelado";
+  clase = "estado-rojo";
+
+}
+else if (t.fecha_inicio && hoy < t.fecha_inicio) {
+
+  estado = "🟡 Aún no inicia";
+  clase = "estado-amarillo";
+
+}
+else if (t.fecha_fin && hoy > t.fecha_fin) {
+
+  estado = "🔴 Vencido";
+  clase = "estado-rojo";
+}
 
       const card = document.createElement("div");
       card.className = "card";
 
+      const botonesBloqueados = obraSuspendida;
       card.innerHTML = `
         <div class="nombre">${t.nombre}</div>
         <div class="estado ${clase}">${estado}</div>
 
-        <input type="date" id="inicio_${t.id}" value="${t.fecha_inicio || ""}">
-        <input type="date" id="fin_${t.id}" value="${t.fecha_fin || ""}">
+        <input
+  type="date"
+  id="inicio_${t.id}"
+  value="${t.fecha_inicio || ""}"
+  ${botonesBloqueados ? "disabled" : ""}>
+        <input
+  type="date"
+  id="fin_${t.id}"
+  value="${t.fecha_fin || ""}"
+  ${botonesBloqueados ? "disabled" : ""}>
 
-        <button class="btn-renovar" onclick="renovar('${t.id}')">🔄 Guardar</button>
+        
+               <button
+  class="btn-renovar"
+  ${botonesBloqueados ? "disabled" : ""} onclick="renovar('${t.id}')">🔄 Guardar</button>
 
         ${
           t.activo
-          ? `<button class="btn-cancelar" onclick="cancelar('${t.id}')">⛔ Cancelar</button>`
-          : `<button class="btn-reactivar" onclick="reactivar('${t.id}')">🟢 Reactivar</button>`
+          ? `<button
+  class="btn-cancelar"
+  ${botonesBloqueados ? "disabled" : ""} onclick="cancelar('${t.id}')">⛔ Cancelar</button>`
+          : `<button
+  class="btn-reactivar"
+  ${botonesBloqueados ? "disabled" : ""} onclick="reactivar('${t.id}')">🟢 Reactivar</button>`
         }
       `;
 
