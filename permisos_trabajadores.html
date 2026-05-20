@@ -198,12 +198,7 @@ async function cargar() {
 
   const { data, error } = await supabaseClient
     .from("trabajadores_obra")
-    .select(`
-  *,
-  obras (
-    estatus
-  )
-`)
+    .select("*")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -216,6 +211,21 @@ async function cargar() {
     document.getElementById("lista").innerHTML = "Sin registros";
     return;
   }
+
+    // 🔥 CARGAR OBRAS
+  const { data: obrasData } = await supabaseClient
+    .from("obras")
+    .select("privada,casa,estatus");
+
+  const mapaObras = {};
+
+  (obrasData || []).forEach(o => {
+
+    const clave =
+      `${o.privada}-${o.casa}`;
+
+    mapaObras[clave] = o.estatus;
+  });
 
   const lista = document.getElementById("lista");
   lista.innerHTML = "";
@@ -281,8 +291,11 @@ bloque.innerHTML = `
     grupos[clave].forEach(t => {
 
       let estado = "🟢 Vigente";
-      const obraSuspendida =
-  t.obras?.estatus === "suspendida";
+      const claveObra =
+  `${t.privada}-${t.casa}`;
+
+const obraSuspendida =
+  mapaObras[claveObra] === "suspendida";
       
       let clase = "estado-verde";
 
