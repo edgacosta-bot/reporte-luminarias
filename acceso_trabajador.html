@@ -145,24 +145,49 @@ renderDetalle();
 
 // 🔥 evaluar horario
 let horaMX = null;
-
+let fueraHorario = false;
+  
 if (tipoAccion === "salida") {
 
   const ahora = new Date();
 
-  horaMX = new Date(
-    ahora.toLocaleString("en-US", { timeZone: "America/Mexico_City" })
-  ).getHours();
+  const fechaMX = new Date(
+    ahora.toLocaleString("en-US", {
+      timeZone: "America/Mexico_City"
+    })
+  );
 
-  if (horaMX >= 18) {
-    document.body.className = "warn";
-    estado.innerText = "⚠️ Se realizará un reporte automático debido a que el trabajador sale fuera del horario permitido";
+  const dia = fechaMX.getDay();
+  const hora = fechaMX.getHours();
+  const minutos = fechaMX.getMinutes();
+
+  const horaActual = hora + (minutos / 60);
+
+  
+  // 🔥 Domingo
+  if (dia === 0) {
+    fueraHorario = true;
   }
 
-}
+  // 🔥 Sábado → después de 2 p.m.
+  else if (dia === 6 && horaActual >= 14) {
+    fueraHorario = true;
+  }
 
+  // 🔥 Lunes a viernes → después de 6 p.m.
+  else if (dia >= 1 && dia <= 5 && horaActual >= 18) {
+    fueraHorario = true;
+  }
+
+  if (fueraHorario) {
+    document.body.className = "warn";
+
+    estado.innerText =
+      "⚠️ Se realizará un reporte automático debido a que el trabajador sale fuera del horario permitido";
+  }
+}
 // 🔥 mensaje normal (solo si no es fuera de horario)
-if (!(tipoAccion === "salida" && horaMX >= 18)) {
+if (!(tipoAccion === "salida" && fueraHorario)) {
   estado.innerText = tipoAccion === "salida"
     ? "Validar salida"
     : "Validar acceso";
