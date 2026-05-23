@@ -1,4 +1,4 @@
-const CACHE_NAME = "v1.0.1"; // 🔥 cambia versión para forzar actualización
+const CACHE_NAME = "v1.0.2"; // 🔥 cambia versión para forzar actualización
 
 const FILES_TO_CACHE = [
   "/",
