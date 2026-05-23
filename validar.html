@@ -393,10 +393,14 @@ function pintar(mensaje, tipo, data = null) {
   document.getElementById("estado").innerText = mensaje;
   document.body.className = tipo;
 
-  if (data) {
-    document.getElementById("detalle").innerHTML =
-      `<p><b>${data.nombre_visitante}</b></p>`;
-  }
+ if (data) {
+  document.getElementById("detalle").innerHTML = `
+    <p><b>${data.nombre_visitante}</b></p>
+    <p style="margin-top:10px; font-size:18px;">
+      Privada ${data.privada} - Lote ${data.casa}
+    </p>
+  `;
+}
 }
 
 </script>
