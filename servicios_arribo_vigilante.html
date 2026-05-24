@@ -364,7 +364,7 @@ async function confirmarNIP(){
       })
       .eq("id", registroId);
 
-    const mensaje = `Estimado residente, el servicio que tiene en espera ha ingresado al fraccionamiento. Gracias.`;
+    const mensaje = `SIGVIC informa: Estimado residente, el servicio que tiene en espera ha ingresado al fraccionamiento. Gracias.`;
     const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
     window.open(url, "_blank");
   }
