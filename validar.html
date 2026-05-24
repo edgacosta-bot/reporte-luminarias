@@ -303,7 +303,7 @@ btn.addEventListener("click", async () => {
       .eq('id', nuevoAcceso.id);
 
     crearBotonNotificar(
-      `Estimado residente, le informamos que su visitante *${visitaGlobal.nombre_visitante}* acaba de ingresar al fraccionamiento. Gracias`,
+      `SIGVIC informa: Estimado residente, su visitante *${visitaGlobal.nombre_visitante}* acaba de ingresar al fraccionamiento. Gracias`,
       "#16a34a"
     );
 
@@ -342,7 +342,7 @@ if (errorQR) {
     pintar("SALIDA REGISTRADA", "warn", visitaGlobal);
 
     crearBotonNotificar(
-      `Estimado residente, le informamos que su visita *${visitaGlobal.nombre_visitante}* en este momento acaba de salir del fraccionamiento. Gracias.`,
+      `SIGVIC informa: Estimado residente, su visita *${visitaGlobal.nombre_visitante}* en este momento acaba de salir del fraccionamiento. Gracias.`,
       "#f59e0b"
     );
   }
