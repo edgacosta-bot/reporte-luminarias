@@ -378,7 +378,7 @@ function abrirWhats(privada, casa) {
   const ahora = new Date().toLocaleTimeString();
 
   const mensaje = encodeURIComponent(
-    `Estimado residente, le informamos que a las ${ahora} se recibió un paquete para usted en la caseta de vigilancia (Privada ${privada}, lote ${casa}); le pedimos que sea recibido a la brevedad posible. Gracias.`
+    `SIGVIC informa: Estimado residente, le informamos que a las ${ahora} se recibió un paquete para usted en la caseta de vigilancia (Privada ${privada}, lote ${casa}); le pedimos que sea recibido a la brevedad posible. Gracias.`
   );
 
   window.open(`https://wa.me/?text=${mensaje}`, '_blank');
