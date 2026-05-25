@@ -46,6 +46,47 @@ h1 {
   margin-bottom: 10px;
 }
 
+details {
+  margin-bottom: 10px;
+}
+
+summary {
+  cursor: pointer;
+  list-style: none;
+  font-weight: bold;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+.acordeon-privada {
+  transition: all 0.2s ease;
+  background: #1e293b;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 18px;
+}
+
+.acordeon-lote {
+  transition: all 0.2s ease;
+  background: #334155;
+  padding: 12px;
+  border-radius: 10px;
+  margin-top: 8px;
+  margin-left: 10px;
+  font-size: 15px;
+}
+
+.trabajador-item {
+  transition: all 0.2s ease;
+  background: #0f172a;
+  padding: 12px;
+  border-radius: 10px;
+  margin-top: 8px;
+  margin-left: 20px;
+}  
+
 .nombre {
   font-size: 18px;
   font-weight: bold;
@@ -162,68 +203,150 @@ async function cargar() {
 
   lista.innerHTML = "";
   let totalAlertas = 0;
+  const agrupado = {};
+  
 
   for (const item of accesos) {
 
-    const trabajador = mapaTrabajadores[item.trabajador_id];
+  const trabajador = mapaTrabajadores[item.trabajador_id];
 
-    const entradaBase = item.fecha_hora_entrada_local || item.fecha_hora_entrada;
+  const privada = trabajador?.privada || "Sin privada";
+  const lote = trabajador?.casa || "Sin lote";
 
-    const tiempo = calcularTiempo(entradaBase);
+  if (!agrupado[privada]) {
+    agrupado[privada] = {};
+  }
 
-    let alerta = "";
-    let estilo = "";
-    let esAlerta = false;
+  if (!agrupado[privada][lote]) {
+    agrupado[privada][lote] = [];
+  }
 
-   
-    // 🔥 FUERA DE HORARIO
-    const ahora = new Date();
-    const dia = ahora.getDay();
-    const hora = ahora.getHours();
-    const minutos = ahora.getMinutes();
-    const horaActual = hora + (minutos / 60);
+  agrupado[privada][lote].push({
+    acceso: item,
+    trabajador
+  });
+}
 
-    let fueraDeHorario = false;
+  const privadasOrdenadas =
+  Object.keys(agrupado).sort();
 
-    if (dia === 0) fueraDeHorario = true;
+  for (const privada of privadasOrdenadas) {
 
-    if (dia === 6 && (horaActual < 9 || horaActual > 14)) {
-      fueraDeHorario = true;
-    }
+  const detallePrivada =
+  document.createElement("details");  
+  
+  detallePrivada.open = true;
 
-    if (dia >= 1 && dia <= 5 && (horaActual < 8 || horaActual > 18)) {
-      fueraDeHorario = true;
-    }
+  const totalPrivada =
+    Object.values(agrupado[privada])
+      .reduce((acc, arr) => acc + arr.length, 0);
 
-    if (fueraDeHorario) {
-      alerta = "🚨 Fuera de horario";
-      estilo = "border: 2px solid #dc2626;";
-      totalAlertas++;
-      esAlerta = true;
-    }
+  detallePrivada.innerHTML = `
+    <summary class="acordeon-privada">
+      🏘 Privada ${privada} (${totalPrivada})
+    </summary>
+  `;
 
-    const div = document.createElement("div");
-    div.className = "card";
-    div.style = estilo;
+  const lotesOrdenados =
+  Object.keys(agrupado[privada])
+    .sort((a,b) => Number(a) - Number(b));
 
-    div.innerHTML = `
-      <div class="nombre">${trabajador?.nombre || "Sin nombre"}</div>
-      <div class="detalle">
-        Privada ${trabajador?.privada || "-"} - Lote ${trabajador?.casa || "-"}<br>
-        Entrada: ${formatearHora(entradaBase)}<br>
-        Tiempo dentro: ${tiempo.horas}h ${tiempo.minutos}m<br>
-        ${alerta}
-      </div>
+ for (const lote of lotesOrdenados) {
 
-      ${esAlerta ? `
-  <div class="detalle" style="margin-top:10px; color:#f87171; font-weight:bold;">
-    ⚠️ Requiere atención del vigilante
-  </div>
-` : ""}
+  const detalleLote =
+  document.createElement("details");
+  detalleLote.open = true; 
+
+    const trabajadoresLote = agrupado[privada][lote];
+
+    detalleLote.innerHTML = `
+      <summary class="acordeon-lote">
+        🏠 Lote ${lote} (${trabajadoresLote.length})
+      </summary>
     `;
 
-    lista.appendChild(div);
-  }
+    trabajadoresLote.sort((a,b) =>
+      new Date(a.acceso.fecha_hora_entrada)
+      - new Date(b.acceso.fecha_hora_entrada)
+    );
+
+    for (const registro of trabajadoresLote) {
+
+      const item = registro.acceso;
+      const trabajador = registro.trabajador;
+
+      const entradaBase =
+        item.fecha_hora_entrada_local ||
+        item.fecha_hora_entrada;
+
+      const tiempo = calcularTiempo(entradaBase);
+
+      let alerta = "";
+      let estilo = "";
+      let esAlerta = false;
+
+      const ahora = new Date();
+      const dia = ahora.getDay();
+      const hora = ahora.getHours();
+      const minutos = ahora.getMinutes();
+      const horaActual = hora + (minutos / 60);
+
+      let fueraDeHorario = false;
+
+      if (dia === 0) fueraDeHorario = true;
+
+      if (dia === 6 && (horaActual < 9 || horaActual > 14)) {
+        fueraDeHorario = true;
+      }
+
+      if (dia >= 1 && dia <= 5 && (horaActual < 8 || horaActual > 18)) {
+        fueraDeHorario = true;
+      }
+
+      if (fueraDeHorario) {
+        alerta = "🚨 Fuera de horario";
+        estilo = "border:2px solid #dc2626;";
+        totalAlertas++;
+        esAlerta = true;
+      }
+
+      const div = document.createElement("div");
+
+      div.className = "trabajador-item";
+      div.style = estilo;
+
+      div.innerHTML = `
+        <div class="nombre">
+          ${trabajador?.nombre || "Sin nombre"}
+        </div>
+
+        <div class="detalle">
+          Entrada: ${formatearHora(entradaBase)}<br>
+          Tiempo dentro:
+          ${tiempo.horas}h ${tiempo.minutos}m<br>
+
+          ${alerta}
+        </div>
+
+        ${esAlerta ? `
+          <div class="detalle"
+               style="margin-top:10px;
+                      color:#f87171;
+                      font-weight:bold;">
+            ⚠️ Requiere atención del vigilante
+          </div>
+        ` : ""}
+      `;
+
+      detalleLote.appendChild(div);
+    }
+
+    detallePrivada.appendChild(detalleLote);
+    }
+   
+    lista.appendChild(detallePrivada);
+    }
+ 
 
   // 🔥 ALERTA GLOBAL
   if (totalAlertas > 0) {
