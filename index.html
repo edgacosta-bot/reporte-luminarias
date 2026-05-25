@@ -112,6 +112,7 @@ body {
   border-radius: 15px;
   padding: 20px;
   text-align: center;
+  transition: all 0.2s ease;
 }
 
 .kpi span {
@@ -119,6 +120,11 @@ body {
   font-weight: 600;
 }
 
+.kpi:hover {
+  transform: scale(1.03);
+  opacity: 0.95;
+}
+  
 /* BOTONES */
 .menu {
   padding: 20px 16px;
@@ -235,7 +241,14 @@ body {
 <div class="kpis">
   <div class="kpi">🚨 Reportes hoy <br><span id="kpiReportes">0</span></div>
   <div class="kpi">📦 Paquetes pendientes <br><span id="kpiPaquetes">0</span></div>
-  <div class="kpi">👷 Trabajadores dentro <br><span id="kpiTrabajadores">0</span></div>
+  <div class="kpi"
+     onclick="window.location.href='trabajadores_dentro.html'"
+     style="cursor:pointer;">
+
+  👷 Trabajadores dentro <br>
+  <span id="kpiTrabajadores">0</span>
+
+</div>
 </div>
 
 <!-- ADMIN (INTACTO) -->
