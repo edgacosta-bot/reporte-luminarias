@@ -240,7 +240,14 @@ body {
 
 <div class="kpis">
   <div class="kpi">🚨 Reportes hoy <br><span id="kpiReportes">0</span></div>
-  <div class="kpi">📦 Paquetes pendientes <br><span id="kpiPaquetes">0</span></div>
+  <div class="kpi"
+     onclick="abrirPaquetes()"
+     style="cursor:pointer;">
+
+  📦 Paquetes pendientes <br>
+  <span id="kpiPaquetes">0</span>
+
+</div>
   <div class="kpi"
      onclick="window.location.href='trabajadores_dentro.html'"
      style="cursor:pointer;">
@@ -587,6 +594,19 @@ document.body.style.visibility = "visible";
 
 });
 
+function abrirPaquetes() {
+
+  if (rolActual === "vigilante") {
+    window.location.href =
+      "entrega_paquetes.html";
+
+  } else if (rolActual === "administracion") {
+
+    window.location.href =
+      "entrega_paquetes.html";
+  }
+}
+  
 async function cargarKPIs(){
   try {
 
