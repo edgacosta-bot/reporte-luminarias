@@ -123,11 +123,16 @@ input {
 
 // 🔐 PROTECCIÓN
 window.addEventListener("DOMContentLoaded", async () => {
-  await protegerPagina(["vigilante"]);
+    await protegerPagina([
+  "vigilante",
+  "administracion"
+]);
+  rolActual = localStorage.getItem("rol");
   cargar();
 });
 
 let paqueteId = null;
+let rolActual = null;  
 
 function mostrarModal(titulo, texto, tipo="") {
 
@@ -199,9 +204,22 @@ function render(data) {
         Privada ${p.privada} - Lote ${p.casa}<br>
         <small>${fecha}</small>
       </span>
-      <button class="button" onclick="prepararEntrega('${p.id}')">
-        Entregar
-      </button>
+      ${rolActual === "vigilante"
+  ? `
+    <button class="button"
+            onclick="prepararEntrega('${p.id}')">
+      Entregar
+    </button>
+  `
+  : `
+    <span style="
+      color:#9ca3af;
+      font-size:12px;
+    ">
+      Solo vigilancia
+    </span>
+  `
+}
     `;
 
     lista.appendChild(div);
@@ -209,6 +227,15 @@ function render(data) {
 }
 
 function prepararEntrega(id) {
+
+  if (rolActual !== "vigilante") {
+  mostrarModal(
+    "Acceso denegado",
+    "Solo vigilancia puede entregar paquetes."
+  );
+  return;
+}
+  
   paqueteId = id;
 
   mostrarModal(
