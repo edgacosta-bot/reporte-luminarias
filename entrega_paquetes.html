@@ -124,10 +124,11 @@ input {
 // 🔐 PROTECCIÓN
 window.addEventListener("DOMContentLoaded", async () => {
     await protegerPagina([
-  "vigilante",
+  "vigilancia",
   "administracion"
 ]);
   rolActual = localStorage.getItem("rol");
+  console.log("ROL:", rolActual);
   cargar();
 });
 
