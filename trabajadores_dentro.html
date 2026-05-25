@@ -235,8 +235,7 @@ async function cargar() {
   const detallePrivada =
   document.createElement("details");  
   
-  detallePrivada.open = true;
-
+  
   const totalPrivada =
     Object.values(agrupado[privada])
       .reduce((acc, arr) => acc + arr.length, 0);
