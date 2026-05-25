@@ -160,6 +160,9 @@ function calcularTiempo(fechaLocal) {
   };
 }
 
+let privadasAbiertas = new Set();
+let lotesAbiertos = new Set();
+  
 // 🔥 FUNCIÓN PRINCIPAL
 async function cargar() {
 
@@ -201,6 +204,29 @@ async function cargar() {
     mapaTrabajadores[t.id] = t;
   });
 
+  privadasAbiertas.clear();
+lotesAbiertos.clear();
+
+document
+  .querySelectorAll("details[data-privada]")
+  .forEach(d => {
+    if (d.open) {
+      privadasAbiertas.add(
+        d.dataset.privada
+      );
+    }
+  });
+
+document
+  .querySelectorAll("details[data-lote]")
+  .forEach(d => {
+    if (d.open) {
+      lotesAbiertos.add(
+        d.dataset.lote
+      );
+    }
+  });
+  
   lista.innerHTML = "";
   let totalAlertas = 0;
   const agrupado = {};
@@ -234,6 +260,11 @@ async function cargar() {
 
   const detallePrivada =
   document.createElement("details");  
+  detallePrivada.dataset.privada = privada;  
+
+  if (privadasAbiertas.has(privada)) {
+  detallePrivada.open = true;
+}  
   
   
   const totalPrivada =
@@ -254,7 +285,15 @@ async function cargar() {
 
   const detalleLote =
   document.createElement("details");
-  detalleLote.open = true; 
+  const llaveLote =
+  privada + "-" + lote;
+
+detalleLote.dataset.lote =
+  llaveLote;
+
+if (lotesAbiertos.has(llaveLote)) {
+  detalleLote.open = true;
+}
 
     const trabajadoresLote = agrupado[privada][lote];
 
