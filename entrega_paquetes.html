@@ -205,7 +205,8 @@ function render(data) {
         Privada ${p.privada} - Lote ${p.casa}<br>
         <small>${fecha}</small>
       </span>
-      ${rolActual === "vigilante"
+     ${["vigilante","vigilancia"]
+    .includes(rolActual)
   ? `
     <button class="button"
             onclick="prepararEntrega('${p.id}')">
@@ -229,7 +230,10 @@ function render(data) {
 
 function prepararEntrega(id) {
 
-  if (rolActual !== "vigilante") {
+  if (
+  !["vigilante","vigilancia"]
+    .includes(rolActual)
+) {
   mostrarModal(
     "Acceso denegado",
     "Solo vigilancia puede entregar paquetes."
