@@ -153,19 +153,48 @@ async function cargar(){
 
   lista.innerHTML = "";
 
-  const userId = localStorage.getItem("residente_id");
+  const {
+  data: sessionData
+} = await supabaseClient.auth.getSession();
 
-  if(!userId){
+const authUser =
+  sessionData?.session?.user;
 
-    lista.innerHTML = `
-      <p class="vacio">
-        No se identificó residente.
-      </p>
-    `;
+if(!authUser){
 
-    return;
-  }
+  lista.innerHTML = `
+    <p class="vacio">
+      No hay sesión activa.
+    </p>
+  `;
 
+  return;
+}
+
+const {
+  data: residente
+} = await supabaseClient
+
+  .from("residentes")
+
+  .select("id")
+
+  .eq("user_id", authUser.id)
+
+  .maybeSingle();
+
+if(!residente){
+
+  lista.innerHTML = `
+    <p class="vacio">
+      No se identificó residente.
+    </p>
+  `;
+
+  return;
+}
+
+const userId = residente.id;
   const { data, error } = await supabaseClient
 
     .from("avisos_destinatarios")
