@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Pagos pendientes</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
+<script>
+protegerPagina([
+  "tesorero",
+  "administracion"
+]);
+</script>
+
+<style>
+
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0f172a;
+  color:white;
+}
+
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+  margin-bottom:25px;
+}
+
+.kpi{
+
+  background:#1e293b;
+
+  padding:15px;
+
+  border-radius:12px;
+
+  text-align:center;
+
+  margin-bottom:25px;
+
+  font-size:18px;
+  font-weight:bold;
+}
+
+.card{
+
+  background:#1e293b;
+
+  border-radius:14px;
+
+  padding:20px;
+
+  margin-bottom:20px;
+
+  border-left:6px solid #f59e0b;
+}
+
+.titulo{
+
+  font-size:18px;
+  font-weight:bold;
+
+  margin-bottom:15px;
+}
+
+.detalle{
+
+  margin-bottom:8px;
+
+  color:#cbd5e1;
+
+  line-height:1.5;
+}
+
+.botones{
+
+  display:flex;
+
+  gap:10px;
+
+  margin-top:20px;
+}
+
+button{
+
+  flex:1;
+
+  border:none;
+
+  border-radius:10px;
+
+  padding:12px;
+
+  color:white;
+
+  font-size:15px;
+  font-weight:bold;
+
+  cursor:pointer;
+
+  transition:all 0.2s ease;
+}
+
+.btn-validar{
+  background:#16a34a;
+}
+
+.btn-rechazar{
+  background:#dc2626;
+}
+
+button:hover{
+  opacity:0.9;
+}
+
+.vacio{
+
+  text-align:center;
+
+  color:#9ca3af;
+
+  margin-top:50px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>💳 Pagos pendientes</h1>
+
+  <div id="kpi" class="kpi">
+    Cargando...
+  </div>
+
+  <div id="lista"></div>
+
+</div>
+
+<script>
+
+cargar();
+
+async function cargar(){
+
+  const lista =
+    document.getElementById("lista");
+
+  const kpi =
+    document.getElementById("kpi");
+
+  lista.innerHTML = "";
+
+  const { data, error } =
+    await supabaseClient
+
+      .from("notificaciones_pago")
+
+      .select(`
+        *,
+        residentes(
+          id,
+          nombre,
+          privada,
+          casa
+        )
+      `)
+
+      .eq("estatus", "pendiente")
+
+      .order("fecha_reporte", {
+        ascending:false
+      });
+
+  if(error){
+
+    console.error(error);
+
+    kpi.innerHTML =
+      "Error al cargar.";
+
+    return;
+  }
+
+  if(!data || data.length === 0){
+
+    kpi.innerHTML =
+      "✅ No hay pagos pendientes.";
+
+    lista.innerHTML = `
+      <div class="vacio">
+        No existen pagos pendientes.
+      </div>
+    `;
+
+    return;
+  }
+
+  kpi.innerHTML = `
+    ⚠️ ${data.length}
+    pago(s) pendiente(s)
+  `;
+
+  for(const item of data){
+
+    const r = item.residentes;
+
+    const div =
+      document.createElement("div");
+
+    div.className = "card";
+
+    div.innerHTML = `
+
+      <div class="titulo">
+
+        ${r.nombre}
+        <br>
+
+        ${r.privada}-${r.casa}
+
+      </div>
+
+      <div class="detalle">
+        💰 <b>Concepto:</b>
+        ${item.concepto}
+      </div>
+
+      <div class="detalle">
+        📅 <b>Periodo:</b>
+        ${
+          item.periodo_mes
+          ? `${nombreMes(item.periodo_mes)} ${item.periodo_anio}`
+          : "No aplica"
+        }
+      </div>
+
+      <div class="detalle">
+        💵 <b>Monto:</b>
+        $${Number(item.monto).toFixed(2)}
+      </div>
+
+      <div class="detalle">
+        🏦 <b>Referencia:</b>
+        ${item.referencia || "-"}
+      </div>
+
+      <div class="detalle">
+        📆 <b>Fecha transferencia:</b>
+        ${item.fecha_transferencia}
+      </div>
+
+      <div class="detalle">
+        📝 <b>Observaciones:</b>
+        ${item.observaciones || "-"}
+      </div>
+
+      <div class="detalle">
+        🕒 <b>Reportado:</b>
+        ${formatoFecha(item.fecha_reporte)}
+      </div>
+
+      <div class="botones">
+
+        <button
+          class="btn-validar"
+          onclick="validarPago('${item.id}')">
+
+          Validar
+
+        </button>
+
+        <button
+          class="btn-rechazar"
+          onclick="rechazarPago('${item.id}')">
+
+          Rechazar
+
+        </button>
+
+      </div>
+
+    `;
+
+    lista.appendChild(div);
+  }
+}
+
+async function validarPago(id){
+
+  const confirmar =
+    confirm("¿Validar este pago?");
+
+  if(!confirmar) return;
+
+  const { error } =
+    await supabaseClient
+
+      .from("notificaciones_pago")
+
+      .update({
+        estatus:"validado",
+        fecha_validacion:
+          new Date().toISOString()
+      })
+
+      .eq("id", id);
+
+  if(error){
+
+    console.error(error);
+
+    alert("Error al validar.");
+
+    return;
+  }
+
+  alert("Pago validado.");
+
+  cargar();
+}
+
+async function rechazarPago(id){
+
+  const motivo =
+    prompt("Motivo del rechazo:");
+
+  if(motivo === null) return;
+
+  const { error } =
+    await supabaseClient
+
+      .from("notificaciones_pago")
+
+      .update({
+        estatus:"rechazado",
+        observaciones_tesorero:
+          motivo,
+        fecha_validacion:
+          new Date().toISOString()
+      })
+
+      .eq("id", id);
+
+  if(error){
+
+    console.error(error);
+
+    alert("Error al rechazar.");
+
+    return;
+  }
+
+  alert("Pago rechazado.");
+
+  cargar();
+}
+
+function formatoFecha(fecha){
+
+  if(!fecha) return "-";
+
+  return new Date(fecha)
+
+    .toLocaleString("es-MX", {
+
+      day:"2-digit",
+      month:"2-digit",
+      year:"numeric",
+
+      hour:"2-digit",
+      minute:"2-digit"
+    });
+}
+
+function nombreMes(mes){
+
+  const meses = {
+
+    1:"Enero",
+    2:"Febrero",
+    3:"Marzo",
+    4:"Abril",
+    5:"Mayo",
+    6:"Junio",
+    7:"Julio",
+    8:"Agosto",
+    9:"Septiembre",
+    10:"Octubre",
+    11:"Noviembre",
+    12:"Diciembre"
+  };
+
+  return meses[mes] || mes;
+}
+
+</script>
+
+</body>
+</html>
