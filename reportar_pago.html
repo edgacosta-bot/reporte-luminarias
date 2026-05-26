@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Reportar pago</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
+<script>
+protegerPagina(["residente"]);
+</script>
+
+<style>
+
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0f172a;
+  color:white;
+}
+
+.container{
+  max-width:600px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+  margin-bottom:25px;
+}
+
+.card{
+
+  background:#1e293b;
+
+  padding:20px;
+
+  border-radius:14px;
+}
+
+.grupo{
+  margin-bottom:18px;
+}
+
+label{
+  display:block;
+  margin-bottom:8px;
+  font-size:14px;
+  font-weight:bold;
+}
+
+input,
+select,
+textarea{
+
+  width:100%;
+
+  padding:12px;
+
+  border:none;
+  border-radius:10px;
+
+  font-size:15px;
+
+  box-sizing:border-box;
+}
+
+textarea{
+  min-height:100px;
+  resize:vertical;
+}
+
+button{
+
+  width:100%;
+
+  padding:14px;
+
+  border:none;
+  border-radius:12px;
+
+  background:#2563eb;
+
+  color:white;
+
+  font-size:16px;
+  font-weight:bold;
+
+  cursor:pointer;
+
+  transition:all 0.2s ease;
+}
+
+button:hover{
+  opacity:0.9;
+}
+
+.mensaje{
+
+  margin-top:20px;
+
+  text-align:center;
+
+  font-weight:bold;
+}
+
+.exito{
+  color:#22c55e;
+}
+
+.error{
+  color:#ef4444;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>💳 Reportar pago</h1>
+
+  <div class="card">
+
+    <div class="grupo">
+      <label>Concepto</label>
+
+      <select id="concepto">
+
+        <option value="">
+          Selecciona
+        </option>
+
+        <option value="Cuota mantenimiento">
+          Cuota mantenimiento
+        </option>
+
+        <option value="Luminarias">
+          Luminarias
+        </option>
+
+        <option value="Gimnasio">
+          Gimnasio
+        </option>
+
+        <option value="Extraordinaria">
+          Extraordinaria
+        </option>
+
+      </select>
+    </div>
+
+    <div class="grupo">
+      <label>Mes</label>
+
+      <select id="mes">
+
+        <option value="">No aplica</option>
+
+        <option value="1">Enero</option>
+        <option value="2">Febrero</option>
+        <option value="3">Marzo</option>
+        <option value="4">Abril</option>
+        <option value="5">Mayo</option>
+        <option value="6">Junio</option>
+        <option value="7">Julio</option>
+        <option value="8">Agosto</option>
+        <option value="9">Septiembre</option>
+        <option value="10">Octubre</option>
+        <option value="11">Noviembre</option>
+        <option value="12">Diciembre</option>
+
+      </select>
+    </div>
+
+    <div class="grupo">
+      <label>Año</label>
+
+      <input
+        type="number"
+        id="anio"
+        value="2026">
+    </div>
+
+    <div class="grupo">
+      <label>Monto</label>
+
+      <input
+        type="number"
+        id="monto"
+        step="0.01"
+        placeholder="0.00">
+    </div>
+
+    <div class="grupo">
+      <label>Fecha transferencia</label>
+
+      <input
+        type="date"
+        id="fecha">
+    </div>
+
+    <div class="grupo">
+      <label>Referencia bancaria</label>
+
+      <input
+        type="text"
+        id="referencia"
+        placeholder="Últimos dígitos o folio SPEI">
+    </div>
+
+    <div class="grupo">
+      <label>Observaciones</label>
+
+      <textarea
+        id="observaciones"
+        placeholder="Información adicional opcional"></textarea>
+    </div>
+
+    <button onclick="reportarPago()">
+      Reportar pago
+    </button>
+
+    <div id="mensaje" class="mensaje"></div>
+
+  </div>
+
+</div>
+
+<script>
+
+async function reportarPago(){
+
+  const mensaje =
+    document.getElementById("mensaje");
+
+  mensaje.innerHTML = "";
+  mensaje.className = "mensaje";
+
+  const concepto =
+    document.getElementById("concepto").value;
+
+  const mes =
+    document.getElementById("mes").value;
+
+  const anio =
+    document.getElementById("anio").value;
+
+  const monto =
+    document.getElementById("monto").value;
+
+  const fecha =
+    document.getElementById("fecha").value;
+
+  const referencia =
+    document.getElementById("referencia").value;
+
+  const observaciones =
+    document.getElementById("observaciones").value;
+
+  if(
+    !concepto ||
+    !monto ||
+    !fecha
+  ){
+
+    mensaje.classList.add("error");
+
+    mensaje.innerHTML =
+      "Completa los campos obligatorios.";
+
+    return;
+  }
+
+  try{
+
+    // 🔹 sesión
+
+    const {
+      data: sessionData
+    } = await supabaseClient.auth.getSession();
+
+    const authUser =
+      sessionData?.session?.user;
+
+    if(!authUser){
+
+      mensaje.classList.add("error");
+
+      mensaje.innerHTML =
+        "Sesión no válida.";
+
+      return;
+    }
+
+    // 🔹 residente
+
+    const {
+      data: residente
+    } = await supabaseClient
+
+      .from("residentes")
+
+      .select("id")
+
+      .eq("user_id", authUser.id)
+
+      .maybeSingle();
+
+    if(!residente){
+
+      mensaje.classList.add("error");
+
+      mensaje.innerHTML =
+        "No se identificó residente.";
+
+      return;
+    }
+
+    // 🔹 insert
+
+    const {
+      error
+    } = await supabaseClient
+
+      .from("notificaciones_pago")
+
+      .insert({
+
+        residente_id:
+          residente.id,
+
+        concepto:
+          concepto,
+
+        periodo_mes:
+          mes || null,
+
+        periodo_anio:
+          anio || null,
+
+        monto:
+          monto,
+
+        fecha_transferencia:
+          fecha,
+
+        referencia:
+          referencia,
+
+        observaciones:
+          observaciones,
+
+        estatus:
+          "pendiente"
+      });
+
+    if(error){
+
+      console.error(error);
+
+      mensaje.classList.add("error");
+
+      mensaje.innerHTML =
+        "Error al reportar pago.";
+
+      return;
+    }
+
+    mensaje.classList.add("exito");
+
+    mensaje.innerHTML =
+      "Pago reportado correctamente.";
+
+    limpiarFormulario();
+
+  }catch(err){
+
+    console.error(err);
+
+    mensaje.classList.add("error");
+
+    mensaje.innerHTML =
+      "Ocurrió un error.";
+  }
+}
+
+function limpiarFormulario(){
+
+  document.getElementById("concepto").value = "";
+  document.getElementById("mes").value = "";
+  document.getElementById("anio").value = "2026";
+  document.getElementById("monto").value = "";
+  document.getElementById("fecha").value = "";
+  document.getElementById("referencia").value = "";
+  document.getElementById("observaciones").value = "";
+}
+
+</script>
+
+</body>
+</html>
