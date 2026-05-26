@@ -197,23 +197,29 @@ if(!residente){
 const userId = residente.id;
   const { data, error } = await supabaseClient
 
-    .from("avisos_destinatarios")
+  .from("avisos_destinatarios")
 
-    .select(`
+  .select(`
+    id,
+    leido,
+    fecha_lectura,
+    fecha_entrega,
+
+    aviso:avisos (
       id,
-      leido,
-      fecha_lectura,
-      fecha_entrega,
+      titulo,
+      mensaje,
+      tipo,
+      emisor_tipo,
+      fecha_creacion
+    )
+  `)
 
-      avisos(
-        id,
-        titulo,
-        mensaje,
-        tipo,
-        emisor_tipo,
-        fecha_creacion
-      )
-    `)
+  .eq("residente_id", userId)
+
+  .order("fecha_entrega", {
+    ascending:false
+  });
 
     .eq("residente_id", userId)
 
@@ -264,7 +270,7 @@ const userId = residente.id;
 
   for(const item of data){
 
-    const aviso = item.avisos;
+    const aviso = item.aviso;
 
     const div = document.createElement("div");
 
