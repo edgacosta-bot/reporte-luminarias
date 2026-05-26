@@ -9,6 +9,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
+<script src="modal.js"></script>  
 
 <script>
 protegerPagina([
@@ -303,7 +304,14 @@ async function cargar(){
 async function validarPago(id){
 
   const confirmar =
-    confirm("¿Validar este pago?");
+  await mostrarConfirmacion({
+
+    titulo:"Validar pago",
+
+    mensaje:
+      "¿Deseas validar este pago?"
+
+  });
 
   if(!confirmar) return;
 
@@ -328,7 +336,14 @@ async function validarPago(id){
 
       console.error(errorPago);
 
-      alert("No se pudo obtener el pago.");
+      await mostrarAlerta({
+
+  titulo:"Error",
+
+  mensaje:
+    "No se pudo obtener el pago."
+
+});
 
       return;
     }
@@ -356,7 +371,14 @@ async function validarPago(id){
 
       console.error(errorUpdate);
 
-      alert("Error al validar.");
+      await mostrarAlerta({
+
+  titulo:"Error",
+
+  mensaje:
+    "Ocurrió un error al validar."
+
+});
 
       return;
     }
@@ -407,14 +429,26 @@ async function validarPago(id){
 
       console.error(errorInsert);
 
-      alert(
-        "Pago validado pero NO se registró en pagos_residentes."
-      );
+      await mostrarAlerta({
+
+  titulo:"Error",
+
+  mensaje:
+    "El pago se validó pero no pudo registrarse oficialmente."
+
+});
 
       return;
     }
 
-    alert("Pago validado correctamente.");
+    await mostrarAlerta({
+
+  titulo:"Pago validado",
+
+  mensaje:
+    "El pago fue validado correctamente."
+
+});
 
     cargar();
 
@@ -422,7 +456,14 @@ async function validarPago(id){
 
     console.error(err);
 
-    alert("Ocurrió un error.");
+    await mostrarAlerta({
+
+  titulo:"Error",
+
+  mensaje:
+    "Ocurrió un error inesperado."
+
+});
   }
 }
 
