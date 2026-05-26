@@ -239,7 +239,14 @@ body {
 <!-- KPI -->
 
 <div class="kpis">
-  <div class="kpi">🚨 Reportes hoy <br><span id="kpiReportes">0</span></div>
+  <div class="kpi"
+     onclick="abrirReportes()"
+     style="cursor:pointer;">
+
+  🚨 Reportes hoy <br>
+  <span id="kpiReportes">0</span>
+
+</div>
   <div class="kpi"
      onclick="abrirPaquetes()"
      style="cursor:pointer;">
@@ -604,6 +611,20 @@ function abrirPaquetes() {
 
     window.location.href =
       "entrega_paquetes.html";
+  }
+}
+
+  function abrirReportes() {
+
+  if (rolActual === "administracion") {
+
+    window.location.href =
+      "admin_reporte_general.html";
+
+  } else if (rolActual === "vigilante") {
+
+    window.location.href =
+      "reportes_obras.html";
   }
 }
   
