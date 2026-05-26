@@ -307,31 +307,123 @@ async function validarPago(id){
 
   if(!confirmar) return;
 
-  const { error } =
-    await supabaseClient
+  try{
+
+    // 🔹 obtener datos del pago
+
+    const {
+      data: pago,
+      error: errorPago
+    } = await supabaseClient
+
+      .from("notificaciones_pago")
+
+      .select("*")
+
+      .eq("id", id)
+
+      .single();
+
+    if(errorPago || !pago){
+
+      console.error(errorPago);
+
+      alert("No se pudo obtener el pago.");
+
+      return;
+    }
+
+    // 🔹 actualizar notificación
+
+    const {
+      error: errorUpdate
+    } = await supabaseClient
 
       .from("notificaciones_pago")
 
       .update({
+
         estatus:"validado",
+
         fecha_validacion:
           new Date().toISOString()
+
       })
 
       .eq("id", id);
 
-  if(error){
+    if(errorUpdate){
 
-    console.error(error);
+      console.error(errorUpdate);
 
-    alert("Error al validar.");
+      alert("Error al validar.");
 
-    return;
+      return;
+    }
+
+    // 🔹 registrar pago oficial
+
+    const {
+      error: errorInsert
+    } = await supabaseClient
+
+      .from("pagos_residentes")
+
+      .insert({
+
+        residente_id:
+          pago.residente_id,
+
+        notificacion_pago_id:
+          pago.id,
+
+        concepto:
+          pago.concepto,
+
+        periodo_mes:
+          pago.periodo_mes,
+
+        periodo_anio:
+          pago.periodo_anio,
+
+        monto:
+          pago.monto,
+
+        fecha_pago:
+          pago.fecha_transferencia,
+
+        referencia:
+          pago.referencia,
+
+        observaciones:
+          pago.observaciones,
+
+        metodo_pago:
+          "transferencia"
+
+      });
+
+    if(errorInsert){
+
+      console.error(errorInsert);
+
+      alert(
+        "Pago validado pero NO se registró en pagos_residentes."
+      );
+
+      return;
+    }
+
+    alert("Pago validado correctamente.");
+
+    cargar();
+
+  }catch(err){
+
+    console.error(err);
+
+    alert("Ocurrió un error.");
   }
-
-  alert("Pago validado.");
-
-  cargar();
 }
 
 async function rechazarPago(id){
