@@ -156,27 +156,42 @@ if (tipoAccion === "entrada") {
 
   const dia = fechaMX.getDay();
 
-  const hora =
-    fechaMX.getHours()
-    +
-    (fechaMX.getMinutes() / 60);
-
   let fueraHorarioEntrada = false;
 
-  // 🚫 Domingo
-  if (dia === 0) {
-    fueraHorarioEntrada = true;
-  }
+ const minutosActuales =
+  (fechaMX.getHours() * 60)
+  +
+  fechaMX.getMinutes();
 
-  // 🚫 Lunes-viernes antes 8 AM
-  else if (dia >= 1 && dia <= 5 && hora < 8) {
-    fueraHorarioEntrada = true;
-  }
+// 🚫 Domingo
+if (dia === 0) {
+  fueraHorarioEntrada = true;
+}
 
-  // 🚫 Sábado antes 9 AM
-  else if (dia === 6 && hora < 9) {
-    fueraHorarioEntrada = true;
-  }
+// 🚫 Lunes a viernes
+else if (
+  dia >= 1 &&
+  dia <= 5 &&
+  (
+    minutosActuales < 470   // 07:50
+    ||
+    minutosActuales > 1050  // 17:30
+  )
+) {
+  fueraHorarioEntrada = true;
+}
+
+// 🚫 Sábado
+else if (
+  dia === 6 &&
+  (
+    minutosActuales < 530   // 08:50
+    ||
+    minutosActuales > 810   // 13:30
+  )
+) {
+  fueraHorarioEntrada = true;
+}
 
   if (fueraHorarioEntrada) {
 
@@ -199,7 +214,6 @@ estado.innerText =
 } 
 
 // 🔥 evaluar horario
-let horaMX = null;
 let fueraHorario = false;
   
 if (tipoAccion === "salida") {
@@ -213,26 +227,33 @@ if (tipoAccion === "salida") {
   );
 
   const dia = fechaMX.getDay();
-  const hora = fechaMX.getHours();
-  const minutos = fechaMX.getMinutes();
 
-  const horaActual = hora + (minutos / 60);
+const minutosActuales =
+  (fechaMX.getHours() * 60)
+  +
+  fechaMX.getMinutes();
 
-  
-  // 🔥 Domingo
-  if (dia === 0) {
-    fueraHorario = true;
-  }
+// 🔥 Domingo
+if (dia === 0) {
+  fueraHorario = true;
+}
 
-  // 🔥 Sábado → después de 2 p.m.
-  else if (dia === 6 && horaActual >= 14) {
-    fueraHorario = true;
-  }
+// 🔥 Sábado → reporte desde 14:11
+else if (
+  dia === 6 &&
+  minutosActuales >= 851
+) {
+  fueraHorario = true;
+}
 
-  // 🔥 Lunes a viernes → después de 6 p.m.
-  else if (dia >= 1 && dia <= 5 && horaActual >= 18) {
-    fueraHorario = true;
-  }
+// 🔥 Lunes a viernes → reporte desde 18:11
+else if (
+  dia >= 1 &&
+  dia <= 5 &&
+  minutosActuales >= 1091
+) {
+  fueraHorario = true;
+}
 
   if (fueraHorario) {
     document.body.className = "warn";
