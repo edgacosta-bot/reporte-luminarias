@@ -327,19 +327,40 @@ if (lotesAbiertos.has(llaveLote)) {
       const dia = ahora.getDay();
       const hora = ahora.getHours();
       const minutos = ahora.getMinutes();
-      const horaActual = hora + (minutos / 60);
+      
 
-      let fueraDeHorario = false;
+     const minutosActuales =
+  (hora * 60) + minutos;
 
-      if (dia === 0) fueraDeHorario = true;
+let fueraDeHorario = false;
 
-      if (dia === 6 && (horaActual < 9 || horaActual > 14)) {
-        fueraDeHorario = true;
-      }
+// Domingo
+if (dia === 0) {
+  fueraDeHorario = true;
+}
 
-      if (dia >= 1 && dia <= 5 && (horaActual < 8 || horaActual > 18)) {
-        fueraDeHorario = true;
-      }
+// Sábado
+if (
+  dia === 6 &&
+  (
+    minutosActuales < 530 ||   // 08:50
+    minutosActuales > 850      // 14:10
+  )
+) {
+  fueraDeHorario = true;
+}
+
+// Lunes a viernes
+if (
+  dia >= 1 &&
+  dia <= 5 &&
+  (
+    minutosActuales < 470 ||   // 07:50
+    minutosActuales > 1090     // 18:10
+  )
+) {
+  fueraDeHorario = true;
+}
 
       if (fueraDeHorario) {
         alerta = "🚨 Fuera de horario";
