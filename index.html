@@ -601,8 +601,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const vivienda = `${residente?.privada || ""}-${residente?.casa || ""}`;
 
-  document.getElementById("rolTexto").innerHTML =
-  `<strong>${vivienda}</strong> | ${rol.toUpperCase()}`;
+let descripcionRol = rol.toUpperCase();
+
+if (rol === "residente") {
+  descripcionRol =
+    esResidente === true
+      ? "RESIDENTE"
+      : "PROPIETARIO";
+}
+
+if (rol === "administracion") {
+  descripcionRol = "ADMINISTRACIÓN";
+}
+
+if (rol === "vigilante") {
+  descripcionRol = "VIGILANCIA";
+}
+
+document.getElementById("rolTexto").innerHTML =
+  `<strong>${vivienda}</strong> | ${descripcionRol}`;
 
   if (rol === "administracion") {
   document.getElementById("menuAdmin").style.display = "block";
