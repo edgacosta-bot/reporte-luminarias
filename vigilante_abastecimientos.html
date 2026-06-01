@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Control de Abastecimientos</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
+<style>
+
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+
+h2{
+  text-align:center;
+}
+
+.seccion{
+  margin-top:30px;
+}
+
+.card{
+  background:#111827;
+  border-left:6px solid #2563eb;
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:12px;
+}
+
+.card h3{
+  margin:0 0 8px 0;
+}
+
+.vacio{
+  color:#94a3b8;
+  text-align:center;
+  padding:20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🚧 Control de Abastecimientos</h2>
+
+<div class="seccion">
+
+<h3>Obras autorizadas</h3>
+
+<div id="listaObras">
+Cargando...
+</div>
+
+</div>
+
+<div class="seccion">
+
+<h3>Abastecimientos abiertos</h3>
+
+<div id="listaAbiertos">
+Cargando...
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+window.addEventListener("DOMContentLoaded", async ()=>{
+
+  await protegerPagina(["vigilante"]);
+
+  await cargarObras();
+
+  await cargarAbiertos();
+
+});
+
+async function cargarObras(){
+
+  const contenedor =
+    document.getElementById("listaObras");
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_obras_abastecimiento"
+    );
+
+  if(error){
+
+    contenedor.innerHTML =
+      "<div class='vacio'>Error cargando obras</div>";
+
+    console.log(error);
+    return;
+  }
+
+  if(!data || data.length===0){
+
+    contenedor.innerHTML =
+      "<div class='vacio'>Sin obras autorizadas</div>";
+
+    return;
+  }
+
+  let html="";
+
+  data.forEach(o=>{
+
+    html += `
+      <div class="card">
+
+        <h3>
+          Privada ${o.privada}
+          - Lote ${o.casa}
+        </h3>
+
+        <div>
+          DRO:
+          ${o.dro_nombre || "No especificado"}
+        </div>
+
+      </div>
+    `;
+
+  });
+
+  contenedor.innerHTML = html;
+}
+
+async function cargarAbiertos(){
+
+  const contenedor =
+    document.getElementById("listaAbiertos");
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_abastecimientos_abiertos"
+    );
+
+  if(error){
+
+    contenedor.innerHTML =
+      "<div class='vacio'>Error cargando abastecimientos</div>";
+
+    console.log(error);
+    return;
+  }
+
+  if(!data || data.length===0){
+
+    contenedor.innerHTML =
+      "<div class='vacio'>Sin abastecimientos abiertos</div>";
+
+    return;
+  }
+
+  let html="";
+
+  data.forEach(a=>{
+
+    html += `
+      <div class="card">
+
+        <h3>
+          ${a.tipo_ingreso}
+        </h3>
+
+        <div>
+          Proveedor:
+          ${a.proveedor}
+        </div>
+
+        <div>
+          Ingresó:
+          ${a.nombre_ingresa}
+        </div>
+
+        <div>
+          Descripción:
+          ${a.descripcion}
+        </div>
+
+        <div>
+          Ubicación:
+          Privada ${a.privada}
+          - Lote ${a.casa}
+        </div>
+
+      </div>
+    `;
+
+  });
+
+  contenedor.innerHTML = html;
+}
+
+</script>
+
+</body>
+</html>
