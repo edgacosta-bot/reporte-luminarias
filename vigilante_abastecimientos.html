@@ -81,6 +81,21 @@ input{
   margin-bottom:8px;
 }
 
+.btn{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:bold;
+  font-size:15px;
+}
+
+.entrada{
+  background:#16a34a;
+  color:white;
+}
+
 </style>
 
 </head>
@@ -142,13 +157,27 @@ async function cargarObras(){
     );
 
   if(error){
+
     console.log(error);
+
+    document.getElementById("obras").innerHTML =
+      "<div class='vacio'>Error cargando obras</div>";
+
     return;
   }
 
   obras = data || [];
 
   renderObras();
+
+}
+
+function mostrarFormulario(id){
+
+  alert(
+    "Próxima fase:\n\nFormulario de abastecimiento\n\nObra:\n" + id
+  );
+
 }
 
 function renderObras(){
@@ -186,6 +215,11 @@ function renderObras(){
 
   filtradas.forEach(o=>{
 
+    const abiertosObra =
+      abiertos.filter(
+        a => a.obra_id === o.obra_id
+      ).length;
+
     if(privadaActual !== o.privada){
 
       privadaActual = o.privada;
@@ -205,10 +239,38 @@ function renderObras(){
           Lote ${o.casa}
         </h3>
 
+        <div style="
+          margin-bottom:8px;
+          font-size:14px;
+          color:${
+            abiertosObra > 0
+              ? '#fbbf24'
+              : '#4ade80'
+          };
+        ">
+
+          ${
+            abiertosObra > 0
+              ? `🟠 ${abiertosObra} abastecimiento(s) abierto(s)`
+              : `🟢 Sin abastecimientos abiertos`
+          }
+
+        </div>
+
         <div>
           DRO:
           ${o.dro_nombre || "No especificado"}
         </div>
+
+        <br>
+
+        <button
+          class="btn entrada"
+          onclick="mostrarFormulario('${o.obra_id}')">
+
+          Registrar abastecimiento
+
+        </button>
 
       </div>
 
@@ -239,6 +301,8 @@ async function cargarAbiertos(){
   }
 
   abiertos = data || [];
+
+  renderObras();
 
   if(abiertos.length===0){
 
