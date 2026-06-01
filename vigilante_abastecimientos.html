@@ -287,15 +287,68 @@ async function registrarIngreso(obraId){
     return;
   }
 
-  msg.style.color = "#4ade80";
+  const tipoIngreso =
+  document.getElementById(
+    "tipo_" + obraId
+  ).value;
 
-  msg.innerHTML =
-    "NIP validado correctamente";
+const tipoMaquinaria =
+  document.getElementById(
+    "maquinaria_" + obraId
+  )?.value || null;
 
-  console.log(
-    "Vigilante:",
-    data[0].id
-  );
+const proveedor =
+  document.getElementById(
+    "proveedor_" + obraId
+  ).value.trim();
+
+const nombre =
+  document.getElementById(
+    "nombre_" + obraId
+  ).value.trim();
+
+const descripcion =
+  document.getElementById(
+    "descripcion_" + obraId
+  ).value.trim();
+
+const placas =
+  document.getElementById(
+    "placas_" + obraId
+  ).value.trim();
+
+const observaciones =
+  document.getElementById(
+    "observaciones_" + obraId
+  ).value.trim();
+
+msg.style.color = "#4ade80";
+
+msg.innerHTML =
+  "NIP validado correctamente";
+
+console.log({
+
+  obraId,
+
+  vigilanteId:
+    data[0].id,
+
+  tipoIngreso,
+
+  tipoMaquinaria,
+
+  proveedor,
+
+  nombre,
+
+  descripcion,
+
+  placas,
+
+  observaciones
+
+});
 
 }
 
