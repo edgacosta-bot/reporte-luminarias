@@ -136,6 +136,8 @@ input{
 let obras = [];
 let abiertos = [];
 
+let obraExpandida = null;
+
 window.addEventListener(
   "DOMContentLoaded",
   async ()=>{
@@ -174,9 +176,17 @@ async function cargarObras(){
 
 function mostrarFormulario(id){
 
-  alert(
-    "Próxima fase:\n\nFormulario de abastecimiento\n\nObra:\n" + id
-  );
+  if(obraExpandida === id){
+
+    obraExpandida = null;
+
+  }else{
+
+    obraExpandida = id;
+
+  }
+
+  renderObras();
 
 }
 
@@ -262,15 +272,53 @@ function renderObras(){
           ${o.dro_nombre || "No especificado"}
         </div>
 
-        <br>
+       <br>
 
-        <button
-          class="btn entrada"
-          onclick="mostrarFormulario('${o.obra_id}')">
+<button
+  class="btn entrada"
+  onclick="mostrarFormulario('${o.obra_id}')">
 
-          Registrar abastecimiento
+  Registrar abastecimiento
 
-        </button>
+</button>
+
+${
+  obraExpandida === o.obra_id
+  ? `
+
+    <div style="
+      margin-top:16px;
+      padding-top:16px;
+      border-top:1px solid #374151;
+    ">
+
+      <div style="margin-bottom:10px;">
+        🚧 Formulario en construcción
+      </div>
+
+      <input
+        placeholder="Proveedor">
+
+      <br><br>
+
+      <input
+        placeholder="Nombre quien ingresa">
+
+      <br><br>
+
+      <input
+        placeholder="Descripción">
+
+      <br><br>
+
+      <input
+        placeholder="NIP vigilante">
+
+    </div>
+
+  `
+  : ''
+}
 
       </div>
 
