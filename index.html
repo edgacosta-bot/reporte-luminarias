@@ -281,6 +281,17 @@ body {
   <span id="kpiTrabajadores">0</span>
 
 </div>
+
+ <div class="kpi"
+     onclick="window.location.href='admin_abastecimientos_obra.html'"
+     style="cursor:pointer;">
+
+  🚚 Abastecimientos de obra <br>
+
+  <span id="kpiAbastecimientos">0</span>
+
+</div> 
+  
 </div>
 
 <!-- ADMIN (INTACTO) -->
@@ -780,6 +791,28 @@ if (rolActual === "vigilante") {
     .is("fecha_hora_salida", null);
 
   document.getElementById("kpiTrabajadores").innerText = trabajadores?.length || 0;
+
+  const { data: abastecimientos } =
+  await supabaseClient.rpc(
+    "obtener_reporte_abastecimientos"
+  );
+
+const abiertos =
+  abastecimientos?.filter(
+    a => a.estatus === "DENTRO"
+  ).length || 0;
+
+const kpiAbastecimientos =
+  document.getElementById(
+    "kpiAbastecimientos"
+  );
+
+if(kpiAbastecimientos){
+
+  kpiAbastecimientos.innerText =
+    abiertos;
+
+}  
 
   // 📦 PAQUETES
   const { data: paquetes } = await supabaseClient
