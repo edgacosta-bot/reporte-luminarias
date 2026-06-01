@@ -256,6 +256,38 @@ button{
 
 let abastecimientos = [];
 
+async function cargar(){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_reporte_abastecimientos"
+    );
+
+  if(error){
+
+    console.log(error);
+
+    return;
+  }
+
+  abastecimientos = data || [];
+
+  const dentro =
+    abastecimientos.filter(
+      a => a.estatus === "DENTRO"
+    ).length;
+
+  document.getElementById(
+    "kpiDentro"
+  ).innerText = dentro;
+
+  console.log(
+    "Abastecimientos:",
+    abastecimientos.length
+  );
+
+}  
+
 window.addEventListener(
   "DOMContentLoaded",
   async ()=>{
@@ -264,6 +296,8 @@ window.addEventListener(
       "admin",
       "administracion"
     ]);
+
+    await cargar();
 
   }
 );
