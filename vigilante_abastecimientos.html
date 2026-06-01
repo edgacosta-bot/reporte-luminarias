@@ -374,13 +374,17 @@ if(errorRegistro){
 msg.style.color = "#4ade80";
 
 msg.innerHTML =
-  "Abastecimiento registrado correctamente";
+  "✅ Abastecimiento registrado correctamente";
 
-obraExpandida = null;
+setTimeout(async () => {
 
-await cargarAbiertos();
+  obraExpandida = null;
 
-await cargarObras();
+  await cargarAbiertos();
+
+  await cargarObras();
+
+}, 2000);
 
 }
 
