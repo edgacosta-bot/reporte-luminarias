@@ -203,7 +203,9 @@ button{
     Estado
   </div>
 
-  <select id="filtroEstado">
+  <select
+  id="filtroEstado"
+  onchange="renderizar()">
 
     <option value="">
       Todos
@@ -277,9 +279,25 @@ async function cargar(){
       "lista"
     );
 
+  let registros = [...abastecimientos];
+
+const estado =
+  document.getElementById(
+    "filtroEstado"
+  ).value;
+
+if(estado){
+
+  registros =
+    registros.filter(
+      r => r.estatus === estado
+    );
+
+}
+    
   if(
-    abastecimientos.length === 0
-  ){
+  registros.length === 0
+){
 
     lista.innerHTML =
       "<div class='card'>Sin resultados</div>";
@@ -289,7 +307,7 @@ async function cargar(){
 
   let html = "";
 
-  abastecimientos.forEach(a=>{
+  registros.forEach(a=>{
 
     html += `
 
