@@ -144,7 +144,9 @@ textarea{
 
 <br>
 
-<h2>🚚 Abastecimientos Abiertos</h2>
+<h2 id="tituloAbiertos">
+🚚 Abastecimientos Abiertos
+</h2>
 
 <div id="abiertos">
   Cargando...
@@ -793,6 +795,11 @@ async function cargarAbiertos(){
 
   abiertos = data || [];
 
+  document.getElementById(
+  "tituloAbiertos"
+).innerHTML =
+  `🚚 Abastecimientos Abiertos (${abiertos.length})`;
+
   renderObras();
 
   if(abiertos.length===0){
@@ -814,6 +821,17 @@ async function cargarAbiertos(){
         <div class="tipo">
           ${a.tipo_ingreso}
         </div>
+
+        ${
+  a.tipo_maquinaria
+  ? `
+      <div style="margin-bottom:8px;">
+        <b>Tipo maquinaria:</b>
+        ${a.tipo_maquinaria}
+      </div>
+    `
+  : ''
+}
 
         <div>
           <b>Proveedor:</b>
