@@ -322,33 +322,65 @@ const observaciones =
     "observaciones_" + obraId
   ).value.trim();
 
+const { error: errorRegistro } =
+  await supabaseClient.rpc(
+    "registrar_entrada_abastecimiento",
+    {
+
+      p_obra_id:
+        obraId,
+
+      p_tipo_ingreso:
+        tipoIngreso,
+
+      p_tipo_maquinaria_id:
+        tipoIngreso === "MAQUINARIA"
+          ? Number(tipoMaquinaria)
+          : null,
+
+      p_proveedor:
+        proveedor,
+
+      p_nombre_ingresa:
+        nombre,
+
+      p_descripcion:
+        descripcion,
+
+      p_placas:
+        placas,
+
+      p_observaciones:
+        observaciones,
+
+      p_vigilante_id:
+        data[0].id
+
+    }
+  );
+
+if(errorRegistro){
+
+  console.log(errorRegistro);
+
+  msg.style.color = "#f87171";
+
+  msg.innerHTML =
+    errorRegistro.message;
+
+  return;
+}
+
 msg.style.color = "#4ade80";
 
 msg.innerHTML =
-  "NIP validado correctamente";
+  "Abastecimiento registrado correctamente";
 
-console.log({
+obraExpandida = null;
 
-  obraId,
+await cargarAbiertos();
 
-  vigilanteId:
-    data[0].id,
-
-  tipoIngreso,
-
-  tipoMaquinaria,
-
-  proveedor,
-
-  nombre,
-
-  descripcion,
-
-  placas,
-
-  observaciones
-
-});
+await cargarObras();
 
 }
 
