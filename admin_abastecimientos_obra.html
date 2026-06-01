@@ -121,7 +121,7 @@ button{
 
 <div class="kpi">
 
-  🟠 Actualmente dentro
+  🚚 Actualmente dentro
 
   <br><br>
 
@@ -276,7 +276,24 @@ button{
 
 let abastecimientos = [];
 
-let obrasFiltro = [];  
+let obrasFiltro = []; 
+
+function formatearHoras(horas){
+
+  const horasEnteras =
+    Math.floor(horas);
+
+  const minutos =
+    Math.round(
+      (horas - horasEnteras) * 60
+    );
+
+  return `
+    ${horasEnteras} h
+    ${minutos} min
+  `;
+
+}  
 
 function renderizar(){
 
@@ -520,9 +537,11 @@ registros.sort((a,b)=>{
 
         <div>
 
-          <b>Horas:</b>
+          <b>Tiempo dentro:</b>
 
-          ${a.horas_dentro}
+          ${formatearHoras(
+          a.horas_dentro
+            )}
 
         </div>
 
