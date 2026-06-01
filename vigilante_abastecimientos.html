@@ -232,6 +232,77 @@ function mostrarSalida(accesoId){
 
 }  
 
+async function confirmarSalida(accesoId){
+
+  const pin =
+    document.getElementById(
+      "pin_salida_" + accesoId
+    ).value.trim();
+
+  const msg =
+    document.getElementById(
+      "msg_salida_" + accesoId
+    );
+
+  msg.innerHTML = "";
+
+  if(pin === ""){
+
+    msg.style.color = "#f87171";
+
+    msg.innerHTML =
+      "Debe capturar el NIP";
+
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "validar_pin_vigilante",
+      {
+        pin_input: pin
+      }
+    );
+
+  if(error){
+
+    console.log(error);
+
+    msg.style.color = "#f87171";
+
+    msg.innerHTML =
+      "Error validando NIP";
+
+    return;
+  }
+
+  if(!data || data.length === 0){
+
+    msg.style.color = "#f87171";
+
+    msg.innerHTML =
+      "NIP incorrecto";
+
+    return;
+  }
+
+  console.log(
+    "Salida acceso:",
+    accesoId
+  );
+
+  console.log(
+    "Vigilante:",
+    data[0].id
+  );
+
+  msg.style.color = "#4ade80";
+
+  msg.innerHTML =
+    "NIP validado correctamente";
+
+}  
+
 function cambiarTipoIngreso(obraId){
 
   const tipo =
@@ -750,11 +821,18 @@ ${
     <br><br>
 
     <button
-      class="btn entrada">
+  class="btn entrada"
+  onclick="confirmarSalida('${a.acceso_id}')">
 
-      Confirmar salida
+  ✅ Confirmar salida
 
-    </button>
+</button>
+
+<div
+  id="msg_salida_${a.acceso_id}"
+  class="vacio"
+  style="margin-top:10px;">
+</div>
   `
   : ''
 }
