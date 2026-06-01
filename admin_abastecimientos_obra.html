@@ -258,21 +258,7 @@ button{
 
 let abastecimientos = [];
 
-async function cargar(){
-
-  const { data, error } =
-    await supabaseClient.rpc(
-      "obtener_reporte_abastecimientos"
-    );
-
-  if(error){
-
-    console.log(error);
-
-    return;
-  }
-
-  function renderizar(){
+function renderizar(){
 
   const lista =
     document.getElementById(
@@ -414,6 +400,22 @@ if(estado){
   lista.innerHTML = html;
 
 }
+  
+async function cargar(){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_reporte_abastecimientos"
+    );
+
+  if(error){
+
+    console.log(error);
+
+    return;
+  }
+
+  
 
   abastecimientos = data || [];
 
