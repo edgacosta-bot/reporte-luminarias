@@ -286,20 +286,58 @@ async function confirmarSalida(accesoId){
     return;
   }
 
-  console.log(
-    "Salida acceso:",
-    accesoId
+  const { data: salidaData, error: salidaError } =
+  await supabaseClient.rpc(
+    "registrar_salida_abastecimiento",
+    {
+      p_acceso_id:
+        accesoId,
+
+      p_vigilante_id:
+        data[0].id
+    }
   );
 
-  console.log(
-    "Vigilante:",
-    data[0].id
-  );
+if(salidaError){
 
-  msg.style.color = "#4ade80";
+  console.log(salidaError);
+
+  msg.style.color = "#f87171";
 
   msg.innerHTML =
-    "NIP validado correctamente";
+    "Error registrando salida";
+
+  return;
+}
+
+if(
+  !salidaData ||
+  salidaData.length === 0 ||
+  !salidaData[0].actualizado
+){
+
+  msg.style.color = "#f87171";
+
+  msg.innerHTML =
+    "El abastecimiento ya fue cerrado";
+
+  return;
+}
+
+msg.style.color = "#4ade80";
+
+msg.innerHTML =
+  "✅ Salida registrada correctamente";
+
+setTimeout(async ()=>{
+
+  salidaExpandida = null;
+
+  await cargarAbiertos();
+
+  await cargarObras();
+
+}, 2000);
 
 }  
 
