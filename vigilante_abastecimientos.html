@@ -159,6 +159,8 @@ let abiertos = [];
 
 let obraExpandida = null;
 
+let salidaExpandida = null;
+
 let tiposMaquinaria = [];
 
 window.addEventListener(
@@ -213,6 +215,22 @@ function mostrarFormulario(id){
   renderObras();
 
 }
+
+function mostrarSalida(accesoId){
+
+  if(salidaExpandida === accesoId){
+
+    salidaExpandida = null;
+
+  }else{
+
+    salidaExpandida = accesoId;
+
+  }
+
+  cargarAbiertos();
+
+}  
 
 function cambiarTipoIngreso(obraId){
 
@@ -708,6 +726,38 @@ async function cargarAbiertos(){
           Privada ${a.privada}
           - Lote ${a.casa}
         </div>
+
+        <br>
+
+<button
+  class="btn entrada"
+  onclick="mostrarSalida('${a.acceso_id}')">
+
+  Registrar salida
+
+</button>
+
+${
+  salidaExpandida === a.acceso_id
+  ? `
+    <br><br>
+
+    <input
+      id="pin_salida_${a.acceso_id}"
+      type="password"
+      placeholder="NIP vigilante">
+
+    <br><br>
+
+    <button
+      class="btn entrada">
+
+      Confirmar salida
+
+    </button>
+  `
+  : ''
+}
 
       </div>
 
