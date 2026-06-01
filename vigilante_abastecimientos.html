@@ -233,6 +233,15 @@ function cambiarTipoIngreso(obraId){
 
 }  
 
+ async function registrarIngreso(obraId){
+
+  console.log(
+    "Registrar ingreso:",
+    obraId
+  );
+
+} 
+
 function renderObras(){
 
   const contenedor =
@@ -468,7 +477,8 @@ ${
 </div>
 
 <button
-  class="btn entrada">
+  class="btn entrada"
+  onclick="registrarIngreso('${o.obra_id}')">
 
   Registrar ingreso
 
