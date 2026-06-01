@@ -159,7 +159,7 @@ button{
 
   <select
   id="filtroPrivada"
-  onchange="renderizar()">
+  onchange="actualizarLotes()">
     <option value="">
       Todas
     </option>
@@ -171,7 +171,10 @@ button{
     Lote
   </div>
 
-  <select id="filtroCasa">
+  <select
+  id="filtroCasa"
+  onchange="renderizar()">
+    
     <option value="">
       Todos
     </option>
@@ -281,6 +284,11 @@ const privada =
     "filtroPrivada"
   ).value;  
 
+const casa =
+  document.getElementById(
+    "filtroCasa"
+  ).value;  
+
 if(estado){
 
   registros =
@@ -295,6 +303,15 @@ if(privada){
   registros =
     registros.filter(
       r => r.privada === privada
+    );
+
+}  
+
+if(casa){
+
+  registros =
+    registros.filter(
+      r => r.casa === casa
     );
 
 }  
@@ -493,7 +510,52 @@ async function cargarFiltros(){
 
   });
 
+  actualizarLotes();
+
 }
+
+function actualizarLotes(){
+
+  const privada =
+    document.getElementById(
+      "filtroPrivada"
+    ).value;
+
+  const loteSelect =
+    document.getElementById(
+      "filtroCasa"
+    );
+
+  loteSelect.innerHTML = `
+    <option value="">
+      Todos
+    </option>
+  `;
+
+  let lotes = obrasFiltro;
+
+  if(privada){
+
+    lotes =
+      obrasFiltro.filter(
+        o => o.privada === privada
+      );
+
+  }
+
+  lotes.forEach(l=>{
+
+    loteSelect.innerHTML += `
+      <option value="${l.casa}">
+        ${l.casa}
+      </option>
+    `;
+
+  });
+
+  renderizar();
+
+}  
   
 window.addEventListener(
   "DOMContentLoaded",
