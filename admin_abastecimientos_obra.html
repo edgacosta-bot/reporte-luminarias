@@ -235,8 +235,9 @@ button{
   </div>
 
   <input
-    type="date"
-    id="inicio">
+  type="date"
+  id="inicio"
+  onchange="renderizar()">
 
   <br><br>
 
@@ -245,8 +246,9 @@ button{
   </div>
 
   <input
-    type="date"
-    id="fin">
+  type="date"
+  id="fin"
+  onchange="renderizar()">
 
   <br><br>
 
@@ -296,6 +298,16 @@ const tipo =
     "filtroTipo"
   ).value;  
 
+const fechaInicio =
+  document.getElementById(
+    "inicio"
+  ).value;
+
+const fechaFin =
+  document.getElementById(
+    "fin"
+  ).value;  
+
 if(estado){
 
   registros =
@@ -328,6 +340,38 @@ if(tipo){
   registros =
     registros.filter(
       r => r.tipo_ingreso === tipo
+    );
+
+}  
+
+if(fechaInicio){
+
+  const inicioUTC =
+    fechaInicioUTC(
+      fechaInicio
+    );
+
+  registros =
+    registros.filter(
+      r =>
+        r.fecha_hora_entrada >=
+        inicioUTC
+    );
+
+}
+
+if(fechaFin){
+
+  const finUTC =
+    fechaFinUTC(
+      fechaFin
+    );
+
+  registros =
+    registros.filter(
+      r =>
+        r.fecha_hora_entrada <=
+        finUTC
     );
 
 }  
