@@ -186,7 +186,9 @@ button{
     Tipo
   </div>
 
-  <select id="filtroTipo">
+  <select
+  id="filtroTipo"
+  onchange="renderizar()">
 
     <option value="">
       Todos
@@ -289,6 +291,11 @@ const casa =
     "filtroCasa"
   ).value;  
 
+const tipo =
+  document.getElementById(
+    "filtroTipo"
+  ).value;  
+
 if(estado){
 
   registros =
@@ -312,6 +319,15 @@ if(casa){
   registros =
     registros.filter(
       r => r.casa === casa
+    );
+
+}  
+
+if(tipo){
+
+  registros =
+    registros.filter(
+      r => r.tipo_ingreso === tipo
     );
 
 }  
