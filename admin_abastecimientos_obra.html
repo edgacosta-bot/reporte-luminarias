@@ -649,6 +649,47 @@ casasUnicas.forEach(casa=>{
   renderizar();
 
 }  
+
+function rangoRapido(dias){
+
+  const hoy = new Date();
+
+  const fechaFin =
+    hoy.toISOString()
+       .split("T")[0];
+
+  let fechaInicio;
+
+  if(dias === 0){
+
+    fechaInicio = fechaFin;
+
+  }else{
+
+    const inicio =
+      new Date();
+
+    inicio.setDate(
+      inicio.getDate() - dias
+    );
+
+    fechaInicio =
+      inicio.toISOString()
+            .split("T")[0];
+
+  }
+
+  document.getElementById(
+    "inicio"
+  ).value = fechaInicio;
+
+  document.getElementById(
+    "fin"
+  ).value = fechaFin;
+
+  renderizar();
+
+}
   
 window.addEventListener(
   "DOMContentLoaded",
