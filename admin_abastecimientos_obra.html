@@ -270,6 +270,133 @@ async function cargar(){
     return;
   }
 
+  function renderizar(){
+
+  const lista =
+    document.getElementById(
+      "lista"
+    );
+
+  if(
+    abastecimientos.length === 0
+  ){
+
+    lista.innerHTML =
+      "<div class='card'>Sin resultados</div>";
+
+    return;
+  }
+
+  let html = "";
+
+  abastecimientos.forEach(a=>{
+
+    html += `
+
+      <div class="card">
+
+        <h3>
+          PRIVADA ${a.privada}
+          - LOTE ${a.casa}
+        </h3>
+
+        <div>
+
+          <b>
+            ${a.tipo_ingreso}
+          </b>
+
+        </div>
+
+        ${
+          a.tipo_maquinaria
+          ? `
+            <div>
+              <b>Tipo maquinaria:</b>
+              ${a.tipo_maquinaria}
+            </div>
+          `
+          : ''
+        }
+
+        <div>
+          <b>Proveedor:</b>
+          ${a.proveedor}
+        </div>
+
+        <div>
+          <b>Ingresó:</b>
+          ${a.nombre_ingresa}
+        </div>
+
+        <div>
+          <b>Descripción:</b>
+          ${a.descripcion}
+        </div>
+
+        ${
+          a.placas
+          ? `
+            <div>
+              <b>Placas:</b>
+              ${a.placas}
+            </div>
+          `
+          : ''
+        }
+
+        <div>
+          <b>Entrada:</b>
+          ${formatMXDate(
+            a.fecha_hora_entrada
+          )}
+        </div>
+
+        ${
+          a.fecha_hora_salida
+          ? `
+            <div>
+              <b>Salida:</b>
+              ${formatMXDate(
+                a.fecha_hora_salida
+              )}
+            </div>
+          `
+          : ''
+        }
+
+        <div class="${
+          a.estatus === 'DENTRO'
+            ? 'dentro'
+            : 'salio'
+        }">
+
+          ${
+            a.estatus === 'DENTRO'
+            ? '🟠 DENTRO'
+            : '✅ SALIÓ'
+          }
+
+        </div>
+
+        <div>
+
+          <b>Horas:</b>
+
+          ${a.horas_dentro}
+
+        </div>
+
+      </div>
+
+    `;
+
+  });
+
+  lista.innerHTML = html;
+
+}
+
   abastecimientos = data || [];
 
   const dentro =
@@ -280,6 +407,8 @@ async function cargar(){
   document.getElementById(
     "kpiDentro"
   ).innerText = dentro;
+
+  renderizar();
 
   console.log(
     "Abastecimientos:",
