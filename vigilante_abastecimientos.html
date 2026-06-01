@@ -214,6 +214,25 @@ function mostrarFormulario(id){
 
 }
 
+function cambiarTipoIngreso(obraId){
+
+  const tipo =
+    document.getElementById(
+      "tipo_" + obraId
+    ).value;
+
+  const contenedor =
+    document.getElementById(
+      "contenedor_maquinaria_" + obraId
+    );
+
+  contenedor.style.display =
+    tipo === "MAQUINARIA"
+      ? "block"
+      : "none";
+
+}  
+
 function renderObras(){
 
   const contenedor =
@@ -316,27 +335,144 @@ ${
       border-top:1px solid #374151;
     ">
 
-      <div style="margin-bottom:10px;">
-        🚧 Formulario en construcción
-      </div>
+     <div style="margin-bottom:12px;">
 
-      <input
-        placeholder="Proveedor">
+  <label>
+    Tipo ingreso *
+  </label>
 
-      <br><br>
+  <select
+    id="tipo_${o.obra_id}"
+    onchange="cambiarTipoIngreso('${o.obra_id}')">
 
-      <input
-        placeholder="Nombre quien ingresa">
+    <option value="">
+      Seleccione...
+    </option>
 
-      <br><br>
+    <option value="SUMINISTRO">
+      SUMINISTRO
+    </option>
 
-      <input
-        placeholder="Descripción">
+    <option value="MAQUINARIA">
+      MAQUINARIA
+    </option>
 
-      <br><br>
+  </select>
 
-      <input
-        placeholder="NIP vigilante">
+</div>
+
+<div
+  id="contenedor_maquinaria_${o.obra_id}"
+  style="display:none; margin-bottom:12px;">
+
+  <label>
+    Tipo maquinaria *
+  </label>
+
+  <select
+    id="maquinaria_${o.obra_id}">
+
+    <option value="">
+      Seleccione...
+    </option>
+
+    ${
+      tiposMaquinaria.map(m => `
+        <option value="${m.id}">
+          ${m.nombre}
+        </option>
+      `).join('')
+    }
+
+  </select>
+
+</div>
+
+<div style="margin-bottom:12px;">
+
+  <label>
+    Proveedor *
+  </label>
+
+  <input
+    id="proveedor_${o.obra_id}"
+    placeholder="Proveedor">
+
+</div>
+
+<div style="margin-bottom:12px;">
+
+  <label>
+    Nombre quien ingresa *
+  </label>
+
+  <input
+    id="nombre_${o.obra_id}"
+    placeholder="Nombre completo">
+
+</div>
+
+<div style="margin-bottom:12px;">
+
+  <label>
+    Descripción *
+  </label>
+
+  <textarea
+    id="descripcion_${o.obra_id}"
+    placeholder="Descripción"></textarea>
+
+</div>
+
+<div style="margin-bottom:12px;">
+
+  <label>
+    Placas
+  </label>
+
+  <input
+    id="placas_${o.obra_id}"
+    placeholder="Placas">
+
+</div>
+
+<div style="margin-bottom:12px;">
+
+  <label>
+    Observaciones
+  </label>
+
+  <textarea
+    id="observaciones_${o.obra_id}"
+    placeholder="Observaciones"></textarea>
+
+</div>
+
+<div style="margin-bottom:12px;">
+
+  <label>
+    NIP vigilante *
+  </label>
+
+  <input
+    id="pin_${o.obra_id}"
+    type="password"
+    placeholder="NIP">
+
+</div>
+
+<div
+  id="msg_${o.obra_id}"
+  class="vacio"
+  style="margin-bottom:12px;">
+</div>
+
+<button
+  class="btn entrada">
+
+  Registrar ingreso
+
+</button>
 
     </div>
 
