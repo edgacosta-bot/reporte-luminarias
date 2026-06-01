@@ -315,6 +315,32 @@ if(casa){
     );
 
 }  
+
+registros.sort((a,b)=>{
+
+  if(
+    a.estatus === "DENTRO"
+    &&
+    b.estatus !== "DENTRO"
+  ){
+    return -1;
+  }
+
+  if(
+    a.estatus !== "DENTRO"
+    &&
+    b.estatus === "DENTRO"
+  ){
+    return 1;
+  }
+
+  return (
+    new Date(b.fecha_hora_entrada)
+    -
+    new Date(a.fecha_hora_entrada)
+  );
+
+});  
     
   if(
   registros.length === 0
@@ -543,15 +569,22 @@ function actualizarLotes(){
 
   }
 
-  lotes.forEach(l=>{
+  const casasUnicas =
+  [...new Set(
+    lotes.map(
+      l => l.casa
+    )
+  )];
 
-    loteSelect.innerHTML += `
-      <option value="${l.casa}">
-        ${l.casa}
-      </option>
-    `;
+casasUnicas.forEach(casa=>{
 
-  });
+  loteSelect.innerHTML += `
+    <option value="${casa}">
+      ${casa}
+    </option>
+  `;
+
+});
 
   renderizar();
 
