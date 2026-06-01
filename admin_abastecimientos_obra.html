@@ -258,6 +258,15 @@ button{
 
 </div>
 
+<div
+  id="contadorResultados"
+  style="
+    margin-bottom:15px;
+    color:#93c5fd;
+    font-weight:bold;
+  ">
+</div>
+  
 <div id="lista">
 </div>
 
@@ -401,7 +410,12 @@ registros.sort((a,b)=>{
   );
 
 });  
-    
+
+  document.getElementById(
+  "contadorResultados"
+).innerHTML =
+  `🧾 Mostrando ${registros.length} abastecimiento(s)`;
+  
   if(
   registros.length === 0
 ){
