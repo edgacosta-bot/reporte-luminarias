@@ -19,36 +19,66 @@ body{
   color:white;
 }
 
+.header-app{
+  display:flex;
+  justify-content:center;
+  margin-top:20px;
+}
+
+.logo-app{
+  width:80px;
+}
+
 .container{
   max-width:700px;
   margin:auto;
-  padding:20px;
+  padding:18px;
 }
 
 h2{
   text-align:center;
 }
 
-.seccion{
-  margin-top:30px;
+input{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  font-size:15px;
+  background:#1f2937;
+  color:white;
+  box-sizing:border-box;
 }
 
 .card{
   background:#111827;
-  border-left:6px solid #2563eb;
-  border-radius:16px;
-  padding:16px;
+  padding:18px;
+  border-radius:18px;
   margin-bottom:12px;
+  border-left:6px solid #3b82f6;
 }
 
 .card h3{
   margin:0 0 8px 0;
 }
 
+.privada{
+  margin-top:25px;
+  margin-bottom:12px;
+  font-size:18px;
+  font-weight:bold;
+  color:#93c5fd;
+}
+
 .vacio{
-  color:#94a3b8;
   text-align:center;
-  padding:20px;
+  color:#94a3b8;
+  margin-top:20px;
+}
+
+.tipo{
+  font-weight:bold;
+  margin-bottom:8px;
 }
 
 </style>
@@ -57,48 +87,54 @@ h2{
 
 <body>
 
+<div class="header-app">
+  <img src="/icono-512.png" class="logo-app">
+</div>
+
 <div class="container">
 
 <h2>🚧 Control de Abastecimientos</h2>
 
-<div class="seccion">
+<input
+  id="buscar"
+  placeholder="Buscar privada o lote..."
+  oninput="renderObras()">
 
-<h3>Obras autorizadas</h3>
+<br><br>
 
-<div id="listaObras">
-Cargando...
+<div id="obras">
+  Cargando obras...
 </div>
 
-</div>
+<br>
 
-<div class="seccion">
+<h2>🚚 Abastecimientos Abiertos</h2>
 
-<h3>Abastecimientos abiertos</h3>
-
-<div id="listaAbiertos">
-Cargando...
-</div>
-
+<div id="abiertos">
+  Cargando...
 </div>
 
 </div>
 
 <script>
 
-window.addEventListener("DOMContentLoaded", async ()=>{
+let obras = [];
+let abiertos = [];
 
-  await protegerPagina(["vigilante"]);
+window.addEventListener(
+  "DOMContentLoaded",
+  async ()=>{
 
-  await cargarObras();
+    await protegerPagina(["vigilante"]);
 
-  await cargarAbiertos();
+    await cargarObras();
 
-});
+    await cargarAbiertos();
+
+  }
+);
 
 async function cargarObras(){
-
-  const contenedor =
-    document.getElementById("listaObras");
 
   const { data, error } =
     await supabaseClient.rpc(
@@ -106,32 +142,67 @@ async function cargarObras(){
     );
 
   if(error){
-
-    contenedor.innerHTML =
-      "<div class='vacio'>Error cargando obras</div>";
-
     console.log(error);
     return;
   }
 
-  if(!data || data.length===0){
+  obras = data || [];
+
+  renderObras();
+}
+
+function renderObras(){
+
+  const contenedor =
+    document.getElementById("obras");
+
+  const filtro =
+    document
+      .getElementById("buscar")
+      .value
+      .trim()
+      .toLowerCase();
+
+  const filtradas =
+    obras.filter(o =>
+
+      o.privada.toLowerCase().includes(filtro)
+      ||
+      o.casa.toLowerCase().includes(filtro)
+
+    );
+
+  if(filtradas.length===0){
 
     contenedor.innerHTML =
-      "<div class='vacio'>Sin obras autorizadas</div>";
+      "<div class='vacio'>Sin resultados</div>";
 
     return;
   }
 
-  let html="";
+  let html = "";
 
-  data.forEach(o=>{
+  let privadaActual = null;
+
+  filtradas.forEach(o=>{
+
+    if(privadaActual !== o.privada){
+
+      privadaActual = o.privada;
+
+      html += `
+        <div class="privada">
+          PRIVADA ${o.privada}
+        </div>
+      `;
+    }
 
     html += `
+
       <div class="card">
 
         <h3>
-          Privada ${o.privada}
-          - Lote ${o.casa}
+          Lote ${o.casa}
         </h3>
 
         <div>
@@ -140,8 +211,8 @@ async function cargarObras(){
         </div>
 
       </div>
-    `;
 
+    `;
   });
 
   contenedor.innerHTML = html;
@@ -149,24 +220,27 @@ async function cargarObras(){
 
 async function cargarAbiertos(){
 
-  const contenedor =
-    document.getElementById("listaAbiertos");
-
   const { data, error } =
     await supabaseClient.rpc(
       "obtener_abastecimientos_abiertos"
     );
 
+  const contenedor =
+    document.getElementById("abiertos");
+
   if(error){
 
     contenedor.innerHTML =
-      "<div class='vacio'>Error cargando abastecimientos</div>";
+      "<div class='vacio'>Error cargando datos</div>";
 
     console.log(error);
+
     return;
   }
 
-  if(!data || data.length===0){
+  abiertos = data || [];
+
+  if(abiertos.length===0){
 
     contenedor.innerHTML =
       "<div class='vacio'>Sin abastecimientos abiertos</div>";
@@ -174,41 +248,42 @@ async function cargarAbiertos(){
     return;
   }
 
-  let html="";
+  let html = "";
 
-  data.forEach(a=>{
+  abiertos.forEach(a=>{
 
     html += `
+
       <div class="card">
 
-        <h3>
+        <div class="tipo">
           ${a.tipo_ingreso}
-        </h3>
+        </div>
 
         <div>
-          Proveedor:
+          <b>Proveedor:</b>
           ${a.proveedor}
         </div>
 
         <div>
-          Ingresó:
+          <b>Ingresó:</b>
           ${a.nombre_ingresa}
         </div>
 
         <div>
-          Descripción:
+          <b>Descripción:</b>
           ${a.descripcion}
         </div>
 
         <div>
-          Ubicación:
+          <b>Ubicación:</b>
           Privada ${a.privada}
           - Lote ${a.casa}
         </div>
 
       </div>
-    `;
 
+    `;
   });
 
   contenedor.innerHTML = html;
