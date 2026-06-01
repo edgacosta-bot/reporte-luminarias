@@ -233,14 +233,71 @@ function cambiarTipoIngreso(obraId){
 
 }  
 
- async function registrarIngreso(obraId){
+async function registrarIngreso(obraId){
+
+  const pin =
+    document.getElementById(
+      "pin_" + obraId
+    ).value.trim();
+
+  const msg =
+    document.getElementById(
+      "msg_" + obraId
+    );
+
+  msg.innerHTML = "";
+
+  if(pin === ""){
+
+    msg.style.color = "#f87171";
+
+    msg.innerHTML =
+      "Debe capturar el NIP del vigilante";
+
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "validar_pin_vigilante",
+      {
+        pin_input: pin
+      }
+    );
+
+  if(error){
+
+    console.log(error);
+
+    msg.style.color = "#f87171";
+
+    msg.innerHTML =
+      "Error validando NIP";
+
+    return;
+  }
+
+  if(!data || data.length === 0){
+
+    msg.style.color = "#f87171";
+
+    msg.innerHTML =
+      "NIP incorrecto";
+
+    return;
+  }
+
+  msg.style.color = "#4ade80";
+
+  msg.innerHTML =
+    "NIP validado correctamente";
 
   console.log(
-    "Registrar ingreso:",
-    obraId
+    "Vigilante:",
+    data[0].id
   );
 
-} 
+}
 
 function renderObras(){
 
