@@ -157,7 +157,9 @@ button{
     Privada
   </div>
 
-  <select id="filtroPrivada">
+  <select
+  id="filtroPrivada"
+  onchange="renderizar()">
     <option value="">
       Todas
     </option>
@@ -258,6 +260,8 @@ button{
 
 let abastecimientos = [];
 
+let obrasFiltro = [];  
+
 function renderizar(){
 
   const lista =
@@ -272,6 +276,11 @@ const estado =
     "filtroEstado"
   ).value;
 
+const privada =
+  document.getElementById(
+    "filtroPrivada"
+  ).value;  
+
 if(estado){
 
   registros =
@@ -280,6 +289,15 @@ if(estado){
     );
 
 }
+
+if(privada){
+
+  registros =
+    registros.filter(
+      r => r.privada === privada
+    );
+
+}  
     
   if(
   registros.length === 0
@@ -437,6 +455,46 @@ async function cargar(){
 
 }  
 
+async function cargarFiltros(){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_obras_filtro_abastecimientos"
+    );
+
+  if(error){
+
+    console.log(error);
+
+    return;
+  }
+
+  obrasFiltro = data || [];
+
+  const privadaSelect =
+    document.getElementById(
+      "filtroPrivada"
+    );
+
+  const privadas =
+    [...new Set(
+      obrasFiltro.map(
+        o => o.privada
+      )
+    )];
+
+  privadas.forEach(p=>{
+
+    privadaSelect.innerHTML += `
+      <option value="${p}">
+        ${p}
+      </option>
+    `;
+
+  });
+
+}
+  
 window.addEventListener(
   "DOMContentLoaded",
   async ()=>{
@@ -445,6 +503,8 @@ window.addEventListener(
       "admin",
       "administracion"
     ]);
+
+    await cargarFiltros();
 
     await cargar();
 
