@@ -107,6 +107,52 @@ button{
   font-size:13px;
 }
 
+.badge{
+
+  display:inline-block;
+
+  padding:6px 12px;
+
+  border-radius:999px;
+
+  font-size:12px;
+
+  font-weight:bold;
+
+  margin-top:8px;
+
+  margin-bottom:10px;
+
+}
+
+.badge-suministro{
+
+  background:#1e3a8a;
+
+  color:white;
+
+}
+
+.badge-maquinaria{
+
+  background:#92400e;
+
+  color:white;
+
+}
+
+.titulo-obra{
+
+  font-size:18px;
+
+  font-weight:bold;
+
+  color:#93c5fd;
+
+  margin-bottom:10px;
+
+}  
+
 </style>
 
 </head>
@@ -121,7 +167,7 @@ button{
 
 <div class="kpi">
 
-  🚚 Actualmente dentro
+  🚚 Abastecimientos dentro
 
   <br><br>
 
@@ -261,9 +307,13 @@ button{
 <div
   id="contadorResultados"
   style="
+    background:#111827;
+    border-radius:18px;
+    padding:14px;
     margin-bottom:15px;
     color:#93c5fd;
     font-weight:bold;
+    text-align:center;
   ">
 </div>
   
@@ -428,10 +478,24 @@ registros.sort((a,b)=>{
 
 });  
 
-  document.getElementById(
+  const dentro =
+  registros.filter(
+    r => r.estatus === "DENTRO"
+  ).length;
+
+document.getElementById(
   "contadorResultados"
-).innerHTML =
-  `🧾 Mostrando ${registros.length} abastecimiento(s)`;
+).innerHTML = `
+
+  🚚 Dentro:
+  <b>${dentro}</b>
+
+  &nbsp;&nbsp;|&nbsp;&nbsp;
+
+  🧾 Registros:
+  <b>${registros.length}</b>
+
+`;
   
   if(
   registros.length === 0
@@ -451,18 +515,23 @@ registros.sort((a,b)=>{
 
       <div class="card">
 
-        <h3>
-          PRIVADA ${a.privada}
-          - LOTE ${a.casa}
-        </h3>
+        <div class="titulo-obra">
 
-        <div>
+  🏗️ PRIVADA ${a.privada}
+  - LOTE ${a.casa}
 
-          <b>
-            ${a.tipo_ingreso}
-          </b>
+</div>
 
-        </div>
+        <div
+  class="badge ${
+    a.tipo_ingreso === 'MAQUINARIA'
+      ? 'badge-maquinaria'
+      : 'badge-suministro'
+  }">
+
+  ${a.tipo_ingreso}
+
+</div>
 
         ${
           a.tipo_maquinaria
@@ -476,14 +545,20 @@ registros.sort((a,b)=>{
         }
 
         <div>
-          <b>Proveedor:</b>
-          ${a.proveedor}
-        </div>
+
+  <b>🏢 Proveedor:</b>
+
+  ${a.proveedor}
+
+</div>
 
         <div>
-          <b>Ingresó:</b>
-          ${a.nombre_ingresa}
-        </div>
+
+  <b>👤 Ingresó:</b>
+
+  ${a.nombre_ingresa}
+
+</div>
 
         <div>
           <b>Descripción:</b>
