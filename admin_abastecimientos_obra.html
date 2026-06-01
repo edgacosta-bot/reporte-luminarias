@@ -3,30 +3,272 @@
 <head>
 
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>
-Abastecimientos de Obra
-</title>
+<title>Abastecimientos de Obra</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script src="auth.js"></script>
+
+<script src="utils/dates.js"></script>
+
+<style>
+
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+}
+
+.kpi{
+  background:#111827;
+  border-radius:18px;
+  padding:20px;
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.kpi span{
+  font-size:34px;
+  font-weight:bold;
+}
+
+.filtros{
+  background:#111827;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:20px;
+}
+
+input,
+select{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:#1f2937;
+  color:white;
+  box-sizing:border-box;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:#2563eb;
+  color:white;
+  cursor:pointer;
+}
+
+.rangos{
+  display:flex;
+  gap:8px;
+  margin-bottom:15px;
+}
+
+.rangos button{
+  flex:1;
+}
+
+.card{
+  background:#111827;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:12px;
+}
+
+.dentro{
+  color:#fbbf24;
+  font-weight:bold;
+}
+
+.salio{
+  color:#4ade80;
+  font-weight:bold;
+}
+
+.label{
+  margin-top:10px;
+  margin-bottom:5px;
+  color:#94a3b8;
+  font-size:13px;
+}
+
+</style>
 
 </head>
 
-<body style="
-background:#0f172a;
-color:white;
-font-family:Segoe UI;
-padding:30px;">
+<body>
+
+<div class="container">
 
 <h1>
 🚚 Abastecimientos de Obra
 </h1>
 
-<p>
-Próxima fase:
-Reporte administrativo con filtros.
-</p>
+<div class="kpi">
+
+  🟠 Actualmente dentro
+
+  <br><br>
+
+  <span id="kpiDentro">
+    0
+  </span>
+
+</div>
+
+<div class="filtros">
+
+  <div class="rangos">
+
+    <button onclick="rangoRapido(0)">
+      Hoy
+    </button>
+
+    <button onclick="rangoRapido(7)">
+      7 días
+    </button>
+
+    <button onclick="rangoRapido(30)">
+      30 días
+    </button>
+
+    <button onclick="rangoRapido(90)">
+      90 días
+    </button>
+
+  </div>
+
+  <div class="label">
+    Privada
+  </div>
+
+  <select id="filtroPrivada">
+    <option value="">
+      Todas
+    </option>
+  </select>
+
+  <br><br>
+
+  <div class="label">
+    Lote
+  </div>
+
+  <select id="filtroCasa">
+    <option value="">
+      Todos
+    </option>
+  </select>
+
+  <br><br>
+
+  <div class="label">
+    Tipo
+  </div>
+
+  <select id="filtroTipo">
+
+    <option value="">
+      Todos
+    </option>
+
+    <option value="SUMINISTRO">
+      SUMINISTRO
+    </option>
+
+    <option value="MAQUINARIA">
+      MAQUINARIA
+    </option>
+
+  </select>
+
+  <br><br>
+
+  <div class="label">
+    Estado
+  </div>
+
+  <select id="filtroEstado">
+
+    <option value="">
+      Todos
+    </option>
+
+    <option value="DENTRO">
+      DENTRO
+    </option>
+
+    <option value="SALIO">
+      SALIÓ
+    </option>
+
+  </select>
+
+  <br><br>
+
+  <div class="label">
+    Fecha inicio
+  </div>
+
+  <input
+    type="date"
+    id="inicio">
+
+  <br><br>
+
+  <div class="label">
+    Fecha fin
+  </div>
+
+  <input
+    type="date"
+    id="fin">
+
+  <br><br>
+
+  <button onclick="cargar()">
+    Consultar
+  </button>
+
+</div>
+
+<div id="lista">
+</div>
+
+</div>
+
+<script>
+
+let abastecimientos = [];
+
+window.addEventListener(
+  "DOMContentLoaded",
+  async ()=>{
+
+    await protegerPagina([
+      "admin",
+      "administracion"
+    ]);
+
+  }
+);
+
+</script>
 
 </body>
 </html>
