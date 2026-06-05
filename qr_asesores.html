@@ -431,17 +431,20 @@ function renderizar(){
   const asesor = data[0];
 
   const url =
-    `credencial_asesor.html` +
-    `?qr=${encodeURIComponent(
-      asesor.qr_codigo
-    )}` +
-    `&nombre=${encodeURIComponent(
-      asesor.nombre
-    )}` +
-    `&empresa=${encodeURIComponent(
-      asesor.empresa || ""
-    )}` +
-    `&origen=admin`;
+  `credencial_asesor.html` +
+  `?asesor_id=${encodeURIComponent(
+    asesor.asesor_id
+  )}` +
+  `&qr=${encodeURIComponent(
+    asesor.qr_codigo
+  )}` +
+  `&nombre=${encodeURIComponent(
+    asesor.nombre
+  )}` +
+  `&empresa=${encodeURIComponent(
+    asesor.empresa || ""
+  )}` +
+  `&origen=admin`;
 
   window.open(
     url,
