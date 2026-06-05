@@ -320,34 +320,32 @@ async function registrarCliente(){
 
   if(!asesorId){
 
-    alert(
-      "Seleccione asesor"
-    );
+  ui.warn(
+    "Seleccione asesor"
+  );
 
-    return;
+  return;
 
-  }
-
+}
   if(!nombreCliente){
 
-    alert(
-      "Capture nombre del cliente"
-    );
+  ui.warn(
+    "Capture nombre del cliente"
+  );
 
-    return;
+  return;
 
-  }
+}
 
   if(!pin){
 
-    alert(
-      "Capture NIP"
-    );
+  ui.warn(
+    "Capture NIP"
+  );
 
-    return;
+  return;
 
-  }
-
+}
   const { data: vigilante } =
     await supabaseClient.rpc(
       "validar_pin_vigilante",
@@ -361,9 +359,9 @@ async function registrarCliente(){
     vigilante.length === 0
   ){
 
-    alert(
-      "NIP incorrecto"
-    );
+    ui.error(
+  "NIP incorrecto"
+);
 
     return;
 
@@ -388,9 +386,9 @@ async function registrarCliente(){
 
     console.error(error);
 
-    alert(
-      error.message
-    );
+    ui.error(
+  error.message
+);
 
     return;
 
@@ -404,10 +402,9 @@ async function registrarCliente(){
     "pin"
   ).value = "";
 
-  document.getElementById(
-    "msgRegistro"
-  ).innerHTML =
-    "✅ Cliente registrado";
+ ui.success(
+  "Cliente registrado correctamente"
+);
 
   await cargarAsesores();
   await cargarClientes();
