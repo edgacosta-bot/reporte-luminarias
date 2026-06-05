@@ -236,10 +236,10 @@ if (pinError) {
  if(tipoAccion === "salida"){
 
   document.body.className =
-    "warn";
+  "";
 
-  estado.innerText =
-    "PIN válido";
+estado.innerText =
+  "PIN válido";
 
   detalle.innerHTML += `
 
@@ -268,7 +268,7 @@ evaluarEstadoEntrada();
 function evaluarEstadoEntrada(){
 
   document.body.className =
-    "ok";
+    "";
 
   estado.innerText =
     "PIN válido";
@@ -389,7 +389,7 @@ btnRegistrar.onclick = async () => {
     "ok";
 
   estado.innerText =
-    "Acceso registrado";
+  "Acceso registrado correctamente";
   detalle.innerHTML = `
   <p>
     <b>${asesor.nombre}</b>
