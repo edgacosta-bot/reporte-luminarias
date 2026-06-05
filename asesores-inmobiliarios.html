@@ -481,13 +481,6 @@ async function guardarAsesor(){
     }
   );
 
-console.log(
-  "Resultado RPC:",
-  data,
-  error
-);
-
-  alert("RPC ejecutada");
 
   if(error){
 
@@ -548,16 +541,36 @@ window.addEventListener(
     "click",
     ()=>{
 
-      document
-        .getElementById(
-          "modalAsesor"
-        )
-        .style.display =
-        "flex";
+  document.getElementById(
+    "nombreAsesor"
+  ).value = "";
 
-    }
-  );
+  document.getElementById(
+    "telefonoAsesor"
+  ).value = "";
 
+  document.getElementById(
+    "empresaAsesor"
+  ).value = "";
+
+  document.getElementById(
+    "vigenciaIndefinida"
+  ).checked = true;
+
+  document.getElementById(
+    "fechaVencimiento"
+  ).value = "";
+
+  actualizarVigencia();
+
+  document
+    .getElementById(
+      "modalAsesor"
+    )
+    .style.display =
+    "flex";
+
+}
    document
   .getElementById(
     "vigenciaIndefinida"
