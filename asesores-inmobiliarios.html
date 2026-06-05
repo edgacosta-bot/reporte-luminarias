@@ -467,19 +467,27 @@ async function guardarAsesor(){
 
   }
 
-  const { error } =
-    await supabaseClient.rpc(
-      "crear_asesor_inmobiliario",
-      {
-        p_nombre: nombre,
-        p_telefono: telefono,
-        p_empresa: empresa,
-        p_vigencia_indefinida:
-          vigenciaIndefinida,
-        p_fecha_vencimiento:
-          fechaVencimiento
-      }
-    );
+  const { data, error } =
+  await supabaseClient.rpc(
+    "crear_asesor_inmobiliario",
+    {
+      p_nombre: nombre,
+      p_telefono: telefono,
+      p_empresa: empresa,
+      p_vigencia_indefinida:
+        vigenciaIndefinida,
+      p_fecha_vencimiento:
+        fechaVencimiento
+    }
+  );
+
+console.log(
+  "Resultado RPC:",
+  data,
+  error
+);
+
+  alert("RPC ejecutada");
 
   if(error){
 
