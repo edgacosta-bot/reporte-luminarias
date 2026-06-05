@@ -188,9 +188,11 @@ function renderizar(){
 
   }
 
-  const a = asesores[0];
+  let html = "";
 
-  lista.innerHTML = `
+asesores.forEach(a=>{
+
+  html += `
 
     <div class="card">
 
@@ -245,6 +247,10 @@ function renderizar(){
     </div>
 
   `;
+
+});
+
+lista.innerHTML = html;
 
 }  
 
