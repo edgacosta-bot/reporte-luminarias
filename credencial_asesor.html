@@ -237,10 +237,46 @@ document
         return;
       }
 
-      console.log(
-        "REGENERAR",
-        asesorId
-      );
+      const {
+  data,
+  error
+} =
+await supabaseClient.rpc(
+  "generar_qr_asesor",
+  {
+    p_asesor_id:
+      asesorId
+  }
+);
+
+if(error){
+
+  alert(
+    error.message
+  );
+
+  return;
+
+}
+
+const nuevaUrl =
+  `${window.location.pathname}` +
+  `?asesor_id=${encodeURIComponent(
+    asesorId
+  )}` +
+  `&qr=${encodeURIComponent(
+    data
+  )}` +
+  `&nombre=${encodeURIComponent(
+    nombre || ""
+  )}` +
+  `&empresa=${encodeURIComponent(
+    empresa || ""
+  )}` +
+  `&origen=admin`;
+
+window.location.href =
+  nuevaUrl;
 
     }
   );  
