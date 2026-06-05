@@ -612,10 +612,9 @@ function editarAsesor(id){
     asesor.vigencia_indefinida;
 
   document.getElementById(
-    "fechaVencimiento"
-  ).value =
-    asesorEditando = null;
-    asesor.fecha_vencimiento || "";
+  "fechaVencimiento"
+).value =
+  asesor.fecha_vencimiento || "";
 
   actualizarVigencia();
 
@@ -701,6 +700,8 @@ window.addEventListener(
     "click",
     ()=>{
 
+  asesorEditando = null;  
+
   document.getElementById(
     "nombreAsesor"
   ).value = "";
@@ -750,6 +751,8 @@ actualizarVigencia();
   .addEventListener(
     "click",
     ()=>{
+
+      
 
     asesorEditando = null;  
 
