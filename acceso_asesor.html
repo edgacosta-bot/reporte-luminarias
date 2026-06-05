@@ -239,7 +239,17 @@ if (pinError) {
     "warn";
 
   estado.innerText =
-    "Autorizar salida";
+    "PIN válido";
+
+  detalle.innerHTML += `
+
+    <p>
+      Presione
+      <b>Registrar salida</b>
+      para autorizar la salida.
+    </p>
+
+  `;
 
   btnRegistrar.innerText =
     "Registrar salida";
@@ -250,7 +260,6 @@ if (pinError) {
 
   return;
 }
-
 evaluarEstadoEntrada();
 };
 
@@ -262,7 +271,17 @@ function evaluarEstadoEntrada(){
     "ok";
 
   estado.innerText =
-    "Acceso permitido";
+    "PIN válido";
+
+  detalle.innerHTML += `
+
+    <p>
+      Presione
+      <b>Registrar acceso</b>
+      para autorizar la entrada.
+    </p>
+
+  `;
 
   btnRegistrar.innerText =
     "Registrar acceso";
@@ -271,8 +290,7 @@ function evaluarEstadoEntrada(){
     "hidden"
   );
 
-}
-// 🔹 REGISTRAR
+}// 🔹 REGISTRAR
 btnRegistrar.onclick = async () => {
 
   btnRegistrar.disabled = true;
