@@ -324,10 +324,21 @@ function mostrarNotificacion(
   tipo = "exito"
 ){
 
+  console.log(
+  "MOSTRAR NOTIFICACION",
+  mensaje,
+  tipo
+);
+
   const contenedor =
     document.getElementById(
       "contenedorNotificaciones"
     );
+
+  console.log(
+  "CONTENEDOR",
+  contenedor
+);
 
   if(notificacionActual){
     notificacionActual.remove();
