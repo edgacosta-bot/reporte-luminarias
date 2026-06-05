@@ -113,6 +113,19 @@ h1{
 
   </div>
 
+  <div
+  id="contadorResultados"
+  style="
+    background:#111827;
+    border-radius:18px;
+    padding:14px;
+    margin-bottom:15px;
+    color:#93c5fd;
+    font-weight:bold;
+    text-align:center;
+  ">
+</div>
+  
   <div id="lista"></div>
 
 </div>
@@ -177,6 +190,33 @@ function renderizar(){
       "lista"
     );
 
+  const totalAsesores =
+  asesores.length;
+
+const totalClientes =
+  asesores.reduce(
+    (s,a)=>
+      s +
+      Number(
+        a.clientes_dentro || 0
+      ),
+    0
+  );
+
+document.getElementById(
+  "contadorResultados"
+).innerHTML = `
+
+  🏠 Asesores:
+  <b>${totalAsesores}</b>
+
+  &nbsp;&nbsp;|&nbsp;&nbsp;
+
+  👥 Clientes:
+  <b>${totalClientes}</b>
+
+`;
+  
   if(
     asesores.length === 0
   ){
