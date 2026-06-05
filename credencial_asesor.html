@@ -94,11 +94,58 @@ h2 {
   font-size: 12px;
   color: #9ca3af;
 }
+
+#contenedorNotificaciones{
+  position:fixed;
+  top:20px;
+  right:20px;
+  width:350px;
+  z-index:10000;
+}
+
+.notificacion{
+  padding:14px;
+  border-radius:12px;
+  margin-bottom:10px;
+  font-weight:600;
+  animation:aparecer .25s ease;
+  box-shadow:
+    0 4px 12px rgba(0,0,0,.35);
+}
+
+.notificacion.exito{
+  background:#14532d;
+  border:1px solid #22c55e;
+  color:white;
+}
+
+.notificacion.error{
+  background:#7f1d1d;
+  border:1px solid #ef4444;
+  color:white;
+}
+
+@keyframes aparecer{
+
+  from{
+    opacity:0;
+    transform:translateY(-10px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+
+}
+  
 </style>
 
 </head>
 
 <body>
+
+<div id="contenedorNotificaciones"></div>  
 
 <div class="card">
 
@@ -160,6 +207,57 @@ const empresa =
 const origen =
   params.get("origen");
 
+let notificacionActual = null;
+
+function mostrarNotificacion(
+  mensaje,
+  tipo = "exito"
+){
+
+  const contenedor =
+    document.getElementById(
+      "contenedorNotificaciones"
+    );
+
+  if(notificacionActual){
+    notificacionActual.remove();
+  }
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.className =
+    `notificacion ${tipo}`;
+
+  div.innerHTML =
+    mensaje;
+
+  contenedor.appendChild(
+    div
+  );
+
+  notificacionActual = div;
+
+  setTimeout(()=>{
+
+    if(div.parentNode){
+
+      div.remove();
+
+      if(
+        notificacionActual === div
+      ){
+        notificacionActual = null;
+      }
+
+    }
+
+  },4000);
+
+}
+  
 // 🔐 VALIDACIÓN
 if (!codigo) {
   document.body.innerHTML = "QR inválido";
@@ -251,14 +349,20 @@ await supabaseClient.rpc(
 
 if(error){
 
-  alert(
-    error.message
-  );
+  mostrarNotificacion(
+  `❌ ${error.message}`,
+  "error"
+);
 
   return;
 
 }
 
+mostrarNotificacion(
+  "✅ Código QR regenerado correctamente",
+  "exito"
+);
+      
 const nuevaUrl =
   `${window.location.pathname}` +
   `?asesor_id=${encodeURIComponent(
