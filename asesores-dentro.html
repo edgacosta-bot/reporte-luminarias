@@ -161,12 +161,92 @@ async function cargar(){
   ).innerText =
     totalClientes;
 
+  renderizar();
+
   console.log(
     "Asesores:",
     asesores
   );
 
 }
+
+function renderizar(){
+
+  const lista =
+    document.getElementById(
+      "lista"
+    );
+
+  if(
+    asesores.length === 0
+  ){
+
+    lista.innerHTML =
+      "<div class='card'>No hay asesores dentro.</div>";
+
+    return;
+
+  }
+
+  const a = asesores[0];
+
+  lista.innerHTML = `
+
+    <div class="card">
+
+      <div class="titulo-asesor">
+
+        🏠 ${a.nombre}
+
+      </div>
+
+      <div>
+
+        <b>🏢 Empresa:</b>
+
+        ${a.empresa || "-"}
+
+      </div>
+
+      <div>
+
+        <b>🕒 Entrada:</b>
+
+        ${formatMXDate(
+          a.fecha_entrada
+        )}
+
+      </div>
+
+      <div>
+
+        <b>👥 Clientes dentro:</b>
+
+        ${a.clientes_dentro}
+
+      </div>
+
+      <div class="clientes">
+
+        <b>Clientes:</b>
+
+        <br>
+
+        ${a.clientes || "-"}
+
+      </div>
+
+      <div class="dentro">
+
+        🟠 DENTRO
+
+      </div>
+
+    </div>
+
+  `;
+
+}  
 
   window.addEventListener(
   "DOMContentLoaded",
