@@ -339,6 +339,15 @@ btnRegistrar.onclick = async () => {
       visitantesDentro > 0
         ? `Salida registrada. Permanecen ${visitantesDentro} visitantes dentro`
         : "Salida registrada correctamente";
+    detalle.innerHTML = `
+  <p>
+    <b>${asesor.nombre}</b>
+  </p>
+
+  <p>
+    ${asesor.empresa}
+  </p>
+`;
 
     btnRegistrar.classList.add(
       "hidden"
@@ -381,6 +390,15 @@ btnRegistrar.onclick = async () => {
 
   estado.innerText =
     "Acceso registrado";
+  detalle.innerHTML = `
+  <p>
+    <b>${asesor.nombre}</b>
+  </p>
+
+  <p>
+    ${asesor.empresa}
+  </p>
+`;
 
   btnRegistrar.classList.add(
     "hidden"
