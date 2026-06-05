@@ -10,6 +10,8 @@
 
 <script src="auth.js"></script>  
 
+<script src="modal.js"></script>  
+
 <style>
 body {
   margin: 0;
@@ -327,13 +329,20 @@ document
     "click",
     async ()=>{
 
-      if(
-        !confirm(
-          "¿Desea generar un nuevo código QR?\n\nEl código actual dejará de funcionar inmediatamente."
-        )
-      ){
-        return;
-      }
+      const confirmado =
+  await mostrarConfirmacion({
+
+    titulo:
+      "Regenerar código QR",
+
+    mensaje:
+      "El código actual dejará de funcionar inmediatamente."
+
+  });
+
+if(!confirmado){
+  return;
+}
 
       const {
   data,
