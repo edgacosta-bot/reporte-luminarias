@@ -78,6 +78,44 @@ h1{
 
 }  
 
+#contenedorNotificaciones{
+  margin-bottom:15px;
+}
+
+.notificacion{
+  padding:14px;
+  border-radius:12px;
+  margin-bottom:10px;
+  font-weight:600;
+  animation:aparecer .25s ease;
+}
+
+.notificacion.exito{
+  background:#14532d;
+  border:1px solid #22c55e;
+  color:white;
+}
+
+.notificacion.error{
+  background:#7f1d1d;
+  border:1px solid #ef4444;
+  color:white;
+}
+
+@keyframes aparecer{
+
+  from{
+    opacity:0;
+    transform:translateY(-10px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+
+}
+  
 </style>
 
 </head>
@@ -89,6 +127,8 @@ h1{
   <h1>
     👤 Gestionar Asesores
   </h1>
+
+  <div id="contenedorNotificaciones"></div>
 
   <div class="kpi">
 
@@ -150,8 +190,8 @@ h1{
       max-width:500px;
     ">
 
-    <h2>
-      Nuevo asesor inmobiliario
+    <h2 id="tituloModalAsesor">
+     Nuevo asesor inmobiliario
     </h2>
 
    <div style="margin-bottom:12px;">
@@ -276,6 +316,57 @@ h1{
 let asesores = [];
 
 let asesorEditando = null;  
+
+let notificacionActual = null;
+
+function mostrarNotificacion(
+  mensaje,
+  tipo = "exito"
+){
+
+  const contenedor =
+    document.getElementById(
+      "contenedorNotificaciones"
+    );
+
+  if(notificacionActual){
+    notificacionActual.remove();
+  }
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.className =
+    `notificacion ${tipo}`;
+
+  div.innerHTML =
+    mensaje;
+
+  contenedor.appendChild(
+    div
+  );
+
+  notificacionActual = div;
+
+  setTimeout(()=>{
+
+    if(div.parentNode){
+
+      div.remove();
+
+      if(
+        notificacionActual === div
+      ){
+        notificacionActual = null;
+      }
+
+    }
+
+  },4000);
+
+}  
 
 async function cargar(){
 
@@ -492,9 +583,10 @@ async function guardarAsesor(){
 
   if(!nombre){
 
-    alert(
-      "Debe indicar el nombre del asesor"
-    );
+   mostrarNotificacion(
+  "❌ Debe indicar el nombre del asesor",
+  "error"
+);
 
     return;
 
@@ -505,17 +597,21 @@ async function guardarAsesor(){
     !fechaVencimiento
   ){
 
-    alert(
-      "Debe indicar la fecha de vencimiento"
-    );
+    mostrarNotificacion(
+  "❌ Debe indicar la fecha de vencimiento",
+  "error"
+);
 
     return;
 
   }
 
- let error = null;
+ const esEdicion =
+  asesorEditando !== null;
 
-if(asesorEditando){
+let error = null;
+
+if(esEdicion){
 
   const resultado =
     await supabaseClient.rpc(
@@ -572,9 +668,37 @@ else{
     resultado.error;
 
 }
-  actualizarVigencia();
 
-  await cargar();
+if(error){
+
+  mostrarNotificacion(
+    `❌ ${error.message}`,
+    "error"
+  );
+
+  return;
+
+}
+
+actualizarVigencia();
+
+await cargar();
+
+document
+  .getElementById(
+    "modalAsesor"
+  )
+  .style.display =
+  "none";
+
+asesorEditando = null;
+
+mostrarNotificacion(
+  esEdicion
+    ? "✅ Información actualizada correctamente"
+    : "✅ Asesor registrado correctamente",
+  "exito"
+);
 
 }
 
@@ -590,6 +714,11 @@ function editarAsesor(id){
   }
 
   asesorEditando = id;
+
+  document.getElementById(
+  "tituloModalAsesor"
+).innerText =
+  "Editar asesor inmobiliario";
 
   document.getElementById(
     "nombreAsesor"
@@ -647,15 +776,21 @@ async function desactivarAsesor(id){
 
   if(error){
 
-    alert(
-      error.message
-    );
+  mostrarNotificacion(
+    `❌ ${error.message}`,
+    "error"
+  );
 
-    return;
+  return;
 
-  }
+}
 
   await cargar();
+
+  mostrarNotificacion(
+  "✅ Asesor desactivado correctamente",
+  "exito"
+);
 
 }
 async function reactivarAsesor(id){
@@ -670,15 +805,21 @@ async function reactivarAsesor(id){
 
   if(error){
 
-    alert(
-      error.message
-    );
+  mostrarNotificacion(
+    `❌ ${error.message}`,
+    "error"
+  );
 
-    return;
+  return;
 
-  }
+}
 
   await cargar();
+
+  mostrarNotificacion(
+  "✅ Asesor reactivado correctamente",
+  "exito"
+);
 
 }
   
@@ -701,6 +842,11 @@ window.addEventListener(
     ()=>{
 
   asesorEditando = null;  
+
+  document.getElementById(
+  "tituloModalAsesor"
+).innerText =
+  "Nuevo asesor inmobiliario";    
 
   document.getElementById(
     "nombreAsesor"
