@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acceso Hogar</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script src="/utils/ui.js"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+}
+
+body.ok { background: #16a34a; color: white; }
+body.warn { background: #f59e0b; color: #111827; }
+body.error { background: #dc2626; color: white; }
+
+.container {
+  max-width: 360px;
+  width: 92%;
+  padding: 20px;
+}
+
+input, button {
+  width: 100%;
+  height: 52px;
+  padding: 0 16px;
+  margin-top: 12px;
+  border-radius: 14px;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
+  button {
+  background: #2563eb;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button:disabled {
+  opacity: 0.6;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-success {
+  background: #16a34a;
+}
+
+.btn-warning {
+  background: #f59e0b;
+  color: #111827;
+}
+
+.btn-danger {
+  background: #dc2626;
+}
+
+input {
+  background: #020617;
+  color: white;
+  text-align: center;
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+
+button {
+  background: #2563eb;
+  color: white;
+  font-weight: bold;
+}
+
+.hidden { display:none; }
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2 id="titulo">🏠 Acceso hogar</h2>
+
+<h1 id="estado">Validando...</h1>
+<div id="detalle"></div>
+
+<input type="password" id="pin" placeholder="Ingrese PIN del vigilante">
+<button id="btnValidar" class="btn-primary">Validar</button>
+
+<button id="btnRegistrar" class="btn-success hidden">Registrar</button>
+<button id="btnNotificar" class="btn-warning hidden">Notificar</button>
+
+</div>
+
+<script>
+
+const qr = new URLSearchParams(window.location.search).get("qr");
+
+let trabajador = null;
+let residente = null;
+let estadoPago = "";
+let vigilante = null;
+let accesoAbierto = null;
+let tipoAccion = "";
+
+init();
+
+async function init(){
+
+  
+  const { data: sessionData } = await supabaseClient.auth.getSession();
+  
+  // 🔹 VALIDAR QR
+ const { data, error } = await supabaseClient
+  .rpc("validar_trabajador_hogar", { qr });
+
+if (error) {
+  console.error("ERROR VALIDAR QR:", error);
+  pintar("Error al validar QR","error");
+  return;
+}
+
+  if (!data || data.length === 0) {
+  pintar("QR inválido o trabajador inactivo","error");
+  return;
+}
+
+trabajador = data[0];
+  
+const hoy = new Date().toISOString().split("T")[0];
+
+// ❌ FUERA DE VIGENCIA
+if (
+  (trabajador.fecha_inicio && trabajador.fecha_inicio > hoy) ||
+  (trabajador.fecha_fin && trabajador.fecha_fin < hoy)
+) {
+  pintar("QR fuera de vigencia","error");
+  return;
+}  
+
+ 
+  // 🔹 RESIDENTE
+  const { data: resData, error: resError } = await supabaseClient
+  .rpc("obtener_residente_para_acceso", { res_id: trabajador.residente_id });
+
+if (resError) {
+  console.error("ERROR RESIDENTE:", resError);
+  ui.error("Error obteniendo residente");
+  return;
+}
+
+  if (!resData || resData.length === 0) {
+    ui.error("Residente no encontrado");
+    return;
+  }
+
+  residente = resData[0];
+  estadoPago = (residente.estado_pago || "").toLowerCase();
+
+
+  // 🔹 ACCESO ABIERTO
+  const { data: abiertoData, error: abiertoError } = await supabaseClient
+  .rpc("obtener_acceso_abierto", { trab_id: trabajador.id });
+
+if (abiertoError) {
+  console.error("ERROR ACCESO ABIERTO:", abiertoError);
+  ui.error("Error consultando acceso");
+  return;
+}
+
+  accesoAbierto = abiertoData && abiertoData.length ? abiertoData[0] : null;
+
+  tipoAccion = accesoAbierto ? "salida" : "entrada";
+  console.log("ACCESO ABIERTO:", accesoAbierto);
+  console.log("TIPO ACCION:", tipoAccion);
+
+  
+
+  renderDetalle();
+  estado.innerText = tipoAccion === "salida"
+  ? "Validar salida"
+  : "Validar acceso";
+  titulo.innerText = tipoAccion === "salida"
+  ? "🏠 Salida trabajador"
+  : "🏠 Acceso hogar";
+  btnRegistrar.classList.add("hidden");
+  btnNotificar.classList.add("hidden");
+}
+
+// 🔹 VALIDAR PIN
+btnValidar.onclick = async () => {
+
+  const pin = document.getElementById("pin").value.trim();
+
+  if(!pin){
+    ui.warn("Ingrese PIN");
+    return;
+  }
+
+  const { data: pinData, error: pinError } = await supabaseClient
+  .rpc("validar_pin_vigilante", { pin_input: pin });
+
+if (pinError) {
+  console.error("ERROR PIN:", pinError);
+  ui.error("Error validando PIN");
+  return;
+}
+
+  if (!pinData || pinData.length === 0) {
+    ui.error("PIN incorrecto");
+    return;
+  }
+
+  vigilante = pinData[0];
+
+ 
+  ocultarValidacion();
+
+  console.log("TIPO ACCION DETECTADO:", tipoAccion);
+
+ if(tipoAccion === "salida"){
+
+  console.log("FLUJO: SALIDA");
+
+  document.body.className = "warn";
+  estado.innerText = "Autorizar salida";
+
+  btnRegistrar.innerText = "Registrar salida";
+  btnRegistrar.classList.remove("hidden");
+
+  // 🔥 BLOQUEO TOTAL DE FLUJO DE ENTRADA
+  btnNotificar.classList.add("hidden");
+
+  return;
+}
+
+  evaluarEstadoEntrada();
+};
+
+// 🔹 ENTRADA
+function evaluarEstadoEntrada(){
+
+  if(estadoPago === "moroso"){
+
+    document.body.className = "error";
+    estado.innerText = "Acceso NO permitido por irregularidad en cuotas";
+
+    btnRegistrar.innerText = "Registrar acceso con presencia del residente";
+
+    btnRegistrar.classList.remove("hidden");
+    btnNotificar.classList.remove("hidden");
+
+    btnNotificar.parentNode.insertBefore(btnNotificar, btnRegistrar);
+
+    return;
+  }
+
+  if(estadoPago === "atraso_1"){
+    document.body.className = "warn";
+    estado.innerText = "Acceso permitido (con atraso en pago de cuotas)";
+  } else {
+    document.body.className = "ok";
+    estado.innerText = "Acceso permitido";
+  }
+
+  btnRegistrar.classList.remove("hidden");
+
+// asegurar orden correcto
+btnRegistrar.style.order = "2";
+btnNotificar.style.order = "1";
+}
+
+// 🔹 REGISTRAR
+btnRegistrar.onclick = async () => {
+
+  // 🔥 SALIDA
+  if(tipoAccion === "salida"){
+
+    btnRegistrar.disabled = true;
+    btnRegistrar.innerText = "Procesando...";
+
+const { data, error } = await supabaseClient.rpc("registrar_salida_trabajador", {
+  p_acceso_id: accesoAbierto.id,
+  p_vigilante_id: vigilante.id
+});
+
+if (error) {
+  console.error("ERROR SALIDA:", error);
+  ui.error("❌ Error al registrar salida");
+  btnRegistrar.disabled = false;
+  btnRegistrar.innerText = "Registrar";
+  return;
+}
+
+// 🔴 VALIDACIÓN REAL
+if (!data || !data[0]?.actualizado) {
+  ui.warn("⚠️ Este trabajador ya tenía salida registrada");
+  btnRegistrar.disabled = false;
+  btnRegistrar.innerText = "Registrar";
+  return;
+}
+
+    
+console.log("RESPUESTA SALIDA:", data);
+
+if (error) {
+  console.error("ERROR SALIDA:", error);
+  ui.error("❌ Error al registrar salida");
+  btnRegistrar.disabled = false;
+  btnRegistrar.innerText = "Registrar";
+  return;
+}
+
+// 🔴 VALIDACIÓN REAL (CLAVE)
+if (!data || data.length === 0) {
+  ui.error("❌ No se pudo registrar salida (registro no encontrado)");
+  btnRegistrar.disabled = false;
+  btnRegistrar.innerText = "Registrar";
+  return;
+}
+
+if (error) {
+  console.error("ERROR SALIDA:", error);
+  ui.error("❌ Error al registrar salida");
+  btnRegistrar.disabled = false;
+  btnRegistrar.innerText = "Registrar";
+  return;
+}
+
+    document.body.className = "ok";
+    estado.innerText = "Salida registrada correctamente";
+    btnRegistrar.classList.add("hidden");
+
+    const mensaje = `SIGVIC informa: Estimado Residente, en este momento su empleado doméstico ${trabajador.nombre}, salió del fraccionamiento. Gracias.`;
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
+
+    return;
+  }
+
+  // 🔹 ENTRADA
+  const { error } = await supabaseClient.rpc("registrar_entrada_trabajador", {
+  p_trabajador_id: trabajador.id,
+  p_vigilante_id: vigilante.id
+});
+
+if (error) {
+  console.error("ERROR ENTRADA:", error);
+  ui.error("❌ Error al registrar acceso");
+  btnRegistrar.disabled = false;
+  btnRegistrar.innerText = "Registrar";
+  return;
+}
+
+  estado.innerText = "Acceso registrado";
+
+  btnRegistrar.classList.add("hidden");
+  btnNotificar.classList.add("hidden");
+  btnRegistrar.disabled = false;
+
+  if(estadoPago === "moroso"){
+    setTimeout(() => window.close(), 1500);
+    return;
+  }
+
+  btnNotificar.classList.remove("hidden");
+};
+
+// 🔹 NOTIFICAR
+btnNotificar.onclick = () => {
+
+  let mensaje = "";
+
+  if(estadoPago === "moroso"){
+    mensaje = `SIGVIC informa: Estimado residente, su empleado ${trabajador.nombre} se encuentra en caseta, le solicitamos su asistencia para que pueda permitírsele el acceso. Gracias`;
+  }
+  else if(estadoPago === "atraso_1"){
+    mensaje = `SIGVIC informa: Estimado residente, en este momento su empleado doméstico ${trabajador.nombre} ingresó al fraccionamiento. Gracias`;
+  }
+  else{
+    mensaje = `SIGVIC informa: Estimado residente, su empleado doméstico ${trabajador.nombre} ingresó al fraccionamiento. Gracias.`;
+  }
+
+  window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
+};
+
+// 🔹 UI
+function renderDetalle(){
+  detalle.innerHTML = `
+    <p><b>${trabajador.nombre}</b></p>
+    <p>${residente.privada}-${residente.casa}</p>
+  `;
+}
+
+function pintar(texto, color){
+  document.body.className = color;
+  estado.innerText = texto;
+
+  // 🔥 OCULTAR TODO EL FLUJO
+  pin.style.display = "none";
+  btnValidar.style.display = "none";
+  btnRegistrar.classList.add("hidden");
+  btnNotificar.classList.add("hidden");
+}
+
+function ocultarValidacion(){
+  pin.style.display = "none";
+  btnValidar.style.display = "none";
+}
+
+</script>
+
+</body>
+</html>
