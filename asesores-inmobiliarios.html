@@ -79,7 +79,11 @@ h1{
 }  
 
 #contenedorNotificaciones{
-  margin-bottom:15px;
+  position:fixed;
+  top:20px;
+  right:20px;
+  width:350px;
+  z-index:10000;
 }
 
 .notificacion{
@@ -88,6 +92,8 @@ h1{
   margin-bottom:10px;
   font-weight:600;
   animation:aparecer .25s ease;
+    box-shadow:
+    0 4px 12px rgba(0,0,0,.35);
 }
 
 .notificacion.exito{
