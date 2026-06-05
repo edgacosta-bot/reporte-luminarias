@@ -117,5 +117,50 @@ h1{
 
 </div>
 
+<script>
+
+let asesores = [];
+
+async function cargar(){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_asesores_dentro"
+    );
+
+  if(error){
+
+    console.log(error);
+
+    return;
+
+  }
+
+  asesores = data || [];
+
+  console.log(
+    "Asesores:",
+    asesores
+  );
+
+}
+
+window.addEventListener(
+  "DOMContentLoaded",
+  async ()=>{
+
+    await protegerPagina([
+      "admin",
+      "administracion",
+      "vigilante"
+    ]);
+
+    await cargar();
+
+  }
+);
+
+</script>
+
 </body>
 </html>
