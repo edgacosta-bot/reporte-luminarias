@@ -391,6 +391,50 @@ function renderizar(){
 
         </div>
 
+        <div
+  style="
+    margin-top:15px;
+    display:flex;
+    gap:10px;
+  ">
+
+  <button
+    onclick="editarAsesor(
+      '${a.asesor_id}'
+    )">
+
+    ✏ Editar
+
+  </button>
+
+  ${
+    a.activo
+    ?
+    `
+      <button
+        onclick="desactivarAsesor(
+          '${a.asesor_id}'
+        )">
+
+        🚫 Desactivar
+
+      </button>
+    `
+    :
+    `
+      <button
+        onclick="reactivarAsesor(
+          '${a.asesor_id}'
+        )">
+
+        ✅ Reactivar
+
+      </button>
+    `
+  }
+
+</div>
+
       </div>
 
     `;
@@ -520,6 +564,30 @@ async function guardarAsesor(){
   actualizarVigencia();
 
   await cargar();
+
+}
+
+function editarAsesor(id){
+
+  alert(
+    "Editar asesor: " + id
+  );
+
+}
+
+function desactivarAsesor(id){
+
+  alert(
+    "Desactivar asesor: " + id
+  );
+
+}
+
+function reactivarAsesor(id){
+
+  alert(
+    "Reactivar asesor: " + id
+  );
 
 }
   
