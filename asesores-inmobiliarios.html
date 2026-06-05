@@ -50,6 +50,34 @@ h1{
   margin-bottom:12px;
 }
 
+.titulo-asesor{
+
+  font-size:18px;
+
+  font-weight:bold;
+
+  color:#93c5fd;
+
+  margin-bottom:10px;
+
+}
+
+.activo{
+
+  color:#22c55e;
+
+  font-weight:bold;
+
+}
+
+.inactivo{
+
+  color:#ef4444;
+
+  font-weight:bold;
+
+}  
+
 </style>
 
 </head>
@@ -99,6 +127,8 @@ async function cargar(){
 
   asesores = data || [];
 
+  renderizar();
+
   document.getElementById(
     "kpiAsesores"
   ).innerText =
@@ -110,6 +140,103 @@ async function cargar(){
 
 }
 
+function renderizar(){
+
+  const lista =
+    document.getElementById(
+      "lista"
+    );
+
+  if(
+    asesores.length === 0
+  ){
+
+    lista.innerHTML =
+      "<div class='card'>No existen asesores registrados.</div>";
+
+    return;
+
+  }
+
+  let html = "";
+
+  asesores.forEach(a=>{
+
+    html += `
+
+      <div class="card">
+
+        <div class="titulo-asesor">
+
+          👤 ${a.nombre}
+
+        </div>
+
+        <div>
+
+          <b>🏢 Empresa:</b>
+
+          ${a.empresa || "-"}
+
+        </div>
+
+        <div>
+
+          <b>📱 Teléfono:</b>
+
+          ${a.telefono || "-"}
+
+        </div>
+
+        <div>
+
+          <b>🔐 QR:</b>
+
+          ${
+            a.qr_generado
+            ? "Generado"
+            : "No generado"
+          }
+
+        </div>
+
+        <div>
+
+          <b>📅 Vigencia:</b>
+
+          ${
+            a.vigencia_indefinida
+            ? "Indefinida"
+            : a.fecha_vencimiento
+          }
+
+        </div>
+
+        <div class="${
+          a.activo
+          ? 'activo'
+          : 'inactivo'
+        }">
+
+          ${
+            a.activo
+            ? '✅ ACTIVO'
+            : '🚫 INACTIVO'
+          }
+
+        </div>
+
+      </div>
+
+    `;
+
+  });
+
+  lista.innerHTML = html;
+
+}
+
+  
 window.addEventListener(
   "DOMContentLoaded",
   async ()=>{
