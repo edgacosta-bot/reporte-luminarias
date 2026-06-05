@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Gestionar Asesores</title>
+<title>QR Asesores Inmobiliarios</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -131,197 +131,24 @@ h1{
 <div class="container">
 
   <h1>
-    👤 Gestionar Asesores
+  🔐 Códigos QR de Asesores
   </h1>
 
   <div id="contenedorNotificaciones"></div>
 
-  <div class="kpi">
-
-    Asesores registrados
-
-    <br><br>
-
-    <span id="kpiAsesores">
-      0
-    </span>
-
-  </div>
-
+  
    <div style="text-align:center;margin-bottom:20px;">
 
-  <button
-    id="btnNuevoAsesor"
-    style="
-      background:#2563eb;
-      color:white;
-      border:none;
-      border-radius:12px;
-      padding:12px 20px;
-      font-size:16px;
-      cursor:pointer;
-    ">
-
-    ➕ Nuevo asesor
-
-  </button>
-
+ 
 </div> 
 
   <div id="lista"></div>
 
 </div>
 
-<div
-  id="modalAsesor"
-  style="
-    display:none;
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,.7);
-    justify-content:center;
-    align-items:center;
-    z-index:9999;
-  ">
-
-  <div
-    style="
-      background:#111827;
-      padding:25px;
-      border-radius:18px;
-      width:90%;
-      max-width:500px;
-    ">
-
-    <h2 id="tituloModalAsesor">
-     Nuevo asesor inmobiliario
-    </h2>
-
-   <div style="margin-bottom:12px;">
-
-  <label>
-    Nombre
-  </label>
-
-  <input
-    id="nombreAsesor"
-    type="text"
-    style="
-      width:100%;
-      padding:10px;
-      margin-top:5px;
-      border-radius:8px;
-      border:none;
-    ">
-
-</div>
-
-<div style="margin-bottom:12px;">
-
-  <label>
-    Teléfono
-  </label>
-
-  <input
-    id="telefonoAsesor"
-    type="text"
-    style="
-      width:100%;
-      padding:10px;
-      margin-top:5px;
-      border-radius:8px;
-      border:none;
-    ">
-
-</div>
-
-<div style="margin-bottom:12px;">
-
-  <label>
-    Empresa
-  </label>
-
-  <input
-    id="empresaAsesor"
-    type="text"
-    style="
-      width:100%;
-      padding:10px;
-      margin-top:5px;
-      border-radius:8px;
-      border:none;
-    ">
-
-</div>
-
-<div style="margin-bottom:12px;">
-
-  <label>
-
-    <input
-      id="vigenciaIndefinida"
-      type="checkbox"
-      checked>
-
-    Vigencia indefinida
-
-  </label>
-
-</div>
-
-<div style="margin-bottom:20px;">
-
-  <label>
-    Fecha de vencimiento
-  </label>
-
-  <input
-    id="fechaVencimiento"
-    type="date"
-    disabled
-    style="
-      width:100%;
-      padding:10px;
-      margin-top:5px;
-      border-radius:8px;
-      border:none;
-    ">
-
-</div>
-
-<div
-  style="
-    display:flex;
-    gap:10px;
-    justify-content:flex-end;
-  ">
-
-  <button id="btnGuardarAsesor">
-
-    Guardar
-
-  </button>
-
-  <button id="btnCerrarModal">
-
-    Cerrar
-
-  </button>
-
-</div>
-
-   </div>
-
-</div>
-
-<script>
+<script>    
 
 let asesores = [];
-
-let asesorEditando = null;  
 
 let notificacionActual = null;
 
@@ -394,12 +221,6 @@ async function cargar(){
 
   renderizar();
 
-  document.getElementById(
-    "kpiAsesores"
-  ).innerText =
-    asesores.length;
-
-  
 }
 
 function renderizar(){
@@ -495,43 +316,33 @@ function renderizar(){
     gap:10px;
   ">
 
-  <button
-    onclick="editarAsesor(
-      '${a.asesor_id}'
-    )">
-
-    ✏ Editar
-
-  </button>
-
   ${
-    a.activo
+    a.qr_generado
     ?
     `
       <button
-        onclick="desactivarAsesor(
+        onclick="verQr(
           '${a.asesor_id}'
         )">
 
-        🚫 Desactivar
+        👁 Ver QR
 
       </button>
     `
     :
     `
       <button
-        onclick="reactivarAsesor(
+        onclick="generarQr(
           '${a.asesor_id}'
         )">
 
-        ✅ Reactivar
+        🔐 Generar QR
 
       </button>
     `
   }
 
 </div>
-
       </div>
 
     `;
@@ -542,292 +353,55 @@ function renderizar(){
 
 }
 
-  function actualizarVigencia(){
-
-  const indefinida =
-    document.getElementById(
-      "vigenciaIndefinida"
-    ).checked;
-
-  document
-    .getElementById(
-      "fechaVencimiento"
-    )
-    .disabled =
-    indefinida;
-
-}
-
-async function guardarAsesor(){
-
-  const nombre =
-    document.getElementById(
-      "nombreAsesor"
-    ).value.trim();
-
-  const telefono =
-    document.getElementById(
-      "telefonoAsesor"
-    ).value.trim();
-
-  const empresa =
-    document.getElementById(
-      "empresaAsesor"
-    ).value.trim();
-
-  const vigenciaIndefinida =
-    document.getElementById(
-      "vigenciaIndefinida"
-    ).checked;
-
-  const fechaVencimiento =
-    document.getElementById(
-      "fechaVencimiento"
-    ).value || null;
-
-  if(!nombre){
-
-   mostrarNotificacion(
-  "❌ Debe indicar el nombre del asesor",
-  "error"
-);
-
-    return;
-
-  }
-
-  if(
-    !vigenciaIndefinida &&
-    !fechaVencimiento
-  ){
-
-    mostrarNotificacion(
-  "❌ Debe indicar la fecha de vencimiento",
-  "error"
-);
-
-    return;
-
-  }
-
- const esEdicion =
-  asesorEditando !== null;
-
-let error = null;
-
-if(esEdicion){
-
-  const resultado =
-    await supabaseClient.rpc(
-      "actualizar_asesor_inmobiliario",
-      {
-        p_asesor_id:
-          asesorEditando,
-
-        p_nombre:
-          nombre,
-
-        p_telefono:
-          telefono,
-
-        p_empresa:
-          empresa,
-
-        p_vigencia_indefinida:
-          vigenciaIndefinida,
-
-        p_fecha_vencimiento:
-          fechaVencimiento
-      }
-    );
-
-  error =
-    resultado.error;
-
-}
-else{
-
-  const resultado =
-    await supabaseClient.rpc(
-      "crear_asesor_inmobiliario",
-      {
-        p_nombre:
-          nombre,
-
-        p_telefono:
-          telefono,
-
-        p_empresa:
-          empresa,
-
-        p_vigencia_indefinida:
-          vigenciaIndefinida,
-
-        p_fecha_vencimiento:
-          fechaVencimiento
-      }
-    );
-
-  error =
-    resultado.error;
-
-}
-
-if(error){
-
-  mostrarNotificacion(
-    `❌ ${error.message}`,
-    "error"
-  );
-
-  return;
-
-}
-
-actualizarVigencia();
-
-await cargar();
-
-document
-  .getElementById(
-    "modalAsesor"
-  )
-  .style.display =
-  "none";
-
-asesorEditando = null;
-
-  
-mostrarNotificacion(
-  esEdicion
-    ? "✅ Información actualizada correctamente"
-    : "✅ Asesor registrado correctamente",
-  "exito"
-);
-
-}
-
-function editarAsesor(id){
-
-  const asesor =
-    asesores.find(
-      a => a.asesor_id === id
-    );
-
-  if(!asesor){
-    return;
-  }
-
-  asesorEditando = id;
-
-  document.getElementById(
-  "tituloModalAsesor"
-).innerText =
-  "Editar asesor inmobiliario";
-
-  document.getElementById(
-    "nombreAsesor"
-  ).value =
-    asesor.nombre || "";
-
-  document.getElementById(
-    "telefonoAsesor"
-  ).value =
-    asesor.telefono || "";
-
-  document.getElementById(
-    "empresaAsesor"
-  ).value =
-    asesor.empresa || "";
-
-  document.getElementById(
-    "vigenciaIndefinida"
-  ).checked =
-    asesor.vigencia_indefinida;
-
-  document.getElementById(
-  "fechaVencimiento"
-).value =
-  asesor.fecha_vencimiento || "";
-
-  actualizarVigencia();
-
-  document
-    .getElementById(
-      "modalAsesor"
-    )
-    .style.display =
-    "flex";
-
-}
-
-async function desactivarAsesor(id){
+  async function generarQr(id){
 
   if(
     !confirm(
-      "¿Desea desactivar este asesor?"
+      "¿Desea generar el código QR para este asesor?"
     )
   ){
     return;
   }
 
-  const { error } =
-    await supabaseClient.rpc(
-      "desactivar_asesor_inmobiliario",
-      {
-        p_asesor_id: id
-      }
-    );
+  const {
+    error
+  } =
+  await supabaseClient.rpc(
+    "generar_qr_asesor",
+    {
+      p_asesor_id:id
+    }
+  );
 
   if(error){
 
-  mostrarNotificacion(
-    `❌ ${error.message}`,
-    "error"
-  );
-
-  return;
-
-}
-
-  await cargar();
-
-  mostrarNotificacion(
-  "✅ Asesor desactivado correctamente",
-  "exito"
-);
-
-}
-async function reactivarAsesor(id){
-
-  const { error } =
-    await supabaseClient.rpc(
-      "reactivar_asesor_inmobiliario",
-      {
-        p_asesor_id: id
-      }
+    mostrarNotificacion(
+      `❌ ${error.message}`,
+      "error"
     );
 
-  if(error){
+    return;
+
+  }
 
   mostrarNotificacion(
-    `❌ ${error.message}`,
-    "error"
+    "✅ Código QR generado correctamente",
+    "exito"
   );
-
-  return;
-
-}
 
   await cargar();
 
+}
+
+  function verQr(id){
+
   mostrarNotificacion(
-  "✅ Asesor reactivado correctamente",
-  "exito"
-);
+    "🚧 Pantalla de QR pendiente",
+    "exito"
+  );
 
 }
-  
+
 window.addEventListener(
   "DOMContentLoaded",
   async ()=>{
@@ -838,96 +412,8 @@ window.addEventListener(
 
     await cargar();
 
-   document
-  .getElementById(
-    "btnNuevoAsesor"
-  )
-  .addEventListener(
-    "click",
-    ()=>{
-
-  asesorEditando = null;  
-
-  document.getElementById(
-  "tituloModalAsesor"
-).innerText =
-  "Nuevo asesor inmobiliario";    
-
-  document.getElementById(
-    "nombreAsesor"
-  ).value = "";
-
-  document.getElementById(
-    "telefonoAsesor"
-  ).value = "";
-
-  document.getElementById(
-    "empresaAsesor"
-  ).value = "";
-
-  document.getElementById(
-    "vigenciaIndefinida"
-  ).checked = true;
-
-  document.getElementById(
-    "fechaVencimiento"
-  ).value = "";
-
-  actualizarVigencia();
-
-  document
-  .getElementById(
-    "modalAsesor"
-  )
-  .style.display =
-  "flex";
-
-    }
-  );
-   document
-  .getElementById(
-    "vigenciaIndefinida"
-  )
-  .addEventListener(
-    "change",
-    actualizarVigencia
-  );
-
-actualizarVigencia(); 
-
-  document
-  .getElementById(
-    "btnCerrarModal"
-  )
-  .addEventListener(
-    "click",
-    ()=>{
-
-      
-
-    asesorEditando = null;  
-
-      document
-        .getElementById(
-          "modalAsesor"
-        )
-        .style.display =
-        "none";
-
-    }
-  );  
-
-  document
-  .getElementById(
-    "btnGuardarAsesor"
-  )
-  .addEventListener(
-    "click",
-    guardarAsesor
-  );
-    
   }
-);
+);    
 
 </script>
 
