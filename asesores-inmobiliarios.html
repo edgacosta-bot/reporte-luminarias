@@ -275,6 +275,8 @@ h1{
 
 let asesores = [];
 
+let asesorEditando = null;  
+
 async function cargar(){
 
   const { data, error } =
@@ -569,9 +571,50 @@ async function guardarAsesor(){
 
 function editarAsesor(id){
 
-  alert(
-    "Editar asesor: " + id
-  );
+  const asesor =
+    asesores.find(
+      a => a.asesor_id === id
+    );
+
+  if(!asesor){
+    return;
+  }
+
+  asesorEditando = id;
+
+  document.getElementById(
+    "nombreAsesor"
+  ).value =
+    asesor.nombre || "";
+
+  document.getElementById(
+    "telefonoAsesor"
+  ).value =
+    asesor.telefono || "";
+
+  document.getElementById(
+    "empresaAsesor"
+  ).value =
+    asesor.empresa || "";
+
+  document.getElementById(
+    "vigenciaIndefinida"
+  ).checked =
+    asesor.vigencia_indefinida;
+
+  document.getElementById(
+    "fechaVencimiento"
+  ).value =
+    asesor.fecha_vencimiento || "";
+
+  actualizarVigencia();
+
+  document
+    .getElementById(
+      "modalAsesor"
+    )
+    .style.display =
+    "flex";
 
 }
 
