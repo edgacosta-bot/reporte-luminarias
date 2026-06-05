@@ -6,6 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Credencial Trabajador Hogar</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="auth.js"></script>  
+
 <style>
 body {
   margin: 0;
@@ -116,6 +120,18 @@ h2 {
     📲 Enviar por WhatsApp
   </button>
 
+  <button
+  id="btnRegenerar"
+  class="btn-wa"
+  style="
+    background:#dc2626;
+    margin-top:10px;
+  ">
+
+  ♻ Generar nuevo QR
+
+</button>
+
   <div class="footer">
     Deberá mostrar este código al ingresar y salir del fraccionamiento
   </div>
@@ -129,10 +145,20 @@ h2 {
 // 🔎 PARAMETROS
 const params = new URLSearchParams(window.location.search);
 
-const codigo = params.get("qr");
-const nombre = params.get("nombre");
-const empresa = params.get("empresa");
-const origen = params.get("origen");
+const asesorId =
+  params.get("asesor_id");
+
+const codigo =
+  params.get("qr");
+
+const nombre =
+  params.get("nombre");
+
+const empresa =
+  params.get("empresa");
+
+const origen =
+  params.get("origen");
 
 // 🔐 VALIDACIÓN
 if (!codigo) {
@@ -163,8 +189,15 @@ document.getElementById("detalle").innerText =
   empresa || "";
 
 // 🔥 OCULTAR BOTÓN EN WA
-if (origen !== "admin" && origen !== "residente") {
-  document.getElementById("btnWA").style.display = "none";
+if (origen !== "admin") {
+
+  document
+    .getElementById(
+      "btnRegenerar"
+    )
+    .style.display =
+      "none";
+
 }
 
 // 📲 WHATSAPP
@@ -187,6 +220,30 @@ document.getElementById("btnWA").addEventListener("click", () => {
 
   window.open(wa, "_blank");
 });
+
+document
+  .getElementById(
+    "btnRegenerar"
+  )
+  .addEventListener(
+    "click",
+    async ()=>{
+
+      if(
+        !confirm(
+          "¿Desea generar un nuevo código QR?\n\nEl código actual dejará de funcionar inmediatamente."
+        )
+      ){
+        return;
+      }
+
+      console.log(
+        "REGENERAR",
+        asesorId
+      );
+
+    }
+  );  
 
 </script>
 
