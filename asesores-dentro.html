@@ -138,6 +138,38 @@ async function cargar(){
 
   asesores = data || [];
 
+  const totalAsesores =
+    asesores.length;
+
+  const totalClientes =
+    asesores.reduce(
+      (s,a)=>
+        s +
+        Number(
+          a.clientes_dentro || 0
+        ),
+      0
+    );
+
+  document.getElementById(
+    "kpiAsesores"
+  ).innerText =
+    totalAsesores;
+
+  document.getElementById(
+    "kpiClientes"
+  ).innerText =
+    totalClientes;
+
+  console.log(
+    "Asesores:",
+    asesores
+  );
+
+}
+
+  asesores = data || [];
+
   console.log(
     "Asesores:",
     asesores
