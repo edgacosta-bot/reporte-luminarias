@@ -330,22 +330,12 @@ function mostrarNotificacion(
   tipo = "exito"
 ){
 
-  console.log(
-  "MOSTRAR NOTIFICACION",
-  mensaje,
-  tipo
-);
-
-  const contenedor =
+   const contenedor =
     document.getElementById(
       "contenedorNotificaciones"
     );
 
-  console.log(
-  "CONTENEDOR",
-  contenedor
-);
-
+  
   if(notificacionActual){
     notificacionActual.remove();
   }
@@ -409,10 +399,7 @@ async function cargar(){
   ).innerText =
     asesores.length;
 
-  console.log(
-    asesores
-  );
-
+  
 }
 
 function renderizar(){
@@ -710,10 +697,6 @@ document
 
 asesorEditando = null;
 
-console.log(
-  "LLEGO A NOTIFICACION",
-  esEdicion
-);
   
 mostrarNotificacion(
   esEdicion
