@@ -575,19 +575,58 @@ function editarAsesor(id){
 
 }
 
-function desactivarAsesor(id){
+async function desactivarAsesor(id){
 
-  alert(
-    "Desactivar asesor: " + id
-  );
+  if(
+    !confirm(
+      "¿Desea desactivar este asesor?"
+    )
+  ){
+    return;
+  }
+
+  const { error } =
+    await supabaseClient.rpc(
+      "desactivar_asesor_inmobiliario",
+      {
+        p_asesor_id: id
+      }
+    );
+
+  if(error){
+
+    alert(
+      error.message
+    );
+
+    return;
+
+  }
+
+  await cargar();
 
 }
+async function reactivarAsesor(id){
 
-function reactivarAsesor(id){
+  const { error } =
+    await supabaseClient.rpc(
+      "reactivar_asesor_inmobiliario",
+      {
+        p_asesor_id: id
+      }
+    );
 
-  alert(
-    "Reactivar asesor: " + id
-  );
+  if(error){
+
+    alert(
+      error.message
+    );
+
+    return;
+
+  }
+
+  await cargar();
 
 }
   
