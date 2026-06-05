@@ -513,56 +513,65 @@ async function guardarAsesor(){
 
   }
 
-  const { data, error } =
-  await supabaseClient.rpc(
-    "crear_asesor_inmobiliario",
-    {
-      p_nombre: nombre,
-      p_telefono: telefono,
-      p_empresa: empresa,
-      p_vigencia_indefinida:
-        vigenciaIndefinida,
-      p_fecha_vencimiento:
-        fechaVencimiento
-    }
-  );
+ let error = null;
 
+if(asesorEditando){
 
-  if(error){
+  const resultado =
+    await supabaseClient.rpc(
+      "actualizar_asesor_inmobiliario",
+      {
+        p_asesor_id:
+          asesorEditando,
 
-    alert(
-      error.message
+        p_nombre:
+          nombre,
+
+        p_telefono:
+          telefono,
+
+        p_empresa:
+          empresa,
+
+        p_vigencia_indefinida:
+          vigenciaIndefinida,
+
+        p_fecha_vencimiento:
+          fechaVencimiento
+      }
     );
 
-    return;
+  error =
+    resultado.error;
 
-  }
+}
+else{
 
-  document.getElementById(
-    "modalAsesor"
-  ).style.display =
-    "none";
+  const resultado =
+    await supabaseClient.rpc(
+      "crear_asesor_inmobiliario",
+      {
+        p_nombre:
+          nombre,
 
-  document.getElementById(
-    "nombreAsesor"
-  ).value = "";
+        p_telefono:
+          telefono,
 
-  document.getElementById(
-    "telefonoAsesor"
-  ).value = "";
+        p_empresa:
+          empresa,
 
-  document.getElementById(
-    "empresaAsesor"
-  ).value = "";
+        p_vigencia_indefinida:
+          vigenciaIndefinida,
 
-  document.getElementById(
-    "vigenciaIndefinida"
-  ).checked = true;
+        p_fecha_vencimiento:
+          fechaVencimiento
+      }
+    );
 
-  document.getElementById(
-    "fechaVencimiento"
-  ).value = "";
+  error =
+    resultado.error;
 
+}
   actualizarVigencia();
 
   await cargar();
@@ -605,6 +614,7 @@ function editarAsesor(id){
   document.getElementById(
     "fechaVencimiento"
   ).value =
+    asesorEditando = null;
     asesor.fecha_vencimiento || "";
 
   actualizarVigencia();
@@ -740,6 +750,8 @@ actualizarVigencia();
   .addEventListener(
     "click",
     ()=>{
+
+    asesorEditando = null;  
 
       document
         .getElementById(
