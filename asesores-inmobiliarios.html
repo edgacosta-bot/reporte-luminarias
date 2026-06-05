@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Gestionar Asesores</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="auth.js"></script>
+
+<style>
+
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+}
+
+.kpi{
+  background:#111827;
+  border-radius:18px;
+  padding:20px;
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.kpi span{
+  font-size:34px;
+  font-weight:bold;
+}
+
+.card{
+  background:#111827;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:12px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>
+    👤 Gestionar Asesores
+  </h1>
+
+  <div class="kpi">
+
+    Asesores registrados
+
+    <br><br>
+
+    <span id="kpiAsesores">
+      0
+    </span>
+
+  </div>
+
+  <div id="lista"></div>
+
+</div>
+
+<script>
+
+let asesores = [];
+
+async function cargar(){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_asesores_inmobiliarios"
+    );
+
+  if(error){
+
+    console.log(error);
+
+    return;
+
+  }
+
+  asesores = data || [];
+
+  document.getElementById(
+    "kpiAsesores"
+  ).innerText =
+    asesores.length;
+
+  console.log(
+    asesores
+  );
+
+}
+
+window.addEventListener(
+  "DOMContentLoaded",
+  async ()=>{
+
+    await protegerPagina([
+      "administracion"
+    ]);
+
+    await cargar();
+
+  }
+);
+
+</script>
+
+</body>
+</html>
