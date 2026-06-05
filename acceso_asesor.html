@@ -98,7 +98,7 @@ button {
 
 <div class="container">
 
-<h2 id="titulo">🏠 Acceso hogar</h2>
+<h2 id="titulo">🏡 Acceso asesor inmobiliario</h2>
 
 <h1 id="estado">Validando...</h1>
 <div id="detalle"></div>
@@ -107,7 +107,7 @@ button {
 <button id="btnValidar" class="btn-primary">Validar</button>
 
 <button id="btnRegistrar" class="btn-success hidden">Registrar</button>
-<button id="btnNotificar" class="btn-warning hidden">Notificar</button>
+
 
 </div>
 
@@ -115,11 +115,8 @@ button {
 
 const qr = new URLSearchParams(window.location.search).get("qr");
 
-let trabajador = null;
-let residente = null;
-let estadoPago = "";
+let asesor = null;
 let vigilante = null;
-let accesoAbierto = null;
 let tipoAccion = "";
 
 init();
@@ -130,80 +127,79 @@ async function init(){
   const { data: sessionData } = await supabaseClient.auth.getSession();
   
   // 🔹 VALIDAR QR
- const { data, error } = await supabaseClient
-  .rpc("validar_trabajador_hogar", { qr });
 
-if (error) {
-  console.error("ERROR VALIDAR QR:", error);
-  pintar("Error al validar QR","error");
+const { data, error } =
+  await supabaseClient.rpc(
+    "obtener_asesor_por_qr",
+    {
+      p_qr_codigo: qr
+    }
+  );
+
+if(error){
+
+  console.error(error);
+
+  pintar(
+    "Error al validar QR",
+    "error"
+  );
+
   return;
 }
 
-  if (!data || data.length === 0) {
-  pintar("QR inválido o trabajador inactivo","error");
+if(!data || data.length === 0){
+
+  pintar(
+    "QR inválido",
+    "error"
+  );
+
   return;
 }
 
-trabajador = data[0];
-  
-const hoy = new Date().toISOString().split("T")[0];
+asesor = data[0];
 
-// ❌ FUERA DE VIGENCIA
-if (
-  (trabajador.fecha_inicio && trabajador.fecha_inicio > hoy) ||
-  (trabajador.fecha_fin && trabajador.fecha_fin < hoy)
-) {
-  pintar("QR fuera de vigencia","error");
-  return;
-}  
+if(!asesor.activo){
 
- 
-  // 🔹 RESIDENTE
-  const { data: resData, error: resError } = await supabaseClient
-  .rpc("obtener_residente_para_acceso", { res_id: trabajador.residente_id });
+  pintar(
+    "Asesor desactivado",
+    "error"
+  );
 
-if (resError) {
-  console.error("ERROR RESIDENTE:", resError);
-  ui.error("Error obteniendo residente");
   return;
 }
 
-  if (!resData || resData.length === 0) {
-    ui.error("Residente no encontrado");
-    return;
-  }
+if(!asesor.vigente){
 
-  residente = resData[0];
-  estadoPago = (residente.estado_pago || "").toLowerCase();
+  pintar(
+    "Asesor no vigente",
+    "error"
+  );
 
-
-  // 🔹 ACCESO ABIERTO
-  const { data: abiertoData, error: abiertoError } = await supabaseClient
-  .rpc("obtener_acceso_abierto", { trab_id: trabajador.id });
-
-if (abiertoError) {
-  console.error("ERROR ACCESO ABIERTO:", abiertoError);
-  ui.error("Error consultando acceso");
   return;
 }
 
-  accesoAbierto = abiertoData && abiertoData.length ? abiertoData[0] : null;
+tipoAccion =
+  asesor.asesor_dentro
+    ? "salida"
+    : "entrada";
 
-  tipoAccion = accesoAbierto ? "salida" : "entrada";
-  console.log("ACCESO ABIERTO:", accesoAbierto);
-  console.log("TIPO ACCION:", tipoAccion);
+renderDetalle();
 
-  
+estado.innerText =
+  tipoAccion === "salida"
+    ? "Validar salida"
+    : "Validar acceso";
 
-  renderDetalle();
-  estado.innerText = tipoAccion === "salida"
-  ? "Validar salida"
-  : "Validar acceso";
-  titulo.innerText = tipoAccion === "salida"
-  ? "🏠 Salida trabajador"
-  : "🏠 Acceso hogar";
-  btnRegistrar.classList.add("hidden");
-  btnNotificar.classList.add("hidden");
+titulo.innerText =
+  tipoAccion === "salida"
+    ? "🏡 Salida asesor"
+    : "🏡 Acceso asesor";
+
+btnRegistrar.classList.add(
+  "hidden"
+);
 }
 
 // 🔹 VALIDAR PIN
@@ -239,176 +235,156 @@ if (pinError) {
 
  if(tipoAccion === "salida"){
 
-  console.log("FLUJO: SALIDA");
+  document.body.className =
+    "warn";
 
-  document.body.className = "warn";
-  estado.innerText = "Autorizar salida";
+  estado.innerText =
+    "Autorizar salida";
 
-  btnRegistrar.innerText = "Registrar salida";
-  btnRegistrar.classList.remove("hidden");
+  btnRegistrar.innerText =
+    "Registrar salida";
 
-  // 🔥 BLOQUEO TOTAL DE FLUJO DE ENTRADA
-  btnNotificar.classList.add("hidden");
+  btnRegistrar.classList.remove(
+    "hidden"
+  );
 
   return;
 }
 
-  evaluarEstadoEntrada();
+evaluarEstadoEntrada();
 };
 
 // 🔹 ENTRADA
+
 function evaluarEstadoEntrada(){
 
-  if(estadoPago === "moroso"){
+  document.body.className =
+    "ok";
 
-    document.body.className = "error";
-    estado.innerText = "Acceso NO permitido por irregularidad en cuotas";
+  estado.innerText =
+    "Acceso permitido";
 
-    btnRegistrar.innerText = "Registrar acceso con presencia del residente";
+  btnRegistrar.innerText =
+    "Registrar acceso";
 
-    btnRegistrar.classList.remove("hidden");
-    btnNotificar.classList.remove("hidden");
+  btnRegistrar.classList.remove(
+    "hidden"
+  );
 
-    btnNotificar.parentNode.insertBefore(btnNotificar, btnRegistrar);
-
-    return;
-  }
-
-  if(estadoPago === "atraso_1"){
-    document.body.className = "warn";
-    estado.innerText = "Acceso permitido (con atraso en pago de cuotas)";
-  } else {
-    document.body.className = "ok";
-    estado.innerText = "Acceso permitido";
-  }
-
-  btnRegistrar.classList.remove("hidden");
-
-// asegurar orden correcto
-btnRegistrar.style.order = "2";
-btnNotificar.style.order = "1";
 }
-
 // 🔹 REGISTRAR
 btnRegistrar.onclick = async () => {
 
-  // 🔥 SALIDA
+  btnRegistrar.disabled = true;
+  btnRegistrar.innerText = "Procesando...";
+
+  // ====================================
+  // SALIDA
+  // ====================================
+
   if(tipoAccion === "salida"){
 
-    btnRegistrar.disabled = true;
-    btnRegistrar.innerText = "Procesando...";
+    const { data, error } =
+      await supabaseClient.rpc(
+        "registrar_salida_asesor",
+        {
+          p_asesor_id: asesor.asesor_id,
+          p_vigilante_id: vigilante.id
+        }
+      );
 
-const { data, error } = await supabaseClient.rpc("registrar_salida_trabajador", {
-  p_acceso_id: accesoAbierto.id,
-  p_vigilante_id: vigilante.id
-});
+    if(error){
 
-if (error) {
-  console.error("ERROR SALIDA:", error);
-  ui.error("❌ Error al registrar salida");
-  btnRegistrar.disabled = false;
-  btnRegistrar.innerText = "Registrar";
-  return;
-}
+      console.error(error);
 
-// 🔴 VALIDACIÓN REAL
-if (!data || !data[0]?.actualizado) {
-  ui.warn("⚠️ Este trabajador ya tenía salida registrada");
-  btnRegistrar.disabled = false;
-  btnRegistrar.innerText = "Registrar";
-  return;
-}
+      ui.error(
+        "Error al registrar salida"
+      );
 
-    
-console.log("RESPUESTA SALIDA:", data);
+      btnRegistrar.disabled = false;
 
-if (error) {
-  console.error("ERROR SALIDA:", error);
-  ui.error("❌ Error al registrar salida");
-  btnRegistrar.disabled = false;
-  btnRegistrar.innerText = "Registrar";
-  return;
-}
+      btnRegistrar.innerText =
+        "Registrar salida";
 
-// 🔴 VALIDACIÓN REAL (CLAVE)
-if (!data || data.length === 0) {
-  ui.error("❌ No se pudo registrar salida (registro no encontrado)");
-  btnRegistrar.disabled = false;
-  btnRegistrar.innerText = "Registrar";
-  return;
-}
+      return;
+    }
 
-if (error) {
-  console.error("ERROR SALIDA:", error);
-  ui.error("❌ Error al registrar salida");
-  btnRegistrar.disabled = false;
-  btnRegistrar.innerText = "Registrar";
-  return;
-}
+    const visitantesDentro =
+      data?.[0]?.visitantes_dentro || 0;
 
-    document.body.className = "ok";
-    estado.innerText = "Salida registrada correctamente";
-    btnRegistrar.classList.add("hidden");
+    document.body.className =
+      visitantesDentro > 0
+        ? "warn"
+        : "ok";
 
-    const mensaje = `SIGVIC informa: Estimado Residente, en este momento su empleado doméstico ${trabajador.nombre}, salió del fraccionamiento. Gracias.`;
+    estado.innerText =
+      visitantesDentro > 0
+        ? `Salida registrada. Permanecen ${visitantesDentro} visitantes dentro`
+        : "Salida registrada correctamente";
 
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
+    btnRegistrar.classList.add(
+      "hidden"
+    );
 
     return;
   }
 
-  // 🔹 ENTRADA
-  const { error } = await supabaseClient.rpc("registrar_entrada_trabajador", {
-  p_trabajador_id: trabajador.id,
-  p_vigilante_id: vigilante.id
-});
+  // ====================================
+  // ENTRADA
+  // ====================================
 
-if (error) {
-  console.error("ERROR ENTRADA:", error);
-  ui.error("❌ Error al registrar acceso");
-  btnRegistrar.disabled = false;
-  btnRegistrar.innerText = "Registrar";
-  return;
-}
+  const { error } =
+    await supabaseClient.rpc(
+      "registrar_entrada_asesor",
+      {
+        p_asesor_id: asesor.asesor_id,
+        p_vigilante_id: vigilante.id
+      }
+    );
 
-  estado.innerText = "Acceso registrado";
+  if(error){
 
-  btnRegistrar.classList.add("hidden");
-  btnNotificar.classList.add("hidden");
-  btnRegistrar.disabled = false;
+    console.error(error);
 
-  if(estadoPago === "moroso"){
-    setTimeout(() => window.close(), 1500);
+    ui.error(
+      "Error al registrar acceso"
+    );
+
+    btnRegistrar.disabled = false;
+
+    btnRegistrar.innerText =
+      "Registrar acceso";
+
     return;
   }
 
-  btnNotificar.classList.remove("hidden");
-};
+  document.body.className =
+    "ok";
 
-// 🔹 NOTIFICAR
-btnNotificar.onclick = () => {
+  estado.innerText =
+    "Acceso registrado";
 
-  let mensaje = "";
+  btnRegistrar.classList.add(
+    "hidden"
+  );
 
-  if(estadoPago === "moroso"){
-    mensaje = `SIGVIC informa: Estimado residente, su empleado ${trabajador.nombre} se encuentra en caseta, le solicitamos su asistencia para que pueda permitírsele el acceso. Gracias`;
-  }
-  else if(estadoPago === "atraso_1"){
-    mensaje = `SIGVIC informa: Estimado residente, en este momento su empleado doméstico ${trabajador.nombre} ingresó al fraccionamiento. Gracias`;
-  }
-  else{
-    mensaje = `SIGVIC informa: Estimado residente, su empleado doméstico ${trabajador.nombre} ingresó al fraccionamiento. Gracias.`;
-  }
-
-  window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
 };
 
 // 🔹 UI
 function renderDetalle(){
+
   detalle.innerHTML = `
-    <p><b>${trabajador.nombre}</b></p>
-    <p>${residente.privada}-${residente.casa}</p>
+
+    <p>
+      <b>${asesor.nombre}</b>
+    </p>
+
+    <p>
+      ${asesor.empresa}
+    </p>
+
   `;
+
 }
 
 function pintar(texto, color){
@@ -419,8 +395,7 @@ function pintar(texto, color){
   pin.style.display = "none";
   btnValidar.style.display = "none";
   btnRegistrar.classList.add("hidden");
-  btnNotificar.classList.add("hidden");
-}
+  }
 
 function ocultarValidacion(){
   pin.style.display = "none";
