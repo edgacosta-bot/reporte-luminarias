@@ -408,9 +408,16 @@ function renderizar(){
       "vigenciaIndefinida"
     ).checked;
 
-  document.getElementById(
-    "fechaVencimiento"
-  ).disabled =
+  console.log(
+    "Checkbox:",
+    indefinida
+  );
+
+  document
+    .getElementById(
+      "fechaVencimiento"
+    )
+    .disabled =
     indefinida;
 
 }
