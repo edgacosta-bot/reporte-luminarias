@@ -408,17 +408,117 @@ function renderizar(){
       "vigenciaIndefinida"
     ).checked;
 
-  console.log(
-    "Checkbox:",
-    indefinida
-  );
-
   document
     .getElementById(
       "fechaVencimiento"
     )
     .disabled =
     indefinida;
+
+}
+
+async function guardarAsesor(){
+
+  const nombre =
+    document.getElementById(
+      "nombreAsesor"
+    ).value.trim();
+
+  const telefono =
+    document.getElementById(
+      "telefonoAsesor"
+    ).value.trim();
+
+  const empresa =
+    document.getElementById(
+      "empresaAsesor"
+    ).value.trim();
+
+  const vigenciaIndefinida =
+    document.getElementById(
+      "vigenciaIndefinida"
+    ).checked;
+
+  const fechaVencimiento =
+    document.getElementById(
+      "fechaVencimiento"
+    ).value || null;
+
+  if(!nombre){
+
+    alert(
+      "Debe indicar el nombre del asesor"
+    );
+
+    return;
+
+  }
+
+  if(
+    !vigenciaIndefinida &&
+    !fechaVencimiento
+  ){
+
+    alert(
+      "Debe indicar la fecha de vencimiento"
+    );
+
+    return;
+
+  }
+
+  const { error } =
+    await supabaseClient.rpc(
+      "crear_asesor_inmobiliario",
+      {
+        p_nombre: nombre,
+        p_telefono: telefono,
+        p_empresa: empresa,
+        p_vigencia_indefinida:
+          vigenciaIndefinida,
+        p_fecha_vencimiento:
+          fechaVencimiento
+      }
+    );
+
+  if(error){
+
+    alert(
+      error.message
+    );
+
+    return;
+
+  }
+
+  document.getElementById(
+    "modalAsesor"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "nombreAsesor"
+  ).value = "";
+
+  document.getElementById(
+    "telefonoAsesor"
+  ).value = "";
+
+  document.getElementById(
+    "empresaAsesor"
+  ).value = "";
+
+  document.getElementById(
+    "vigenciaIndefinida"
+  ).checked = true;
+
+  document.getElementById(
+    "fechaVencimiento"
+  ).value = "";
+
+  actualizarVigencia();
+
+  await cargar();
 
 }
   
@@ -479,6 +579,15 @@ actualizarVigencia();
     }
   );  
 
+  document
+  .getElementById(
+    "btnGuardarAsesor"
+  )
+  .addEventListener(
+    "click",
+    guardarAsesor
+  );
+    
   }
 );
 
