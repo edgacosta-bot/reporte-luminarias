@@ -90,7 +90,18 @@ button {
 }
 
 .hidden { display:none; }
+.nombre-principal{
+  font-size: 42px;
+  font-weight: 700;
+  margin: 20px 0 10px 0;
+}
+
+.empresa-secundaria{
+  font-size: 24px;
+  opacity: 0.95;
+}  
 </style>
+
 
 </head>
 
@@ -339,15 +350,8 @@ btnRegistrar.onclick = async () => {
       visitantesDentro > 0
         ? `Salida registrada. Permanecen ${visitantesDentro} visitantes dentro`
         : "Salida registrada correctamente";
-    detalle.innerHTML = `
-  <p>
-    <b>${asesor.nombre}</b>
-  </p>
 
-  <p>
-    ${asesor.empresa}
-  </p>
-`;
+renderDetalle();
 
     btnRegistrar.classList.add(
       "hidden"
@@ -389,16 +393,9 @@ btnRegistrar.onclick = async () => {
     "ok";
 
   estado.innerText =
-  "Acceso registrado correctamente";
-  detalle.innerHTML = `
-  <p>
-    <b>${asesor.nombre}</b>
-  </p>
+    "Acceso registrado correctamente";
 
-  <p>
-    ${asesor.empresa}
-  </p>
-`;
+renderDetalle();
 
   btnRegistrar.classList.add(
     "hidden"
@@ -411,13 +408,13 @@ function renderDetalle(){
 
   detalle.innerHTML = `
 
-    <p>
-      <b>${asesor.nombre}</b>
-    </p>
+    <div class="nombre-principal">
+      ${asesor.nombre}
+    </div>
 
-    <p>
+    <div class="empresa-secundaria">
       ${asesor.empresa}
-    </p>
+    </div>
 
   `;
 
