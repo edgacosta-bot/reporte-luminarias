@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Clientes de Asesor</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
+<script>
+protegerPagina(["vigilante"]);
+</script>
+
+<style>
+
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:18px;
+}
+
+h2{
+  text-align:center;
+}
+
+.card{
+  background:#111827;
+  padding:18px;
+  border-radius:18px;
+  margin-bottom:12px;
+  border-left:6px solid #16a34a;
+}
+
+input,
+select{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  font-size:15px;
+  background:#1f2937;
+  color:white;
+  box-sizing:border-box;
+}
+
+.btn{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:bold;
+  font-size:15px;
+}
+
+.btn-verde{
+  background:#16a34a;
+  color:white;
+}
+
+.nombre{
+  font-size:22px;
+  font-weight:bold;
+  margin-bottom:8px;
+}
+
+.detalle{
+  color:#cbd5e1;
+  font-size:14px;
+}
+
+.vacio{
+  text-align:center;
+  color:#94a3b8;
+  margin-top:20px;
+}
+
+.msg{
+  margin-top:10px;
+  text-align:center;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>
+🏡 Clientes de Asesores
+</h2>
+
+<div class="card">
+
+<h3>
+Registrar cliente
+</h3>
+
+<select id="asesor">
+  <option value="">
+    Seleccione asesor...
+  </option>
+</select>
+
+<br><br>
+
+<input
+  id="cliente"
+  placeholder="Nombre del cliente">
+
+<br><br>
+
+<input
+  id="pin"
+  type="password"
+  placeholder="NIP vigilante">
+
+<br><br>
+
+<button
+  class="btn btn-verde"
+  onclick="registrarCliente()">
+
+  Registrar cliente
+
+</button>
+
+<div
+  id="msgRegistro"
+  class="msg">
+</div>
+
+</div>
+
+<h2 id="tituloClientes">
+👥 Clientes dentro
+</h2>
+
+<div id="clientesDentro">
+Cargando...
+</div>
+
+</div>
