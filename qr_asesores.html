@@ -393,12 +393,31 @@ function renderizar(){
 
 }
 
-  function verQr(id){
+  async function verQr(id){
 
-  mostrarNotificacion(
-    "🚧 Pantalla de QR pendiente",
-    "exito"
+  const {
+    data,
+    error
+  } =
+  await supabaseClient.rpc(
+    "obtener_asesor_qr",
+    {
+      p_asesor_id:id
+    }
   );
+
+  if(error){
+
+    mostrarNotificacion(
+      `❌ ${error.message}`,
+      "error"
+    );
+
+    return;
+
+  }
+
+  console.log(data);
 
 }
 
