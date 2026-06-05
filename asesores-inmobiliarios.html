@@ -401,6 +401,19 @@ function renderizar(){
 
 }
 
+  function actualizarVigencia(){
+
+  const indefinida =
+    document.getElementById(
+      "vigenciaIndefinida"
+    ).checked;
+
+  document.getElementById(
+    "fechaVencimiento"
+  ).disabled =
+    indefinida;
+
+}
   
 window.addEventListener(
   "DOMContentLoaded",
@@ -429,6 +442,17 @@ window.addEventListener(
 
     }
   );
+
+   document
+  .getElementById(
+    "vigenciaIndefinida"
+  )
+  .addEventListener(
+    "change",
+    actualizarVigencia
+  );
+
+actualizarVigencia(); 
 
   document
   .getElementById(
