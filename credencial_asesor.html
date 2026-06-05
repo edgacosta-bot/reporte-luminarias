@@ -371,25 +371,13 @@ mostrarNotificacion(
   "✅ Código QR regenerado correctamente",
   "exito"
 );
-      
-const nuevaUrl =
-  `${window.location.pathname}` +
-  `?asesor_id=${encodeURIComponent(
-    asesorId
-  )}` +
-  `&qr=${encodeURIComponent(
-    data
-  )}` +
-  `&nombre=${encodeURIComponent(
-    nombre || ""
-  )}` +
-  `&empresa=${encodeURIComponent(
-    empresa || ""
-  )}` +
-  `&origen=admin`;
 
-window.location.href =
-  nuevaUrl;
+setTimeout(()=>{
+
+  window.location.href =
+    nuevaUrl;
+
+},2000);
 
     }
   );  
