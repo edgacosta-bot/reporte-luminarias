@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Actividad Inmobiliaria</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="auth.js"></script>
+
+<script src="utils/dates.js"></script>
+
+<style>
+
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+}
+
+.kpi{
+  background:#111827;
+  border-radius:18px;
+  padding:20px;
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.kpi span{
+  font-size:34px;
+  font-weight:bold;
+}
+
+.card{
+  background:#111827;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:12px;
+}
+
+.titulo-asesor{
+
+  font-size:18px;
+
+  font-weight:bold;
+
+  color:#93c5fd;
+
+  margin-bottom:10px;
+
+}
+
+.clientes{
+
+  margin-top:10px;
+
+  padding:10px;
+
+  border-radius:12px;
+
+  background:#1f2937;
+
+}
+
+.dentro{
+  color:#fbbf24;
+  font-weight:bold;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>
+    🏠 Actividad Inmobiliaria
+  </h1>
+
+  <div class="kpi">
+
+    🏠 Asesores dentro
+
+    <br><br>
+
+    <span id="kpiAsesores">
+      0
+    </span>
+
+    <br><br>
+
+    👥 Clientes dentro:
+
+    <b id="kpiClientes">
+      0
+    </b>
+
+  </div>
+
+  <div id="lista"></div>
+
+</div>
+
+</body>
+</html>
