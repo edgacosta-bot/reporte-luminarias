@@ -176,11 +176,7 @@ async function cargar(){
 
   renderizar();
 
-  console.log(
-    "Asesores:",
-    asesores
-  );
-
+  
 }
 
 function renderizar(){
@@ -305,6 +301,11 @@ lista.innerHTML = html;
     ]);
 
     await cargar();
+
+    setInterval(
+  cargar,
+  30000
+);
 
   }
 );
