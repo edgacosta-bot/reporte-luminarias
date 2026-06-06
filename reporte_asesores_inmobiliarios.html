@@ -339,8 +339,7 @@ if(fechaInicio){
   registros =
     registros.filter(
       r =>
-        r.fecha_hora_entrada >=
-        inicioUTC
+        r.fecha_entrada >= inicioUTC
     );
 
 }
@@ -355,8 +354,7 @@ if(fechaFin){
   registros =
     registros.filter(
       r =>
-        r.fecha_hora_entrada <=
-        finUTC
+       r.fecha_entrada <= finUTC
     );
 
 }  
@@ -507,6 +505,8 @@ document.getElementById(
   `;
 
 });
+
+lista.innerHTML = html;  
 
 }
   
@@ -689,8 +689,7 @@ window.addEventListener(
       "vigilante"
     ]);
 
-    await cargarFiltros();
-
+    
     await cargar();
 
   }
