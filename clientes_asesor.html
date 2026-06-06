@@ -420,14 +420,29 @@ async function registrarSalida(
   visitanteId
 ){
 
-  const pin =
-    window.prompt(
-      "Ingrese NIP del vigilante"
-    );
+  const confirmar =
+  await mostrarConfirmacion({
 
-  if(!pin){
-    return;
-  }
+    titulo:
+      "Registrar salida",
+
+    mensaje:
+      "¿Desea registrar la salida de este cliente?"
+
+  });
+
+if(!confirmar){
+  return;
+}
+
+const pin =
+  window.prompt(
+    "Ingrese NIP del vigilante"
+  );
+
+if(!pin){
+  return;
+}
 
   const { data: vigilante } =
     await supabaseClient.rpc(
