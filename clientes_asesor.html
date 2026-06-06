@@ -436,9 +436,10 @@ if(!confirmar){
 }
 
 const pin =
-  window.prompt(
-    "Ingrese NIP del vigilante"
-  );
+  await mostrarSolicitudPin({
+    titulo:"Registrar salida",
+    mensaje:"Ingrese NIP del vigilante"
+  });
 
 if(!pin){
   return;
