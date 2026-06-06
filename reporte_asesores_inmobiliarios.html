@@ -167,7 +167,7 @@ button{
 
 <div class="kpi">
 
-  🏡 Asesores dentro
+  🏡 Asesores ventas dentro
 
   <br><br>
 
@@ -273,7 +273,6 @@ button{
 
 let asesores = [];
 
-let obrasFiltro = []; 
 
 function formatearHoras(horas){
 
@@ -394,7 +393,7 @@ document.getElementById(
   "contadorResultados"
 ).innerHTML = `
 
-  🚚 Dentro:
+  🏡 Dentro:
   <b>${dentro}</b>
 
   &nbsp;&nbsp;|&nbsp;&nbsp;
@@ -546,97 +545,8 @@ async function cargar(){
 
 }  
 
-async function cargarFiltros(){
 
-  const { data, error } =
-    await supabaseClient.rpc(
-      "obtener_obras_filtro_abastecimientos"
-    );
 
-  if(error){
-
-    console.log(error);
-
-    return;
-  }
-
-  obrasFiltro = data || [];
-
-  const privadaSelect =
-    document.getElementById(
-      "filtroPrivada"
-    );
-
-  const privadas =
-    [...new Set(
-      obrasFiltro.map(
-        o => o.privada
-      )
-    )];
-
-  privadas.forEach(p=>{
-
-    privadaSelect.innerHTML += `
-      <option value="${p}">
-        ${p}
-      </option>
-    `;
-
-  });
-
-  actualizarLotes();
-
-}
-
-function actualizarLotes(){
-
-  const privada =
-    document.getElementById(
-      "filtroPrivada"
-    ).value;
-
-  const loteSelect =
-    document.getElementById(
-      "filtroCasa"
-    );
-
-  loteSelect.innerHTML = `
-    <option value="">
-      Todos
-    </option>
-  `;
-
-  let lotes = obrasFiltro;
-
-  if(privada){
-
-    lotes =
-      obrasFiltro.filter(
-        o => o.privada === privada
-      );
-
-  }
-
-  const casasUnicas =
-  [...new Set(
-    lotes.map(
-      l => l.casa
-    )
-  )];
-
-casasUnicas.forEach(casa=>{
-
-  loteSelect.innerHTML += `
-    <option value="${casa}">
-      ${casa}
-    </option>
-  `;
-
-});
-
-  renderizar();
-
-}  
 
 function rangoRapido(dias){
 
