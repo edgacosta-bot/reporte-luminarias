@@ -252,3 +252,99 @@ function mostrarConfirmacion({
   });
 
 }
+
+function mostrarSolicitudPin({
+  titulo = "Validación",
+  mensaje = "Ingrese NIP del vigilante"
+}){
+
+  return new Promise(resolve => {
+
+    crearModalBase();
+
+    document.getElementById(
+      "sigvic-modal-titulo"
+    ).innerHTML =
+      titulo;
+
+    document.getElementById(
+      "sigvic-modal-mensaje"
+    ).innerHTML = `
+
+      <div style="margin-bottom:12px;">
+        ${mensaje}
+      </div>
+
+      <input
+        id="sigvic-pin"
+        type="password"
+        autocomplete="off"
+        style="
+          width:100%;
+          height:48px;
+          border-radius:10px;
+          border:none;
+          padding:0 12px;
+          box-sizing:border-box;
+          font-size:18px;
+          background:#1f2937;
+          color:white;
+        "
+      >
+
+    `;
+
+    document.getElementById(
+      "sigvic-modal-botones"
+    ).innerHTML = `
+
+      <button
+        class="sigvic-btn sigvic-btn-gris"
+        id="sigvic-btn-cancelar">
+
+        Cancelar
+
+      </button>
+
+      <button
+        class="sigvic-btn sigvic-btn-verde"
+        id="sigvic-btn-confirmar">
+
+        Confirmar
+
+      </button>
+
+    `;
+
+    document.getElementById(
+      "sigvic-pin"
+    ).focus();
+
+    document.getElementById(
+      "sigvic-btn-cancelar"
+    ).onclick = ()=>{
+
+      cerrarModal();
+
+      resolve(null);
+
+    };
+
+    document.getElementById(
+      "sigvic-btn-confirmar"
+    ).onclick = ()=>{
+
+      const valor =
+        document.getElementById(
+          "sigvic-pin"
+        ).value.trim();
+
+      cerrarModal();
+
+      resolve(valor);
+
+    };
+
+  });
+
+}
