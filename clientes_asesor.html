@@ -437,17 +437,17 @@ async function registrarSalida(
     );
 
   if(
-    !vigilante ||
-    vigilante.length === 0
-  ){
+  !vigilante ||
+  vigilante.length === 0
+){
 
-    alert(
-      "NIP incorrecto"
-    );
+  ui.error(
+    "NIP incorrecto"
+  );
 
-    return;
+  return;
 
-  }
+}
 
   const { error } =
     await supabaseClient.rpc(
@@ -461,17 +461,17 @@ async function registrarSalida(
       }
     );
 
-  if(error){
+ if(error){
 
-    console.error(error);
+  console.error(error);
 
-    alert(
-      error.message
-    );
+  ui.error(
+    error.message
+  );
 
-    return;
+  return;
 
-  }
+}
 
   await cargarAsesores();
   await cargarClientes();
