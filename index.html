@@ -282,6 +282,16 @@ body {
 
 </div>
 
+  <div class="kpi"
+     onclick="window.location.href='asesores_dentro.html'"
+     style="cursor:pointer;">
+
+  🏡 Asesores dentro <br>
+
+  <span id="kpiAsesores">0</span>
+
+</div>
+
  <div class="kpi"
      onclick="window.location.href='admin_abastecimientos_obra.html'"
      style="cursor:pointer;">
@@ -793,6 +803,25 @@ if (rolActual === "vigilante") {
     .is("fecha_hora_salida", null);
 
   document.getElementById("kpiTrabajadores").innerText = trabajadores?.length || 0;
+
+  // 🏡 ASESORES DENTRO
+
+const { data: asesores } =
+  await supabaseClient.rpc(
+    "obtener_asesores_dentro"
+  );
+
+const kpiAsesores =
+  document.getElementById(
+    "kpiAsesores"
+  );
+
+if(kpiAsesores){
+
+  kpiAsesores.innerText =
+    asesores?.length || 0;
+
+}  
 
   const { data: abastecimientos } =
   await supabaseClient.rpc(
