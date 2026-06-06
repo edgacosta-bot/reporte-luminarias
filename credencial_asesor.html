@@ -372,13 +372,20 @@ mostrarNotificacion(
   "exito"
 );
 
+console.log(
+  "LLEGUE AL SETTIMEOUT"
+);
+
 setTimeout(()=>{
+
+  console.log(
+    "INTENTANDO REDIRIGIR"
+  );
 
   window.location.href =
     nuevaUrl;
 
 },2000);
-
     }
   );  
 
