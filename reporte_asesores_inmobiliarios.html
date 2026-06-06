@@ -352,7 +352,7 @@ function renderizar(){
       "lista"
     );
 
-  let registros = [...abastecimientos];
+  let registros = [...asesores];
 
 const estado =
   document.getElementById(
@@ -633,9 +633,9 @@ document.getElementById(
 async function cargar(){
 
   const { data, error } =
-    await supabaseClient.rpc(
-      "obtener_reporte_abastecimientos"
-    );
+  await supabaseClient.rpc(
+    "obtener_reporte_asesores_inmobiliarios"
+  );
 
   if(error){
 
@@ -646,10 +646,10 @@ async function cargar(){
 
   
 
-  abastecimientos = data || [];
+ asesores = data || [];
 
   const dentro =
-    abastecimientos.filter(
+  asesores.filter(
       a => a.estatus === "DENTRO"
     ).length;
 
@@ -660,7 +660,7 @@ async function cargar(){
   renderizar();
 
   console.log(
-    "Abastecimientos:",
+  "Asesores:",
     abastecimientos.length
   );
 
