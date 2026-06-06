@@ -643,7 +643,7 @@ function rangoRapido(dias){
   const hoy = new Date();
 
   const fechaFin =
-  formatLocalDate(
+  fechaLocalISO(
     hoy
   );
 
@@ -663,8 +663,9 @@ function rangoRapido(dias){
     );
 
     fechaInicio =
-      inicio.toISOString()
-            .split("T")[0];
+  fechaLocalISO(
+    inicio
+  );
 
   }
 
