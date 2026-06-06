@@ -611,7 +611,7 @@ para visitantes
     href="clientes_asesor.html"
     class="button btn-gris">
 
-    👥 Clientes de asesores
+    👥 Registrar clientes
 
   </a>
 
@@ -625,9 +625,32 @@ para visitantes
 let rolActual = "";  
 
 function toggleMenu(id){
-  const el = document.getElementById(id);
-  const isVisible = window.getComputedStyle(el).display !== "none";
-  el.style.display = isVisible ? "none" : "block";
+
+  const el =
+    document.getElementById(id);
+
+  const isVisible =
+    window.getComputedStyle(el)
+      .display !== "none";
+
+  el.style.display =
+    isVisible
+      ? "none"
+      : "block";
+
+  if(!isVisible){
+
+    setTimeout(()=>{
+
+      el.scrollIntoView({
+        behavior:"smooth",
+        block:"start"
+      });
+
+    },150);
+
+  }
+
 }
 
 async function logout(){
