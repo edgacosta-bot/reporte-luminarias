@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Abastecimientos de Obra</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="auth.js"></script>
+
+<script src="utils/dates.js"></script>
+
+<style>
+
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+}
+
+.kpi{
+  background:#111827;
+  border-radius:18px;
+  padding:20px;
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.kpi span{
+  font-size:34px;
+  font-weight:bold;
+}
+
+.filtros{
+  background:#111827;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:20px;
+}
+
+input,
+select{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:#1f2937;
+  color:white;
+  box-sizing:border-box;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:#2563eb;
+  color:white;
+  cursor:pointer;
+}
+
+.rangos{
+  display:flex;
+  gap:8px;
+  margin-bottom:15px;
+}
+
+.rangos button{
+  flex:1;
+}
+
+.card{
+  background:#111827;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:12px;
+}
+
+.dentro{
+  color:#fbbf24;
+  font-weight:bold;
+}
+
+.salio{
+  color:#4ade80;
+  font-weight:bold;
+}
+
+.label{
+  margin-top:10px;
+  margin-bottom:5px;
+  color:#94a3b8;
+  font-size:13px;
+}
+
+.badge{
+
+  display:inline-block;
+
+  padding:6px 12px;
+
+  border-radius:999px;
+
+  font-size:12px;
+
+  font-weight:bold;
+
+  margin-top:8px;
+
+  margin-bottom:10px;
+
+}
+
+.badge-suministro{
+
+  background:#1e3a8a;
+
+  color:white;
+
+}
+
+.badge-maquinaria{
+
+  background:#92400e;
+
+  color:white;
+
+}
+
+.titulo-obra{
+
+  font-size:18px;
+
+  font-weight:bold;
+
+  color:#93c5fd;
+
+  margin-bottom:10px;
+
+}  
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>
+🚚 Abastecimientos de Obra
+</h1>
+
+<div class="kpi">
+
+  🚚 Abastecimientos dentro
+
+  <br><br>
+
+  <span id="kpiDentro">
+    0
+  </span>
+
+</div>
+
+<div class="filtros">
+
+  <div class="rangos">
+
+    <button onclick="rangoRapido(0)">
+      Hoy
+    </button>
+
+    <button onclick="rangoRapido(7)">
+      7 días
+    </button>
+
+    <button onclick="rangoRapido(30)">
+      30 días
+    </button>
+
+    <button onclick="rangoRapido(90)">
+      90 días
+    </button>
+
+  </div>
+
+  <div class="label">
+    Privada
+  </div>
+
+  <select
+  id="filtroPrivada"
+  onchange="actualizarLotes()">
+    <option value="">
+      Todas
+    </option>
+  </select>
+
+  <br><br>
+
+  <div class="label">
+    Lote
+  </div>
+
+  <select
+  id="filtroCasa"
+  onchange="renderizar()">
+    
+    <option value="">
+      Todos
+    </option>
+  </select>
+
+  <br><br>
+
+  <div class="label">
+    Tipo
+  </div>
+
+  <select
+  id="filtroTipo"
+  onchange="renderizar()">
+
+    <option value="">
+      Todos
+    </option>
+
+    <option value="SUMINISTRO">
+      SUMINISTRO
+    </option>
+
+    <option value="MAQUINARIA">
+      MAQUINARIA
+    </option>
+
+  </select>
+
+  <br><br>
+
+  <div class="label">
+    Estado
+  </div>
+
+  <select
+  id="filtroEstado"
+  onchange="renderizar()">
+
+    <option value="">
+      Todos
+    </option>
+
+    <option value="DENTRO">
+      DENTRO
+    </option>
+
+    <option value="SALIO">
+      SALIÓ
+    </option>
+
+  </select>
+
+  <br><br>
+
+  <div class="label">
+    Fecha inicio
+  </div>
+
+  <input
+  type="date"
+  id="inicio"
+  onchange="renderizar()">
+
+  <br><br>
+
+  <div class="label">
+    Fecha fin
+  </div>
+
+  <input
+  type="date"
+  id="fin"
+  onchange="renderizar()">
+
+  <br><br>
+
+  <button onclick="cargar()">
+    Consultar
+  </button>
+
+</div>
+
+<div
+  id="contadorResultados"
+  style="
+    background:#111827;
+    border-radius:18px;
+    padding:14px;
+    margin-bottom:15px;
+    color:#93c5fd;
+    font-weight:bold;
+    text-align:center;
+  ">
+</div>
+  
+<div id="lista">
+</div>
+
+</div>
+
+<script>
+
+let abastecimientos = [];
+
+let obrasFiltro = []; 
+
+function formatearHoras(horas){
+
+  const horasEnteras =
+    Math.floor(horas);
+
+  const minutos =
+    Math.round(
+      (horas - horasEnteras) * 60
+    );
+
+  return `
+    ${horasEnteras} h
+    ${minutos} min
+  `;
+
+}  
+
+function renderizar(){
+
+  const lista =
+    document.getElementById(
+      "lista"
+    );
+
+  let registros = [...abastecimientos];
+
+const estado =
+  document.getElementById(
+    "filtroEstado"
+  ).value;
+
+const privada =
+  document.getElementById(
+    "filtroPrivada"
+  ).value;  
+
+const casa =
+  document.getElementById(
+    "filtroCasa"
+  ).value;  
+
+const tipo =
+  document.getElementById(
+    "filtroTipo"
+  ).value;  
+
+const fechaInicio =
+  document.getElementById(
+    "inicio"
+  ).value;
+
+const fechaFin =
+  document.getElementById(
+    "fin"
+  ).value;  
+
+if(estado){
+
+  registros =
+    registros.filter(
+      r => r.estatus === estado
+    );
+
+}
+
+if(privada){
+
+  registros =
+    registros.filter(
+      r => r.privada === privada
+    );
+
+}  
+
+if(casa){
+
+  registros =
+    registros.filter(
+      r => r.casa === casa
+    );
+
+}  
+
+if(tipo){
+
+  registros =
+    registros.filter(
+      r => r.tipo_ingreso === tipo
+    );
+
+}  
+
+if(fechaInicio){
+
+  const inicioUTC =
+    fechaInicioUTC(
+      fechaInicio
+    );
+
+  registros =
+    registros.filter(
+      r =>
+        r.fecha_hora_entrada >=
+        inicioUTC
+    );
+
+}
+
+if(fechaFin){
+
+  const finUTC =
+    fechaFinUTC(
+      fechaFin
+    );
+
+  registros =
+    registros.filter(
+      r =>
+        r.fecha_hora_entrada <=
+        finUTC
+    );
+
+}  
+
+registros.sort((a,b)=>{
+
+  if(
+    a.estatus === "DENTRO"
+    &&
+    b.estatus !== "DENTRO"
+  ){
+    return -1;
+  }
+
+  if(
+    a.estatus !== "DENTRO"
+    &&
+    b.estatus === "DENTRO"
+  ){
+    return 1;
+  }
+
+  return (
+    new Date(b.fecha_hora_entrada)
+    -
+    new Date(a.fecha_hora_entrada)
+  );
+
+});  
+
+  const dentro =
+  registros.filter(
+    r => r.estatus === "DENTRO"
+  ).length;
+
+document.getElementById(
+  "contadorResultados"
+).innerHTML = `
+
+  🚚 Dentro:
+  <b>${dentro}</b>
+
+  &nbsp;&nbsp;|&nbsp;&nbsp;
+
+  🧾 Registros:
+  <b>${registros.length}</b>
+
+`;
+  
+  if(
+  registros.length === 0
+){
+
+    lista.innerHTML =
+      "<div class='card'>Sin resultados</div>";
+
+    return;
+  }
+
+  let html = "";
+
+  registros.forEach(a=>{
+
+    html += `
+
+      <div class="card">
+
+        <div class="titulo-obra">
+
+  🏗️ PRIVADA ${a.privada}
+  - LOTE ${a.casa}
+
+</div>
+
+        <div
+  class="badge ${
+    a.tipo_ingreso === 'MAQUINARIA'
+      ? 'badge-maquinaria'
+      : 'badge-suministro'
+  }">
+
+  ${a.tipo_ingreso}
+
+</div>
+
+        ${
+          a.tipo_maquinaria
+          ? `
+            <div>
+              <b>Tipo maquinaria:</b>
+              ${a.tipo_maquinaria}
+            </div>
+          `
+          : ''
+        }
+
+        <div>
+
+  <b>🏢 Proveedor:</b>
+
+  ${a.proveedor}
+
+</div>
+
+        <div>
+
+  <b>👤 Ingresó:</b>
+
+  ${a.nombre_ingresa}
+
+</div>
+
+        <div>
+          <b>Descripción:</b>
+          ${a.descripcion}
+        </div>
+
+        ${
+          a.placas
+          ? `
+            <div>
+              <b>Placas:</b>
+              ${a.placas}
+            </div>
+          `
+          : ''
+        }
+
+        <div>
+          <b>Entrada:</b>
+          ${formatMXDate(
+            a.fecha_hora_entrada
+          )}
+        </div>
+
+        ${
+          a.fecha_hora_salida
+          ? `
+            <div>
+              <b>Salida:</b>
+              ${formatMXDate(
+                a.fecha_hora_salida
+              )}
+            </div>
+          `
+          : ''
+        }
+
+        <div class="${
+          a.estatus === 'DENTRO'
+            ? 'dentro'
+            : 'salio'
+        }">
+
+          ${
+            a.estatus === 'DENTRO'
+            ? '🟠 DENTRO'
+            : '✅ SALIÓ'
+          }
+
+        </div>
+
+        <div>
+
+          <b>Tiempo dentro:</b>
+
+          ${formatearHoras(
+          a.horas_dentro
+            )}
+
+        </div>
+
+      </div>
+
+    `;
+
+  });
+
+  lista.innerHTML = html;
+
+}
+  
+async function cargar(){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_reporte_abastecimientos"
+    );
+
+  if(error){
+
+    console.log(error);
+
+    return;
+  }
+
+  
+
+  abastecimientos = data || [];
+
+  const dentro =
+    abastecimientos.filter(
+      a => a.estatus === "DENTRO"
+    ).length;
+
+  document.getElementById(
+    "kpiDentro"
+  ).innerText = dentro;
+
+  renderizar();
+
+  console.log(
+    "Abastecimientos:",
+    abastecimientos.length
+  );
+
+}  
+
+async function cargarFiltros(){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_obras_filtro_abastecimientos"
+    );
+
+  if(error){
+
+    console.log(error);
+
+    return;
+  }
+
+  obrasFiltro = data || [];
+
+  const privadaSelect =
+    document.getElementById(
+      "filtroPrivada"
+    );
+
+  const privadas =
+    [...new Set(
+      obrasFiltro.map(
+        o => o.privada
+      )
+    )];
+
+  privadas.forEach(p=>{
+
+    privadaSelect.innerHTML += `
+      <option value="${p}">
+        ${p}
+      </option>
+    `;
+
+  });
+
+  actualizarLotes();
+
+}
+
+function actualizarLotes(){
+
+  const privada =
+    document.getElementById(
+      "filtroPrivada"
+    ).value;
+
+  const loteSelect =
+    document.getElementById(
+      "filtroCasa"
+    );
+
+  loteSelect.innerHTML = `
+    <option value="">
+      Todos
+    </option>
+  `;
+
+  let lotes = obrasFiltro;
+
+  if(privada){
+
+    lotes =
+      obrasFiltro.filter(
+        o => o.privada === privada
+      );
+
+  }
+
+  const casasUnicas =
+  [...new Set(
+    lotes.map(
+      l => l.casa
+    )
+  )];
+
+casasUnicas.forEach(casa=>{
+
+  loteSelect.innerHTML += `
+    <option value="${casa}">
+      ${casa}
+    </option>
+  `;
+
+});
+
+  renderizar();
+
+}  
+
+function rangoRapido(dias){
+
+  const hoy = new Date();
+
+  const fechaFin =
+    hoy.toISOString()
+       .split("T")[0];
+
+  let fechaInicio;
+
+  if(dias === 0){
+
+    fechaInicio = fechaFin;
+
+  }else{
+
+    const inicio =
+      new Date();
+
+    inicio.setDate(
+      inicio.getDate() - dias
+    );
+
+    fechaInicio =
+      inicio.toISOString()
+            .split("T")[0];
+
+  }
+
+  document.getElementById(
+    "inicio"
+  ).value = fechaInicio;
+
+  document.getElementById(
+    "fin"
+  ).value = fechaFin;
+
+  renderizar();
+
+}
+  
+window.addEventListener(
+  "DOMContentLoaded",
+  async ()=>{
+
+    await protegerPagina([
+      "admin",
+      "administracion",
+      "vigilante"
+    ]);
+
+    await cargarFiltros();
+
+    await cargar();
+
+  }
+);
+
+</script>
+
+</body>
+</html>
