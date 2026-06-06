@@ -5,20 +5,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Actividad Inmobiliaria</title>
+<title>Asesores dentro</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script src="auth.js"></script>
 
-<script src="utils/dates.js"></script>
+<script>
+protegerPagina(["vigilante","administracion","admin"]);
+</script>
 
 <style>
 
 body{
   margin:0;
-  font-family:'Segoe UI';
-  background:linear-gradient(135deg,#020617,#0f172a);
+  font-family:Arial;
+  background:#0f172a;
   color:white;
 }
 
@@ -30,54 +31,53 @@ body{
 
 h1{
   text-align:center;
-}
-
-.kpi{
-  background:#111827;
-  border-radius:18px;
-  padding:20px;
-  text-align:center;
   margin-bottom:20px;
 }
 
-.kpi span{
-  font-size:34px;
-  font-weight:bold;
-}
-
 .card{
-  background:#111827;
-  border-radius:18px;
-  padding:18px;
+  background:#1e293b;
+  padding:16px;
+  border-radius:14px;
   margin-bottom:12px;
 }
 
-.titulo-asesor{
-
-  font-size:18px;
-
+.nombre{
+  font-size:22px;
   font-weight:bold;
+  margin-bottom:6px;
+}
 
-  color:#93c5fd;
-
+.empresa{
+  color:#cbd5e1;
   margin-bottom:10px;
+}
 
+.detalle{
+  color:#cbd5e1;
+  font-size:14px;
+  line-height:1.6;
 }
 
 .clientes{
-
   margin-top:10px;
-
-  padding:10px;
-
-  border-radius:12px;
-
-  background:#1f2937;
-
+  padding-top:10px;
+  border-top:1px solid #334155;
 }
 
-.dentro{
-  color:#fbbf24;
+.cliente{
+  padding:4px 0;
+}
+
+.vacio{
+  text-align:center;
+  color:#94a3b8;
+  margin-top:40px;
+}
+
+.resumen{
+  text-align:center;
+  margin-bottom:20px;
+  font-size:18px;
   font-weight:bold;
 }
 
@@ -89,52 +89,96 @@ h1{
 
 <div class="container">
 
-  <h1>
-    🏠 Actividad Inmobiliaria
-  </h1>
+<h1>
+🏡 Asesores dentro
+</h1>
 
-  <div class="kpi">
-
-    🏠 Asesores dentro
-
-    <br><br>
-
-    <span id="kpiAsesores">
-      0
-    </span>
-
-    <br><br>
-
-    👥 Clientes dentro:
-
-    <b id="kpiClientes">
-      0
-    </b>
-
-  </div>
-
-  <div
-  id="contadorResultados"
-  style="
-    background:#111827;
-    border-radius:18px;
-    padding:14px;
-    margin-bottom:15px;
-    color:#93c5fd;
-    font-weight:bold;
-    text-align:center;
-  ">
+<div
+  id="resumen"
+  class="resumen">
 </div>
-  
-  <div id="lista"></div>
+
+<div id="lista">
+
+Cargando...
+
+</div>
 
 </div>
 
 <script>
 
-let asesores = [];
+cargar();
+
+setInterval(
+  cargar,
+  10000
+);
+
+function formatearHora(fecha){
+
+  if(!fecha){
+    return "-";
+  }
+
+  return new Date(fecha)
+    .toLocaleString(
+      "es-MX",
+      {
+        hour:"2-digit",
+        minute:"2-digit",
+        day:"2-digit",
+        month:"2-digit"
+      }
+    );
+
+}
+
+function calcularTiempo(fecha){
+
+  if(!fecha){
+    return "-";
+  }
+
+  const inicio =
+    new Date(fecha);
+
+  const ahora =
+    new Date();
+
+  const diff =
+    ahora - inicio;
+
+  const horas =
+    Math.floor(
+      diff /
+      (1000*60*60)
+    );
+
+  const minutos =
+    Math.floor(
+      (
+        diff %
+        (1000*60*60)
+      ) /
+      (1000*60)
+    );
+
+  return `${horas}h ${minutos}m`;
+
+}
 
 async function cargar(){
+
+  const lista =
+    document.getElementById(
+      "lista"
+    );
+
+  const resumen =
+    document.getElementById(
+      "resumen"
+    );
 
   const { data, error } =
     await supabaseClient.rpc(
@@ -143,172 +187,105 @@ async function cargar(){
 
   if(error){
 
-    console.log(error);
-
-    return;
-
-  }
-
-  asesores = data || [];
-
-  const totalAsesores =
-    asesores.length;
-
-  const totalClientes =
-    asesores.reduce(
-      (s,a)=>
-        s +
-        Number(
-          a.clientes_dentro || 0
-        ),
-      0
-    );
-
-  document.getElementById(
-    "kpiAsesores"
-  ).innerText =
-    totalAsesores;
-
-  document.getElementById(
-    "kpiClientes"
-  ).innerText =
-    totalClientes;
-
-  renderizar();
-
-  
-}
-
-function renderizar(){
-
-  const lista =
-    document.getElementById(
-      "lista"
-    );
-
-  const totalAsesores =
-  asesores.length;
-
-const totalClientes =
-  asesores.reduce(
-    (s,a)=>
-      s +
-      Number(
-        a.clientes_dentro || 0
-      ),
-    0
-  );
-
-document.getElementById(
-  "contadorResultados"
-).innerHTML = `
-
-  🏠 Asesores:
-  <b>${totalAsesores}</b>
-
-  &nbsp;&nbsp;|&nbsp;&nbsp;
-
-  👥 Clientes:
-  <b>${totalClientes}</b>
-
-`;
-  
-  if(
-    asesores.length === 0
-  ){
+    console.error(error);
 
     lista.innerHTML =
-      "<div class='card'>No hay asesores dentro.</div>";
+      "Error al cargar";
 
     return;
 
   }
 
-  let html = "";
+  if(
+    !data ||
+    data.length === 0
+  ){
 
-asesores.forEach(a=>{
+    resumen.innerHTML =
+      "0 asesores dentro";
 
-  html += `
-
-    <div class="card">
-
-      <div class="titulo-asesor">
-
-        🏠 ${a.nombre}
-
+    lista.innerHTML = `
+      <div class="vacio">
+        No hay asesores dentro
       </div>
+    `;
 
-      <div>
-
-        <b>🏢 Empresa:</b>
-
-        ${a.empresa || "-"}
-
-      </div>
-
-      <div>
-
-        <b>🕒 Entrada:</b>
-
-        ${formatMXDate(
-          a.fecha_entrada
-        )}
-
-      </div>
-
-      <div>
-
-        <b>👥 Clientes dentro:</b>
-
-        ${a.clientes_dentro}
-
-      </div>
-
-      <div class="clientes">
-
-        <b>Clientes:</b>
-
-        <br>
-
-        ${a.clientes || "-"}
-
-      </div>
-
-      <div class="dentro">
-
-        🟠 DENTRO
-
-      </div>
-
-    </div>
-
-  `;
-
-});
-
-lista.innerHTML = html;
-
-}  
-
-  window.addEventListener(
-  "DOMContentLoaded",
-  async ()=>{
-
-    await protegerPagina([
-      "admin",
-      "administracion",
-      "vigilante"
-    ]);
-
-    await cargar();
-
-    setInterval(
-  cargar,
-  30000
-);
+    return;
 
   }
-);
+
+  resumen.innerHTML =
+    `${data.length} asesor(es) dentro`;
+
+  lista.innerHTML = "";
+
+  data.forEach(asesor => {
+
+    const clientes =
+      asesor.clientes
+        ? asesor.clientes
+            .split(",")
+            .map(x => x.trim())
+        : [];
+
+    lista.innerHTML += `
+
+      <div class="card">
+
+        <div class="nombre">
+          ${asesor.nombre}
+        </div>
+
+        <div class="empresa">
+          ${asesor.empresa}
+        </div>
+
+        <div class="detalle">
+
+          Entrada:
+          ${formatearHora(
+            asesor.fecha_entrada
+          )}
+
+          <br>
+
+          Tiempo dentro:
+          ${calcularTiempo(
+            asesor.fecha_entrada
+          )}
+
+          <br>
+
+          Clientes dentro:
+          ${asesor.clientes_dentro}
+
+        </div>
+
+        <div class="clientes">
+
+          ${
+            clientes.length
+            ? clientes.map(c => `
+                <div class="cliente">
+                  👤 ${c}
+                </div>
+              `).join("")
+            : `
+                <div class="cliente">
+                  Sin clientes dentro
+                </div>
+              `
+          }
+
+        </div>
+
+      </div>
+
+    `;
+
+  });
+
+}
 
 </script>
 
