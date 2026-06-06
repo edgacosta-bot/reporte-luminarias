@@ -199,82 +199,29 @@ button{
 
   </div>
 
-  <div class="label">
-    Privada
-  </div>
+ <div class="label">
+  Estado
+</div>
 
-  <select
-  id="filtroPrivada"
-  onchange="actualizarLotes()">
-    <option value="">
-      Todas
-    </option>
-  </select>
-
-  <br><br>
-
-  <div class="label">
-    Lote
-  </div>
-
-  <select
-  id="filtroCasa"
-  onchange="renderizar()">
-    
-    <option value="">
-      Todos
-    </option>
-  </select>
-
-  <br><br>
-
-  <div class="label">
-    Tipo
-  </div>
-
-  <select
-  id="filtroTipo"
-  onchange="renderizar()">
-
-    <option value="">
-      Todos
-    </option>
-
-    <option value="SUMINISTRO">
-      SUMINISTRO
-    </option>
-
-    <option value="MAQUINARIA">
-      MAQUINARIA
-    </option>
-
-  </select>
-
-  <br><br>
-
-  <div class="label">
-    Estado
-  </div>
-
-  <select
+<select
   id="filtroEstado"
   onchange="renderizar()">
 
-    <option value="">
-      Todos
-    </option>
+  <option value="">
+    Todos
+  </option>
 
-    <option value="DENTRO">
-      DENTRO
-    </option>
+  <option value="DENTRO">
+    DENTRO
+  </option>
 
-    <option value="SALIO">
-      SALIÓ
-    </option>
+  <option value="SALIO">
+    SALIÓ
+  </option>
 
-  </select>
+</select>
 
-  <br><br>
+<br><br>
 
   <div class="label">
     Fecha inicio
@@ -359,20 +306,7 @@ const estado =
     "filtroEstado"
   ).value;
 
-const privada =
-  document.getElementById(
-    "filtroPrivada"
-  ).value;  
 
-const casa =
-  document.getElementById(
-    "filtroCasa"
-  ).value;  
-
-const tipo =
-  document.getElementById(
-    "filtroTipo"
-  ).value;  
 
 const fechaInicio =
   document.getElementById(
@@ -393,32 +327,7 @@ if(estado){
 
 }
 
-if(privada){
 
-  registros =
-    registros.filter(
-      r => r.privada === privada
-    );
-
-}  
-
-if(casa){
-
-  registros =
-    registros.filter(
-      r => r.casa === casa
-    );
-
-}  
-
-if(tipo){
-
-  registros =
-    registros.filter(
-      r => r.tipo_ingreso === tipo
-    );
-
-}  
 
 if(fechaInicio){
 
@@ -471,9 +380,9 @@ registros.sort((a,b)=>{
   }
 
   return (
-    new Date(b.fecha_hora_entrada)
+    new Date(b.fecha_entrada)
     -
-    new Date(a.fecha_hora_entrada)
+    new Date(a.fecha_entrada)
   );
 
 });  
@@ -511,122 +420,93 @@ document.getElementById(
 
   registros.forEach(a=>{
 
-    html += `
+  html += `
 
-      <div class="card">
+    <div class="card">
 
-        <div class="titulo-obra">
+      <div class="titulo-obra">
 
-  🏗️ PRIVADA ${a.privada}
-  - LOTE ${a.casa}
-
-</div>
-
-        <div
-  class="badge ${
-    a.tipo_ingreso === 'MAQUINARIA'
-      ? 'badge-maquinaria'
-      : 'badge-suministro'
-  }">
-
-  ${a.tipo_ingreso}
-
-</div>
-
-        ${
-          a.tipo_maquinaria
-          ? `
-            <div>
-              <b>Tipo maquinaria:</b>
-              ${a.tipo_maquinaria}
-            </div>
-          `
-          : ''
-        }
-
-        <div>
-
-  <b>🏢 Proveedor:</b>
-
-  ${a.proveedor}
-
-</div>
-
-        <div>
-
-  <b>👤 Ingresó:</b>
-
-  ${a.nombre_ingresa}
-
-</div>
-
-        <div>
-          <b>Descripción:</b>
-          ${a.descripcion}
-        </div>
-
-        ${
-          a.placas
-          ? `
-            <div>
-              <b>Placas:</b>
-              ${a.placas}
-            </div>
-          `
-          : ''
-        }
-
-        <div>
-          <b>Entrada:</b>
-          ${formatMXDate(
-            a.fecha_hora_entrada
-          )}
-        </div>
-
-        ${
-          a.fecha_hora_salida
-          ? `
-            <div>
-              <b>Salida:</b>
-              ${formatMXDate(
-                a.fecha_hora_salida
-              )}
-            </div>
-          `
-          : ''
-        }
-
-        <div class="${
-          a.estatus === 'DENTRO'
-            ? 'dentro'
-            : 'salio'
-        }">
-
-          ${
-            a.estatus === 'DENTRO'
-            ? '🟠 DENTRO'
-            : '✅ SALIÓ'
-          }
-
-        </div>
-
-        <div>
-
-          <b>Tiempo dentro:</b>
-
-          ${formatearHoras(
-          a.horas_dentro
-            )}
-
-        </div>
+        👤 ${a.nombre}
 
       </div>
 
-    `;
+      <div>
 
-  });
+        <b>🏢 Empresa:</b>
 
-  lista.innerHTML = html;
+        ${a.empresa || "-"}
+
+      </div>
+
+      <br>
+
+      <div>
+
+        <b>Entrada:</b>
+
+        ${formatMXDate(
+          a.fecha_entrada
+        )}
+
+      </div>
+
+      ${
+        a.fecha_salida
+        ? `
+          <div>
+
+            <b>Salida:</b>
+
+            ${formatMXDate(
+              a.fecha_salida
+            )}
+
+          </div>
+        `
+        : ''
+      }
+
+      <br>
+
+      <div class="${
+        a.estatus === 'DENTRO'
+          ? 'dentro'
+          : 'salio'
+      }">
+
+        ${
+          a.estatus === 'DENTRO'
+          ? '🟠 DENTRO'
+          : '✅ SALIÓ'
+        }
+
+      </div>
+
+      <br>
+
+      <div>
+
+        <b>Tiempo dentro:</b>
+
+        ${formatearHoras(
+          a.horas_dentro
+        )}
+
+      </div>
+
+      <div>
+
+        <b>Clientes dentro:</b>
+
+        ${a.clientes_dentro}
+
+      </div>
+
+    </div>
+
+  `;
+
+});
 
 }
   
@@ -659,10 +539,10 @@ async function cargar(){
 
   renderizar();
 
-  console.log(
+ console.log(
   "Asesores:",
-    abastecimientos.length
-  );
+  asesores.length
+);
 
 }  
 
