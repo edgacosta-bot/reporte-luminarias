@@ -593,6 +593,30 @@ para visitantes
 
 </div>
 
+  <!-- ACTIVIDAD INMOBILIARIA -->
+
+<button
+  class="button btn-verde"
+  onclick="toggleMenu('inmobiliaria_vig')">
+
+  🏡 Actividad inmobiliaria
+
+</button>
+
+<div
+  id="inmobiliaria_vig"
+  class="submenu">
+
+  <a
+    href="clientes_asesor.html"
+    class="button btn-gris">
+
+    👥 Clientes de asesores
+
+  </a>
+
+</div>
+
 </div>
 
 
@@ -686,7 +710,7 @@ document.getElementById("rolTexto").innerHTML =
   setInterval(cargarKPIs, 30000);
 }
 
- ["obras", "qr", "infra", "vig", "qr_res", "paq", "reportes", "infra_res", "aportaciones", "obras_res","paq_vig", "obras_vig", "otros_accesos", "servicios_vig", "sigvic_vig", "sigvic_admin"]
+ ["obras", "qr", "infra", "vig", "qr_res", "paq", "reportes", "infra_res", "aportaciones", "obras_res","paq_vig", "obras_vig", "inmobiliaria_vig", "otros_accesos", "servicios_vig", "sigvic_vig", "sigvic_admin"]
   .forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
