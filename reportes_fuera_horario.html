@@ -147,14 +147,9 @@ async function cargar() {
   const inicio = fechaInicioUTC(fechaHoyMX);
   const fin = fechaFinUTC(fechaHoyMX);
 
-  const { data: reportes, error } = await supabaseClient
-  .from("reportes_obras")
-  .select(`
-    *,
-    trabajadores_obra (
-      nombre
-    )
-  `)
+ const { data: reportes, error } = await supabaseClient
+    .from("reportes_obras")
+    .select("*")
     .eq("tipo", "salida_fuera_horario")
     .gte("fecha_reporte", inicio)
     .lte("fecha_reporte", fin)
