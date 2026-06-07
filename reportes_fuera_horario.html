@@ -148,8 +148,13 @@ async function cargar() {
   const fin = fechaFinUTC(fechaHoyMX);
 
   const { data: reportes, error } = await supabaseClient
-    .from("reportes_obras")
-    .select("*")
+  .from("reportes_obras")
+  .select(`
+    *,
+    trabajadores_obra (
+      nombre
+    )
+  `)
     .eq("tipo", "salida_fuera_horario")
     .gte("fecha_reporte", inicio)
     .lte("fecha_reporte", fin)
@@ -275,18 +280,32 @@ async function cargar() {
 
         div.innerHTML = `
           <div class="nombre">
-            🚨 Salida fuera de horario
-          </div>
 
-          <div class="detalle">
+  👷 ${
+    reporte.trabajadores_obra?.nombre
+    || "Trabajador no identificado"
+  }
 
-            Fecha:
-            ${formatearHora(reporte.fecha_reporte)}
-            <br><br>
+</div>
 
-            ${reporte.descripcion || "Sin descripción"}
+<div class="detalle">
 
-          </div>
+  🏘 Privada:
+  ${reporte.privada}
+
+  <br><br>
+
+  🏠 Casa:
+  ${reporte.casa}
+
+  <br><br>
+
+  🕒 Salida:
+  ${formatearHora(
+    reporte.fecha_reporte
+  )}
+
+</div>
         `;
 
         detalleLote.appendChild(div);
