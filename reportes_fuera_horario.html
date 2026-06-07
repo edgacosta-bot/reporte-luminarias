@@ -160,10 +160,15 @@ async function cargar() {
     .lte("fecha_reporte", fin)
     .order("fecha_reporte", { ascending: false });
 
-  if (error) {
-    lista.innerHTML = "<p>Error al cargar</p>";
-    return;
-  }
+ if (error) {
+
+  console.log(error);
+
+  lista.innerHTML =
+    "<p>Error al cargar</p>";
+
+  return;
+}
 
   if (!reportes || reportes.length === 0) {
 
