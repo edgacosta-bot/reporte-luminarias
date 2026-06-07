@@ -147,13 +147,10 @@ async function cargar() {
   const inicio = fechaInicioUTC(fechaHoyMX);
   const fin = fechaFinUTC(fechaHoyMX);
 
- const { data: reportes, error } = await supabaseClient
-    .from("reportes_obras")
-    .select("*")
-    .eq("tipo", "salida_fuera_horario")
-    .gte("fecha_reporte", inicio)
-    .lte("fecha_reporte", fin)
-    .order("fecha_reporte", { ascending: false });
+ const { data: reportes, error } =
+  await supabaseClient.rpc(
+    "obtener_reportes_fuera_horario"
+  );
 
  if (error) {
 
@@ -165,7 +162,14 @@ async function cargar() {
   return;
 }
 
-  if (!reportes || reportes.length === 0) {
+  const reportesHoy =
+  (reportes || []).filter(r =>
+    r.fecha_reporte >= inicio
+    &&
+    r.fecha_reporte <= fin
+  );
+  
+ if (reportesHoy.length === 0) {
 
     lista.innerHTML =
       "<p class='vacio'>No hay reportes fuera de horario</p>";
@@ -199,7 +203,7 @@ async function cargar() {
 
   const agrupado = {};
 
-  for (const item of reportes) {
+  for (const item of reportesHoy) {
 
     const privada = item.privada || "Sin privada";
     const lote = item.casa || "Sin lote";
@@ -279,24 +283,21 @@ async function cargar() {
         div.className = "reporte-item";
 
         div.innerHTML = `
-          <div class="nombre">
+         
+         <div class="nombre">
 
-  👷 ${
-    reporte.trabajadores_obra?.nombre
-    || "Trabajador no identificado"
-  }
+  👷 ${reporte.nombre}
 
 </div>
 
 <div class="detalle">
 
-  🏘 Privada:
-  ${reporte.privada}
+  🏗 Construcción
 
-  <br><br>
+  <br>
 
-  🏠 Casa:
-  ${reporte.casa}
+  Privada ${reporte.privada}
+  - Lote ${reporte.casa}
 
   <br><br>
 
@@ -318,7 +319,7 @@ async function cargar() {
   }
 
   alertaDiv.innerHTML =
-    `🚨 ${reportes.length} reporte(s) fuera de horario`;
+   🚨 ${reportesHoy.length} reporte(s) fuera de horario
 
   alertaDiv.style.color = "#f87171";
 }
