@@ -12,6 +12,8 @@
 
 <script src="utils/dates.js"></script>  
 
+<script src="modal.js"></script>  
+
 <style>
 body {
   margin: 0;
@@ -475,30 +477,45 @@ body {
 
 <div id="amenidades" class="submenu">
 
-    <a href="amenidades_reservar.html"
-       class="button btn-res-3">
-       Reservar amenidad
-    </a>
+    <a href="#"
+   class="button btn-res-3"
+   onclick="moduloAmenidades(); return false;">
 
-    <a href="mis_reservaciones.html"
-       class="button btn-res-3">
-       Mis reservaciones
-    </a>
+   Reservar amenidad
 
-    <a href="actividades_disponibles.html"
-       class="button btn-res-3">
-       Actividades disponibles
-    </a>
+</a>
 
-    <a href="mis_actividades.html"
-       class="button btn-res-3">
-       Mis actividades
-    </a>
+    <a href="#"
+   class="button btn-res-3"
+   onclick="moduloAmenidades(); return false;">
 
-    <a href="eventos_sociales.html"
-       class="button btn-res-3">
-       Eventos sociales
-    </a>
+   Mis reservaciones
+
+</a>
+   
+    <a href="#"
+   class="button btn-res-3"
+   onclick="moduloAmenidades(); return false;">
+
+   Actividades disponibles
+
+</a>
+  
+    <a href="#"
+   class="button btn-res-3"
+   onclick="moduloAmenidades(); return false;">
+
+   Mis actividades
+
+</a>
+
+    <a href="#"
+   class="button btn-res-3"
+   onclick="moduloAmenidades(); return false;">
+
+  eventos sociales
+
+</a>
 
 </div>
   
@@ -688,6 +705,22 @@ function toggleMenu(id){
 
 }
 
+async function moduloAmenidades(){
+
+  await mostrarAlerta({
+
+    titulo: "🚧 Amenidades",
+
+    mensaje: `
+      Estamos trabajando en este módulo.<br><br>
+      Estará disponible próximamente.
+    `
+
+  });
+
+}
+
+  
 async function logout(){
   await supabaseClient.auth.signOut();
   window.location.href = "login.html";
