@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Crear Reservación</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="auth.js"></script>
+
+<style>
+
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+
+.card{
+  background:#111827;
+  border-radius:18px;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>
+    🏟 Nueva Reservación
+  </h1>
+
+  <div class="card">
+
+    <div id="amenidad">
+      Cargando...
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const amenidadId =
+  params.get(
+    "amenidad_id"
+  );
+
+document.getElementById(
+  "amenidad"
+).innerHTML = `
+
+  Amenidad seleccionada:
+
+  <br><br>
+
+  <b>${amenidadId}</b>
+
+`;
+
+window.addEventListener(
+  "DOMContentLoaded",
+  async ()=>{
+
+    await protegerPagina([
+      "residente"
+    ]);
+
+  }
+);
+
+</script>
+
+</body>
+
+</html>
