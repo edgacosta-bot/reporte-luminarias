@@ -1,1 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Mis actividades</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="auth.js"></script>
+
+<script src="utils/residente.js"></script>  
+
+<script src="utils/dates.js"></script>
+
+<script src="modal.js"></script>  
+
+<style>
+
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+}
+
+.kpi{
+  background:#111827;
+  border-radius:18px;
+  padding:20px;
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.kpi span{
+  font-size:34px;
+  font-weight:bold;
+}
+
+.filtros{
+  background:#111827;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:20px;
+}
+
+input,
+select{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:#1f2937;
+  color:white;
+  box-sizing:border-box;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:#2563eb;
+  color:white;
+  cursor:pointer;
+}
+
+.rangos{
+  display:flex;
+  gap:8px;
+  margin-bottom:15px;
+}
+
+.rangos button{
+  flex:1;
+}
+
+.card{
+  background:#111827;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:12px;
+}
+
+.dentro{
+  color:#fbbf24;
+  font-weight:bold;
+}
+
+.salio{
+  color:#4ade80;
+  font-weight:bold;
+}
+
+.label{
+  margin-top:10px;
+  margin-bottom:5px;
+  color:#94a3b8;
+  font-size:13px;
+}
+
+.badge{
+
+  display:inline-block;
+
+  padding:6px 12px;
+
+  border-radius:999px;
+
+  font-size:12px;
+
+  font-weight:bold;
+
+  margin-top:8px;
+
+  margin-bottom:10px;
+
+}
+
+.badge-suministro{
+
+  background:#1e3a8a;
+
+  color:white;
+
+}
+
+.badge-maquinaria{
+
+  background:#92400e;
+
+  color:white;
+
+}
+
+.titulo-obra{
+
+  font-size:18px;
+
+  font-weight:bold;
+
+  color:#93c5fd;
+
+  margin-bottom:10px;
+
+}  
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>
+🎯 Mis Actividades
+</h1>
+
+  
+<div id="lista">
+</div>
+
+</div>
+
+<script>
+
+let residenteId = null;
+
+let actividades = [];
+
+function renderizar(){
+
+  const lista =
+    document.getElementById(
+      "lista"
+    );
+
+  if(
+    actividades.length === 0
+  ){
+
+    lista.innerHTML = `
+      <div class="card">
+        No tienes actividades inscritas.
+      </div>
+    `;
+
+    return;
+
+  }
+
+  let html = "";
+
+  actividades.forEach(a => {
+
+    html += `
+
+      <div class="card">
+
+        <div
+          style="
+            font-size:20px;
+            font-weight:bold;
+            color:#93c5fd;
+            margin-bottom:12px;
+          "
+        >
+
+          💃 ${a.actividad}
+
+        </div>
+
+        <div>
+
+          📍 ${a.amenidad}
+
+        </div>
+
+        <div>
+
+          Tipo:
+          ${a.tipo}
+
+        </div>
+
+        <div>
+
+          Inicio:
+          ${a.fecha_inicio}
+
+        </div>
+
+        <div>
+
+          Fin:
+          ${a.fecha_fin}
+
+        </div>
+
+        <div
+          style="
+            margin-top:10px;
+            font-weight:bold;
+            color:${
+              a.estatus_inscripcion === 'activo'
+                ? '#4ade80'
+                : '#f87171'
+            };
+          "
+        >
+
+          ${
+            a.estatus_inscripcion === 'activo'
+              ? '✅ INSCRITO'
+              : '❌ CANCELADO'
+          }
+
+        </div>
+
+      </div>
+
+    `;
+
+  });
+
+  lista.innerHTML = html;
+
+}
+  
+async function cargarResidente(){
+
+  const residente =
+    await getResidente();
+
+  if(!residente){
+
+    alert(
+      "Error de sesión"
+    );
+
+    return false;
+
+  }
+
+  residenteId =
+    residente.id;
+
+  return true;
+
+}
+
+  
+async function cargar(){
+
+  const { data, error } =
+   await supabaseClient.rpc(
+  "obtener_mis_actividades",
+  {
+    p_residente_id:
+      residenteId
+  }
+);
+
+  if(error){
+
+    console.error(error);
+
+    return;
+
+  }
+
+  actividades =
+    data || [];
+
+  renderizar();
+
+}
+  
+ 
+  
+window.addEventListener(
+  "DOMContentLoaded",
+  async ()=>{
+
+    await protegerPagina([
+      "residente"
+    ]);
+
+    const ok =
+      await cargarResidente();
+
+    if(!ok){
+      return;
+    }
+
+    await cargar();
+
+  }
+);
+
+</script>
+
+</body>
+</html>
