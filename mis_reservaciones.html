@@ -237,7 +237,7 @@ function renderizar(){
 
         </div>
 
-        <div
+  <div
   style="
     margin-top:10px;
     font-weight:bold;
@@ -256,6 +256,29 @@ function renderizar(){
   }
 
 </div>
+
+${
+  r.estado === 'activa'
+  ? `
+
+      <button
+        style="
+          margin-top:12px;
+        "
+        onclick="
+          verInvitados(
+            '${r.reservacion_id}'
+          )
+        "
+      >
+
+        👥 Invitados
+
+      </button>
+
+    `
+  : ''
+}
 
  ${
   r.estado === 'activa'
@@ -369,6 +392,16 @@ async function cancelarReservacion(
   });
 
   await cargar();
+
+}
+
+function verInvitados(
+  reservacionId
+){
+
+  window.location.href =
+
+    `detalle_reservacion.html?reservacion_id=${reservacionId}`;
 
 }
   
