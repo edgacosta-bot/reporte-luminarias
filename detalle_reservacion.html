@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Invitados Reservación</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="auth.js"></script>
+<script src="utils/residente.js"></script>
+<script src="modal.js"></script>
+
+<style>
+
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+
+.card{
+  background:#111827;
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:15px;
+}
+
+input{
+  width:100%;
+  box-sizing:border-box;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:#1f2937;
+  color:white;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:#2563eb;
+  color:white;
+  cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>
+👥 Invitados
+</h1>
+
+<div
+  id="detalle"
+  class="card"
+>
+Cargando...
+</div>
+
+<div class="card">
+
+  <input
+    id="nombreInvitado"
+    placeholder="Nombre del invitado"
+  >
+
+  <br><br>
+
+  <button
+    onclick="agregarInvitado()"
+  >
+
+    Agregar invitado
+
+  </button>
+
+</div>
+
+<div id="lista"></div>
+
+</div>
+
+<script>
+
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const reservacionId =
+  params.get(
+    "reservacion_id"
+  );
+
+let detalle = [];
+
+</script>
+
+</body>
+</html>
