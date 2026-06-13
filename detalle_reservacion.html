@@ -112,6 +112,117 @@ const reservacionId =
 
 let detalle = [];
 
+function renderizar(){
+
+  if(
+    detalle.length === 0
+  ){
+    return;
+  }
+
+  const r =
+    detalle[0];
+
+  document.getElementById(
+    "detalle"
+  ).innerHTML = `
+
+    <b>🏟 Amenidad:</b>
+    ${r.amenidad}
+
+    <br><br>
+
+    <b>📅 Fecha:</b>
+    ${r.fecha}
+
+    <br><br>
+
+    <b>🕒 Horario:</b>
+
+    ${r.hora_inicio}
+    -
+    ${r.hora_fin}
+
+  `;
+
+  const lista =
+    document.getElementById(
+      "lista"
+    );
+
+  let html = "";
+
+  detalle.forEach(i => {
+
+    if(
+      !i.invitado_id
+    ){
+      return;
+    }
+
+    html += `
+
+      <div class="card">
+
+        <b>
+          ${i.invitado}
+        </b>
+
+        <br><br>
+
+        Estado:
+
+        ${i.estatus_invitado}
+
+      </div>
+
+    `;
+
+  });
+
+  lista.innerHTML = html;
+
+}    
+
+async function cargar(){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_detalle_reservacion",
+      {
+        p_reservacion_id:
+          reservacionId
+      }
+    );
+
+  if(error){
+
+    console.error(error);
+
+    return;
+
+  }
+
+  detalle =
+    data || [];
+
+  renderizar();
+
+}    
+
+window.addEventListener(
+  "DOMContentLoaded",
+  async ()=>{
+
+    await protegerPagina([
+      "residente"
+    ]);
+
+    await cargar();
+
+  }
+);      
+
 </script>
 
 </body>
