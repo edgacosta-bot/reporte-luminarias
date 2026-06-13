@@ -210,6 +210,72 @@ async function cargar(){
 
 }    
 
+async function agregarInvitado(){
+
+  const nombre =
+    document.getElementById(
+      "nombreInvitado"
+    ).value.trim();
+
+  if(!nombre){
+
+    await mostrarAlerta({
+
+      titulo:"SIGVIC",
+
+      mensaje:
+        "Capture el nombre del invitado."
+
+    });
+
+    return;
+
+  }
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "agregar_invitado_reservacion",
+      {
+        p_reservacion_id:
+          reservacionId,
+
+        p_nombre:
+          nombre
+      }
+    );
+
+  if(error){
+
+    await mostrarAlerta({
+
+      titulo:"Error",
+
+      mensaje:
+        error.message
+
+    });
+
+    return;
+
+  }
+
+  await mostrarAlerta({
+
+    titulo:"SIGVIC",
+
+    mensaje:
+      data.mensaje
+
+  });
+
+  document.getElementById(
+    "nombreInvitado"
+  ).value = "";
+
+  await cargar();
+
+}
+      
 window.addEventListener(
   "DOMContentLoaded",
   async ()=>{
