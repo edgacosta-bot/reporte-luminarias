@@ -270,6 +270,29 @@ function renderizar(){
 
         </div>
 
+        ${
+  a.estatus_inscripcion === 'activo'
+  ? `
+
+      <button
+        style="
+          margin-top:12px;
+        "
+        onclick="
+          cancelarInscripcion(
+            '${a.actividad_id}'
+          )
+        "
+      >
+
+        Cancelar inscripción
+
+      </button>
+
+    `
+  : ''
+}
+
       </div>
 
     `;
