@@ -508,6 +508,49 @@ body {
     </a>
   </div>
 
+  <button class="button btn-res-4" onclick="toggleMenu('amenidades')">
+    🏟 Amenidades
+</button>
+
+<div id="amenidades" class="submenu">
+
+    <a href="amenidades_reservar.html"
+       class="button btn-res-3">
+
+       Reservar amenidad
+
+    </a>
+
+    <a href="mis_reservaciones.html"
+       class="button btn-res-3">
+
+       Mis reservaciones
+
+    </a>
+
+    <a href="actividades_disponibles.html"
+       class="button btn-res-3">
+
+       Actividades disponibles
+
+    </a>
+
+    <a href="mis_actividades.html"
+       class="button btn-res-3">
+
+       Mis actividades
+
+    </a>
+
+    <a href="eventos_sociales.html"
+       class="button btn-res-3">
+
+       Eventos sociales
+
+    </a>
+
+</div>
+
 </div>  <!-- FIN menuResidente -->
 
 <!-- 🏠 PROPIETARIO NO RESIDENTE -->
@@ -733,7 +776,7 @@ document.getElementById("rolTexto").innerHTML =
   setInterval(cargarKPIs, 30000);
 }
 
- ["obras", "qr", "infra", "vig", "qr_res", "paq", "reportes", "infra_res", "aportaciones", "obras_res","paq_vig", "obras_vig", "inmobiliaria_vig", "otros_accesos", "servicios_vig", "sigvic_vig", "sigvic_admin"]
+ ["obras", "qr", "infra", "vig", "qr_res", "paq", "reportes", "infra_res", "aportaciones", "obras_res","paq_vig", "obras_vig", "inmobiliaria_vig", "otros_accesos", "servicios_vig", "sigvic_vig", "sigvic_admin", "amenidades"]
   .forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
