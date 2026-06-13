@@ -235,12 +235,25 @@ function renderizar(){
 
         </div>
 
-        <div>
+        <div
+  style="
+    margin-top:10px;
+    font-weight:bold;
+    color:${
+      r.estado === 'activa'
+        ? '#4ade80'
+        : '#f87171'
+    };
+  "
+>
 
-          Estado:
-          <b>${r.estado}</b>
+  ${
+    r.estado === 'activa'
+      ? '✅ ACTIVA'
+      : '❌ CANCELADA'
+  }
 
-        </div>
+</div>
 
       </div>
 
