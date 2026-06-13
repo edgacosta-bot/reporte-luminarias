@@ -13,6 +13,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="auth.js"></script>
+<script src="utils/residente.js"></script>      
 
 <style>
 
@@ -73,6 +74,8 @@ const amenidadId =
     "amenidad_id"
   );
 
+let residenteId = null;      
+
 document.getElementById(
   "amenidad"
 ).innerHTML = `
@@ -85,6 +88,102 @@ document.getElementById(
 
 `;
 
+async function cargarResidente(){
+
+  const residente =
+    await getResidente();
+
+  if(!residente){
+
+    alert(
+      "Error de sesión"
+    );
+
+    return false;
+
+  }
+
+  residenteId =
+    residente.id;
+
+  return true;
+
+}
+
+async function crearReservacion(){
+
+  const fecha =
+    document.getElementById(
+      "fecha"
+    ).value;
+
+  const horaInicio =
+    document.getElementById(
+      "horaInicio"
+    ).value;
+
+  const horaFin =
+    document.getElementById(
+      "horaFin"
+    ).value;
+
+  const mensaje =
+    document.getElementById(
+      "mensaje"
+    );
+
+  if(
+    !fecha
+    ||
+    !horaInicio
+    ||
+    !horaFin
+  ){
+
+    mensaje.innerHTML =
+      "Complete todos los campos.";
+
+    return;
+
+  }
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "crear_reservacion_amenidad",
+      {
+        p_residente_id:
+          residenteId,
+
+        p_amenidad_id:
+          amenidadId,
+
+        p_fecha:
+          fecha,
+
+        p_hora_inicio:
+          horaInicio,
+
+        p_hora_fin:
+          horaFin
+      }
+    );
+
+  if(error){
+
+    mensaje.innerHTML =
+      error.message;
+
+    return;
+
+  }
+
+  mensaje.innerHTML =
+    data.mensaje;
+
+  console.log(data);
+
+}      
+      
 window.addEventListener(
   "DOMContentLoaded",
   async ()=>{
@@ -92,6 +191,13 @@ window.addEventListener(
     await protegerPagina([
       "residente"
     ]);
+
+    const ok =
+      await cargarResidente();
+
+    if(!ok){
+      return;
+    }
 
   }
 );
