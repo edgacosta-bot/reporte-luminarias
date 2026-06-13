@@ -15,6 +15,8 @@
 
 <script src="utils/dates.js"></script>
 
+<script src="modal.js"></script>  
+
 <style>
 
 body{
@@ -255,6 +257,28 @@ function renderizar(){
 
 </div>
 
+ ${
+  r.estado === 'activa'
+  ? `
+      <button
+        style="
+          margin-top:12px;
+          background:#dc2626;
+        "
+        onclick="
+          cancelarReservacion(
+            '${r.reservacion_id}'
+          )
+        "
+      >
+
+        Cancelar reservación
+
+      </button>
+    `
+  : ''
+}
+
       </div>
 
     `;
@@ -287,6 +311,62 @@ async function cargarResidente(){
 
 }
 
+async function cancelarReservacion(
+  reservacionId
+){
+
+  const confirmar =
+    await mostrarConfirmacion({
+
+      titulo:
+        "Cancelar reservación",
+
+      mensaje:
+        "¿Desea cancelar la reservación?"
+
+    });
+
+  if(!confirmar){
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "cancelar_reservacion_amenidad",
+      {
+        p_reservacion_id:
+          reservacionId
+      }
+    );
+
+  if(error){
+
+    await mostrarAlerta({
+
+      titulo: "Error",
+
+      mensaje:
+        error.message
+
+    });
+
+    return;
+
+  }
+
+  await mostrarAlerta({
+
+    titulo: "SIGVIC",
+
+    mensaje:
+      data.mensaje
+
+  });
+
+  await cargar();
+
+}
+  
 async function cargar(){
 
   const { data, error } =
