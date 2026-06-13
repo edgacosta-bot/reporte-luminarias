@@ -36,6 +36,16 @@ body{
   padding:20px;
 }
 
+input{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:#1f2937;
+  color:white;
+  box-sizing:border-box;
+}      
+      
 h1{
   text-align:center;
 }
@@ -52,13 +62,52 @@ h1{
     🏟 Nueva Reservación
   </h1>
 
-  <div class="card">
+ <div class="card">
 
-    <div id="amenidad">
-      Cargando...
-    </div>
-
+  <div id="nombreAmenidad">
+    Cargando...
   </div>
+
+  <br>
+
+  <label>Fecha</label>
+
+  <input
+    type="date"
+    id="fecha"
+  >
+
+  <br><br>
+
+  <label>Hora inicio</label>
+
+  <input
+    type="time"
+    id="horaInicio"
+  >
+
+  <br><br>
+
+  <label>Hora fin</label>
+
+  <input
+    type="time"
+    id="horaFin"
+  >
+
+  <br><br>
+
+  <button
+    onclick="crearReservacion()"
+  >
+    Crear reservación
+  </button>
+
+  <br><br>
+
+  <div id="mensaje"></div>
+
+</div>
 
 </div>
 
@@ -77,8 +126,8 @@ const amenidadId =
 let residenteId = null;      
 
 document.getElementById(
-  "amenidad"
-).innerHTML = `
+  "nombreAmenidad"
+).innerHTML =
 
   Amenidad seleccionada:
 
