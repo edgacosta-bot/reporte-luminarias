@@ -271,12 +271,11 @@ function reservarAmenidad(
   amenidadId
 ){
 
-  console.log(
-    "Amenidad:",
-    amenidadId
-  );
+  window.location.href =
 
-}  
+    `reservar_amenidad.html?amenidad_id=${amenidadId}`;
+
+}
   
 async function cargar(){
 
