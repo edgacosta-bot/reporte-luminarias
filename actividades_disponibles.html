@@ -334,12 +334,7 @@ async function cargar(){
 
   const { data, error } =
     await supabaseClient.rpc(
-  "obtener_actividades_disponibles"
-);
-      {
-        p_residente_id:
-          residenteId
-      }
+      "obtener_actividades_disponibles"
     );
 
   if(error){
@@ -351,11 +346,11 @@ async function cargar(){
   }
 
   actividades =
-  data || [];
+    data || [];
 
   renderizar();
 
-}  
+}
   
  
   
