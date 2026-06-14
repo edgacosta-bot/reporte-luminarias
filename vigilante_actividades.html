@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Clientes de Asesor</title>
+<title>Actividades e Invitados</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
@@ -106,56 +106,15 @@ select{
 <div class="container">
 
 <h2>
-🏡 Clientes de Asesores
+🏃 Actividades e Invitados
 </h2>
 
-<div class="card">
-
-<h3>
-Registrar cliente
-</h3>
-
-<select id="asesor">
-  <option value="">
-    Seleccione asesor...
-  </option>
-</select>
-
-<br><br>
-
-<input
-  id="cliente"
-  placeholder="Nombre del cliente">
-
-<br><br>
-
-<input
-  id="pin"
-  type="password"
-  placeholder="NIP vigilante">
-
-<br><br>
-
-<button
-  class="btn btn-verde"
-  onclick="registrarCliente()">
-
-  Registrar cliente
-
-</button>
-
-<div
-  id="msgRegistro"
-  class="msg">
-</div>
-
-</div>
 
 <h2 id="tituloClientes">
-👥 Clientes dentro
+👥 Invitados de Actividades
 </h2>
 
-<div id="clientesDentro">
+<div id="invitados">
 Cargando...
 </div>
 
@@ -167,8 +126,7 @@ cargar();
 
 async function cargar(){
 
-  await cargarAsesores();
-  await cargarClientes();
+  await cargarInvitados();
 
 }
 
@@ -176,60 +134,21 @@ async function cargar(){
 // ASESORES DENTRO
 // =====================================
 
-async function cargarAsesores(){
-
-  const select =
-    document.getElementById("asesor");
-
-  select.innerHTML = `
-    <option value="">
-      Seleccione asesor...
-    </option>
-  `;
-
-  const { data, error } =
-    await supabaseClient.rpc(
-      "obtener_asesores_dentro"
-    );
-
-  if(error){
-
-    console.error(error);
-    return;
-
-  }
-
-  data.forEach(a => {
-
-    select.innerHTML += `
-
-      <option value="${a.asesor_id}">
-
-        ${a.nombre}
-        (${a.empresa})
-
-      </option>
-
-    `;
-
-  });
-
-}
 
 // =====================================
 // CLIENTES DENTRO
 // =====================================
 
-async function cargarClientes(){
+async function cargarInvitados(){
 
   const contenedor =
     document.getElementById(
-      "clientesDentro"
+      "invitados"
     );
 
   const { data, error } =
     await supabaseClient.rpc(
-      "obtener_visitantes_asesor_dentro"
+      "obtener_invitados_actividad_vigilancia"
     );
 
   if(error){
@@ -247,7 +166,7 @@ async function cargarClientes(){
 
     contenedor.innerHTML = `
       <div class="vacio">
-        No hay clientes dentro
+        No existen invitados para actividades
       </div>
     `;
 
@@ -257,7 +176,7 @@ async function cargarClientes(){
 
   contenedor.innerHTML = "";
 
-  data.forEach(cliente => {
+  data.forEach(invitado => {
 
     contenedor.innerHTML += `
 
@@ -265,35 +184,63 @@ async function cargarClientes(){
 
         <div class="nombre">
 
-          ${cliente.nombre_visitante}
+          ${invitado.invitado}
 
         </div>
 
         <div class="detalle">
 
-          Asesor:
-          ${cliente.asesor_nombre}
+          Actividad:
+          ${invitado.actividad}
 
           <br><br>
 
-          Empresa:
-          ${cliente.empresa}
+          Amenidad:
+          ${invitado.amenidad}
 
         </div>
 
         <br>
 
-        <button
-          class="btn btn-ambar"
-          onclick="
-            registrarSalida(
-              '${cliente.visitante_id}'
-            )
-          ">
+        ${
+          invitado.estado_acceso === "autorizado"
 
-          Registrar salida
+          ?
 
-        </button>
+          `
+
+          <button
+            class="btn btn-verde"
+            onclick="
+              registrarIngreso(
+                '${invitado.invitado_id}'
+              )
+            ">
+
+            Registrar ingreso
+
+          </button>
+
+          `
+
+          :
+
+          `
+
+          <button
+            class="btn btn-ambar"
+            onclick="
+              registrarSalida(
+                '${invitado.invitado_id}'
+              )
+            ">
+
+            Registrar salida
+
+          </button>
+
+          `
+        }
 
       </div>
 
@@ -303,56 +250,26 @@ async function cargarClientes(){
 
 }
 
-// =====================================
-// REGISTRAR CLIENTE
-// =====================================
-
-async function registrarCliente(){
-
-  const asesorId =
-    document.getElementById(
-      "asesor"
-    ).value;
-
-  const nombreCliente =
-    document.getElementById(
-      "cliente"
-    ).value.trim();
+async function registrarIngreso(
+  invitadoId
+){
 
   const pin =
-    document.getElementById(
-      "pin"
-    ).value.trim();
+    await mostrarSolicitudPin({
 
-  if(!asesorId){
+      titulo:
+        "Registrar ingreso",
 
-  ui.warn(
-    "Seleccione asesor"
-  );
+      mensaje:
+        "Ingrese NIP del vigilante"
 
-  return;
-
-}
-  if(!nombreCliente){
-
-  ui.warn(
-    "Capture nombre del cliente"
-  );
-
-  return;
-
-}
+    });
 
   if(!pin){
+    return;
+  }
 
-  ui.warn(
-    "Capture NIP"
-  );
-
-  return;
-
-}
-  const { data: vigilante } =
+  const { data:vigilante } =
     await supabaseClient.rpc(
       "validar_pin_vigilante",
       {
@@ -366,25 +283,24 @@ async function registrarCliente(){
   ){
 
     ui.error(
-  "NIP incorrecto"
-);
+      "NIP incorrecto"
+    );
 
     return;
 
   }
 
-  const { error } =
+  const { data, error } =
     await supabaseClient.rpc(
-      "registrar_entrada_visitante_asesor",
+      "registrar_ingreso_invitado_actividad",
       {
-        p_asesor_id:
-          asesorId,
 
-        p_nombre_visitante:
-          nombreCliente,
+        p_invitado_id:
+          invitadoId,
 
         p_vigilante_id:
           vigilante[0].id
+
       }
     );
 
@@ -393,33 +309,30 @@ async function registrarCliente(){
     console.error(error);
 
     ui.error(
-  error.message
-);
+      error.message
+    );
 
     return;
 
   }
 
-  document.getElementById(
-    "cliente"
-  ).value = "";
+  if(!data.ok){
 
-  document.getElementById(
-    "pin"
-  ).value = "";
+    ui.error(
+      data.mensaje
+    );
 
- ui.success(
-  "Cliente registrado correctamente"
-);
+    return;
 
-  await cargarAsesores();
-  await cargarClientes();
+  }
 
-}
+  ui.success(
+    data.mensaje
+  );
 
-// =====================================
-// SALIDA CLIENTE
-// =====================================
+  await cargar();
+
+}  
 
 async function registrarSalida(
   visitanteId
@@ -473,14 +386,11 @@ if(!pin){
 
   const { error } =
     await supabaseClient.rpc(
-      "registrar_salida_visitante_asesor",
+      "registrar_salida_invitado_actividad",
       {
-        p_visitante_id:
-          visitanteId,
-
-        p_vigilante_id:
-          vigilante[0].id
-      }
+  p_invitado_id: visitanteId,
+  p_vigilante_id: vigilante[0].id
+}
     );
 
  if(error){
@@ -495,8 +405,7 @@ if(!pin){
 
 }
 
-  await cargarAsesores();
-  await cargarClientes();
+ await cargar();
 
 }
 
