@@ -219,6 +219,16 @@ html += `
 
 async function cargar(){
 
+ console.log(
+    "Actividad:",
+    actividadId
+  );
+
+  console.log(
+    "Residente:",
+    residenteId
+  );     
+
   const { data, error } =
   await supabaseClient.rpc(
     "obtener_detalle_actividad_completo",
@@ -230,6 +240,16 @@ async function cargar(){
         residenteId
     }
   );
+
+  console.log(
+    "DATA",
+    data
+  );
+
+  console.log(
+    "ERROR",
+    error
+  );    
 
   if(error){
 
@@ -319,9 +339,37 @@ await cargar();
 
   
 
-    window.addEventListener(
+   window.addEventListener(
   "DOMContentLoaded",
   async ()=>{
+
+    console.log("PASO 1");
+
+    await protegerPagina([
+      "residente"
+    ]);
+
+    console.log("PASO 2");
+
+    const ok =
+      await cargarResidente();
+
+    console.log(
+      "PASO 3",
+      ok,
+      residenteId
+    );
+
+    if(!ok){
+      return;
+    }
+
+    await cargar();
+
+    console.log("PASO 4");
+
+  }
+);
 
     await protegerPagina([
       "residente"
