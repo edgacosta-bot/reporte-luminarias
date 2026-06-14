@@ -219,38 +219,34 @@ html += `
 
 async function cargar(){
 
- console.log(
-  "DATA",
-  JSON.stringify(
-    data,
-    null,
-    2
-  )
-);
+  console.log(
+    "Actividad:",
+    actividadId
+  );
 
   console.log(
     "Residente:",
     residenteId
-  );     
-
-  const { data, error } =
-  await supabaseClient.rpc(
-    "obtener_detalle_actividad_completo",
-    {
-      p_actividad_id:
-        actividadId,
-
-      p_residente_id:
-        residenteId
-    }
   );
 
- console.table(data);
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_detalle_actividad_completo",
+      {
+        p_actividad_id:
+          actividadId,
+
+        p_residente_id:
+          residenteId
+      }
+    );
+
+  console.table(data);
 
   console.log(
     "ERROR",
     error
-  );    
+  );
 
   if(error){
 
@@ -265,7 +261,7 @@ async function cargar(){
 
   renderizar();
 
-}    
+}   
 
 async function agregarInvitado(){
 
