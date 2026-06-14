@@ -40,6 +40,13 @@ h2{
   padding:18px;
   border-radius:18px;
   margin-bottom:12px;
+}
+
+.card-autorizado{
+  border-left:6px solid #f59e0b;
+}
+
+.card-dentro{
   border-left:6px solid #16a34a;
 }
 
@@ -78,12 +85,14 @@ select{
 .nombre{
   font-size:22px;
   font-weight:bold;
-  margin-bottom:8px;
+  margin-bottom:12px;
+  color:white;
 }
 
 .detalle{
   color:#cbd5e1;
-  font-size:14px;
+  font-size:15px;
+  line-height:1.7;
 }
 
 .vacio{
@@ -111,8 +120,17 @@ select{
 
 
 <h2 id="tituloClientes">
-👥 Invitados de Actividades
+👮 Control de Acceso a Actividades
 </h2>
+
+<div
+  id="resumen"
+  style="
+    text-align:center;
+    margin-bottom:20px;
+    color:#cbd5e1;
+  ">
+</div>  
 
 <div id="invitados">
 Cargando...
@@ -151,6 +169,29 @@ async function cargarInvitados(){
       "obtener_invitados_actividad_vigilancia"
     );
 
+ 
+const dentro =
+  registros.filter(
+    x => x.estado_acceso === "dentro"
+  ).length;
+
+const autorizados =
+  registros.filter(
+    x => x.estado_acceso === "autorizado"
+  ).length;
+
+document.getElementById(
+  "resumen"
+).innerHTML = `
+
+  🟢 Dentro: ${dentro}
+
+  &nbsp;&nbsp;&nbsp;
+
+  🟡 Autorizados: ${autorizados}
+
+`;
+
   if(error){
 
     console.error(error);
@@ -161,6 +202,9 @@ async function cargarInvitados(){
     return;
 
   }
+
+   const registros =
+  data || [];
 
   if(!data || data.length === 0){
 
@@ -180,7 +224,14 @@ async function cargarInvitados(){
 
     contenedor.innerHTML += `
 
-      <div class="card">
+      <div class="
+  card
+  ${
+    invitado.estado_acceso === "dentro"
+      ? "card-dentro"
+      : "card-autorizado"
+  }
+">
 
         <div class="nombre">
 
@@ -190,15 +241,26 @@ async function cargarInvitados(){
 
         <div class="detalle">
 
-          Actividad:
-          ${invitado.actividad}
+  Actividad:
+ <b>${invitado.actividad}</b>
 
-          <br><br>
+  <br><br>
 
-          Amenidad:
-          ${invitado.amenidad}
+  Amenidad:
+ <b>${invitado.amenidad}</b>
 
-        </div>
+  <br><br>
+
+  Estado:
+  <b>
+    ${
+  invitado.estado_acceso === "dentro"
+    ? "Dentro del fraccionamiento"
+    : "Autorizado para ingresar"
+}
+  </b>
+
+</div>
 
         <br>
 
@@ -335,7 +397,7 @@ async function registrarIngreso(
 }  
 
 async function registrarSalida(
-  visitanteId
+  invitadoId
 ){
 
   const confirmar =
@@ -345,7 +407,7 @@ async function registrarSalida(
       "Registrar salida",
 
     mensaje:
-      "¿Desea registrar la salida de este cliente?"
+      "¿Desea registrar la salida de este invitado?"
 
   });
 
@@ -388,12 +450,21 @@ if(!pin){
     await supabaseClient.rpc(
       "registrar_salida_invitado_actividad",
       {
-  p_invitado_id: visitanteId,
+  p_invitado_id: invitadoId,
   p_vigilante_id: vigilante[0].id
 }
     );
 
- if(error){
+ const { data, error } =
+  await supabaseClient.rpc(
+    "registrar_salida_invitado_actividad",
+    {
+      p_invitado_id: invitadoId,
+      p_vigilante_id: vigilante[0].id
+    }
+  );
+
+if(error){
 
   console.error(error);
 
@@ -405,7 +476,21 @@ if(!pin){
 
 }
 
- await cargar();
+if(!data.ok){
+
+  ui.error(
+    data.mensaje
+  );
+
+  return;
+
+}
+
+ui.success(
+  data.mensaje
+);
+
+await cargar();
 
 }
 
