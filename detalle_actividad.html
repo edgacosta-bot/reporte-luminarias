@@ -216,10 +216,22 @@ html += `
     <br><br>
 
     Estado:
-
     ${i.estatus_invitado}
 
-   
+    <br><br>
+
+    ${
+      i.estatus_invitado !== 'cancelado'
+      ? `
+        <button
+          onclick="cancelarInvitado('${i.invitado_id}')"
+        >
+          Cancelar invitado
+        </button>
+      `
+      : ''
+    }
+
   </div>
 
 `;
@@ -352,7 +364,46 @@ await cargar();
 
 }
 
-  
+async function cancelarInvitado(
+  invitadoId
+){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "cancelar_invitado_actividad",
+      {
+        p_invitado_id:
+          invitadoId
+      }
+    );
+
+  if(error){
+
+    await mostrarAlerta({
+
+      titulo:"Error",
+
+      mensaje:
+        error.message
+
+    });
+
+    return;
+
+  }
+
+  await mostrarAlerta({
+
+    titulo:"SIGVIC",
+
+    mensaje:
+      data.mensaje
+
+  });
+
+  await cargar();
+
+}  
 
    window.addEventListener(
   "DOMContentLoaded",
