@@ -262,21 +262,29 @@ function renderizar(){
           "
         >
 
-          ${
-            a.estatus_inscripcion === 'activo'
-              ? '✅ INSCRITO'
-              : '❌ CANCELADO'
-          }
-
-        </div>
-
-        ${
+      ${
   a.estatus_inscripcion === 'activo'
   ? `
 
       <button
         style="
           margin-top:12px;
+        "
+        onclick="
+          verInvitados(
+            '${a.actividad_id}'
+          )
+        "
+      >
+
+        👥 Invitados
+
+      </button>
+
+      <button
+        style="
+          margin-top:8px;
+          background:#dc2626;
         "
         onclick="
           cancelarInscripcion(
@@ -291,9 +299,9 @@ function renderizar(){
 
     `
   : ''
-}
-
-      </div>
+}   
+               
+               </div>
 
     `;
 
@@ -325,7 +333,17 @@ async function cargarResidente(){
 
 }
 
-async function cancelarInscripcion(
+function verInvitados(
+  actividadId
+){
+
+  window.location.href =
+
+    `detalle_actividad.html?actividad_id=${actividadId}`;
+
+}
+  
+  async function cancelarInscripcion(
   actividadId
 ){
 
