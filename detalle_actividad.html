@@ -105,13 +105,38 @@ const params =
     window.location.search
   );
 
-const reservacionId =
+const actividadId =
   params.get(
-    "reservacion_id"
+    "actividad_id"
   );
+
+let residenteId = null;
 
 let detalle = [];
 
+
+async function cargarResidente(){
+
+  const residente =
+    await getResidente();
+
+  if(!residente){
+
+    alert(
+      "Error de sesión"
+    );
+
+    return false;
+
+  }
+
+  residenteId =
+    residente.id;
+
+  return true;
+
+}      
+      
 function renderizar(){
 
   if(
@@ -120,31 +145,38 @@ function renderizar(){
     return;
   }
 
-  const r =
-    detalle[0];
+const r =
+  detalle[0];
 
-  document.getElementById(
-    "detalle"
-  ).innerHTML = `
+document.getElementById(
+  "detalle"
+).innerHTML = `
 
-    <b>🏟 Amenidad:</b>
-    ${r.amenidad}
+  <b>🏟 Amenidad:</b>
+  ${r.amenidad}
 
-    <br><br>
+  <br><br>
 
-    <b>📅 Fecha:</b>
-    ${r.fecha}
+  <b>💃 Actividad:</b>
+  ${r.actividad}
 
-    <br><br>
+  <br><br>
 
-    <b>🕒 Horario:</b>
+  <b>🏷 Tipo:</b>
+  ${r.tipo}
 
-    ${r.hora_inicio}
-    -
-    ${r.hora_fin}
+  <br><br>
 
-  `;
+  <b>📅 Inicio:</b>
+  ${r.fecha_inicio}
 
+  <br>
+
+  <b>📅 Fin:</b>
+  ${r.fecha_fin}
+
+`;
+      
   const lista =
     document.getElementById(
       "lista"
@@ -174,30 +206,7 @@ html += `
 
     ${i.estatus_invitado}
 
-    ${
-      i.estatus_invitado === 'autorizado'
-      ? `
-
-          <button
-            style="
-              margin-top:12px;
-              background:#dc2626;
-            "
-            onclick="
-              cancelarInvitado(
-                '${i.invitado_id}'
-              )
-            "
-          >
-
-            Cancelar invitado
-
-          </button>
-
-        `
-      : ''
-    }
-
+   
   </div>
 
 `;
@@ -211,13 +220,16 @@ html += `
 async function cargar(){
 
   const { data, error } =
-    await supabaseClient.rpc(
-      "obtener_detalle_reservacion",
-      {
-        p_reservacion_id:
-          reservacionId
-      }
-    );
+  await supabaseClient.rpc(
+    "obtener_detalle_actividad_completo",
+    {
+      p_actividad_id:
+        actividadId,
+
+      p_residente_id:
+        residenteId
+    }
+  );
 
   if(error){
 
@@ -258,14 +270,18 @@ async function agregarInvitado(){
 
   const { data, error } =
     await supabaseClient.rpc(
-      "agregar_invitado_reservacion",
+      "agregar_invitado_actividad",
       {
-        p_reservacion_id:
-          reservacionId,
+       
+  p_actividad_id:
+    actividadId,
 
-        p_nombre:
-          nombre
-      }
+  p_residente_id:
+    residenteId,
+
+  p_nombre:
+    nombre
+}
     );
 
   if(error){
@@ -296,67 +312,14 @@ async function agregarInvitado(){
     "nombreInvitado"
   ).value = "";
 
-  await cargar();
+  
+await cargar();
 
 }
 
-async function cancelarInvitado(
-  invitadoId
-){
+  
 
-  const confirmar =
-    await mostrarConfirmacion({
-
-      titulo:
-        "Cancelar invitado",
-
-      mensaje:
-        "¿Desea cancelar este invitado?"
-
-    });
-
-  if(!confirmar){
-    return;
-  }
-
-  const { data, error } =
-    await supabaseClient.rpc(
-      "cancelar_invitado_reservacion",
-      {
-        p_invitado_id:
-          invitadoId
-      }
-    );
-
-  if(error){
-
-    await mostrarAlerta({
-
-      titulo:"Error",
-
-      mensaje:
-        error.message
-
-    });
-
-    return;
-
-  }
-
-  await mostrarAlerta({
-
-    titulo:"SIGVIC",
-
-    mensaje:
-      data.mensaje
-
-  });
-
-  await cargar();
-
-}      
-      
-window.addEventListener(
+    window.addEventListener(
   "DOMContentLoaded",
   async ()=>{
 
@@ -364,10 +327,18 @@ window.addEventListener(
       "residente"
     ]);
 
+    const ok =
+      await cargarResidente();
+
+    if(!ok){
+      return;
+    }
+
     await cargar();
 
   }
-);      
+);
+    
 
 </script>
 
