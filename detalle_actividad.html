@@ -220,9 +220,13 @@ html += `
 async function cargar(){
 
  console.log(
-    "Actividad:",
-    actividadId
-  );
+  "DATA",
+  JSON.stringify(
+    data,
+    null,
+    2
+  )
+);
 
   console.log(
     "Residente:",
@@ -241,10 +245,7 @@ async function cargar(){
     }
   );
 
-  console.log(
-    "DATA",
-    data
-  );
+ console.table(data);
 
   console.log(
     "ERROR",
