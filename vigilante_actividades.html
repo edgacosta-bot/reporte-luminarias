@@ -165,7 +165,20 @@ async function cargarInvitados(){
       "obtener_invitados_actividad_vigilancia"
     );
 
- 
+    if(error){
+
+    console.error(error);
+
+    contenedor.innerHTML =
+      "Error al cargar";
+
+    return;
+
+  }
+  
+const registros =
+  data || [];
+  
 const dentro =
   registros.filter(
     x => x.estado_acceso === "dentro"
@@ -188,20 +201,7 @@ document.getElementById(
 
 `;
 
-  if(error){
-
-    console.error(error);
-
-    contenedor.innerHTML =
-      "Error al cargar";
-
-    return;
-
-  }
-
-   const registros =
-  data || [];
-
+   
   if(!data || data.length === 0){
 
     contenedor.innerHTML = `
@@ -442,16 +442,7 @@ if(!pin){
 
 }
 
-  const { error } =
-    await supabaseClient.rpc(
-      "registrar_salida_invitado_actividad",
-      {
-  p_invitado_id: invitadoId,
-  p_vigilante_id: vigilante[0].id
-}
-    );
-
- const { data, error } =
+  const { data, error } =
   await supabaseClient.rpc(
     "registrar_salida_invitado_actividad",
     {
