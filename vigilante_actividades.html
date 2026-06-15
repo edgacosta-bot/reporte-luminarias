@@ -380,13 +380,19 @@ async function registrarIngreso(
 
   if(!data.ok){
 
-    ui.error(
+  await mostrarConfirmacion({
+
+    titulo:
+      "Acceso no permitido",
+
+    mensaje:
       data.mensaje
-    );
 
-    return;
+  });
 
-  }
+  return;
+
+}
 
   ui.success(
     data.mensaje
