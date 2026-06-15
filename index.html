@@ -669,6 +669,30 @@ para visitantes
 
 </div>
 
+<!-- ACTIVIDADES -->
+
+<button
+  class="button btn-verde-dark"
+  onclick="toggleMenu('actividades_vig')">
+
+  🏃 Actividades y Amenidades
+
+</button>
+
+<div
+  id="actividades_vig"
+  class="submenu">
+
+  <a
+    href="vigilante_actividades.html"
+    class="button btn-gris">
+
+    👥 Control de acceso a actividades
+
+  </a>
+
+</div>  
+
 </div>
 
 
@@ -801,7 +825,7 @@ document.getElementById("rolTexto").innerHTML =
   setInterval(cargarKPIs, 30000);
 }
 
- ["obras", "qr", "infra", "vig", "qr_res", "paq", "reportes", "infra_res", "aportaciones", "obras_res","paq_vig", "obras_vig", "inmobiliaria_vig", "otros_accesos", "servicios_vig", "sigvic_vig", "sigvic_admin", "amenidades"]
+ ["obras", "qr", "infra", "vig", "qr_res", "paq", "reportes", "infra_res", "aportaciones", "obras_res","paq_vig", "obras_vig", "inmobiliaria_vig", "actividades_vig", "otros_accesos", "servicios_vig", "sigvic_vig", "sigvic_admin", "amenidades"]
   .forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
