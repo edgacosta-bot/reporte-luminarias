@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Actividades e Invitados</title>
+<title>Control de Reservaciones</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
@@ -125,7 +125,7 @@ select{
 
 
 <h2 id="tituloClientes">
-👮 Control de Acceso a Actividades
+👮 Control de Acceso a Reservaciones
 </h2>
 
 <div id="resumen"></div>  
@@ -164,7 +164,7 @@ async function cargarInvitados(){
 
   const { data, error } =
     await supabaseClient.rpc(
-      "obtener_invitados_actividad_vigilancia"
+      ""obtener_invitados_reservacion_vigilancia""
     );
 
     if(error){
@@ -210,7 +210,7 @@ document.getElementById(
 
     contenedor.innerHTML = `
       <div class="vacio">
-        No existen invitados para actividades
+        No existen invitados para reservaciones
       </div>
     `;
 
@@ -239,28 +239,36 @@ document.getElementById(
 
         </div>
 
-        <div class="detalle">
+      <div class="detalle">
 
-  Actividad:
- <b>${invitado.actividad}</b>
+  Amenidad:
+  <b>${invitado.amenidad}</b>
 
   <br><br>
 
-  Amenidad:
- <b>${invitado.amenidad}</b>
+  Fecha:
+  <b>${invitado.fecha_reservacion}</b>
+
+  <br><br>
+
+  Ubicación:
+  <b>
+    Privada ${invitado.privada}
+    - Casa ${invitado.casa}
+  </b>
 
   <br><br>
 
   Estado:
   <b>
     ${
-  invitado.estado_acceso === "dentro"
-    ? "Dentro del fraccionamiento"
-    : "Autorizado para ingresar"
-}
+      invitado.estado_acceso === "dentro"
+      ? "Dentro del fraccionamiento"
+      : "Autorizado para ingresar"
+    }
   </b>
 
-</div>
+</div>  
 
         <br>
 
@@ -354,7 +362,7 @@ async function registrarIngreso(
 
   const { data, error } =
     await supabaseClient.rpc(
-      "registrar_ingreso_invitado_actividad",
+      "registrar_ingreso_invitado_reservacion",
       {
 
         p_invitado_id:
@@ -448,7 +456,7 @@ if(!pin){
 
   const { data, error } =
   await supabaseClient.rpc(
-    "registrar_salida_invitado_actividad",
+    "registrar_salida_invitado_reservacion",
     {
       p_invitado_id: invitadoId,
       p_vigilante_id: vigilante[0].id
