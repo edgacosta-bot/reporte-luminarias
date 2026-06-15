@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Actividades e Invitados</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script src="/utils/ui.js"></script>  
+<script src="/modal.js"></script>  
+
+<script>
+protegerPagina(["vigilante"]);
+</script>
+
+<style>
+
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:18px;
+}
+
+h2{
+  text-align:center;
+}
+
+.card{
+  background:#111827;
+  padding:18px;
+  border-radius:18px;
+  margin-bottom:12px;
+}
+
+.card-autorizado{
+  border-left:6px solid #f59e0b;
+}
+
+.card-dentro{
+  border-left:6px solid #16a34a;
+}
+
+input,
+select{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  font-size:15px;
+  background:#1f2937;
+  color:white;
+  box-sizing:border-box;
+}
+
+.btn{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:bold;
+  font-size:15px;
+}
+
+.btn-verde{
+  background:#16a34a;
+  color:white;
+}
+
+.btn-ambar{
+  background:#f59e0b;
+  color:#111827;
+}
+
+.nombre{
+  font-size:22px;
+  font-weight:bold;
+  margin-bottom:12px;
+  color:white;
+}
+
+.detalle{
+  color:#cbd5e1;
+  font-size:15px;
+  line-height:1.7;
+}
+
+.vacio{
+  text-align:center;
+  color:#94a3b8;
+  margin-top:20px;
+}
+
+.msg{
+  margin-top:10px;
+  text-align:center;
+}
+
+#resumen{
+  display:flex;
+  justify-content:center;
+  gap:40px;
+  font-size:22px;
+  margin-bottom:25px;
+  color:#cbd5e1;
+}  
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+
+<h2 id="tituloClientes">
+👮 Control de Acceso a Actividades
+</h2>
+
+<div id="resumen"></div>  
+
+<div id="invitados">
+Cargando...
+</div>
+
+</div>
+
+<script>
+
+cargar();
+
+async function cargar(){
+
+  await cargarInvitados();
+
+}
+
+// =====================================
+// ASESORES DENTRO
+// =====================================
+
+
+// =====================================
+// CLIENTES DENTRO
+// =====================================
+
+async function cargarInvitados(){
+
+  const contenedor =
+    document.getElementById(
+      "invitados"
+    );
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_invitados_actividad_vigilancia"
+    );
+
+    if(error){
+
+    console.error(error);
+
+    contenedor.innerHTML =
+      "Error al cargar";
+
+    return;
+
+  }
+  
+const registros =
+  data || [];
+  
+const dentro =
+  registros.filter(
+    x => x.estado_acceso === "dentro"
+  ).length;
+
+const autorizados =
+  registros.filter(
+    x => x.estado_acceso === "autorizado"
+  ).length;
+
+document.getElementById(
+  "resumen"
+).innerHTML = `
+
+  <div>
+    🟢 Dentro: ${dentro}
+  </div>
+
+  <div>
+    🟡 Autorizados: ${autorizados}
+  </div>
+
+`;
+
+   
+  if(!data || data.length === 0){
+
+    contenedor.innerHTML = `
+      <div class="vacio">
+        No existen invitados para actividades
+      </div>
+    `;
+
+    return;
+
+  }
+
+  contenedor.innerHTML = "";
+
+  data.forEach(invitado => {
+
+    contenedor.innerHTML += `
+
+      <div class="
+  card
+  ${
+    invitado.estado_acceso === "dentro"
+      ? "card-dentro"
+      : "card-autorizado"
+  }
+">
+
+        <div class="nombre">
+
+          ${invitado.invitado}
+
+        </div>
+
+        <div class="detalle">
+
+  Actividad:
+ <b>${invitado.actividad}</b>
+
+  <br><br>
+
+  Amenidad:
+ <b>${invitado.amenidad}</b>
+
+  <br><br>
+
+  Estado:
+  <b>
+    ${
+  invitado.estado_acceso === "dentro"
+    ? "Dentro del fraccionamiento"
+    : "Autorizado para ingresar"
+}
+  </b>
+
+</div>
+
+        <br>
+
+        ${
+          invitado.estado_acceso === "autorizado"
+
+          ?
+
+          `
+
+          <button
+            class="btn btn-verde"
+            onclick="
+              registrarIngreso(
+                '${invitado.invitado_id}'
+              )
+            ">
+
+            Registrar ingreso
+
+          </button>
+
+          `
+
+          :
+
+          `
+
+          <button
+            class="btn btn-ambar"
+            onclick="
+              registrarSalida(
+                '${invitado.invitado_id}'
+              )
+            ">
+
+            Registrar salida
+
+          </button>
+
+          `
+        }
+
+      </div>
+
+    `;
+
+  });
+
+}
+
+async function registrarIngreso(
+  invitadoId
+){
+
+  const pin =
+    await mostrarSolicitudPin({
+
+      titulo:
+        "Registrar ingreso",
+
+      mensaje:
+        "Ingrese NIP del vigilante"
+
+    });
+
+  if(!pin){
+    return;
+  }
+
+  const { data:vigilante } =
+    await supabaseClient.rpc(
+      "validar_pin_vigilante",
+      {
+        pin_input: pin
+      }
+    );
+
+  if(
+    !vigilante ||
+    vigilante.length === 0
+  ){
+
+    ui.error(
+      "NIP incorrecto"
+    );
+
+    return;
+
+  }
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "registrar_ingreso_invitado_actividad",
+      {
+
+        p_invitado_id:
+          invitadoId,
+
+        p_vigilante_id:
+          vigilante[0].id
+
+      }
+    );
+
+  if(error){
+
+    console.error(error);
+
+    ui.error(
+      error.message
+    );
+
+    return;
+
+  }
+
+  if(!data.ok){
+
+    ui.error(
+      data.mensaje
+    );
+
+    return;
+
+  }
+
+  ui.success(
+    data.mensaje
+  );
+
+  await cargar();
+
+}  
+
+async function registrarSalida(
+  invitadoId
+){
+
+  const confirmar =
+  await mostrarConfirmacion({
+
+    titulo:
+      "Registrar salida",
+
+    mensaje:
+      "¿Desea registrar la salida de este invitado?"
+
+  });
+
+if(!confirmar){
+  return;
+}
+
+const pin =
+  await mostrarSolicitudPin({
+    titulo:"Registrar salida",
+    mensaje:"Ingrese NIP del vigilante"
+  });
+
+if(!pin){
+  return;
+}
+
+  const { data: vigilante } =
+    await supabaseClient.rpc(
+      "validar_pin_vigilante",
+      {
+        pin_input: pin
+      }
+    );
+
+  if(
+  !vigilante ||
+  vigilante.length === 0
+){
+
+  ui.error(
+    "NIP incorrecto"
+  );
+
+  return;
+
+}
+
+  const { data, error } =
+  await supabaseClient.rpc(
+    "registrar_salida_invitado_actividad",
+    {
+      p_invitado_id: invitadoId,
+      p_vigilante_id: vigilante[0].id
+    }
+  );
+
+if(error){
+
+  console.error(error);
+
+  ui.error(
+    error.message
+  );
+
+  return;
+
+}
+
+if(!data.ok){
+
+  ui.error(
+    data.mensaje
+  );
+
+  return;
+
+}
+
+ui.success(
+  data.mensaje
+);
+
+await cargar();
+
+}
+
+</script>
+
+</body>
+</html>
+  
