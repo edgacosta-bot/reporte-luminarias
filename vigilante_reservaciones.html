@@ -191,9 +191,16 @@ const autorizados =
     x => x.estado_acceso === "autorizado"
   ).length;
 
+  const total =
+  registros.length;
+
 document.getElementById(
   "resumen"
 ).innerHTML = `
+
+  <div>
+    👥 Total: ${total}
+  </div>
 
   <div>
     🟢 Dentro: ${dentro}
@@ -204,7 +211,6 @@ document.getElementById(
   </div>
 
 `;
-
    
   if(!data || data.length === 0){
 
@@ -220,7 +226,21 @@ document.getElementById(
 
   contenedor.innerHTML = "";
 
-  data.forEach(invitado => {
+  registros
+  .sort((a,b)=>{
+
+    if(
+      a.estado_acceso === b.estado_acceso
+    ){
+      return 0;
+    }
+
+    return a.estado_acceso === "dentro"
+      ? -1
+      : 1;
+
+  })
+  .forEach(invitado => {
 
     contenedor.innerHTML += `
 
