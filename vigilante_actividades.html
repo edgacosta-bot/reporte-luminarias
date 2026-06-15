@@ -106,6 +106,15 @@ select{
   text-align:center;
 }
 
+#resumen{
+  display:flex;
+  justify-content:center;
+  gap:40px;
+  font-size:22px;
+  margin-bottom:25px;
+  color:#cbd5e1;
+}  
+
 </style>
 
 </head>
@@ -119,14 +128,7 @@ select{
 👮 Control de Acceso a Actividades
 </h2>
 
-<div
-  id="resumen"
-  style="
-    text-align:center;
-    margin-bottom:20px;
-    color:#cbd5e1;
-  ">
-</div>  
+<div id="resumen"></div>  
 
 <div id="invitados">
 Cargando...
@@ -193,11 +195,13 @@ document.getElementById(
   "resumen"
 ).innerHTML = `
 
-  🟢 Dentro: ${dentro}
+  <div>
+    🟢 Dentro: ${dentro}
+  </div>
 
-  &nbsp;&nbsp;&nbsp;
-
-  🟡 Autorizados: ${autorizados}
+  <div>
+    🟡 Autorizados: ${autorizados}
+  </div>
 
 `;
 
