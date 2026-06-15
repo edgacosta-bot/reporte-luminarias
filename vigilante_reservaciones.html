@@ -280,13 +280,37 @@ document.getElementById(
   <br><br>
 
   Estado:
-  <b>
-    ${
-      invitado.estado_acceso === "dentro"
+<b>
+  ${
+    invitado.estado_acceso === "dentro"
       ? "Dentro del fraccionamiento"
       : "Autorizado para ingresar"
-    }
-  </b>
+  }
+</b>
+
+${
+  invitado.hora_entrada
+    ? `
+
+    <br><br>
+
+    Ingresó:
+
+    <b>
+      ${new Date(
+        invitado.hora_entrada
+      ).toLocaleTimeString(
+        "es-MX",
+        {
+          hour:"2-digit",
+          minute:"2-digit"
+        }
+      )}
+    </b>
+
+    `
+    : ""
+}
 
 </div>  
 
