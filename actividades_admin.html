@@ -404,7 +404,7 @@ async function cargar(){
 
 }
 
-function renderizar(){
+  function renderizar(){
 
   const lista =
     document.getElementById(
@@ -412,11 +412,11 @@ function renderizar(){
     );
 
   if(
-    asesores.length === 0
+    actividades.length === 0
   ){
 
     lista.innerHTML =
-      "<div class='card'>No existen asesores registrados.</div>";
+      "<div class='card'>No existen actividades registradas.</div>";
 
     return;
 
@@ -424,43 +424,37 @@ function renderizar(){
 
   let html = "";
 
-  asesores.forEach(a=>{
+  actividades.forEach(a=>{
 
     html += `
 
       <div class="card">
 
-        <div class="titulo-asesor">
+        <div
+          style="
+            font-size:20px;
+            font-weight:bold;
+            color:#93c5fd;
+            margin-bottom:12px;
+          ">
 
-          👤 ${a.nombre}
-
-        </div>
-
-        <div>
-
-          <b>🏢 Empresa:</b>
-
-          ${a.empresa || "-"}
+          🏃 ${a.nombre}
 
         </div>
 
         <div>
 
-          <b>📱 Teléfono:</b>
+          <b>🏟 Amenidad:</b>
 
-          ${a.telefono || "-"}
+          ${a.amenidad}
 
         </div>
 
         <div>
 
-          <b>🔐 QR:</b>
+          <b>📋 Tipo:</b>
 
-          ${
-            a.qr_generado
-            ? "Generado"
-            : "No generado"
-          }
+          ${a.tipo}
 
         </div>
 
@@ -468,71 +462,46 @@ function renderizar(){
 
           <b>📅 Vigencia:</b>
 
-          ${
-            a.vigencia_indefinida
-            ? "Indefinida"
-            : a.fecha_vencimiento
-          }
+          ${a.fecha_inicio}
+          -
+          ${a.fecha_fin}
 
         </div>
 
-        <div class="${
-          a.activo
-          ? 'activo'
-          : 'inactivo'
-        }">
+        <div>
 
-          ${
-            a.activo
-            ? '✅ ACTIVO'
-            : '🚫 INACTIVO'
-          }
+          <b>👥 Capacidad:</b>
+
+          ${a.capacidad_maxima}
+
+        </div>
+
+        <div>
+
+          <b>✅ Inscritos:</b>
+
+          ${a.inscritos}
 
         </div>
 
         <div
-  style="
-    margin-top:15px;
-    display:flex;
-    gap:10px;
-  ">
+          style="
+            margin-top:10px;
+            font-weight:bold;
+            color:${
+              a.estado === 'activa'
+              ? '#22c55e'
+              : '#ef4444'
+            };
+          ">
 
-  <button
-    onclick="editarAsesor(
-      '${a.asesor_id}'
-    )">
+          ${
+            a.estado === 'activa'
+            ? '🟢 ACTIVA'
+            : '🔴 INACTIVA'
+          }
 
-    ✏ Editar
-
-  </button>
-
-  ${
-    a.activo
-    ?
-    `
-      <button
-        onclick="desactivarAsesor(
-          '${a.asesor_id}'
-        )">
-
-        🚫 Desactivar
-
-      </button>
-    `
-    :
-    `
-      <button
-        onclick="reactivarAsesor(
-          '${a.asesor_id}'
-        )">
-
-        ✅ Reactivar
-
-      </button>
-    `
-  }
-
-</div>
+        </div>
 
       </div>
 
@@ -543,7 +512,7 @@ function renderizar(){
   lista.innerHTML = html;
 
 }
-
+  
   function actualizarVigencia(){
 
   const indefinida =
