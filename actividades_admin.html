@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Gestionar Asesores</title>
+<title>Actividades | SIGVIC</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -131,18 +131,18 @@ h1{
 <div class="container">
 
   <h1>
-  🏡 Asesores inmobiliarios
+  🏃 Administración de Actividades
 </h1>
 
   <div id="contenedorNotificaciones"></div>
 
   <div class="kpi">
 
-    Asesores inmobiliarios
+    Actividades registradas
 
     <br><br>
 
-    <span id="kpiAsesores">
+    <span id="kpiActividades">
       0
     </span>
 
@@ -162,7 +162,7 @@ h1{
       cursor:pointer;
     ">
 
-    ➕ Nuevo asesor inmobiliario
+    ➕ Nueva actividad
 
   </button>
 
@@ -319,9 +319,9 @@ h1{
 
 <script>
 
-let asesores = [];
+let actividades = [];
 
-let asesorEditando = null;  
+let actividadEditando = null;  
 
 let notificacionActual = null;
 
@@ -379,7 +379,7 @@ async function cargar(){
 
   const { data, error } =
     await supabaseClient.rpc(
-      "obtener_asesores_inmobiliarios"
+      "obtener_actividades_admin"
     );
 
   if(error){
@@ -390,16 +390,18 @@ async function cargar(){
 
   }
 
-  asesores = data || [];
+  actividades =
+    data.actividades || [];
 
   renderizar();
 
-  document.getElementById(
-    "kpiAsesores"
-  ).innerText =
-    asesores.length;
+  document
+    .getElementById(
+      "kpiActividades"
+    )
+    .innerText =
+    actividades.length;
 
-  
 }
 
 function renderizar(){
