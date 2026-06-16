@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Actividades | SIGVIC</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="auth.js"></script>
+
+<style>
+
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+}
+
+.kpi{
+  background:#111827;
+  border-radius:18px;
+  padding:20px;
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.kpi span{
+  font-size:34px;
+  font-weight:bold;
+}
+
+.card{
+  background:#111827;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:12px;
+}
+
+.activo{
+
+  color:#22c55e;
+
+  font-weight:bold;
+
+}
+
+.inactivo{
+
+  color:#ef4444;
+
+  font-weight:bold;
+
+}  
+
+#contenedorNotificaciones{
+  position:fixed;
+  top:20px;
+  right:20px;
+  width:350px;
+  z-index:10000;
+}
+
+.notificacion{
+  padding:14px;
+  border-radius:12px;
+  margin-bottom:10px;
+  font-weight:600;
+  animation:aparecer .25s ease;
+    box-shadow:
+    0 4px 12px rgba(0,0,0,.35);
+}
+
+.notificacion.exito{
+  background:#14532d;
+  border:1px solid #22c55e;
+  color:white;
+}
+
+.notificacion.error{
+  background:#7f1d1d;
+  border:1px solid #ef4444;
+  color:white;
+}
+
+@keyframes aparecer{
+
+  from{
+    opacity:0;
+    transform:translateY(-10px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+
+}
+  
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>
+  🏃 Administración de Actividades
+</h1>
+
+  <div id="contenedorNotificaciones"></div>
+
+  <div class="kpi">
+
+    Actividades registradas
+
+    <br><br>
+
+    <span id="kpiActividades">
+      0
+    </span>
+
+  </div>
+
+   <div style="text-align:center;margin-bottom:20px;">
+
+  <button
+    id="btnNuevaActividad"
+    style="
+      background:#2563eb;
+      color:white;
+      border:none;
+      border-radius:12px;
+      padding:12px 20px;
+      font-size:16px;
+      cursor:pointer;
+    ">
+
+    ➕ Nueva actividad
+
+  </button>
+
+</div> 
+
+  <div id="lista"></div>
+
+</div>
+
+
+<!--
+MODAL DE ACTIVIDADES
+PENDIENTE DE IMPLEMENTAR
+-->
+  
+<script>
+
+let actividades = [];
+
+let actividadActual = null; 
+
+let notificacionActual = null;
+
+function mostrarNotificacion(
+  mensaje,
+  tipo = "exito"
+){
+
+   const contenedor =
+    document.getElementById(
+      "contenedorNotificaciones"
+    );
+
+  
+  if(notificacionActual){
+    notificacionActual.remove();
+  }
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.className =
+    `notificacion ${tipo}`;
+
+  div.innerHTML =
+    mensaje;
+
+  contenedor.appendChild(
+    div
+  );
+
+  notificacionActual = div;
+
+  setTimeout(()=>{
+
+    if(div.parentNode){
+
+      div.remove();
+
+      if(
+        notificacionActual === div
+      ){
+        notificacionActual = null;
+      }
+
+    }
+
+  },4000);
+
+}  
+
+async function cargar(){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_actividades_admin"
+    );
+
+  if(error){
+
+    console.log(error);
+
+    return;
+
+  }
+
+  actividades =
+    data.actividades || [];
+
+  renderizar();
+
+  document
+    .getElementById(
+      "kpiActividades"
+    )
+    .innerText =
+    actividades.length;
+
+}
+
+  function renderizar(){
+
+  const lista =
+    document.getElementById(
+      "lista"
+    );
+
+  if(
+    actividades.length === 0
+  ){
+
+    lista.innerHTML =
+      "<div class='card'>No existen actividades registradas.</div>";
+
+    return;
+
+  }
+
+  let html = "";
+
+  actividades.forEach(a=>{
+
+    html += `
+
+      <div class="card">
+
+        <div
+          style="
+            font-size:20px;
+            font-weight:bold;
+            color:#93c5fd;
+            margin-bottom:12px;
+          ">
+
+          🏃 ${a.nombre}
+
+        </div>
+
+        <div>
+
+          <b>🏟 Amenidad:</b>
+
+          ${a.amenidad}
+
+        </div>
+
+        <div>
+
+          <b>📋 Tipo:</b>
+
+          ${a.tipo}
+
+        </div>
+
+        <div>
+
+          <b>📅 Vigencia:</b>
+
+          ${a.fecha_inicio || '-'}
+           -
+          ${a.fecha_fin || '-'}
+
+        </div>
+
+        <div>
+
+          <b>👥 Capacidad:</b>
+
+          ${a.capacidad_maxima}
+
+        </div>
+
+        <div>
+
+          <b>✅ Inscritos:</b>
+
+          ${a.inscritos}
+
+        </div>
+
+        <div
+          style="
+            margin-top:10px;
+            font-weight:bold;
+            color:${
+              a.estado === 'activa'
+              ? '#22c55e'
+              : '#ef4444'
+            };
+          ">
+
+          ${
+            a.estado === 'activa'
+            ? '🟢 ACTIVA'
+            : '🔴 INACTIVA'
+          }
+
+        </div>
+
+                <div
+          style="
+            margin-top:15px;
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+          ">
+
+          <button
+            onclick="editarActividad('${a.id}')">
+
+            ✏ Editar
+
+          </button>
+
+          <button
+            onclick="horariosActividad('${a.id}')">
+
+            🕒 Horarios
+
+          </button>
+
+          <button
+            onclick="instructoresActividad('${a.id}')">
+
+            👨‍🏫 Instructores
+
+          </button>
+
+          <button
+            onclick="inscritosActividad('${a.id}')">
+
+            👥 Inscritos
+
+          </button>
+
+          <button
+            onclick="invitadosActividad('${a.id}')">
+
+            🎟 Invitados
+
+          </button>
+
+        </div>
+
+      </div>
+
+    `;
+
+  });
+
+  lista.innerHTML = html;
+
+}
+
+function editarActividad(id){
+
+  alert(
+    "Editar actividad\n\n" + id
+  );
+
+}
+
+function horariosActividad(id){
+
+  window.location.href =
+    "actividad_horarios.html?id=" + id;
+
+}
+
+function instructoresActividad(id){
+
+  alert(
+    "Instructores\n\n" + id
+  );
+
+}
+
+function inscritosActividad(id){
+
+  alert(
+    "Inscritos\n\n" + id
+  );
+
+}
+
+function invitadosActividad(id){
+
+  alert(
+    "Invitados\n\n" + id
+  );
+
+}  
+  
+window.addEventListener(
+  "DOMContentLoaded",
+  async ()=>{
+
+    await protegerPagina([
+      "administracion"
+    ]);
+
+    await cargar();
+
+  }
+);
+  
+</script>
+
+</body>
+</html>
