@@ -212,7 +212,8 @@ function mostrarNotificacion(
 
 }  
 
-async function cargar(){
+/*
+  async function cargar(){
 
   const { data, error } =
     await supabaseClient.rpc(
@@ -239,7 +240,7 @@ document
   )
   .innerText =
   actividades.length;
-*/
+
 }
 
   function renderizar(){
@@ -396,6 +397,8 @@ document
 
 }
 
+*/ 
+
 function editarActividad(id){
 
   alert(
@@ -443,7 +446,10 @@ window.addEventListener(
       "administracion"
     ]);
 
-    await cargar();
+    console.log(
+  "Actividad seleccionada:",
+  actividadId
+);
 
   }
 );
