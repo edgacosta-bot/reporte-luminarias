@@ -352,6 +352,51 @@ async function cargar(){
 
         </div>
 
+                <div
+          style="
+            margin-top:15px;
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+          ">
+
+          <button
+            onclick="editarActividad('${a.id}')">
+
+            ✏ Editar
+
+          </button>
+
+          <button
+            onclick="horariosActividad('${a.id}')">
+
+            🕒 Horarios
+
+          </button>
+
+          <button
+            onclick="instructoresActividad('${a.id}')">
+
+            👨‍🏫 Instructores
+
+          </button>
+
+          <button
+            onclick="inscritosActividad('${a.id}')">
+
+            👥 Inscritos
+
+          </button>
+
+          <button
+            onclick="invitadosActividad('${a.id}')">
+
+            🎟 Invitados
+
+          </button>
+
+        </div>
+
       </div>
 
     `;
@@ -361,7 +406,46 @@ async function cargar(){
   lista.innerHTML = html;
 
 }
-  
+
+function editarActividad(id){
+
+  alert(
+    "Editar actividad\n\n" + id
+  );
+
+}
+
+function horariosActividad(id){
+
+  alert(
+    "Horarios\n\n" + id
+  );
+
+}
+
+function instructoresActividad(id){
+
+  alert(
+    "Instructores\n\n" + id
+  );
+
+}
+
+function inscritosActividad(id){
+
+  alert(
+    "Inscritos\n\n" + id
+  );
+
+}
+
+function invitadosActividad(id){
+
+  alert(
+    "Invitados\n\n" + id
+  );
+
+}  
   
 window.addEventListener(
   "DOMContentLoaded",
