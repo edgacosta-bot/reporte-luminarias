@@ -136,9 +136,10 @@ PENDIENTE DE IMPLEMENTAR
   
 <script>
 
-let actividades = [];
 
 let actividadActual = null; 
+
+let horarios = [];  
 
 let notificacionActual = null;
 
@@ -212,12 +213,15 @@ function mostrarNotificacion(
 
 }  
 
-/*
-  async function cargar(){
+async function cargarHorarios(){
 
   const { data, error } =
     await supabaseClient.rpc(
-      "obtener_actividades_admin"
+      "obtener_horarios_actividad",
+      {
+        p_actividad_id:
+          actividadId
+      }
     );
 
   if(error){
@@ -228,22 +232,30 @@ function mostrarNotificacion(
 
   }
 
-  actividades =
-    data.actividades || [];
+  horarios =
+    data.horarios || [];
 
-  renderizar();
+  renderizarHorarios();
 
-  /*
-document
-  .getElementById(
-    "kpiActividades"
-  )
-  .innerText =
-  actividades.length;
+}  
+
+function nombreDia(dia){
+
+  const dias = {
+    1:"Lunes",
+    2:"Martes",
+    3:"Miércoles",
+    4:"Jueves",
+    5:"Viernes",
+    6:"Sábado",
+    7:"Domingo"
+  };
+
+  return dias[dia] || dia;
 
 }
 
-  function renderizar(){
+function renderizarHorarios(){
 
   const lista =
     document.getElementById(
@@ -251,11 +263,18 @@ document
     );
 
   if(
-    actividades.length === 0
+    horarios.length === 0
   ){
 
-    lista.innerHTML =
-      "<div class='card'>No existen actividades registradas.</div>";
+    lista.innerHTML = `
+
+      <div class="card">
+
+        No existen horarios registrados.
+
+      </div>
+
+    `;
 
     return;
 
@@ -263,7 +282,7 @@ document
 
   let html = "";
 
-  actividades.forEach(a=>{
+  horarios.forEach(h=>{
 
     html += `
 
@@ -271,55 +290,26 @@ document
 
         <div
           style="
-            font-size:20px;
+            font-size:18px;
             font-weight:bold;
             color:#93c5fd;
-            margin-bottom:12px;
           ">
 
-          🏃 ${a.nombre}
+          ${nombreDia(
+            h.dia_semana
+          )}
 
         </div>
 
-        <div>
+        <div
+          style="
+            margin-top:8px;
+          ">
 
-          <b>🏟 Amenidad:</b>
-
-          ${a.amenidad}
-
-        </div>
-
-        <div>
-
-          <b>📋 Tipo:</b>
-
-          ${a.tipo}
-
-        </div>
-
-        <div>
-
-          <b>📅 Vigencia:</b>
-
-          ${a.fecha_inicio || '-'}
-           -
-          ${a.fecha_fin || '-'}
-
-        </div>
-
-        <div>
-
-          <b>👥 Capacidad:</b>
-
-          ${a.capacidad_maxima}
-
-        </div>
-
-        <div>
-
-          <b>✅ Inscritos:</b>
-
-          ${a.inscritos}
+          🕒
+          ${h.hora_inicio}
+          -
+          ${h.hora_fin}
 
         </div>
 
@@ -328,62 +318,17 @@ document
             margin-top:10px;
             font-weight:bold;
             color:${
-              a.estado === 'activa'
+              h.activo
               ? '#22c55e'
               : '#ef4444'
             };
           ">
 
           ${
-            a.estado === 'activa'
-            ? '🟢 ACTIVA'
-            : '🔴 INACTIVA'
+            h.activo
+            ? '🟢 Activo'
+            : '🔴 Inactivo'
           }
-
-        </div>
-
-                <div
-          style="
-            margin-top:15px;
-            display:flex;
-            flex-wrap:wrap;
-            gap:8px;
-          ">
-
-          <button
-            onclick="editarActividad('${a.id}')">
-
-            ✏ Editar
-
-          </button>
-
-          <button
-            onclick="horariosActividad('${a.id}')">
-
-            🕒 Horarios
-
-          </button>
-
-          <button
-            onclick="instructoresActividad('${a.id}')">
-
-            👨‍🏫 Instructores
-
-          </button>
-
-          <button
-            onclick="inscritosActividad('${a.id}')">
-
-            👥 Inscritos
-
-          </button>
-
-          <button
-            onclick="invitadosActividad('${a.id}')">
-
-            🎟 Invitados
-
-          </button>
 
         </div>
 
@@ -395,9 +340,7 @@ document
 
   lista.innerHTML = html;
 
-}
-
-*/ 
+}  
 
 function editarActividad(id){
 
@@ -446,10 +389,7 @@ window.addEventListener(
       "administracion"
     ]);
 
-    console.log(
-  "Actividad seleccionada:",
-  actividadId
-);
+    await cargarHorarios();
 
   }
 );
