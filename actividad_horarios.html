@@ -119,42 +119,10 @@ h1{
 <div class="container">
 
   <h1>
-  🏃 Administración de Actividades
+  🕒 Horarios de Actividad
 </h1>
 
   <div id="contenedorNotificaciones"></div>
-
-  <div class="kpi">
-
-    Actividades registradas
-
-    <br><br>
-
-    <span id="kpiActividades">
-      0
-    </span>
-
-  </div>
-
-   <div style="text-align:center;margin-bottom:20px;">
-
-  <button
-    id="btnNuevaActividad"
-    style="
-      background:#2563eb;
-      color:white;
-      border:none;
-      border-radius:12px;
-      padding:12px 20px;
-      font-size:16px;
-      cursor:pointer;
-    ">
-
-    ➕ Nueva actividad
-
-  </button>
-
-</div> 
 
   <div id="lista"></div>
 
@@ -173,6 +141,26 @@ let actividades = [];
 let actividadActual = null; 
 
 let notificacionActual = null;
+
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const actividadId =
+  params.get("id"); 
+
+if(!actividadId){
+
+  alert(
+    "Actividad no especificada"
+  );
+
+  throw new Error(
+    "Actividad no especificada"
+  );
+
+}  
 
 function mostrarNotificacion(
   mensaje,
