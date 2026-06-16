@@ -418,6 +418,64 @@ async function guardarHorario(){
 
   await cargarHorarios();
 
+}
+
+async function activarHorario(
+  horarioId
+){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "activar_horario_actividad",
+      {
+        p_horario_id:
+          horarioId
+      }
+    );
+
+  if(error){
+
+    console.log(error);
+
+    return;
+
+  }
+
+  mostrarNotificacion(
+    data.mensaje
+  );
+
+  await cargarHorarios();
+
+}
+
+async function desactivarHorario(
+  horarioId
+){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "desactivar_horario_actividad",
+      {
+        p_horario_id:
+          horarioId
+      }
+    );
+
+  if(error){
+
+    console.log(error);
+
+    return;
+
+  }
+
+  mostrarNotificacion(
+    data.mensaje
+  );
+
+  await cargarHorarios();
+
 }  
 
 function mostrarNotificacion(
@@ -586,6 +644,36 @@ function renderizarHorarios(){
             ? '🟢 Activo'
             : '🔴 Inactivo'
           }
+
+          <div
+  style="
+    margin-top:12px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  ">
+
+  ${
+    h.activo
+    ? `
+      <button
+        onclick="desactivarHorario('${h.id}')">
+
+        🔴 Desactivar
+
+      </button>
+    `
+    : `
+      <button
+        onclick="activarHorario('${h.id}')">
+
+        🟢 Activar
+
+      </button>
+    `
+  }
+
+</div>
 
         </div>
 
