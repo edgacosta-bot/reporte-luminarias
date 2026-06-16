@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Actividades | SIGVIC</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="auth.js"></script>
+
+<style>
+
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+}
+
+.kpi{
+  background:#111827;
+  border-radius:18px;
+  padding:20px;
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.kpi span{
+  font-size:34px;
+  font-weight:bold;
+}
+
+.card{
+  background:#111827;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:12px;
+}
+
+.activo{
+
+  color:#22c55e;
+
+  font-weight:bold;
+
+}
+
+.inactivo{
+
+  color:#ef4444;
+
+  font-weight:bold;
+
+}  
+
+#contenedorNotificaciones{
+  position:fixed;
+  top:20px;
+  right:20px;
+  width:350px;
+  z-index:10000;
+}
+
+.notificacion{
+  padding:14px;
+  border-radius:12px;
+  margin-bottom:10px;
+  font-weight:600;
+  animation:aparecer .25s ease;
+    box-shadow:
+    0 4px 12px rgba(0,0,0,.35);
+}
+
+.notificacion.exito{
+  background:#14532d;
+  border:1px solid #22c55e;
+  color:white;
+}
+
+.notificacion.error{
+  background:#7f1d1d;
+  border:1px solid #ef4444;
+  color:white;
+}
+
+@keyframes aparecer{
+
+  from{
+    opacity:0;
+    transform:translateY(-10px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+
+}
+  
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+ <h1 id="tituloActividad">
+
+  🕒 Horarios
+
+</h1>
+
+  <div id="contenedorNotificaciones"></div>
+
+  <div
+  style="
+    text-align:center;
+    margin-bottom:20px;
+  ">
+
+  <button
+    id="btnNuevoHorario"
+    style="
+      background:#2563eb;
+      color:white;
+      border:none;
+      border-radius:12px;
+      padding:12px 20px;
+      cursor:pointer;
+    ">
+
+    ➕ Agregar horario
+
+  </button>
+
+</div>
+
+  <div id="lista"></div>
+
+</div>
+
+
+<div
+  id="modalHorario"
+  style="
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.7);
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+  ">
+
+  <div
+    style="
+      background:#111827;
+      padding:25px;
+      border-radius:18px;
+      width:90%;
+      max-width:500px;
+    ">
+
+    <h2 id="tituloModalHorario">
+
+    Nuevo horario
+
+    </h2>
+
+    <div style="margin-bottom:12px;">
+
+      <label>Día</label>
+
+      <select
+        id="diaSemana"
+        style="
+          width:100%;
+          padding:10px;
+          margin-top:5px;
+        ">
+
+        <option value="1">Lunes</option>
+        <option value="2">Martes</option>
+        <option value="3">Miércoles</option>
+        <option value="4">Jueves</option>
+        <option value="5">Viernes</option>
+        <option value="6">Sábado</option>
+        <option value="7">Domingo</option>
+
+      </select>
+
+    </div>
+
+    <div style="margin-bottom:12px;">
+
+      <label>Hora inicio</label>
+
+      <input
+        id="horaInicio"
+        type="time"
+        style="
+          width:100%;
+          padding:10px;
+        ">
+
+    </div>
+
+    <div style="margin-bottom:20px;">
+
+      <label>Hora fin</label>
+
+      <input
+        id="horaFin"
+        type="time"
+        style="
+          width:100%;
+          padding:10px;
+        ">
+
+    </div>
+
+    <div
+      style="
+        display:flex;
+        justify-content:flex-end;
+        gap:10px;
+      ">
+
+      <button id="btnGuardarHorario">
+
+        Guardar
+
+      </button>
+
+      <button id="btnCerrarHorario">
+
+        Cerrar
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+  
+<script>
+
+
+let actividadActual = null; 
+
+let horarios = [];  
+
+let horarioEditando = null;  
+
+
+function abrirModalHorario(){
+
+  document
+  .getElementById(
+    "tituloModalHorario"
+  )
+  .innerText =
+  "Nuevo horario";
+
+  horarioEditando = null;
+
+  document
+    .getElementById(
+      "diaSemana"
+    )
+    .value = "1";
+
+  document
+    .getElementById(
+      "horaInicio"
+    )
+    .value = "";
+
+  document
+    .getElementById(
+      "horaFin"
+    )
+    .value = "";
+
+  document
+    .getElementById(
+      "modalHorario"
+    )
+    .style.display =
+    "flex";
+
+}  
+
+function editarHorario(
+  horarioId
+){
+
+  const horario =
+    horarios.find(
+      h => h.id === horarioId
+    );
+
+  if(!horario){
+    return;
+  }
+
+  horarioEditando =
+    horarioId;
+
+  document
+    .getElementById(
+      "tituloModalHorario"
+    )
+    .innerText =
+    "Editar horario";
+
+  document
+    .getElementById(
+      "diaSemana"
+    )
+    .value =
+    horario.dia_semana;
+
+  document
+    .getElementById(
+      "horaInicio"
+    )
+    .value =
+    horario.hora_inicio
+      .substring(0,5);
+
+  document
+    .getElementById(
+      "horaFin"
+    )
+    .value =
+    horario.hora_fin
+      .substring(0,5);
+
+  document
+    .getElementById(
+      "modalHorario"
+    )
+    .style.display =
+    "flex";
+
+}  
+
+function cerrarModalHorario(){
+
+  horarioEditando = null;
+
+  document
+    .getElementById(
+      "modalHorario"
+    )
+    .style.display =
+    "none";
+
+}  
+
+let notificacionActual = null;
+
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const actividadId =
+  params.get("id"); 
+
+if(!actividadId){
+
+  alert(
+    "Actividad no especificada"
+  );
+
+  throw new Error(
+    "Actividad no especificada"
+  );
+
+}  
+
+async function guardarHorario(){
+
+  const diaSemana =
+    parseInt(
+      document.getElementById(
+        "diaSemana"
+      ).value
+    );
+
+  const horaInicio =
+    document.getElementById(
+      "horaInicio"
+    ).value;
+
+  const horaFin =
+    document.getElementById(
+      "horaFin"
+    ).value;
+
+  if(
+    !horaInicio ||
+    !horaFin
+  ){
+
+    mostrarNotificacion(
+      "Debe capturar horario inicial y final.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  let data;
+let error;
+
+if(horarioEditando){
+
+  const resultado =
+    await supabaseClient.rpc(
+      "editar_horario_actividad",
+      {
+        p_horario_id:
+          horarioEditando,
+
+        p_dia_semana:
+          diaSemana,
+
+        p_hora_inicio:
+          horaInicio,
+
+        p_hora_fin:
+          horaFin
+      }
+    );
+
+  data = resultado.data;
+  error = resultado.error;
+
+}else{
+
+  const resultado =
+    await supabaseClient.rpc(
+      "agregar_horario_actividad",
+      {
+        p_actividad_id:
+          actividadId,
+
+        p_dia_semana:
+          diaSemana,
+
+        p_hora_inicio:
+          horaInicio,
+
+        p_hora_fin:
+          horaFin
+      }
+    );
+
+  data = resultado.data;
+  error = resultado.error;
+
+}
+
+  if(error){
+
+    console.log(error);
+
+    mostrarNotificacion(
+      "Error al guardar horario.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  if(!data.ok){
+
+    mostrarNotificacion(
+      data.mensaje,
+      "error"
+    );
+
+    return;
+
+  }
+
+  mostrarNotificacion(
+    data.mensaje
+  );
+
+  cerrarModalHorario();
+
+  await cargarHorarios();
+
+}
+
+async function activarHorario(
+  horarioId
+){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "activar_horario_actividad",
+      {
+        p_horario_id:
+          horarioId
+      }
+    );
+
+  if(error){
+
+    console.log(error);
+
+    return;
+
+  }
+
+  mostrarNotificacion(
+    data.mensaje
+  );
+
+  await cargarHorarios();
+
+}
+
+async function desactivarHorario(
+  horarioId
+){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "desactivar_horario_actividad",
+      {
+        p_horario_id:
+          horarioId
+      }
+    );
+
+  if(error){
+
+    console.log(error);
+
+    return;
+
+  }
+
+  mostrarNotificacion(
+    data.mensaje
+  );
+
+  await cargarHorarios();
+
+}  
+
+function mostrarNotificacion(
+  mensaje,
+  tipo = "exito"
+){
+
+   const contenedor =
+    document.getElementById(
+      "contenedorNotificaciones"
+    );
+
+  
+  if(notificacionActual){
+    notificacionActual.remove();
+  }
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.className =
+    `notificacion ${tipo}`;
+
+  div.innerHTML =
+    mensaje;
+
+  contenedor.appendChild(
+    div
+  );
+
+  notificacionActual = div;
+
+  setTimeout(()=>{
+
+    if(div.parentNode){
+
+      div.remove();
+
+      if(
+        notificacionActual === div
+      ){
+        notificacionActual = null;
+      }
+
+    }
+
+  },4000);
+
+}  
+
+async function cargarHorarios(){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_horarios_actividad",
+      {
+        p_actividad_id:
+          actividadId
+      }
+    );
+
+  if(error){
+
+    console.log(error);
+
+    return;
+
+  }
+
+  horarios =
+    data.horarios || [];
+
+  renderizarHorarios();
+
+}  
+
+function nombreDia(dia){
+
+  const dias = {
+    1:"Lunes",
+    2:"Martes",
+    3:"Miércoles",
+    4:"Jueves",
+    5:"Viernes",
+    6:"Sábado",
+    7:"Domingo"
+  };
+
+  return dias[dia] || dia;
+
+}
+
+function renderizarHorarios(){
+
+  const lista =
+    document.getElementById(
+      "lista"
+    );
+
+  if(
+    horarios.length === 0
+  ){
+
+    lista.innerHTML = `
+
+      <div class="card">
+
+        No existen horarios registrados.
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+  let html = "";
+
+  horarios.forEach(h=>{
+
+    html += `
+
+      <div class="card">
+
+        <div
+          style="
+            font-size:18px;
+            font-weight:bold;
+            color:#93c5fd;
+          ">
+
+          ${nombreDia(
+            h.dia_semana
+          )}
+
+        </div>
+
+        <div
+          style="
+            margin-top:8px;
+          ">
+
+          🕒
+          ${h.hora_inicio}
+          -
+          ${h.hora_fin}
+
+        </div>
+
+        <div
+          style="
+            margin-top:10px;
+            font-weight:bold;
+            color:${
+              h.activo
+              ? '#22c55e'
+              : '#ef4444'
+            };
+          ">
+
+          ${
+            h.activo
+            ? '🟢 Activo'
+            : '🔴 Inactivo'
+          }
+
+          <div
+  style="
+    margin-top:12px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  ">
+
+  <button
+  onclick="editarHorario(
+    '${h.id}'
+  )">
+
+  ✏ Editar
+
+  </button>
+
+  ${
+    h.activo
+    ? `
+      <button
+        onclick="desactivarHorario('${h.id}')">
+
+        🔴 Desactivar
+
+      </button>
+    `
+    : `
+      <button
+        onclick="activarHorario('${h.id}')">
+
+        🟢 Activar
+
+      </button>
+    `
+  }
+
+</div>
+
+        </div>
+
+      </div>
+
+    `;
+
+  });
+
+  lista.innerHTML = html;
+
+}  
+
+function editarActividad(id){
+
+  alert(
+    "Editar actividad\n\n" + id
+  );
+
+}
+
+function horariosActividad(id){
+
+  window.location.href =
+    "actividad_horarios.html?id=" + id;
+
+}
+
+function instructoresActividad(id){
+
+  window.location.href =
+    "actividad_instructores.html?id=" + id;
+
+}
+  
+function inscritosActividad(id){
+
+  alert(
+    "Inscritos\n\n" + id
+  );
+
+}
+
+function invitadosActividad(id){
+
+  alert(
+    "Invitados\n\n" + id
+  );
+
+}  
+  
+window.addEventListener(
+  "DOMContentLoaded",
+  async ()=>{
+
+    await protegerPagina([
+      "administracion"
+    ]);
+
+    await cargarHorarios();
+
+    document
+  .getElementById(
+    "btnNuevoHorario"
+  )
+  .addEventListener(
+    "click",
+    abrirModalHorario
+  );
+
+document
+  .getElementById(
+    "btnCerrarHorario"
+  )
+  .addEventListener(
+    "click",
+    cerrarModalHorario
+  );
+
+ document
+  .getElementById(
+    "btnGuardarHorario"
+  )
+  .addEventListener(
+    "click",
+    guardarHorario
+  );   
+
+  }
+);
+  
+</script>
+
+</body>
+</html>
