@@ -124,15 +124,140 @@ h1{
 
   <div id="contenedorNotificaciones"></div>
 
+  <div
+  style="
+    text-align:center;
+    margin-bottom:20px;
+  ">
+
+  <button
+    id="btnNuevoHorario"
+    style="
+      background:#2563eb;
+      color:white;
+      border:none;
+      border-radius:12px;
+      padding:12px 20px;
+      cursor:pointer;
+    ">
+
+    ➕ Agregar horario
+
+  </button>
+
+</div>
+
   <div id="lista"></div>
 
 </div>
 
 
-<!--
-MODAL DE ACTIVIDADES
-PENDIENTE DE IMPLEMENTAR
--->
+<div
+  id="modalHorario"
+  style="
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.7);
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+  ">
+
+  <div
+    style="
+      background:#111827;
+      padding:25px;
+      border-radius:18px;
+      width:90%;
+      max-width:500px;
+    ">
+
+    <h2>
+
+      Nuevo horario
+
+    </h2>
+
+    <div style="margin-bottom:12px;">
+
+      <label>Día</label>
+
+      <select
+        id="diaSemana"
+        style="
+          width:100%;
+          padding:10px;
+          margin-top:5px;
+        ">
+
+        <option value="1">Lunes</option>
+        <option value="2">Martes</option>
+        <option value="3">Miércoles</option>
+        <option value="4">Jueves</option>
+        <option value="5">Viernes</option>
+        <option value="6">Sábado</option>
+        <option value="7">Domingo</option>
+
+      </select>
+
+    </div>
+
+    <div style="margin-bottom:12px;">
+
+      <label>Hora inicio</label>
+
+      <input
+        id="horaInicio"
+        type="time"
+        style="
+          width:100%;
+          padding:10px;
+        ">
+
+    </div>
+
+    <div style="margin-bottom:20px;">
+
+      <label>Hora fin</label>
+
+      <input
+        id="horaFin"
+        type="time"
+        style="
+          width:100%;
+          padding:10px;
+        ">
+
+    </div>
+
+    <div
+      style="
+        display:flex;
+        justify-content:flex-end;
+        gap:10px;
+      ">
+
+      <button id="btnGuardarHorario">
+
+        Guardar
+
+      </button>
+
+      <button id="btnCerrarHorario">
+
+        Cerrar
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
   
 <script>
 
@@ -140,6 +265,51 @@ PENDIENTE DE IMPLEMENTAR
 let actividadActual = null; 
 
 let horarios = [];  
+
+let horarioEditando = null;  
+
+
+function abrirModalHorario(){
+
+  horarioEditando = null;
+
+  document
+    .getElementById(
+      "diaSemana"
+    )
+    .value = "1";
+
+  document
+    .getElementById(
+      "horaInicio"
+    )
+    .value = "";
+
+  document
+    .getElementById(
+      "horaFin"
+    )
+    .value = "";
+
+  document
+    .getElementById(
+      "modalHorario"
+    )
+    .style.display =
+    "flex";
+
+}  
+
+function cerrarModalHorario(){
+
+  document
+    .getElementById(
+      "modalHorario"
+    )
+    .style.display =
+    "none";
+
+}  
 
 let notificacionActual = null;
 
@@ -390,6 +560,24 @@ window.addEventListener(
     ]);
 
     await cargarHorarios();
+
+    document
+  .getElementById(
+    "btnNuevoHorario"
+  )
+  .addEventListener(
+    "click",
+    abrirModalHorario
+  );
+
+document
+  .getElementById(
+    "btnCerrarHorario"
+  )
+  .addEventListener(
+    "click",
+    cerrarModalHorario
+  );
 
   }
 );
