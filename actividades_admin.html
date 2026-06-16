@@ -50,18 +50,6 @@ h1{
   margin-bottom:12px;
 }
 
-.titulo-asesor{
-
-  font-size:18px;
-
-  font-weight:bold;
-
-  color:#93c5fd;
-
-  margin-bottom:10px;
-
-}
-
 .activo{
 
   color:#22c55e;
@@ -151,7 +139,7 @@ h1{
    <div style="text-align:center;margin-bottom:20px;">
 
   <button
-    id="btnNuevoAsesor"
+    id="btnNuevaActividad"
     style="
       background:#2563eb;
       color:white;
@@ -172,156 +160,17 @@ h1{
 
 </div>
 
-<div
-  id="modalAsesor"
-  style="
-    display:none;
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,.7);
-    justify-content:center;
-    align-items:center;
-    z-index:9999;
-  ">
 
-  <div
-    style="
-      background:#111827;
-      padding:25px;
-      border-radius:18px;
-      width:90%;
-      max-width:500px;
-    ">
-
-    <h2 id="tituloModalAsesor">
-     Nuevo asesor inmobiliario
-    </h2>
-
-   <div style="margin-bottom:12px;">
-
-  <label>
-    Nombre
-  </label>
-
-  <input
-    id="nombreAsesor"
-    type="text"
-    style="
-      width:100%;
-      padding:10px;
-      margin-top:5px;
-      border-radius:8px;
-      border:none;
-    ">
-
-</div>
-
-<div style="margin-bottom:12px;">
-
-  <label>
-    Teléfono
-  </label>
-
-  <input
-    id="telefonoAsesor"
-    type="text"
-    style="
-      width:100%;
-      padding:10px;
-      margin-top:5px;
-      border-radius:8px;
-      border:none;
-    ">
-
-</div>
-
-<div style="margin-bottom:12px;">
-
-  <label>
-    Empresa
-  </label>
-
-  <input
-    id="empresaAsesor"
-    type="text"
-    style="
-      width:100%;
-      padding:10px;
-      margin-top:5px;
-      border-radius:8px;
-      border:none;
-    ">
-
-</div>
-
-<div style="margin-bottom:12px;">
-
-  <label>
-
-    <input
-      id="vigenciaIndefinida"
-      type="checkbox"
-      checked>
-
-    Vigencia indefinida
-
-  </label>
-
-</div>
-
-<div style="margin-bottom:20px;">
-
-  <label>
-    Fecha de vencimiento
-  </label>
-
-  <input
-    id="fechaVencimiento"
-    type="date"
-    disabled
-    style="
-      width:100%;
-      padding:10px;
-      margin-top:5px;
-      border-radius:8px;
-      border:none;
-    ">
-
-</div>
-
-<div
-  style="
-    display:flex;
-    gap:10px;
-    justify-content:flex-end;
-  ">
-
-  <button id="btnGuardarAsesor">
-
-    Guardar
-
-  </button>
-
-  <button id="btnCerrarModal">
-
-    Cerrar
-
-  </button>
-
-</div>
-
-   </div>
-
-</div>
-
+<!--
+MODAL DE ACTIVIDADES
+PENDIENTE DE IMPLEMENTAR
+-->
+  
 <script>
 
 let actividades = [];
 
-let actividadEditando = null;  
+let actividadActual = null; 
 
 let notificacionActual = null;
 
@@ -462,9 +311,9 @@ async function cargar(){
 
           <b>📅 Vigencia:</b>
 
-          ${a.fecha_inicio}
-          -
-          ${a.fecha_fin}
+          ${a.fecha_inicio || '-'}
+           -
+          ${a.fecha_fin || '-'}
 
         </div>
 
@@ -513,291 +362,6 @@ async function cargar(){
 
 }
   
-  function actualizarVigencia(){
-
-  const indefinida =
-    document.getElementById(
-      "vigenciaIndefinida"
-    ).checked;
-
-  document
-    .getElementById(
-      "fechaVencimiento"
-    )
-    .disabled =
-    indefinida;
-
-}
-
-async function guardarAsesor(){
-
-  const nombre =
-    document.getElementById(
-      "nombreAsesor"
-    ).value.trim();
-
-  const telefono =
-    document.getElementById(
-      "telefonoAsesor"
-    ).value.trim();
-
-  const empresa =
-    document.getElementById(
-      "empresaAsesor"
-    ).value.trim();
-
-  const vigenciaIndefinida =
-    document.getElementById(
-      "vigenciaIndefinida"
-    ).checked;
-
-  const fechaVencimiento =
-    document.getElementById(
-      "fechaVencimiento"
-    ).value || null;
-
-  if(!nombre){
-
-   mostrarNotificacion(
-  "❌ Debe indicar el nombre del asesor",
-  "error"
-);
-
-    return;
-
-  }
-
-  if(
-    !vigenciaIndefinida &&
-    !fechaVencimiento
-  ){
-
-    mostrarNotificacion(
-  "❌ Debe indicar la fecha de vencimiento",
-  "error"
-);
-
-    return;
-
-  }
-
- const esEdicion =
-  asesorEditando !== null;
-
-let error = null;
-
-if(esEdicion){
-
-  const resultado =
-    await supabaseClient.rpc(
-      "actualizar_asesor_inmobiliario",
-      {
-        p_asesor_id:
-          asesorEditando,
-
-        p_nombre:
-          nombre,
-
-        p_telefono:
-          telefono,
-
-        p_empresa:
-          empresa,
-
-        p_vigencia_indefinida:
-          vigenciaIndefinida,
-
-        p_fecha_vencimiento:
-          fechaVencimiento
-      }
-    );
-
-  error =
-    resultado.error;
-
-}
-else{
-
-  const resultado =
-    await supabaseClient.rpc(
-      "crear_asesor_inmobiliario",
-      {
-        p_nombre:
-          nombre,
-
-        p_telefono:
-          telefono,
-
-        p_empresa:
-          empresa,
-
-        p_vigencia_indefinida:
-          vigenciaIndefinida,
-
-        p_fecha_vencimiento:
-          fechaVencimiento
-      }
-    );
-
-  error =
-    resultado.error;
-
-}
-
-if(error){
-
-  mostrarNotificacion(
-    `❌ ${error.message}`,
-    "error"
-  );
-
-  return;
-
-}
-
-actualizarVigencia();
-
-await cargar();
-
-document
-  .getElementById(
-    "modalAsesor"
-  )
-  .style.display =
-  "none";
-
-asesorEditando = null;
-
-  
-mostrarNotificacion(
-  esEdicion
-    ? "✅ Información actualizada correctamente"
-    : "✅ Asesor registrado correctamente",
-  "exito"
-);
-
-}
-
-function editarAsesor(id){
-
-  const asesor =
-    asesores.find(
-      a => a.asesor_id === id
-    );
-
-  if(!asesor){
-    return;
-  }
-
-  asesorEditando = id;
-
-  document.getElementById(
-  "tituloModalAsesor"
-).innerText =
-  "Editar asesor inmobiliario";
-
-  document.getElementById(
-    "nombreAsesor"
-  ).value =
-    asesor.nombre || "";
-
-  document.getElementById(
-    "telefonoAsesor"
-  ).value =
-    asesor.telefono || "";
-
-  document.getElementById(
-    "empresaAsesor"
-  ).value =
-    asesor.empresa || "";
-
-  document.getElementById(
-    "vigenciaIndefinida"
-  ).checked =
-    asesor.vigencia_indefinida;
-
-  document.getElementById(
-  "fechaVencimiento"
-).value =
-  asesor.fecha_vencimiento || "";
-
-  actualizarVigencia();
-
-  document
-    .getElementById(
-      "modalAsesor"
-    )
-    .style.display =
-    "flex";
-
-}
-
-async function desactivarAsesor(id){
-
-  if(
-    !confirm(
-      "¿Desea desactivar este asesor?"
-    )
-  ){
-    return;
-  }
-
-  const { error } =
-    await supabaseClient.rpc(
-      "desactivar_asesor_inmobiliario",
-      {
-        p_asesor_id: id
-      }
-    );
-
-  if(error){
-
-  mostrarNotificacion(
-    `❌ ${error.message}`,
-    "error"
-  );
-
-  return;
-
-}
-
-  await cargar();
-
-  mostrarNotificacion(
-  "✅ Asesor desactivado correctamente",
-  "exito"
-);
-
-}
-async function reactivarAsesor(id){
-
-  const { error } =
-    await supabaseClient.rpc(
-      "reactivar_asesor_inmobiliario",
-      {
-        p_asesor_id: id
-      }
-    );
-
-  if(error){
-
-  mostrarNotificacion(
-    `❌ ${error.message}`,
-    "error"
-  );
-
-  return;
-
-}
-
-  await cargar();
-
-  mostrarNotificacion(
-  "✅ Asesor reactivado correctamente",
-  "exito"
-);
-
-}
   
 window.addEventListener(
   "DOMContentLoaded",
@@ -809,97 +373,9 @@ window.addEventListener(
 
     await cargar();
 
-   document
-  .getElementById(
-    "btnNuevoAsesor"
-  )
-  .addEventListener(
-    "click",
-    ()=>{
-
-  asesorEditando = null;  
-
-  document.getElementById(
-  "tituloModalAsesor"
-).innerText =
-  "Nuevo asesor inmobiliario";    
-
-  document.getElementById(
-    "nombreAsesor"
-  ).value = "";
-
-  document.getElementById(
-    "telefonoAsesor"
-  ).value = "";
-
-  document.getElementById(
-    "empresaAsesor"
-  ).value = "";
-
-  document.getElementById(
-    "vigenciaIndefinida"
-  ).checked = true;
-
-  document.getElementById(
-    "fechaVencimiento"
-  ).value = "";
-
-  actualizarVigencia();
-
-  document
-  .getElementById(
-    "modalAsesor"
-  )
-  .style.display =
-  "flex";
-
-    }
-  );
-   document
-  .getElementById(
-    "vigenciaIndefinida"
-  )
-  .addEventListener(
-    "change",
-    actualizarVigencia
-  );
-
-actualizarVigencia(); 
-
-  document
-  .getElementById(
-    "btnCerrarModal"
-  )
-  .addEventListener(
-    "click",
-    ()=>{
-
-      
-
-    asesorEditando = null;  
-
-      document
-        .getElementById(
-          "modalAsesor"
-        )
-        .style.display =
-        "none";
-
-    }
-  );  
-
-  document
-  .getElementById(
-    "btnGuardarAsesor"
-  )
-  .addEventListener(
-    "click",
-    guardarAsesor
-  );
-    
   }
 );
-
+  
 </script>
 
 </body>
