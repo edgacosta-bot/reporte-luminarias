@@ -178,9 +178,9 @@ h1{
       max-width:500px;
     ">
 
-    <h2>
+    <h2 id="tituloModalHorario">
 
-      Nuevo horario
+    Nuevo horario
 
     </h2>
 
@@ -273,6 +273,13 @@ let horarioEditando = null;
 
 function abrirModalHorario(){
 
+  document
+  .getElementById(
+    "tituloModalHorario"
+  )
+  .innerText =
+  "Nuevo horario";
+
   horarioEditando = null;
 
   document
@@ -292,6 +299,61 @@ function abrirModalHorario(){
       "horaFin"
     )
     .value = "";
+
+  document
+    .getElementById(
+      "modalHorario"
+    )
+    .style.display =
+    "flex";
+
+}  
+
+function editarHorario(
+  horarioId
+){
+
+  const horario =
+    horarios.find(
+      h => h.id === horarioId
+    );
+
+  if(!horario){
+    return;
+  }
+
+  horarioEditando =
+    horarioId;
+
+  document
+    .getElementById(
+      "tituloModalHorario"
+    )
+    .innerText =
+    "Editar horario";
+
+  document
+    .getElementById(
+      "diaSemana"
+    )
+    .value =
+    horario.dia_semana;
+
+  document
+    .getElementById(
+      "horaInicio"
+    )
+    .value =
+    horario.hora_inicio
+      .substring(0,5);
+
+  document
+    .getElementById(
+      "horaFin"
+    )
+    .value =
+    horario.hora_fin
+      .substring(0,5);
 
   document
     .getElementById(
@@ -652,6 +714,15 @@ function renderizarHorarios(){
     gap:8px;
     flex-wrap:wrap;
   ">
+
+  <button
+  onclick="editarHorario(
+    '${h.id}'
+  )">
+
+  ✏ Editar
+
+  </button>
 
   ${
     h.activo
