@@ -118,8 +118,10 @@ h1{
 
 <div class="container">
 
-  <h1>
-  🕒 Horarios de Actividad
+ <h1 id="tituloActividad">
+
+  🕒 Horarios
+
 </h1>
 
   <div id="contenedorNotificaciones"></div>
@@ -330,6 +332,91 @@ if(!actividadId){
   throw new Error(
     "Actividad no especificada"
   );
+
+}  
+
+async function guardarHorario(){
+
+  const diaSemana =
+    parseInt(
+      document.getElementById(
+        "diaSemana"
+      ).value
+    );
+
+  const horaInicio =
+    document.getElementById(
+      "horaInicio"
+    ).value;
+
+  const horaFin =
+    document.getElementById(
+      "horaFin"
+    ).value;
+
+  if(
+    !horaInicio ||
+    !horaFin
+  ){
+
+    mostrarNotificacion(
+      "Debe capturar horario inicial y final.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "agregar_horario_actividad",
+      {
+        p_actividad_id:
+          actividadId,
+
+        p_dia_semana:
+          diaSemana,
+
+        p_hora_inicio:
+          horaInicio,
+
+        p_hora_fin:
+          horaFin
+      }
+    );
+
+  if(error){
+
+    console.log(error);
+
+    mostrarNotificacion(
+      "Error al guardar horario.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  if(!data.ok){
+
+    mostrarNotificacion(
+      data.mensaje,
+      "error"
+    );
+
+    return;
+
+  }
+
+  mostrarNotificacion(
+    data.mensaje
+  );
+
+  cerrarModalHorario();
+
+  await cargarHorarios();
 
 }  
 
@@ -578,6 +665,15 @@ document
     "click",
     cerrarModalHorario
   );
+
+ document
+  .getElementById(
+    "btnGuardarHorario"
+  )
+  .addEventListener(
+    "click",
+    guardarHorario
+  );   
 
   }
 );
