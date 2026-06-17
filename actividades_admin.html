@@ -772,6 +772,83 @@ document
 
 
 }
+
+async function guardarActividad(){
+
+const amenidadId =
+document
+.getElementById(
+"cmbAmenidad"
+)
+.value;
+
+const nombre =
+document
+.getElementById(
+"txtNombreActividad"
+)
+.value
+.trim();
+
+const descripcion =
+document
+.getElementById(
+"txtDescripcionActividad"
+)
+.value
+.trim();
+
+const tipo =
+document
+.getElementById(
+"cmbTipoActividad"
+)
+.value;
+
+const capacidad =
+parseInt(
+document
+.getElementById(
+"txtCapacidadActividad"
+)
+.value
+);
+
+const permiteInvitados =
+document
+.getElementById(
+"chkPermiteInvitados"
+)
+.checked;
+
+const fechaInicio =
+document
+.getElementById(
+"fechaInicioActividad"
+)
+.value;
+
+const fechaFin =
+document
+.getElementById(
+"fechaFinActividad"
+)
+.value;
+
+console.log({
+actividadEditando,
+amenidadId,
+nombre,
+descripcion,
+tipo,
+capacidad,
+permiteInvitados,
+fechaInicio,
+fechaFin
+});
+
+}
+  
   
 function horariosActividad(id){
 
@@ -812,6 +889,16 @@ window.addEventListener(
     await cargar();
 
     await cargarAmenidades();
+
+    document
+.getElementById(
+"btnGuardarActividad"
+)
+.addEventListener(
+"click",
+guardarActividad
+);
+
 
   }
 );
