@@ -365,14 +365,60 @@ function renderizarInstructores(){
 
 }  
 
-function removerInstructor(
+async function removerInstructor(
   instructorId
 ){
 
-  alert(
-    "Remover instructor\n\n" +
-    instructorId
+  const confirmar =
+    confirm(
+      "¿Desea remover este instructor?"
+    );
+
+  if(!confirmar){
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "remover_instructor_actividad",
+      {
+        p_actividad_id:
+          actividadId,
+
+        p_instructor_id:
+          instructorId
+      }
+    );
+
+  if(error){
+
+    console.log(error);
+
+    mostrarNotificacion(
+      "Error al remover instructor.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  if(!data.ok){
+
+    mostrarNotificacion(
+      data.mensaje,
+      "error"
+    );
+
+    return;
+
+  }
+
+  mostrarNotificacion(
+    data.mensaje
   );
+
+  await cargarInstructores();
 
 }
     
