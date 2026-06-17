@@ -126,6 +126,30 @@ h1{
 
   <div id="contenedorNotificaciones"></div>
 
+  <div
+  style="
+    text-align:center;
+    margin-bottom:20px;
+  ">
+
+  <button
+    id="btnAsignarInstructor"
+    style="
+      background:#2563eb;
+      color:white;
+      border:none;
+      border-radius:12px;
+      padding:12px 20px;
+      font-size:16px;
+      cursor:pointer;
+    ">
+
+    ➕ Asignar instructor
+
+  </button>
+
+</div>
+
   <div id="lista"></div>
 
 </div>
@@ -313,6 +337,22 @@ function renderizarInstructores(){
 
           ${i.rol}
 
+          <div
+  style="
+    margin-top:15px;
+  ">
+
+  <button
+    onclick="removerInstructor(
+      '${i.id}'
+    )">
+
+    ❌ Remover
+
+  </button>
+
+</div>
+
         </div>
 
       </div>
@@ -324,7 +364,18 @@ function renderizarInstructores(){
   lista.innerHTML = html;
 
 }  
-  
+
+function removerInstructor(
+  instructorId
+){
+
+  alert(
+    "Remover instructor\n\n" +
+    instructorId
+  );
+
+}
+    
 window.addEventListener(
   "DOMContentLoaded",
   async ()=>{
@@ -334,6 +385,21 @@ window.addEventListener(
     ]);
 
     await cargarInstructores();
+
+    document
+  .getElementById(
+    "btnAsignarInstructor"
+  )
+  .addEventListener(
+    "click",
+    ()=>{
+
+      alert(
+        "Asignar instructor"
+      );
+
+    }
+  );
 
   }
 );
