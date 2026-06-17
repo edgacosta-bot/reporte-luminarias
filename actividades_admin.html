@@ -656,6 +656,121 @@ console.log(
     error
   );
 
+  if(error){
+
+  mostrarNotificacion(
+    "Error al obtener actividad.",
+    "error"
+  );
+
+  return;
+
+}
+
+if(!data || data.length === 0){
+
+  mostrarNotificacion(
+    "Actividad no encontrada.",
+    "error"
+  );
+
+  return;
+
+}
+
+const a = data[0];
+
+const cmbAmenidad =
+  document.getElementById(
+    "cmbAmenidad"
+  );
+
+cmbAmenidad.innerHTML = "";
+
+amenidades.forEach(am=>{
+
+  cmbAmenidad.innerHTML += `
+
+    <option
+      value="${am.amenidad_id}">
+
+      ${am.nombre}
+
+    </option>
+
+  `;
+
+});
+
+  const amenidadSeleccionada =
+  amenidades.find(
+    am => am.nombre === a.amenidad
+  );
+
+if(amenidadSeleccionada){
+
+  cmbAmenidad.value =
+    amenidadSeleccionada.amenidad_id;
+
+}
+
+document
+  .getElementById(
+    "txtNombreActividad"
+  )
+  .value =
+  a.actividad || "";
+
+document
+  .getElementById(
+    "txtDescripcionActividad"
+  )
+  .value =
+  a.descripcion || "";
+
+document
+  .getElementById(
+    "cmbTipoActividad"
+  )
+  .value =
+  a.tipo || "recurrente";
+
+document
+  .getElementById(
+    "txtCapacidadActividad"
+  )
+  .value =
+  a.capacidad_maxima || 1;
+
+document
+  .getElementById(
+    "chkPermiteInvitados"
+  )
+  .checked =
+  a.permite_invitados === true;
+
+document
+  .getElementById(
+    "fechaInicioActividad"
+  )
+  .value =
+  a.fecha_inicio;
+
+document
+  .getElementById(
+    "fechaFinActividad"
+  )
+  .value =
+  a.fecha_fin;  
+
+  document
+.getElementById(
+"modalActividad"
+)
+.style.display =
+"flex";
+
+
 }
   
 function horariosActividad(id){
