@@ -437,6 +437,71 @@ function cerrarModalAsignacion(){
 
 }  
 
+async function guardarAsignacion(){
+
+  const instructorId =
+    document
+      .getElementById(
+        "cmbInstructor"
+      )
+      .value;
+
+  const rol =
+    document
+      .getElementById(
+        "cmbRol"
+      )
+      .value;
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "asignar_instructor_actividad",
+      {
+        p_actividad_id:
+          actividadId,
+
+        p_instructor_id:
+          instructorId,
+
+        p_rol:
+          rol
+      }
+    );
+
+  if(error){
+
+    console.log(error);
+
+    mostrarNotificacion(
+      "Error al asignar instructor.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  if(!data.ok){
+
+    mostrarNotificacion(
+      data.mensaje,
+      "error"
+    );
+
+    return;
+
+  }
+
+  mostrarNotificacion(
+    data.mensaje
+  );
+
+  cerrarModalAsignacion();
+
+  await cargarInstructores();
+
+}  
+
 function renderizarInstructores(){
 
   const lista =
@@ -609,6 +674,15 @@ document
     "click",
     cerrarModalAsignacion
   );
+
+  document
+  .getElementById(
+    "btnGuardarAsignacion"
+  )
+  .addEventListener(
+    "click",
+    guardarAsignacion
+  );  
 
     document
   .getElementById(
