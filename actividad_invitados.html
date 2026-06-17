@@ -120,7 +120,7 @@ h1{
 
  <h1 id="tituloActividad">
 
-  👥 Inscritos
+  🎟 Invitados
 
 </h1>
 
@@ -138,15 +138,7 @@ let actividadActual = null;
 
 let notificacionActual = null; 
 
-let inscritos = []; 
-
-let capacidadMaxima = 0;
-
-let totalInscritos = 0;
-
-let lugaresDisponibles = 0;  
-
-  
+let invitados = []; 
 
 const params =
   new URLSearchParams(
@@ -218,11 +210,11 @@ function mostrarNotificacion(
 
 }  
 
-async function cargarInscritos(){
+async function cargarInvitados(){
 
   const { data, error } =
     await supabaseClient.rpc(
-      "obtener_inscritos_actividad",
+      "obtener_invitados_actividad_admin",
       {
         p_actividad_id:
           actividadId
@@ -248,71 +240,41 @@ async function cargarInscritos(){
 
   }
 
-  capacidadMaxima =
-    data.capacidad_maxima || 0;
+  invitados =
+    data.invitados || [];
 
-  totalInscritos =
-    data.total_inscritos || 0;
-
-  lugaresDisponibles =
-    data.lugares_disponibles || 0;
-
-  inscritos =
-    data.inscritos || [];
-
-  renderizarInscritos();
+  renderizarInvitados();
 
 }
 
-function renderizarInscritos(){
+function renderizarInvitados(){
 
   const lista =
     document.getElementById(
       "lista"
     );
 
-  let html = `
-
-    <div class="card">
-
-      <b>Capacidad máxima:</b>
-      ${capacidadMaxima}
-
-      <br><br>
-
-      <b>Total inscritos:</b>
-      ${totalInscritos}
-
-      <br><br>
-
-      <b>Lugares disponibles:</b>
-      ${lugaresDisponibles}
-
-    </div>
-
-  `;
-
   if(
-    inscritos.length === 0
+    invitados.length === 0
   ){
 
-    html += `
+    lista.innerHTML = `
 
       <div class="card">
 
-        No existen inscritos.
+        No existen invitados registrados.
 
       </div>
 
     `;
 
-    lista.innerHTML = html;
-
     return;
 
   }
 
-  inscritos.forEach(i=>{
+  let html = "";
+
+  invitados.forEach(i=>{
 
     html += `
 
@@ -326,7 +288,15 @@ function renderizarInscritos(){
             margin-bottom:10px;
           ">
 
-          👤 ${i.nombre}
+          🎟 ${i.nombre_invitado}
+
+        </div>
+
+        <div>
+
+          <b>Residente:</b>
+
+          ${i.residente}
 
         </div>
 
@@ -342,22 +312,23 @@ function renderizarInscritos(){
 
           <b>Casa:</b>
 
-          ${i.casa || "-"}
+          ${i.casa}
 
         </div>
 
         <div>
 
-          <b>Fecha inscripción:</b>
+          <b>Fecha registro:</b>
 
-          ${i.fecha_inscripcion
-  ? new Date(
-      i.fecha_inscripcion
-    ).toLocaleString(
-      "es-MX"
-    )
-  : "-"
-}
+          ${
+            i.fecha_registro
+            ? new Date(
+                i.fecha_registro
+              ).toLocaleString(
+                "es-MX"
+              )
+            : "-"
+          }
 
         </div>
 
@@ -365,19 +336,19 @@ function renderizarInscritos(){
 
           <b>Estatus:</b>
 
-<span
-  style="
-    color:${
-      i.estatus === "activo"
-      ? "#22c55e"
-      : "#ef4444"
-    };
-    font-weight:bold;
-  ">
+          <span
+            style="
+              color:${
+                i.estatus === "activo"
+                ? "#22c55e"
+                : "#ef4444"
+              };
+              font-weight:bold;
+            ">
 
-  ${i.estatus || "-"}
+            ${i.estatus}
 
-</span>
+          </span>
 
         </div>
 
@@ -400,7 +371,7 @@ window.addEventListener(
       "administracion"
     ]);
 
-    await cargarInscritos();
+   await cargarInvitados();
 
   }
 );
