@@ -419,25 +419,20 @@ function mostrarNotificacion(
 
 async function cargarAmenidades(){
 
- const { data, error } =
-  await supabaseClient.rpc(
-    "obtener_amenidades_actividades"
-  );
-
-console.log(
-  "Data:",
-  data
-);
-
-console.log(
-  "Error:",
-  error
-);
-
   const { data, error } =
     await supabaseClient.rpc(
       "obtener_amenidades_actividades"
     );
+
+  console.log(
+    "Data:",
+    data
+  );
+
+  console.log(
+    "Error:",
+    error
+  );
 
   if(error){
 
@@ -447,8 +442,6 @@ console.log(
 
   }
 
-  
-  
   amenidades = data || [];
 
 }  
