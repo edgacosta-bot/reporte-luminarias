@@ -431,19 +431,17 @@ function instructoresActividad(id){
   
 function inscritosActividad(id){
 
-  alert(
-    "Inscritos\n\n" + id
-  );
+  window.location.href =
+    "actividad_inscritos.html?id=" + id;
 
 }
 
 function invitadosActividad(id){
 
-  alert(
-    "Invitados\n\n" + id
-  );
+  window.location.href =
+    "actividad_invitados.html?id=" + id;
 
-}  
+}
   
 window.addEventListener(
   "DOMContentLoaded",
