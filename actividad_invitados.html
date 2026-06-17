@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Actividades | SIGVIC</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="auth.js"></script>
+
+<style>
+
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+}
+
+.kpi{
+  background:#111827;
+  border-radius:18px;
+  padding:20px;
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.kpi span{
+  font-size:34px;
+  font-weight:bold;
+}
+
+.card{
+  background:#111827;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:12px;
+}
+
+.activo{
+
+  color:#22c55e;
+
+  font-weight:bold;
+
+}
+
+.inactivo{
+
+  color:#ef4444;
+
+  font-weight:bold;
+
+}  
+
+#contenedorNotificaciones{
+  position:fixed;
+  top:20px;
+  right:20px;
+  width:350px;
+  z-index:10000;
+}
+
+.notificacion{
+  padding:14px;
+  border-radius:12px;
+  margin-bottom:10px;
+  font-weight:600;
+  animation:aparecer .25s ease;
+    box-shadow:
+    0 4px 12px rgba(0,0,0,.35);
+}
+
+.notificacion.exito{
+  background:#14532d;
+  border:1px solid #22c55e;
+  color:white;
+}
+
+.notificacion.error{
+  background:#7f1d1d;
+  border:1px solid #ef4444;
+  color:white;
+}
+
+@keyframes aparecer{
+
+  from{
+    opacity:0;
+    transform:translateY(-10px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+
+}
+  
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+ <h1 id="tituloActividad">
+
+  👥 Inscritos
+
+</h1>
+
+  <div id="contenedorNotificaciones"></div>
+
+ 
+  <div id="lista"></div>
+
+</div>
+
+<script>
+
+
+let actividadActual = null; 
+
+let notificacionActual = null; 
+
+let inscritos = []; 
+
+let capacidadMaxima = 0;
+
+let totalInscritos = 0;
+
+let lugaresDisponibles = 0;  
+
+  
+
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const actividadId =
+  params.get("id");
+
+if(!actividadId){
+
+  alert(
+    "Actividad no especificada"
+  );
+
+  throw new Error(
+    "Actividad no especificada"
+  );
+
+}  
+
+function mostrarNotificacion(
+  mensaje,
+  tipo = "exito"
+){
+
+   const contenedor =
+    document.getElementById(
+      "contenedorNotificaciones"
+    );
+
+  
+  if(notificacionActual){
+    notificacionActual.remove();
+  }
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.className =
+    `notificacion ${tipo}`;
+
+  div.innerHTML =
+    mensaje;
+
+  contenedor.appendChild(
+    div
+  );
+
+  notificacionActual = div;
+
+  setTimeout(()=>{
+
+    if(div.parentNode){
+
+      div.remove();
+
+      if(
+        notificacionActual === div
+      ){
+        notificacionActual = null;
+      }
+
+    }
+
+  },4000);
+
+}  
+
+async function cargarInscritos(){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_inscritos_actividad",
+      {
+        p_actividad_id:
+          actividadId
+      }
+    );
+
+  if(error){
+
+    console.log(error);
+
+    return;
+
+  }
+
+  if(!data.ok){
+
+    mostrarNotificacion(
+      data.mensaje,
+      "error"
+    );
+
+    return;
+
+  }
+
+  capacidadMaxima =
+    data.capacidad_maxima || 0;
+
+  totalInscritos =
+    data.total_inscritos || 0;
+
+  lugaresDisponibles =
+    data.lugares_disponibles || 0;
+
+  inscritos =
+    data.inscritos || [];
+
+  renderizarInscritos();
+
+}
+
+function renderizarInscritos(){
+
+  const lista =
+    document.getElementById(
+      "lista"
+    );
+
+  let html = `
+
+    <div class="card">
+
+      <b>Capacidad máxima:</b>
+      ${capacidadMaxima}
+
+      <br><br>
+
+      <b>Total inscritos:</b>
+      ${totalInscritos}
+
+      <br><br>
+
+      <b>Lugares disponibles:</b>
+      ${lugaresDisponibles}
+
+    </div>
+
+  `;
+
+  if(
+    inscritos.length === 0
+  ){
+
+    html += `
+
+      <div class="card">
+
+        No existen inscritos.
+
+      </div>
+
+    `;
+
+    lista.innerHTML = html;
+
+    return;
+
+  }
+
+  inscritos.forEach(i=>{
+
+    html += `
+
+      <div class="card">
+
+        <div
+          style="
+            font-size:20px;
+            font-weight:bold;
+            color:#93c5fd;
+            margin-bottom:10px;
+          ">
+
+          👤 ${i.nombre}
+
+        </div>
+
+        <div>
+
+          <b>Privada:</b>
+
+          ${i.privada?.trim() || "No especificada"}
+
+        </div>
+
+        <div>
+
+          <b>Casa:</b>
+
+          ${i.casa || "-"}
+
+        </div>
+
+        <div>
+
+          <b>Fecha inscripción:</b>
+
+          ${i.fecha_inscripcion
+  ? new Date(
+      i.fecha_inscripcion
+    ).toLocaleString(
+      "es-MX"
+    )
+  : "-"
+}
+
+        </div>
+
+        <div>
+
+          <b>Estatus:</b>
+
+<span
+  style="
+    color:${
+      i.estatus === "activo"
+      ? "#22c55e"
+      : "#ef4444"
+    };
+    font-weight:bold;
+  ">
+
+  ${i.estatus || "-"}
+
+</span>
+
+        </div>
+
+      </div>
+
+    `;
+
+  });
+
+  lista.innerHTML = html;
+
+}
+
+   
+window.addEventListener(
+  "DOMContentLoaded",
+  async ()=>{
+
+    await protegerPagina([
+      "administracion"
+    ]);
+
+    await cargarInscritos();
+
+  }
+);
+
+</script>
+
+</body>
+</html>
