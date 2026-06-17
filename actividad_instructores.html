@@ -154,6 +154,107 @@ h1{
 
 </div>
 
+<div
+  id="modalAsignarInstructor"
+  style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.7);
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+  ">
+
+  <div
+    style="
+      background:#111827;
+      padding:24px;
+      border-radius:16px;
+      width:90%;
+      max-width:500px;
+    ">
+
+    <h2>
+
+      Asignar instructor
+
+    </h2>
+
+    <div style="margin-bottom:15px;">
+
+      <label>
+        Instructor
+      </label>
+
+      <select
+        id="cmbInstructor"
+        style="
+          width:100%;
+          padding:10px;
+          margin-top:5px;
+        ">
+      </select>
+
+    </div>
+
+    <div style="margin-bottom:20px;">
+
+      <label>
+        Rol
+      </label>
+
+      <select
+        id="cmbRol"
+        style="
+          width:100%;
+          padding:10px;
+          margin-top:5px;
+        ">
+
+        <option value="titular">
+
+          Titular
+
+        </option>
+
+        <option value="ayudante">
+
+          Ayudante
+
+        </option>
+
+      </select>
+
+    </div>
+
+    <div
+      style="
+        display:flex;
+        justify-content:flex-end;
+        gap:10px;
+      ">
+
+      <button
+        id="btnCerrarAsignacion">
+
+        Cancelar
+
+      </button>
+
+      <button
+        id="btnGuardarAsignacion">
+
+        Asignar
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+  
 <script>
 
 
@@ -162,6 +263,8 @@ let actividadActual = null;
 let notificacionActual = null; 
 
 let instructores = [];  
+
+let catalogoInstructores = [];  
 
 const params =
   new URLSearchParams(
@@ -269,6 +372,70 @@ async function cargarInstructores(){
   renderizarInstructores();
 
 }
+
+async function cargarCatalogoInstructores(){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_instructores"
+    );
+
+  if(error){
+
+    console.log(error);
+
+    return;
+
+  }
+
+  catalogoInstructores =
+    data.instructores || [];
+
+}
+
+function abrirModalAsignacion(){
+
+  const cmb =
+    document.getElementById(
+      "cmbInstructor"
+    );
+
+  cmb.innerHTML = "";
+
+  catalogoInstructores.forEach(i=>{
+
+    cmb.innerHTML += `
+
+      <option
+        value="${i.id}">
+
+        ${i.nombre}
+
+      </option>
+
+    `;
+
+  });
+
+  document
+    .getElementById(
+      "modalAsignarInstructor"
+    )
+    .style.display =
+    "flex";
+
+}
+
+function cerrarModalAsignacion(){
+
+  document
+    .getElementById(
+      "modalAsignarInstructor"
+    )
+    .style.display =
+    "none";
+
+}  
 
 function renderizarInstructores(){
 
@@ -432,6 +599,17 @@ window.addEventListener(
 
     await cargarInstructores();
 
+    await cargarCatalogoInstructores();
+
+document
+  .getElementById(
+    "btnCerrarAsignacion"
+  )
+  .addEventListener(
+    "click",
+    cerrarModalAsignacion
+  );
+
     document
   .getElementById(
     "btnAsignarInstructor"
@@ -440,9 +618,7 @@ window.addEventListener(
     "click",
     ()=>{
 
-      alert(
-        "Asignar instructor"
-      );
+      abrirModalAsignacion();
 
     }
   );
