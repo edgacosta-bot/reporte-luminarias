@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Actividades | SIGVIC</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="auth.js"></script>
+
+<style>
+
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+}
+
+.kpi{
+  background:#111827;
+  border-radius:18px;
+  padding:20px;
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.kpi span{
+  font-size:34px;
+  font-weight:bold;
+}
+
+.card{
+  background:#111827;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:12px;
+}
+
+.activo{
+
+  color:#22c55e;
+
+  font-weight:bold;
+
+}
+
+.inactivo{
+
+  color:#ef4444;
+
+  font-weight:bold;
+
+}  
+
+#contenedorNotificaciones{
+  position:fixed;
+  top:20px;
+  right:20px;
+  width:350px;
+  z-index:10000;
+}
+
+.notificacion{
+  padding:14px;
+  border-radius:12px;
+  margin-bottom:10px;
+  font-weight:600;
+  animation:aparecer .25s ease;
+    box-shadow:
+    0 4px 12px rgba(0,0,0,.35);
+}
+
+.notificacion.exito{
+  background:#14532d;
+  border:1px solid #22c55e;
+  color:white;
+}
+
+.notificacion.error{
+  background:#7f1d1d;
+  border:1px solid #ef4444;
+  color:white;
+}
+
+@keyframes aparecer{
+
+  from{
+    opacity:0;
+    transform:translateY(-10px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+
+}
+  
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+ <h1 id="tituloActividad">
+
+  👨‍🏫 Instructores
+
+</h1>
+
+  <div id="contenedorNotificaciones"></div>
+
+  <div
+  style="
+    text-align:center;
+    margin-bottom:20px;
+  ">
+
+  <button
+    id="btnAsignarInstructor"
+    style="
+      background:#2563eb;
+      color:white;
+      border:none;
+      border-radius:12px;
+      padding:12px 20px;
+      font-size:16px;
+      cursor:pointer;
+    ">
+
+    ➕ Asignar instructor
+
+  </button>
+
+</div>
+
+  <div id="lista"></div>
+
+</div>
+
+<div
+  id="modalAsignarInstructor"
+  style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.7);
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+  ">
+
+  <div
+    style="
+      background:#111827;
+      padding:24px;
+      border-radius:16px;
+      width:90%;
+      max-width:500px;
+    ">
+
+    <h2>
+
+      Asignar instructor
+
+    </h2>
+
+    <div style="margin-bottom:15px;">
+
+      <label>
+        Instructor
+      </label>
+
+      <select
+        id="cmbInstructor"
+        style="
+          width:100%;
+          padding:10px;
+          margin-top:5px;
+        ">
+      </select>
+
+    </div>
+
+    <div style="margin-bottom:20px;">
+
+      <label>
+        Rol
+      </label>
+
+      <select
+        id="cmbRol"
+        style="
+          width:100%;
+          padding:10px;
+          margin-top:5px;
+        ">
+
+        <option value="titular">
+
+          Titular
+
+        </option>
+
+        <option value="ayudante">
+
+          Ayudante
+
+        </option>
+
+      </select>
+
+    </div>
+
+    <div
+      style="
+        display:flex;
+        justify-content:flex-end;
+        gap:10px;
+      ">
+
+      <button
+        id="btnCerrarAsignacion">
+
+        Cancelar
+
+      </button>
+
+      <button
+        id="btnGuardarAsignacion">
+
+        Asignar
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+  
+<script>
+
+
+let actividadActual = null; 
+
+let notificacionActual = null; 
+
+let instructores = [];  
+
+let catalogoInstructores = [];  
+
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const actividadId =
+  params.get("id");
+
+if(!actividadId){
+
+  alert(
+    "Actividad no especificada"
+  );
+
+  throw new Error(
+    "Actividad no especificada"
+  );
+
+}  
+
+function mostrarNotificacion(
+  mensaje,
+  tipo = "exito"
+){
+
+   const contenedor =
+    document.getElementById(
+      "contenedorNotificaciones"
+    );
+
+  
+  if(notificacionActual){
+    notificacionActual.remove();
+  }
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.className =
+    `notificacion ${tipo}`;
+
+  div.innerHTML =
+    mensaje;
+
+  contenedor.appendChild(
+    div
+  );
+
+  notificacionActual = div;
+
+  setTimeout(()=>{
+
+    if(div.parentNode){
+
+      div.remove();
+
+      if(
+        notificacionActual === div
+      ){
+        notificacionActual = null;
+      }
+
+    }
+
+  },4000);
+
+}  
+
+async function cargarInstructores(){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_instructores_actividad",
+      {
+        p_actividad_id:
+          actividadId
+      }
+    );
+
+  if(error){
+
+    console.log(error);
+
+    return;
+
+  }
+
+  if(!data.ok){
+
+    mostrarNotificacion(
+      data.mensaje,
+      "error"
+    );
+
+    return;
+
+  }
+
+  instructores =
+    data.instructores || [];
+
+  renderizarInstructores();
+
+}
+
+async function cargarCatalogoInstructores(){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_instructores"
+    );
+
+  if(error){
+
+    console.log(error);
+
+    return;
+
+  }
+
+  catalogoInstructores =
+    data.instructores || [];
+
+}
+
+function abrirModalAsignacion(){
+
+  const cmb =
+    document.getElementById(
+      "cmbInstructor"
+    );
+
+  cmb.innerHTML = "";
+
+  catalogoInstructores.forEach(i=>{
+
+    cmb.innerHTML += `
+
+      <option
+        value="${i.id}">
+
+        ${i.nombre}
+
+      </option>
+
+    `;
+
+  });
+
+  document
+    .getElementById(
+      "modalAsignarInstructor"
+    )
+    .style.display =
+    "flex";
+
+}
+
+function cerrarModalAsignacion(){
+
+  document
+    .getElementById(
+      "modalAsignarInstructor"
+    )
+    .style.display =
+    "none";
+
+}  
+
+async function guardarAsignacion(){
+
+  const instructorId =
+    document
+      .getElementById(
+        "cmbInstructor"
+      )
+      .value;
+
+  const rol =
+    document
+      .getElementById(
+        "cmbRol"
+      )
+      .value;
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "asignar_instructor_actividad",
+      {
+        p_actividad_id:
+          actividadId,
+
+        p_instructor_id:
+          instructorId,
+
+        p_rol:
+          rol
+      }
+    );
+
+  if(error){
+
+    console.log(error);
+
+    mostrarNotificacion(
+      "Error al asignar instructor.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  if(!data.ok){
+
+    mostrarNotificacion(
+      data.mensaje,
+      "error"
+    );
+
+    return;
+
+  }
+
+  mostrarNotificacion(
+    data.mensaje
+  );
+
+  cerrarModalAsignacion();
+
+  await cargarInstructores();
+
+}  
+
+function renderizarInstructores(){
+
+  const lista =
+    document.getElementById(
+      "lista"
+    );
+
+  if(
+    instructores.length === 0
+  ){
+
+    lista.innerHTML = `
+
+      <div class="card">
+
+        No existen instructores asignados.
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+  let html = "";
+
+  instructores.forEach(i=>{
+
+    html += `
+
+      <div class="card">
+
+        <div
+          style="
+            font-size:20px;
+            font-weight:bold;
+            color:#93c5fd;
+            margin-bottom:10px;
+          ">
+
+          👨‍🏫 ${i.nombre}
+
+        </div>
+
+        <div>
+
+          <b>Especialidad:</b>
+
+          ${i.especialidad || "-"}
+
+        </div>
+
+        <div>
+
+          <b>Teléfono:</b>
+
+          ${i.telefono || "-"}
+
+        </div>
+
+        <div>
+
+          <b>Rol:</b>
+
+          ${i.rol}
+
+          <div
+  style="
+    margin-top:15px;
+  ">
+
+  <button
+    onclick="removerInstructor(
+      '${i.id}'
+    )">
+
+    ❌ Remover
+
+  </button>
+
+</div>
+
+        </div>
+
+      </div>
+
+    `;
+
+  });
+
+  lista.innerHTML = html;
+
+}  
+
+async function removerInstructor(
+  instructorId
+){
+
+  const confirmar =
+    confirm(
+      "¿Desea remover este instructor?"
+    );
+
+  if(!confirmar){
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "remover_instructor_actividad",
+      {
+        p_actividad_id:
+          actividadId,
+
+        p_instructor_id:
+          instructorId
+      }
+    );
+
+  if(error){
+
+    console.log(error);
+
+    mostrarNotificacion(
+      "Error al remover instructor.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  if(!data.ok){
+
+    mostrarNotificacion(
+      data.mensaje,
+      "error"
+    );
+
+    return;
+
+  }
+
+  mostrarNotificacion(
+    data.mensaje
+  );
+
+  await cargarInstructores();
+
+}
+    
+window.addEventListener(
+  "DOMContentLoaded",
+  async ()=>{
+
+    await protegerPagina([
+      "administracion"
+    ]);
+
+    await cargarInstructores();
+
+    await cargarCatalogoInstructores();
+
+document
+  .getElementById(
+    "btnCerrarAsignacion"
+  )
+  .addEventListener(
+    "click",
+    cerrarModalAsignacion
+  );
+
+  document
+  .getElementById(
+    "btnGuardarAsignacion"
+  )
+  .addEventListener(
+    "click",
+    guardarAsignacion
+  );  
+
+    document
+  .getElementById(
+    "btnAsignarInstructor"
+  )
+  .addEventListener(
+    "click",
+    ()=>{
+
+      abrirModalAsignacion();
+
+    }
+  );
+
+  }
+);
+
+</script>
+
+</body>
+</html>
