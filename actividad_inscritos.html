@@ -120,141 +120,17 @@ h1{
 
  <h1 id="tituloActividad">
 
-  👨‍🏫 Instructores
+  👥 Inscritos
 
 </h1>
 
   <div id="contenedorNotificaciones"></div>
 
-  <div
-  style="
-    text-align:center;
-    margin-bottom:20px;
-  ">
-
-  <button
-    id="btnAsignarInstructor"
-    style="
-      background:#2563eb;
-      color:white;
-      border:none;
-      border-radius:12px;
-      padding:12px 20px;
-      font-size:16px;
-      cursor:pointer;
-    ">
-
-    ➕ Asignar instructor
-
-  </button>
-
-</div>
-
+ 
   <div id="lista"></div>
 
 </div>
 
-<div
-  id="modalAsignarInstructor"
-  style="
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.7);
-    justify-content:center;
-    align-items:center;
-    z-index:9999;
-  ">
-
-  <div
-    style="
-      background:#111827;
-      padding:24px;
-      border-radius:16px;
-      width:90%;
-      max-width:500px;
-    ">
-
-    <h2>
-
-      Asignar instructor
-
-    </h2>
-
-    <div style="margin-bottom:15px;">
-
-      <label>
-        Instructor
-      </label>
-
-      <select
-        id="cmbInstructor"
-        style="
-          width:100%;
-          padding:10px;
-          margin-top:5px;
-        ">
-      </select>
-
-    </div>
-
-    <div style="margin-bottom:20px;">
-
-      <label>
-        Rol
-      </label>
-
-      <select
-        id="cmbRol"
-        style="
-          width:100%;
-          padding:10px;
-          margin-top:5px;
-        ">
-
-        <option value="titular">
-
-          Titular
-
-        </option>
-
-        <option value="ayudante">
-
-          Ayudante
-
-        </option>
-
-      </select>
-
-    </div>
-
-    <div
-      style="
-        display:flex;
-        justify-content:flex-end;
-        gap:10px;
-      ">
-
-      <button
-        id="btnCerrarAsignacion">
-
-        Cancelar
-
-      </button>
-
-      <button
-        id="btnGuardarAsignacion">
-
-        Asignar
-
-      </button>
-
-    </div>
-
-  </div>
-
-</div>
-  
 <script>
 
 
@@ -262,9 +138,15 @@ let actividadActual = null;
 
 let notificacionActual = null; 
 
-let instructores = [];  
+let inscritos = []; 
 
-let catalogoInstructores = [];  
+let capacidadMaxima = 0;
+
+let totalInscritos = 0;
+
+let lugaresDisponibles = 0;  
+
+  
 
 const params =
   new URLSearchParams(
@@ -336,11 +218,11 @@ function mostrarNotificacion(
 
 }  
 
-async function cargarInstructores(){
+async function cargarInscritos(){
 
   const { data, error } =
     await supabaseClient.rpc(
-      "obtener_instructores_actividad",
+      "obtener_inscritos_actividad",
       {
         p_actividad_id:
           actividadId
@@ -366,170 +248,71 @@ async function cargarInstructores(){
 
   }
 
-  instructores =
-    data.instructores || [];
+  capacidadMaxima =
+    data.capacidad_maxima || 0;
 
-  renderizarInstructores();
+  totalInscritos =
+    data.total_inscritos || 0;
 
-}
+  lugaresDisponibles =
+    data.lugares_disponibles || 0;
 
-async function cargarCatalogoInstructores(){
+  inscritos =
+    data.inscritos || [];
 
-  const { data, error } =
-    await supabaseClient.rpc(
-      "obtener_instructores"
-    );
-
-  if(error){
-
-    console.log(error);
-
-    return;
-
-  }
-
-  catalogoInstructores =
-    data.instructores || [];
+  renderizarInscritos();
 
 }
 
-function abrirModalAsignacion(){
-
-  const cmb =
-    document.getElementById(
-      "cmbInstructor"
-    );
-
-  cmb.innerHTML = "";
-
-  catalogoInstructores.forEach(i=>{
-
-    cmb.innerHTML += `
-
-      <option
-        value="${i.id}">
-
-        ${i.nombre}
-
-      </option>
-
-    `;
-
-  });
-
-  document
-    .getElementById(
-      "modalAsignarInstructor"
-    )
-    .style.display =
-    "flex";
-
-}
-
-function cerrarModalAsignacion(){
-
-  document
-    .getElementById(
-      "modalAsignarInstructor"
-    )
-    .style.display =
-    "none";
-
-}  
-
-async function guardarAsignacion(){
-
-  const instructorId =
-    document
-      .getElementById(
-        "cmbInstructor"
-      )
-      .value;
-
-  const rol =
-    document
-      .getElementById(
-        "cmbRol"
-      )
-      .value;
-
-  const { data, error } =
-    await supabaseClient.rpc(
-      "asignar_instructor_actividad",
-      {
-        p_actividad_id:
-          actividadId,
-
-        p_instructor_id:
-          instructorId,
-
-        p_rol:
-          rol
-      }
-    );
-
-  if(error){
-
-    console.log(error);
-
-    mostrarNotificacion(
-      "Error al asignar instructor.",
-      "error"
-    );
-
-    return;
-
-  }
-
-  if(!data.ok){
-
-    mostrarNotificacion(
-      data.mensaje,
-      "error"
-    );
-
-    return;
-
-  }
-
-  mostrarNotificacion(
-    data.mensaje
-  );
-
-  cerrarModalAsignacion();
-
-  await cargarInstructores();
-
-}  
-
-function renderizarInstructores(){
+function renderizarInscritos(){
 
   const lista =
     document.getElementById(
       "lista"
     );
 
+  let html = `
+
+    <div class="card">
+
+      <b>Capacidad máxima:</b>
+      ${capacidadMaxima}
+
+      <br><br>
+
+      <b>Total inscritos:</b>
+      ${totalInscritos}
+
+      <br><br>
+
+      <b>Lugares disponibles:</b>
+      ${lugaresDisponibles}
+
+    </div>
+
+  `;
+
   if(
-    instructores.length === 0
+    inscritos.length === 0
   ){
 
-    lista.innerHTML = `
+    html += `
 
       <div class="card">
 
-        No existen instructores asignados.
+        No existen inscritos.
 
       </div>
 
     `;
 
+    lista.innerHTML = html;
+
     return;
 
   }
 
-  let html = "";
-
-  instructores.forEach(i=>{
+  inscritos.forEach(i=>{
 
     html += `
 
@@ -543,47 +326,58 @@ function renderizarInstructores(){
             margin-bottom:10px;
           ">
 
-          👨‍🏫 ${i.nombre}
+          👤 ${i.nombre}
 
         </div>
 
         <div>
 
-          <b>Especialidad:</b>
+          <b>Privada:</b>
 
-          ${i.especialidad || "-"}
-
-        </div>
-
-        <div>
-
-          <b>Teléfono:</b>
-
-          ${i.telefono || "-"}
+          ${i.privada || "-"}
 
         </div>
 
         <div>
 
-          <b>Rol:</b>
+          <b>Casa:</b>
 
-          ${i.rol}
+          ${i.casa || "-"}
 
-          <div
+        </div>
+
+        <div>
+
+          <b>Fecha inscripción:</b>
+
+          ${i.fecha_inscripcion
+  ? new Date(
+      i.fecha_inscripcion
+    ).toLocaleString(
+      "es-MX"
+    )
+  : "-"
+}
+
+        </div>
+
+        <div>
+
+          <b>Estatus:</b>
+
+<span
   style="
-    margin-top:15px;
+    color:${
+      i.estatus === "activo"
+      ? "#22c55e"
+      : "#ef4444"
+    };
+    font-weight:bold;
   ">
 
-  <button
-    onclick="removerInstructor(
-      '${i.id}'
-    )">
+  ${i.estatus || "-"}
 
-    ❌ Remover
-
-  </button>
-
-</div>
+</span>
 
         </div>
 
@@ -595,65 +389,9 @@ function renderizarInstructores(){
 
   lista.innerHTML = html;
 
-}  
-
-async function removerInstructor(
-  instructorId
-){
-
-  const confirmar =
-    confirm(
-      "¿Desea remover este instructor?"
-    );
-
-  if(!confirmar){
-    return;
-  }
-
-  const { data, error } =
-    await supabaseClient.rpc(
-      "remover_instructor_actividad",
-      {
-        p_actividad_id:
-          actividadId,
-
-        p_instructor_id:
-          instructorId
-      }
-    );
-
-  if(error){
-
-    console.log(error);
-
-    mostrarNotificacion(
-      "Error al remover instructor.",
-      "error"
-    );
-
-    return;
-
-  }
-
-  if(!data.ok){
-
-    mostrarNotificacion(
-      data.mensaje,
-      "error"
-    );
-
-    return;
-
-  }
-
-  mostrarNotificacion(
-    data.mensaje
-  );
-
-  await cargarInstructores();
-
 }
-    
+
+   
 window.addEventListener(
   "DOMContentLoaded",
   async ()=>{
@@ -662,40 +400,7 @@ window.addEventListener(
       "administracion"
     ]);
 
-    await cargarInstructores();
-
-    await cargarCatalogoInstructores();
-
-document
-  .getElementById(
-    "btnCerrarAsignacion"
-  )
-  .addEventListener(
-    "click",
-    cerrarModalAsignacion
-  );
-
-  document
-  .getElementById(
-    "btnGuardarAsignacion"
-  )
-  .addEventListener(
-    "click",
-    guardarAsignacion
-  );  
-
-    document
-  .getElementById(
-    "btnAsignarInstructor"
-  )
-  .addEventListener(
-    "click",
-    ()=>{
-
-      abrirModalAsignacion();
-
-    }
-  );
+    await cargarInscritos();
 
   }
 );
