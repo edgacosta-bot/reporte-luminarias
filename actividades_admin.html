@@ -419,6 +419,11 @@ function mostrarNotificacion(
 
 async function cargarAmenidades(){
 
+  console.log(
+  "Amenidades:",
+  amenidades
+);
+
   const { data, error } =
     await supabaseClient.rpc(
       "obtener_amenidades_actividades"
