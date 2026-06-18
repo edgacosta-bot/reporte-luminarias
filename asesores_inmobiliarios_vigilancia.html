@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Asesores Inmobiliarios</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="auth.js"></script>
+
+<script src="/utils/ui.js"></script>
+
+<script src="/modal.js"></script>
+
+<style>
+
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:linear-gradient(
+    135deg,
+    #020617,
+    #0f172a
+  );
+  color:white;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+
+h2{
+  text-align:center;
+}
+
+.card{
+  background:#111827;
+  padding:18px;
+  border-radius:18px;
+  margin-bottom:14px;
+}
+
+input,
+select{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  background:#1f2937;
+  color:white;
+  font-size:15px;
+  box-sizing:border-box;
+}
+
+.btn{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:bold;
+  font-size:15px;
+}
+
+.btn-verde{
+  background:#16a34a;
+  color:white;
+}
+
+.btn-ambar{
+  background:#f59e0b;
+  color:#111827;
+}
+
+.nombre{
+  font-size:22px;
+  font-weight:bold;
+  margin-bottom:8px;
+}
+
+.detalle{
+  color:#cbd5e1;
+  font-size:14px;
+}
+
+.vacio{
+  text-align:center;
+  color:#94a3b8;
+  margin-top:20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>
+👔 Asesores Inmobiliarios
+</h2>
+
+<div class="card">
+
+<h3>
+Registrar ingreso
+</h3>
+
+<select id="asesor">
+
+<option value="">
+Seleccione asesor...
+</option>
+
+</select>
+
+<br><br>
+
+<input
+  id="pin"
+  type="password"
+  placeholder="NIP vigilante">
+
+<br><br>
+
+<button
+  class="btn btn-verde"
+  onclick="registrarIngreso()">
+
+  Registrar ingreso
+
+</button>
+
+</div>
+
+<h3>
+👥 Asesores dentro
+</h3>
+
+<div id="listaAsesores">
+
+Cargando...
+
+</div>
+
+</div>
+
+<script>
+
+window.addEventListener(
+  "DOMContentLoaded",
+  async ()=>{
+
+    await protegerPagina([
+      "vigilante"
+    ]);
+
+    await cargar();
+
+  }
+);
+
+// =====================================
+// CARGA GENERAL
+// =====================================
+
+async function cargar(){
+
+  await cargarAsesores();
+
+  await cargarAsesoresDentro();
+
+}
+
+// =====================================
+// ASESORES DISPONIBLES
+// =====================================
+
+async function cargarAsesores(){
+
+  const select =
+    document.getElementById(
+      "asesor"
+    );
+
+  select.innerHTML = `
+    <option value="">
+      Seleccione asesor...
+    </option>
+  `;
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_asesores_inmobiliarios"
+    );
+
+  if(error){
+
+    console.error(error);
+
+    ui.error(
+      "Error cargando asesores"
+    );
+
+    return;
+
+  }
+
+  data.forEach(a=>{
+
+    if(!a.activo){
+      return;
+    }
+
+    select.innerHTML += `
+
+      <option
+        value="${a.asesor_id}">
+
+        ${a.nombre}
+        (${a.empresa})
+
+      </option>
+
+    `;
+
+  });
+
+}
+
+// =====================================
+// REGISTRAR INGRESO
+// =====================================
+
+async function registrarIngreso(){
+
+  const asesorId =
+    document.getElementById(
+      "asesor"
+    ).value;
+
+  const pin =
+    document.getElementById(
+      "pin"
+    ).value.trim();
+
+  if(!asesorId){
+
+    ui.warn(
+      "Seleccione asesor"
+    );
+
+    return;
+
+  }
+
+  if(!pin){
+
+    ui.warn(
+      "Capture NIP"
+    );
+
+    return;
+
+  }
+
+  const { data:vigilante } =
+    await supabaseClient.rpc(
+      "validar_pin_vigilante",
+      {
+        pin_input: pin
+      }
+    );
+
+  if(
+    !vigilante ||
+    vigilante.length === 0
+  ){
+
+    ui.error(
+      "NIP incorrecto"
+    );
+
+    return;
+
+  }
+
+  const { error } =
+    await supabaseClient.rpc(
+      "registrar_entrada_asesor",
+      {
+        p_asesor_id:
+          asesorId,
+
+        p_vigilante_id:
+          vigilante[0].id
+      }
+    );
+
+  if(error){
+
+    console.error(error);
+
+    ui.error(
+      error.message
+    );
+
+    return;
+
+  }
+
+  document.getElementById(
+    "pin"
+  ).value = "";
+
+  document.getElementById(
+    "asesor"
+  ).value = "";
+
+  ui.success(
+    "Ingreso registrado correctamente"
+  );
+
+  await cargarAsesoresDentro();
+
+}
+
+// =====================================
+// ASESORES DENTRO
+// =====================================
+
+async function cargarAsesoresDentro(){
+
+  const contenedor =
+    document.getElementById(
+      "listaAsesores"
+    );
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_asesores_dentro"
+    );
+
+  if(error){
+
+    console.error(error);
+
+    contenedor.innerHTML =
+      "Error al cargar";
+
+    return;
+
+  }
+
+  if(
+    !data ||
+    data.length === 0
+  ){
+
+    contenedor.innerHTML = `
+
+      <div class="vacio">
+
+        No hay asesores dentro
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+  contenedor.innerHTML = "";
+
+  data.forEach(a=>{
+
+    contenedor.innerHTML += `
+
+      <div class="card">
+
+        <div class="nombre">
+
+          ${a.nombre}
+
+        </div>
+
+        <div class="detalle">
+
+          Empresa:
+          ${a.empresa}
+
+          <br><br>
+
+          Fecha entrada:
+          ${new Date(
+            a.fecha_entrada
+          ).toLocaleString()}
+
+          <br><br>
+
+          Clientes dentro:
+          ${a.clientes_dentro}
+
+          <br><br>
+
+          ${
+            a.clientes
+              ? "Clientes: " + a.clientes
+              : "Sin clientes registrados"
+          }
+
+        </div>
+
+        <br>
+
+        <button
+          class="btn btn-ambar"
+          onclick="
+            registrarSalida(
+              '${a.asesor_id}',
+              ${a.clientes_dentro}
+            )
+          ">
+
+          Registrar salida
+
+        </button>
+
+      </div>
+
+    `;
+
+  });
+
+}
+
+// =====================================
+// REGISTRAR SALIDA
+// =====================================
+
+async function registrarSalida(
+  asesorId,
+  clientesDentro
+){
+
+  let mensaje =
+    "¿Desea registrar la salida del asesor?";
+
+  if(clientesDentro > 0){
+
+    mensaje =
+
+`Este asesor tiene ${clientesDentro} cliente(s) aún dentro del fraccionamiento.
+
+Los clientes permanecerán visibles para control de vigilancia.
+
+¿Desea continuar?`;
+
+  }
+
+  const confirmar =
+    await mostrarConfirmacion({
+
+      titulo:
+        "Registrar salida",
+
+      mensaje
+
+    });
+
+  if(!confirmar){
+    return;
+  }
+
+  const pin =
+    await mostrarSolicitudPin({
+
+      titulo:
+        "Registrar salida",
+
+      mensaje:
+        "Ingrese NIP del vigilante"
+
+    });
+
+  if(!pin){
+    return;
+  }
+
+  const { data:vigilante } =
+    await supabaseClient.rpc(
+      "validar_pin_vigilante",
+      {
+        pin_input: pin
+      }
+    );
+
+  if(
+    !vigilante ||
+    vigilante.length === 0
+  ){
+
+    ui.error(
+      "NIP incorrecto"
+    );
+
+    return;
+
+  }
+
+  const { error } =
+    await supabaseClient.rpc(
+      "registrar_salida_asesor",
+      {
+        p_asesor_id:
+          asesorId,
+
+        p_vigilante_id:
+          vigilante[0].id
+      }
+    );
+
+  if(error){
+
+    console.error(error);
+
+    ui.error(
+      error.message
+    );
+
+    return;
+
+  }
+
+  ui.success(
+    "Salida registrada correctamente"
+  );
+
+  await cargarAsesoresDentro();
+
+}
+
+</script>
+
+</body>
+</html>
