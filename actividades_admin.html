@@ -763,6 +763,13 @@ document
 
 document
   .getElementById(
+    "txtMaximoInvitados"
+  )
+  .value =
+  a.maximo_invitados || 0;  
+
+document
+  .getElementById(
     "chkPermiteInvitados"
   )
   .checked =
@@ -833,6 +840,15 @@ document
 .value
 );
 
+const maximoInvitados =
+parseInt(
+document
+.getElementById(
+"txtMaximoInvitados"
+)
+.value
+);  
+
 const permiteInvitados =
 document
 .getElementById(
@@ -875,6 +891,9 @@ await supabaseClient.rpc(
 
     p_capacidad_maxima:
       capacidad,
+
+    p_maximo_invitados:
+    maximoInvitados,
 
     p_permite_invitados:
       permiteInvitados,
