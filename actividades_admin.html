@@ -835,17 +835,84 @@ document
 )
 .value;
 
-console.log({
-actividadEditando,
-amenidadId,
-nombre,
-descripcion,
-tipo,
-capacidad,
-permiteInvitados,
-fechaInicio,
-fechaFin
-});
+const { data, error } =
+await supabaseClient.rpc(
+  "editar_actividad",
+  {
+    p_actividad_id:
+      actividadEditando,
+
+    p_amenidad_id:
+      amenidadId,
+
+    p_nombre:
+      nombre,
+
+    p_descripcion:
+      descripcion,
+
+    p_tipo:
+      tipo,
+
+    p_capacidad_maxima:
+      capacidad,
+
+    p_permite_invitados:
+      permiteInvitados,
+
+    p_fecha_inicio:
+      fechaInicio,
+
+    p_fecha_fin:
+      fechaFin
+  }
+);
+
+console.log(
+  "Respuesta:",
+  data
+);
+
+console.log(
+  "Error:",
+  error
+);
+
+if(error){
+
+  mostrarNotificacion(
+    error.message,
+    "error"
+  );
+
+  return;
+
+}
+
+if(!data.ok){
+
+  mostrarNotificacion(
+    data.mensaje,
+    "error"
+  );
+
+  return;
+
+}
+
+mostrarNotificacion(
+  data.mensaje,
+  "exito"
+);
+
+document
+.getElementById(
+  "modalActividad"
+)
+.style.display =
+"none";
+
+await cargar();
 
 }
   
