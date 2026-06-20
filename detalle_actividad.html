@@ -391,12 +391,20 @@ cancelados.forEach(i => {
 
 function renderizarHorarios(){
 
-  if(
-    !horarios ||
-    horarios.length === 0
-  ){
-    return "";
-  }
+ if(
+  !horarios ||
+  horarios.length === 0
+){
+  return "";
+}
+
+if(
+  horarios.filter(
+    h => h.activo
+  ).length === 0
+){
+  return "";
+}
 
   let html = `
 
@@ -415,33 +423,53 @@ function renderizarHorarios(){
         margin-bottom:10px;
       "
     >
-      🕒 Horarios
+      🕒 Horarios de la actividad
     </div>
 
   `;
 
-  horarios.forEach(h => {
+const dias = {
+  1:"Lunes",
+  2:"Martes",
+  3:"Miércoles",
+  4:"Jueves",
+  5:"Viernes",
+  6:"Sábado",
+  7:"Domingo"
+};
+
+horarios
+  .filter(h => h.activo)
+  .sort((a,b) =>
+    a.dia_semana - b.dia_semana
+  )
+  .forEach(h => {
 
     html += `
 
       <div
         style="
           margin-bottom:8px;
+          padding:8px;
+          background:#1f2937;
+          border-radius:10px;
         "
       >
 
-        📅 ${h.dia_semana}
-        —
-        ${h.hora_inicio}
-        a
-        ${h.hora_fin}
+        📅 ${dias[h.dia_semana]}
+
+        <br>
+
+        🕒 ${h.hora_inicio.substring(0,5)}
+        -
+        ${h.hora_fin.substring(0,5)}
 
       </div>
 
     `;
 
   });
-
+      
   return html;
 
 }
@@ -484,9 +512,6 @@ const error =
 horarios =
   horariosResp.data?.horarios || [];
 
-  console.table(
-  horarios
-);    
 
   if(error){
 
