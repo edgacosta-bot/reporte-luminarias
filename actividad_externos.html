@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Participantes Externos | SIGVIC</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="auth.js"></script>
+
+<style>
+
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+}
+
+.card{
+  background:#111827;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:12px;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:#1f2937;
+  color:white;
+  box-sizing:border-box;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:#2563eb;
+  color:white;
+  cursor:pointer;
+}
+
+#contenedorNotificaciones{
+  position:fixed;
+  top:20px;
+  right:20px;
+  width:350px;
+  z-index:10000;
+}
+
+.notificacion{
+  padding:14px;
+  border-radius:12px;
+  margin-bottom:10px;
+  font-weight:600;
+}
+
+.notificacion.exito{
+  background:#14532d;
+  border:1px solid #22c55e;
+}
+
+.notificacion.error{
+  background:#7f1d1d;
+  border:1px solid #ef4444;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>
+👤 Participantes Externos
+</h1>
+
+<div id="contenedorNotificaciones"></div>
+
+<div class="card">
+
+  <div
+    style="
+      margin-bottom:10px;
+      font-weight:bold;
+      color:#93c5fd;
+    "
+  >
+    Nuevo participante externo
+  </div>
+
+  <input
+    id="txtNombre"
+    placeholder="Nombre completo"
+  >
+
+  <br><br>
+
+  <button
+    onclick="agregarParticipante()"
+  >
+    ➕ Agregar participante
+  </button>
+
+</div>
+
+<div id="lista"></div>
+
+</div>
+
+<script>
+
+let participantes = [];
+
+let notificacionActual = null;
+
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const actividadId =
+  params.get("id");
+
+function mostrarNotificacion(
+  mensaje,
+  tipo="exito"
+){
+
+  const contenedor =
+    document.getElementById(
+      "contenedorNotificaciones"
+    );
+
+  if(notificacionActual){
+    notificacionActual.remove();
+  }
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.className =
+    `notificacion ${tipo}`;
+
+  div.innerHTML =
+    mensaje;
+
+  contenedor.appendChild(
+    div
+  );
+
+  notificacionActual = div;
+
+  setTimeout(()=>{
+
+    if(div.parentNode){
+      div.remove();
+    }
+
+  },4000);
+
+}
+
+async function cargarParticipantes(){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "obtener_participantes_externos_actividad",
+      {
+        p_actividad_id:
+          actividadId
+      }
+    );
+
+  if(error){
+
+    mostrarNotificacion(
+      error.message,
+      "error"
+    );
+
+    return;
+
+  }
+
+  participantes =
+    data.participantes || [];
+
+  renderizar();
+
+}
+
+function renderizar(){
+
+  const lista =
+    document.getElementById(
+      "lista"
+    );
+
+  if(
+    participantes.length === 0
+  ){
+
+    lista.innerHTML = `
+
+      <div class="card">
+
+        No existen participantes externos.
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+  let html = "";
+
+  participantes.forEach(p=>{
+
+    html += `
+
+      <div class="card">
+
+        <div
+          style="
+            font-size:18px;
+            font-weight:bold;
+            color:#93c5fd;
+          "
+        >
+
+          👤 ${p.nombre}
+
+        </div>
+
+        <div
+          style="
+            margin-top:10px;
+          "
+        >
+
+          Registro:
+          ${
+            new Date(
+              p.created_at
+            ).toLocaleString(
+              "es-MX"
+            )
+          }
+
+        </div>
+
+        <button
+          style="
+            margin-top:12px;
+            background:#dc2626;
+          "
+          onclick="
+            eliminarParticipante(
+              '${p.id}'
+            )
+          "
+        >
+
+          ❌ Eliminar
+
+        </button>
+
+      </div>
+
+    `;
+
+  });
+
+  lista.innerHTML = html;
+
+}
+
+async function agregarParticipante(){
+
+  const nombre =
+    document
+      .getElementById(
+        "txtNombre"
+      )
+      .value
+      .trim();
+
+  if(!nombre){
+
+    mostrarNotificacion(
+      "Capture el nombre.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "agregar_participante_externo_actividad",
+      {
+        p_actividad_id:
+          actividadId,
+
+        p_nombre:
+          nombre
+      }
+    );
+
+  if(error){
+
+    mostrarNotificacion(
+      error.message,
+      "error"
+    );
+
+    return;
+
+  }
+
+  if(!data.ok){
+
+    mostrarNotificacion(
+      data.mensaje,
+      "error"
+    );
+
+    return;
+
+  }
+
+  document
+    .getElementById(
+      "txtNombre"
+    )
+    .value = "";
+
+  mostrarNotificacion(
+    data.mensaje
+  );
+
+  await cargarParticipantes();
+
+}
+
+async function eliminarParticipante(id){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "cancelar_participante_externo_actividad",
+      {
+        p_participante_id:
+          id
+      }
+    );
+
+  if(error){
+
+    mostrarNotificacion(
+      error.message,
+      "error"
+    );
+
+    return;
+
+  }
+
+  mostrarNotificacion(
+    data.mensaje
+  );
+
+  await cargarParticipantes();
+
+}
+
+window.addEventListener(
+  "DOMContentLoaded",
+  async ()=>{
+
+    await protegerPagina([
+      "administracion"
+    ]);
+
+    await cargarParticipantes();
+
+  }
+);
+
+</script>
+
+</body>
+</html>
