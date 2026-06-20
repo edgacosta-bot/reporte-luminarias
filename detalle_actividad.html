@@ -198,6 +198,11 @@ detalle.forEach(i => {
 const r =
   detalle[0];
 
+console.log(
+  "REGISTRO",
+  r
+);      
+
 
 document.getElementById(
   "detalle"
@@ -256,7 +261,38 @@ ${formatearFecha(r.fecha_fin)}
     margin-bottom:10px;
   "
 >
-  
+  🏟 Cupo
+</div>
+
+<div>
+  Capacidad máxima:
+  ${r.capacidad_maxima}
+</div>
+
+<div>
+  Residentes inscritos:
+  ${r.residentes_inscritos}
+</div>
+
+<div>
+  Invitados autorizados:
+  ${r.invitados_activos}
+</div>
+
+<div>
+  Asistentes reales:
+  ${r.asistentes_reales}
+</div>
+
+<div
+  style="
+    margin-top:6px;
+    color:#22c55e;
+    font-weight:bold;
+  "
+>
+  Lugares disponibles:
+  ${r.lugares_disponibles}
 </div>
 
 <br><br>
@@ -627,11 +663,6 @@ horarios =
 instructores =
   instructoresResp.data?.instructores || [];
 
-console.table(
-  instructores
-);
-
-
   if(error){
 
     console.error(error);
@@ -643,10 +674,7 @@ console.table(
   detalle =
     data || [];
 
-  console.table(
-  detalle
-);    
-
+  
   renderizar();
 
 }   
