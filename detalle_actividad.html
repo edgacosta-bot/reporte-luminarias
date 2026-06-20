@@ -125,6 +125,25 @@ let detalle = [];
 
 let horarios = [];
 
+function formatearFecha(fecha){
+
+  if(!fecha){
+    return "";
+  }
+
+  return new Date(
+    fecha + "T00:00:00"
+  ).toLocaleDateString(
+    "es-MX",
+    {
+      day:"numeric",
+      month:"short",
+      year:"numeric"
+    }
+  );
+
+}
+
 
 async function cargarResidente(){
 
@@ -197,9 +216,9 @@ document.getElementById(
   <br><br>
 
    <b>📅 Vigencia:</b>
-  ${r.fecha_inicio}
-  al
-  ${r.fecha_fin}
+${formatearFecha(r.fecha_inicio)}
+al
+${formatearFecha(r.fecha_fin)}
 
     <br><br>
 
