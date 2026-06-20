@@ -180,6 +180,50 @@ function formatearFecha(fecha){
 
 }
 
+function renderizarHorariosTexto(){
+
+  if(
+    !horarios ||
+    horarios.length === 0
+  ){
+    return "Sin horarios definidos";
+  }
+
+  const dias = {
+    1:"Lunes",
+    2:"Martes",
+    3:"Miércoles",
+    4:"Jueves",
+    5:"Viernes",
+    6:"Sábado",
+    7:"Domingo"
+  };
+
+  let html = "";
+
+  horarios
+    .filter(h => h.activo)
+    .sort((a,b) =>
+      a.dia_semana - b.dia_semana
+    )
+    .forEach(h => {
+
+      html += `
+
+        ${dias[h.dia_semana]}
+        ${h.hora_inicio.substring(0,5)}
+        -
+        ${h.hora_fin.substring(0,5)}
+
+        <br>
+
+      `;
+
+    });
+
+  return html;
+
+}      
 
 async function cargarResidente(){
 
@@ -451,100 +495,6 @@ ${html}
 
 }
       
-function renderizarHorarios(){
-
- if(
-  !horarios ||
-  horarios.length === 0
-){
-  return "";
-}
-
-if(
-  horarios.filter(
-    h => h.activo
-  ).length === 0
-){
-  return "";
-}
-
-  let html = `
-
-    <hr
-      style="
-        border:0;
-        border-top:1px solid #374151;
-        margin:20px 0;
-      "
-    >
-
-    <div
-      style="
-        color:#93c5fd;
-        font-weight:bold;
-        margin-bottom:10px;
-      "
-    >
-      🕒 Horarios de la actividad
-    </div>
-
-  `;
-
-const dias = {
-  1:"Lunes",
-  2:"Martes",
-  3:"Miércoles",
-  4:"Jueves",
-  5:"Viernes",
-  6:"Sábado",
-  7:"Domingo"
-};
-
-horarios
-  .filter(h => h.activo)
-  .sort((a,b) =>
-    a.dia_semana - b.dia_semana
-  )
-  .forEach(h => {
-
-    html += `
-
-      <div
-        style="
-          margin-bottom:8px;
-          padding:8px;
-          background:#1f2937;
-          border-radius:10px;
-        "
-      >
-
-        📅 ${dias[h.dia_semana]}
-
-        <br>
-
-        🕒 ${h.hora_inicio.substring(0,5)}
-        -
-        ${h.hora_fin.substring(0,5)}
-
-      </div>
-
-    `;
-
-  });
-      
-  document.getElementById(
-  "horariosContainer"
-).innerHTML = `
-
-<div class="card">
-
-${html}
-
-</div>
-
-`;
-
-}
 
 function renderizarParticipantes(){
 
