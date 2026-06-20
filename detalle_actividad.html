@@ -125,6 +125,8 @@ let detalle = [];
 
 let horarios = [];
 
+let instructores = [];
+
 function formatearFecha(fecha){
 
   if(!fecha){
@@ -210,12 +212,7 @@ document.getElementById(
 
   <br><br>
 
-  <b>🏷 Tipo:</b>
-  ${r.tipo}
-
-  <br><br>
-
-   <b>📅 Vigencia:</b>
+       <b>📅 Vigencia:</b>
 ${formatearFecha(r.fecha_inicio)}
 al
 ${formatearFecha(r.fecha_fin)}
@@ -244,6 +241,8 @@ ${formatearFecha(r.fecha_fin)}
 </div>
 
 <br><br>
+
+${renderizarInstructores()}
 
 ${renderizarHorarios()}
   
@@ -408,6 +407,56 @@ cancelados.forEach(i => {
 
 }    
 
+function renderizarInstructores(){
+
+  if(
+    !instructores ||
+    instructores.length === 0
+  ){
+    return "";
+  }
+
+  let html = `
+
+    <br><br>
+
+    <div
+      style="
+        color:#93c5fd;
+        font-weight:bold;
+        margin-bottom:10px;
+      "
+    >
+      👨‍🏫 Instructor(es)
+    </div>
+
+  `;
+
+  instructores.forEach(i => {
+
+    html += `
+
+      <div
+        style="
+          margin-bottom:8px;
+          padding:8px;
+          background:#1f2937;
+          border-radius:10px;
+        "
+      >
+
+        👤 ${i.instructor}
+
+      </div>
+
+    `;
+
+  });
+
+  return html;
+
+}
+      
 function renderizarHorarios(){
 
  if(
@@ -496,9 +545,10 @@ horarios
 async function cargar(){
 
   
- const [
+const [
   detalleResp,
-  horariosResp
+  horariosResp,
+  instructoresResp
 ] = await Promise.all([
 
   supabaseClient.rpc(
@@ -518,6 +568,14 @@ async function cargar(){
     p_actividad_id:
       actividadId
   }
+),
+
+supabaseClient.rpc(
+  "obtener_instructores_actividad",
+  {
+    p_actividad_id:
+      actividadId
+  }
 )
 
 ]);
@@ -530,6 +588,9 @@ const error =
 
 horarios =
   horariosResp.data?.horarios || [];
+
+instructores =
+  instructoresResp.data || [];
 
 
   if(error){
