@@ -391,8 +391,50 @@ function renderizarCupo(){
         "
       >
 
-        🙋 Asistentes reales:
-        <b>${r.asistentes_reales}</b>
+        🙋 Residentes asistentes:
+        <b>${r.residentes_inscritos}</b>
+
+      </div>
+
+      <div
+        style="
+          margin-bottom:10px;
+        "
+      >
+
+        🎟 Invitados:
+        <b>${r.invitados_activos}</b>
+
+      </div>
+
+      <div
+        style="
+          margin-bottom:10px;
+        "
+      >
+
+        👤 Externos:
+        <b>${r.externos_activos}</b>
+
+      </div>
+
+      <hr
+        style="
+          border:0;
+          border-top:1px solid #374151;
+          margin:15px 0;
+        "
+      >
+
+      <div
+        style="
+          margin-bottom:10px;
+          font-weight:bold;
+        "
+      >
+
+        📊 Total ocupados:
+        ${r.asistentes_reales}
 
       </div>
 
@@ -412,7 +454,7 @@ function renderizarCupo(){
 
   `;
 
-}     
+}    
 
 function renderizarParticipantes(){
 
