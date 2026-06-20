@@ -414,11 +414,13 @@ async function inscribirme(
     titulo: "SIGVIC",
 
     mensaje:
-      data.mensaje
+      data.mensaje +
+      "\n\nAhora registre los asistentes de su residencia."
 
   });
 
-  await cargar();
+  window.location.href =
+    `detalle_actividad.html?actividad_id=${actividadId}`;
 
 }
   
