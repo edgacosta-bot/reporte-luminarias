@@ -198,7 +198,7 @@ function formatearFecha(fecha){
     }
   );
 
-}  
+}
 
 function renderizar(){
 
@@ -258,11 +258,11 @@ function renderizar(){
 
         <div
           style="
-            margin-bottom:10px;
+            margin-bottom:12px;
           "
         >
 
-          📅 Vigencia
+          <b>📅 Vigencia</b>
 
           <br>
 
@@ -274,51 +274,50 @@ function renderizar(){
 
         <div
           style="
-            background:#1f2937;
-            border-radius:10px;
-            padding:10px;
             margin-bottom:12px;
           "
         >
 
-          <div>
+          <b>🕒 Horarios</b>
 
-            👥 Capacidad:
-            <b>${a.capacidad_maxima}</b>
+          <br><br>
 
-          </div>
-
-          <div>
-
-            Asistentes:
-            <b>${a.asistentes_reales}</b>
-
-          </div>
-
-          <div
-            style="
-              margin-top:6px;
-              color:#22c55e;
-              font-weight:bold;
-            "
-          >
-
-            Disponibles:
-            ${a.lugares_disponibles}
-
-          </div>
+          ${
+            a.horarios
+            ? a.horarios.replaceAll(
+                '\n',
+                '<br>'
+              )
+            : 'Sin horarios definidos'
+          }
 
         </div>
 
         <div
           style="
-            color:#4ade80;
-            font-weight:bold;
-            margin-bottom:12px;
+            margin-bottom:8px;
           "
         >
 
-          🟢 Inscripción activa
+          👨‍👩‍👧‍👦 Asistentes de mi residencia:
+
+          <b>
+            ${a.asistentes_mi_residencia}
+          </b>
+
+        </div>
+
+        <div
+          style="
+            margin-bottom:16px;
+          "
+        >
+
+          👥 Mis invitados:
+
+          <b>
+            ${a.mis_invitados}
+          </b>
 
         </div>
 
