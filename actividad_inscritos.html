@@ -144,6 +144,10 @@ let capacidadMaxima = 0;
 
 let totalInscritos = 0;
 
+let totalInvitados = 0;
+
+let totalAsistentes = 0;
+
 let lugaresDisponibles = 0;  
 
   
@@ -249,13 +253,19 @@ async function cargarInscritos(){
   }
 
   capacidadMaxima =
-    data.capacidad_maxima || 0;
+  data.capacidad_maxima || 0;
 
-  totalInscritos =
-    data.total_inscritos || 0;
+totalInscritos =
+  data.total_inscritos || 0;
 
-  lugaresDisponibles =
-    data.lugares_disponibles || 0;
+totalInvitados =
+  data.total_invitados || 0;
+
+totalAsistentes =
+  data.total_asistentes || 0;
+
+lugaresDisponibles =
+  data.lugares_disponibles || 0;
 
   inscritos =
     data.inscritos || [];
@@ -275,19 +285,29 @@ function renderizarInscritos(){
 
     <div class="card">
 
-      <b>Capacidad máxima:</b>
-      ${capacidadMaxima}
+   <b>Capacidad máxima:</b>
+${capacidadMaxima}
 
-      <br><br>
+<br><br>
 
-      <b>Total inscritos:</b>
-      ${totalInscritos}
+<b>Residentes inscritos:</b>
+${totalInscritos}
 
-      <br><br>
+<br><br>
 
-      <b>Lugares disponibles:</b>
-      ${lugaresDisponibles}
+<b>Invitados:</b>
+${totalInvitados}
 
+<br><br>
+
+<b>Asistentes reales:</b>
+${totalAsistentes}
+
+<br><br>
+
+<b>Lugares disponibles:</b>
+${lugaresDisponibles}
+      
     </div>
 
   `;
