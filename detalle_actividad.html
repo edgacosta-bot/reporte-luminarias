@@ -499,10 +499,16 @@ ${html}
 function renderizarParticipantes(){
 
   if(
-  !participantesResidente
-){
-  participantesResidente = [];
-}
+    !participantesResidente
+  ){
+    participantesResidente = [];
+  }
+
+  const invitadosActivos =
+    detalle.filter(i =>
+      i.invitado_id &&
+      i.estatus_invitado !== 'cancelado'
+    );
 
   let html = `
 
@@ -512,12 +518,20 @@ function renderizarParticipantes(){
         style="
           color:#93c5fd;
           font-weight:bold;
+          margin-bottom:20px;
+        "
+      >
+        👨‍👩‍👧‍👦 Mis asistentes e invitados
+      </div>
+
+      <div
+        style="
+          font-weight:bold;
           margin-bottom:10px;
         "
       >
-        👨‍👩‍👧‍👦 Residentes asistentes
-        (${participantesResidente.length})    
-        
+        Asistentes de mi residencia
+        (${participantesResidente.length})
       </div>
 
   `;
@@ -535,11 +549,7 @@ function renderizarParticipantes(){
         "
       >
 
-        <div>
-
-          👤 ${p.nombre}
-
-        </div>
+        👤 ${p.nombre}
 
         <button
           style="
@@ -564,6 +574,172 @@ function renderizarParticipantes(){
   });
 
   html += `
+
+      <button
+        id="btnMostrarParticipante"
+        style="
+          margin-top:10px;
+          background:#16a34a;
+        "
+        onclick="
+          mostrarFormularioParticipante()
+        "
+      >
+
+        ➕ Agregar asistente
+
+      </button>
+
+      <div
+        id="formParticipante"
+        style="
+          display:none;
+          margin-top:12px;
+        "
+      >
+
+        <input
+          id="nombreParticipante"
+          placeholder="Nombre del asistente"
+        >
+
+        <br><br>
+
+        <button
+          onclick="agregarParticipante()"
+        >
+
+          Guardar
+
+        </button>
+
+        <button
+          style="
+            margin-top:8px;
+            background:#6b7280;
+          "
+          onclick="
+            ocultarFormularioParticipante()
+          "
+        >
+
+          Cancelar
+
+        </button>
+
+      </div>
+
+      <hr
+        style="
+          border:0;
+          border-top:1px solid #374151;
+          margin:20px 0;
+        "
+      >
+
+      <div
+        style="
+          font-weight:bold;
+          margin-bottom:10px;
+        "
+      >
+        Mis invitados
+        (${invitadosActivos.length})
+      </div>
+
+  `;
+
+  invitadosActivos.forEach(i => {
+
+    html += `
+
+      <div
+        style="
+          margin-bottom:8px;
+          padding:10px;
+          background:#1f2937;
+          border-radius:10px;
+        "
+      >
+
+        👤 ${i.invitado}
+
+        <button
+          style="
+            margin-top:8px;
+            background:#dc2626;
+          "
+          onclick="
+            cancelarInvitado(
+              '${i.invitado_id}'
+            )
+          "
+        >
+
+          ❌ Remover
+
+        </button>
+
+      </div>
+
+    `;
+
+  });
+
+  html += `
+
+      <button
+        id="btnMostrarInvitado"
+        style="
+          margin-top:10px;
+        "
+        onclick="
+          mostrarFormularioInvitado()
+        "
+      >
+
+        ➕ Agregar invitado
+
+      </button>
+
+      <div
+        id="formInvitado"
+        style="
+          display:none;
+          margin-top:12px;
+        "
+      >
+
+        <input
+          id="nombreInvitado"
+          placeholder="Nombre del invitado"
+        >
+
+        <br><br>
+
+        <button
+          onclick="agregarInvitado()"
+        >
+
+          Guardar
+
+        </button>
+
+        <button
+          style="
+            margin-top:8px;
+            background:#6b7280;
+          "
+          onclick="
+            ocultarFormularioInvitado()
+          "
+        >
+
+          Cancelar
+
+        </button>
+
+      </div>
 
     </div>
 
@@ -879,6 +1055,54 @@ async function cancelarInvitado(
   await cargar();
 
 }  
+
+   function mostrarFormularioParticipante(){
+
+  document.getElementById(
+    "formParticipante"
+  ).style.display = "block";
+
+  document.getElementById(
+    "btnMostrarParticipante"
+  ).style.display = "none";
+
+}
+
+function ocultarFormularioParticipante(){
+
+  document.getElementById(
+    "formParticipante"
+  ).style.display = "none";
+
+  document.getElementById(
+    "btnMostrarParticipante"
+  ).style.display = "block";
+
+}
+
+function mostrarFormularioInvitado(){
+
+  document.getElementById(
+    "formInvitado"
+  ).style.display = "block";
+
+  document.getElementById(
+    "btnMostrarInvitado"
+  ).style.display = "none";
+
+}
+
+function ocultarFormularioInvitado(){
+
+  document.getElementById(
+    "formInvitado"
+  ).style.display = "none";
+
+  document.getElementById(
+    "btnMostrarInvitado"
+  ).style.display = "block";
+
+}   
 
    window.addEventListener(
   "DOMContentLoaded",
