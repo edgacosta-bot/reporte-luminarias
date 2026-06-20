@@ -195,49 +195,150 @@ document.getElementById(
       "lista"
     );
 
-  let html = "";
+let activos = [];
 
-  detalle.forEach(i => {
+let cancelados = [];
 
-    if(
-      !i.invitado_id
-    ){
-      return;
-    }
+detalle.forEach(i => {
 
-html += `
+  if(!i.invitado_id){
+    return;
+  }
 
-  <div class="card">
+  if(i.estatus_invitado === 'cancelado'){
+    cancelados.push(i);
+  }else{
+    activos.push(i);
+  }
 
-    <b>
-      ${i.invitado}
-    </b>
+});
 
-    <br><br>
+let html = "";
 
-    Estado:
-    ${i.estatus_invitado}
+if(activos.length > 0){
 
-    <br><br>
+  html += `
 
-    ${
-      i.estatus_invitado !== 'cancelado'
-      ? `
-        <button
-          onclick="cancelarInvitado('${i.invitado_id}')"
-        >
-          Cancelar invitado
-        </button>
-      `
-      : ''
-    }
+    <div class="card">
 
-  </div>
+      <div
+        style="
+          color:#22c55e;
+          font-weight:bold;
+          font-size:18px;
+        ">
 
-`;
-        
-  });
+        🟢 Invitados registrados (${activos.length})
 
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+activos.forEach(i => {
+
+  html += `
+
+    <div class="card">
+
+      <div
+        style="
+          font-size:18px;
+          font-weight:bold;
+          color:#93c5fd;
+        ">
+
+        👤 ${i.invitado}
+
+      </div>
+
+      <div
+        style="
+          margin-top:10px;
+          color:#22c55e;
+          font-weight:bold;
+        ">
+
+        🟢 Autorizado
+
+      </div>
+
+      <br>
+
+      <button
+        onclick="cancelarInvitado('${i.invitado_id}')"
+      >
+
+        Cancelar invitado
+
+      </button>
+
+    </div>
+
+  `;
+
+});
+
+if(cancelados.length > 0){
+
+  html += `
+
+    <div class="card">
+
+      <div
+        style="
+          color:#ef4444;
+          font-weight:bold;
+          font-size:18px;
+        ">
+
+        🔴 Invitados cancelados (${cancelados.length})
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+cancelados.forEach(i => {
+
+  html += `
+
+    <div class="card">
+
+      <div
+        style="
+          font-size:18px;
+          font-weight:bold;
+          color:#93c5fd;
+        ">
+
+        👤 ${i.invitado}
+
+      </div>
+
+      <div
+        style="
+          margin-top:10px;
+          color:#ef4444;
+          font-weight:bold;
+        ">
+
+        🔴 Cancelado
+
+      </div>
+
+    </div>
+
+  `;
+
+});
+      
 console.log(
   "HTML GENERADO",
   html
