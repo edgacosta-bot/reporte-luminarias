@@ -225,40 +225,37 @@ function renderizar(){
 
         <div>
 
-          📍 ${a.amenidad}
+  📍 ${a.amenidad}
 
-        </div>
+</div>
 
-        <div>
+<div
+  style="
+    margin-top:10px;
+  "
+>
 
-          Tipo:
-          ${a.tipo}
+  📅 Vigencia
 
-        </div>
+  <br>
 
-        <div>
+  ${a.fecha_inicio}
+  al
+  ${a.fecha_fin}
 
-          Inicio:
-          ${a.fecha_inicio}
+<div
+  style="
+    margin-top:10px;
+  "
+>
 
-        </div>
+  👥 Inscritos:
 
-        <div>
+  ${a.inscritos}
+  de
+  ${a.capacidad}
 
-          Fin:
-          ${a.fecha_fin}
-
-        </div>
-
-        <div>
-
-          👥 Cupo:
-
-          ${a.inscritos}
-          /
-          ${a.capacidad}
-
-        </div>
+</div>
 
         <div>
 
@@ -271,6 +268,22 @@ function renderizar(){
           }
 
         </div>
+
+<button
+  style="
+    margin-top:12px;
+    background:#0f766e;
+  "
+  onclick="
+    verDetalleActividad(
+      '${a.actividad_id}'
+    )
+  "
+>
+
+  🔍 Ver detalle
+
+</button>
 
         ${
           a.ya_inscrito
@@ -341,6 +354,15 @@ async function cargarResidente(){
 
 }
 
+function verDetalleActividad(
+  actividadId
+){
+
+  window.location.href =
+    `detalle_actividad.html?actividad_id=${actividadId}`;
+
+}
+  
 async function inscribirme(
   actividadId
 ){
