@@ -432,7 +432,12 @@ function renderizarInstructores(){
 
   `;
 
-  instructores.forEach(i => {
+  console.log(
+  "ARRAY INSTRUCTORES",
+  instructores
+);
+
+instructores.forEach(i => {
 
     html += `
 
@@ -588,6 +593,11 @@ const error =
 
 horarios =
   horariosResp.data?.horarios || [];
+
+console.log(
+  "INSTRUCTORES",
+  instructoresResp.data
+);
 
 instructores =
   instructoresResp.data || [];
