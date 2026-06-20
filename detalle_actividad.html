@@ -206,20 +206,6 @@ function renderizar(){
     return;
   }
 
-  let activos = [];
-
-  detalle.forEach(i => {
-
-    if(!i.invitado_id){
-      return;
-    }
-
-    if(i.estatus_invitado !== 'cancelado'){
-      activos.push(i);
-    }
-
-  });
-
   const r =
     detalle[0];
 
@@ -269,107 +255,15 @@ function renderizar(){
 
   `;
 
-  const lista =
-    document.getElementById(
-      "lista"
-    );
-
-  let html = "";
-
-  if(activos.length > 0){
-
-    html += `
-
-      <div
-        class="card"
-        style="
-          border-left:6px solid #22c55e;
-        "
-      >
-
-        <div
-          style="
-            color:#22c55e;
-            font-weight:bold;
-            font-size:18px;
-          "
-        >
-
-          👥 Mis invitados (${activos.length})
-
-        </div>
-
-      </div>
-
-    `;
-
-  }
-
-  activos.forEach(i => {
-
-    html += `
-
-      <div
-        class="card"
-        style="
-          border-left:6px solid #22c55e;
-        "
-      >
-
-        <div
-          style="
-            font-size:18px;
-            font-weight:bold;
-            color:#93c5fd;
-          "
-        >
-
-          👤 ${i.invitado}
-
-        </div>
-
-        <div
-          style="
-            margin-top:10px;
-            color:#22c55e;
-            font-weight:bold;
-          "
-        >
-
-          🟢 Autorizado
-
-        </div>
-
-        <br>
-
-        <button
-          style="
-            background:#dc2626;
-          "
-          onclick="
-            cancelarInvitado(
-              '${i.invitado_id}'
-            )
-          "
-        >
-
-          ❌ Cancelar invitado
-
-        </button>
-
-      </div>
-
-    `;
-
-  });
-
-  lista.innerHTML = html;
+  document.getElementById(
+    "lista"
+  ).innerHTML = "";
 
   renderizarInstructores();
 
   renderizarParticipantes();
 
-}    
+}
      
 function renderizarInstructores(){
 
