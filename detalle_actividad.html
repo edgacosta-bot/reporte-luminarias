@@ -81,6 +81,10 @@ button{
 ></div>
 
 <div
+  id="cupoContainer"
+></div>
+
+<div
   id="participantesContainer"
 ></div>      
 
@@ -261,6 +265,8 @@ function renderizar(){
 
   renderizarInstructores();
 
+  renderizarCupo();
+
   renderizarParticipantes();
 
 }
@@ -339,7 +345,73 @@ ${html}
 `;
 
 }
-      
+
+function renderizarCupo(){
+
+  if(
+    detalle.length === 0
+  ){
+    return;
+  }
+
+  const r =
+    detalle[0];
+
+  document.getElementById(
+    "cupoContainer"
+  ).innerHTML = `
+
+    <div class="card">
+
+      <div
+        style="
+          color:#93c5fd;
+          font-weight:bold;
+          margin-bottom:15px;
+        "
+      >
+        🏟 Cupo de la actividad
+      </div>
+
+      <div
+        style="
+          margin-bottom:10px;
+        "
+      >
+
+        👥 Capacidad máxima:
+        <b>${r.capacidad_maxima}</b>
+
+      </div>
+
+      <div
+        style="
+          margin-bottom:10px;
+        "
+      >
+
+        🙋 Asistentes reales:
+        <b>${r.asistentes_reales}</b>
+
+      </div>
+
+      <div
+        style="
+          color:#22c55e;
+          font-weight:bold;
+        "
+      >
+
+        ✅ Lugares disponibles:
+        ${r.lugares_disponibles}
+
+      </div>
+
+    </div>
+
+  `;
+
+}     
 
 function renderizarParticipantes(){
 
