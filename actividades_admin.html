@@ -494,7 +494,7 @@ async function cargar(){
 
 }
 
-  function renderizar(){
+function renderizar(){
 
   const lista =
     document.getElementById(
@@ -593,7 +593,7 @@ async function cargar(){
 
         </div>
 
-                <div
+        <div
           style="
             margin-top:15px;
             display:flex;
@@ -636,6 +636,13 @@ async function cargar(){
 
           </button>
 
+          <button
+            onclick="externosActividad('${a.id}')">
+
+            👤 Externos
+
+          </button>
+
         </div>
 
       </div>
@@ -646,7 +653,7 @@ async function cargar(){
 
   lista.innerHTML = html;
 
-}
+} 
 
 async function editarActividad(id){
 
@@ -982,6 +989,13 @@ function invitadosActividad(id){
     "actividad_invitados.html?id=" + id;
 
 }
+
+function externosActividad(id){
+
+  window.location.href =
+    "actividad_externos.html?id=" + id;
+
+}  
   
 window.addEventListener(
   "DOMContentLoaded",
