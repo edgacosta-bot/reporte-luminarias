@@ -471,16 +471,6 @@ async function cargar(){
     p_actividad_id:
       actividadId
   }
-).then(r => {
-
-  console.log(
-    "RESPUESTA HORARIOS",
-    r
-  );
-
-  return r;
-
-})
 
 ]);
 
@@ -490,17 +480,12 @@ const data =
 const error =
   detalleResp.error;
 
-console.log(
-  "HORARIOS",
-  horariosResp.data
-);
-
 horarios =
-  Array.isArray(
-    horariosResp.data
-  )
-    ? horariosResp.data
-    : [];
+  horariosResp.data?.horarios || [];
+
+  console.table(
+  horarios
+);    
 
   if(error){
 
