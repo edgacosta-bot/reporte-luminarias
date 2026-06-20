@@ -515,7 +515,7 @@ cancelados.forEach(i => {
   renderizarParticipantes();   
 
 }    
-
+     
 function renderizarInstructores(){
 
   if(
@@ -689,11 +689,10 @@ ${html}
 function renderizarParticipantes(){
 
   if(
-    !participantesResidente ||
-    participantesResidente.length === 0
-  ){
-    return;
-  }
+  !participantesResidente
+){
+  participantesResidente = [];
+}
 
   let html = `
 
@@ -707,6 +706,8 @@ function renderizarParticipantes(){
         "
       >
         👨‍👩‍👧‍👦 Residentes asistentes
+        (${participantesResidente.length})    
+        
       </div>
 
   `;
@@ -996,9 +997,9 @@ async function eliminarParticipante(
 
   const { data, error } =
     await supabaseClient.rpc(
-      "remover_participante_residente_actividad",
+  "cancelar_participante_residente_actividad",
       {
-        p_id:id
+      p_participante_id:id
       }
     );
 
