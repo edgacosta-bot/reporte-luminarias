@@ -91,6 +91,33 @@ button{
 <div
   class="card"
   style="
+    border-left:6px solid #22c55e;
+  "
+>
+
+  <input
+    id="nombreParticipante"
+    placeholder="Nombre del residente asistente"
+  >
+
+  <br><br>
+
+  <button
+    style="
+      background:#16a34a;
+    "
+    onclick="agregarParticipante()"
+  >
+
+    ➕ Agregar residente
+
+  </button>
+
+</div>
+      
+<div
+  class="card"
+  style="
     border-left:6px solid #2563eb;
   "
 >
@@ -691,13 +718,33 @@ function renderizarParticipantes(){
       <div
         style="
           margin-bottom:8px;
-          padding:8px;
+          padding:10px;
           background:#1f2937;
           border-radius:10px;
         "
       >
 
-        👤 ${p.nombre}
+        <div>
+
+          👤 ${p.nombre}
+
+        </div>
+
+        <button
+          style="
+            margin-top:8px;
+            background:#dc2626;
+          "
+          onclick="
+            eliminarParticipante(
+              '${p.id}'
+            )
+          "
+        >
+
+          ❌ Remover
+
+        </button>
 
       </div>
 
@@ -705,13 +752,17 @@ function renderizarParticipantes(){
 
   });
 
-  html += `</div>`;
+  html += `
+
+    </div>
+
+  `;
 
   document.getElementById(
     "participantesContainer"
   ).innerHTML = html;
 
-}      
+}     
       
 async function cargar(){
 
@@ -777,7 +828,11 @@ instructores =
   instructoresResp.data?.instructores || [];
 
 participantesResidente =
-  participantesResp.data?.participantes || [];      
+  participantesResp.data?.participantes || [];  
+
+console.table(
+  participantesResidente
+);      
 
   if(error){
 
@@ -795,6 +850,75 @@ participantesResidente =
 
 }   
 
+async function agregarParticipante(){
+
+  const nombre =
+    document.getElementById(
+      "nombreParticipante"
+    ).value.trim();
+
+  if(!nombre){
+
+    await mostrarAlerta({
+
+      titulo:"SIGVIC",
+
+      mensaje:
+        "Capture el nombre del residente."
+
+    });
+
+    return;
+
+  }
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "agregar_participante_residente_actividad",
+      {
+        p_actividad_id:
+          actividadId,
+
+        p_residente_id:
+          residenteId,
+
+        p_nombre:
+          nombre
+      }
+    );
+
+  if(error){
+
+    await mostrarAlerta({
+
+      titulo:"Error",
+
+      mensaje:
+        error.message
+
+    });
+
+    return;
+
+  }
+
+  await mostrarAlerta({
+
+    titulo:"SIGVIC",
+
+    mensaje:
+      data.mensaje
+
+  });
+
+  document.getElementById(
+    "nombreParticipante"
+  ).value = "";
+
+  await cargar();
+
+}
+      
 async function agregarInvitado(){
 
   const nombre =
@@ -866,6 +990,44 @@ await cargar();
 
 }
 
+async function eliminarParticipante(
+  id
+){
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "remover_participante_residente_actividad",
+      {
+        p_id:id
+      }
+    );
+
+  if(error){
+
+    await mostrarAlerta({
+
+      titulo:"Error",
+
+      mensaje:error.message
+
+    });
+
+    return;
+
+  }
+
+  await mostrarAlerta({
+
+    titulo:"SIGVIC",
+
+    mensaje:data.mensaje
+
+  });
+
+  await cargar();
+
+}
+      
 async function cancelarInvitado(
   invitadoId
 ){
