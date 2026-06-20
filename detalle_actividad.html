@@ -198,11 +198,6 @@ detalle.forEach(i => {
 const r =
   detalle[0];
 
-console.table(
-  [r]
-);    
-
-
 document.getElementById(
   "detalle"
 ).innerHTML = `
@@ -260,38 +255,48 @@ ${formatearFecha(r.fecha_fin)}
     margin-bottom:10px;
   "
 >
-  🏟 Cupo
-</div>
-
-<div>
-  Capacidad máxima:
-  ${r.capacidad_maxima}
-</div>
-
-<div>
-  Residentes inscritos:
-  ${r.residentes_inscritos}
-</div>
-
-<div>
-  Invitados autorizados:
-  ${r.invitados_activos}
-</div>
-
-<div>
-  Asistentes reales:
-  ${r.asistentes_reales}
+  🏟 Cupo de la actividad
 </div>
 
 <div
   style="
-    margin-top:6px;
-    color:#22c55e;
-    font-weight:bold;
+    background:#1f2937;
+    padding:12px;
+    border-radius:10px;
   "
 >
-  Lugares disponibles:
-  ${r.lugares_disponibles}
+
+  <div>
+    Capacidad máxima:
+    <b>${r.capacidad_maxima}</b>
+  </div>
+
+  <div>
+    Residentes inscritos:
+    <b>${r.residentes_inscritos}</b>
+  </div>
+
+  <div>
+    Invitados autorizados:
+    <b>${r.invitados_activos}</b>
+  </div>
+
+  <div>
+    Asistentes reales:
+    <b>${r.asistentes_reales}</b>
+  </div>
+
+  <div
+    style="
+      margin-top:8px;
+      color:#22c55e;
+      font-weight:bold;
+    "
+  >
+    Disponibles:
+    ${r.lugares_disponibles}
+  </div>
+
 </div>
 
 <br><br>
