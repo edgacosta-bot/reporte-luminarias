@@ -219,16 +219,6 @@ function renderizar(){
 
     <div class="card">
 
-      <div
-        style="
-          color:#93c5fd;
-          font-weight:bold;
-          margin-bottom:15px;
-        "
-      >
-        👤 Participantes Externos Autorizados
-      </div>
-
       <button
         id="btnMostrarParticipanteExterno"
         onclick="mostrarFormularioParticipanteExterno()"
@@ -279,6 +269,24 @@ function renderizar(){
 
   `;
 
+  html += `
+
+    <div
+      style="
+        color:#93c5fd;
+        font-weight:bold;
+        margin-top:25px;
+        margin-bottom:15px;
+        padding-left:8px;
+      "
+    >
+
+      👤 Participantes registrados
+
+    </div>
+
+  `;
+
   if(
     participantes.length === 0
   ){
@@ -287,7 +295,7 @@ function renderizar(){
 
       <div class="card">
 
-        No existen participantes externos autorizados.
+        No existen participantes registrados.
 
       </div>
 
