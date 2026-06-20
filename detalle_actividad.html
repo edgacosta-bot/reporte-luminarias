@@ -81,10 +81,6 @@ button{
 ></div>
 
 <div
-  id="horariosContainer"
-></div>
-
-<div
   id="participantesContainer"
 ></div>      
 
@@ -215,304 +211,168 @@ function renderizar(){
     return;
   }
 
-let activos = [];
+  let activos = [];
 
-let cancelados = [];
+  detalle.forEach(i => {
 
-detalle.forEach(i => {
+    if(!i.invitado_id){
+      return;
+    }
 
-  if(!i.invitado_id){
-    return;
-  }
+    if(i.estatus_invitado !== 'cancelado'){
+      activos.push(i);
+    }
 
-  if(i.estatus_invitado === 'cancelado'){
-    cancelados.push(i);
-  }else{
-    activos.push(i);
-  }
+  });
 
-});
+  const r =
+    detalle[0];
 
-const r =
-  detalle[0];
+  document.getElementById(
+    "informacionGeneral"
+  ).innerHTML = `
 
-document.getElementById(
-  "informacionGeneral"
-).innerHTML = `
-
-<div class="card">
-
-  <div
-    style="
-      color:#93c5fd;
-      font-weight:bold;
-      margin-bottom:15px;
-    "
-  >
-    📋 Información general
-  </div>
-
-  <b>🏟 Amenidad:</b>
-  ${r.amenidad}
-
-  <br><br>
-
-  <b>💃 Actividad:</b>
-  ${r.actividad}
-
-  <br><br>
-
-  <b>📅 Vigencia:</b>
-
-  <br>
-
-  ${formatearFecha(r.fecha_inicio)}
-  al
-  ${formatearFecha(r.fecha_fin)}
-
-</div>
-
-<div class="card">
-
-  <div
-    style="
-      color:#93c5fd;
-      font-weight:bold;
-      margin-bottom:10px;
-    "
-  >
-    🏟 Cupo de la actividad
-  </div>
-
-  <div
-    style="
-      background:#1f2937;
-      padding:12px;
-      border-radius:10px;
-    "
-  >
-
-    <div>
-      Capacidad máxima:
-      <b>${r.capacidad_maxima}</b>
-    </div>
-
-    <div>
-      Residentes inscritos:
-      <b>${r.residentes_inscritos}</b>
-    </div>
-
-    <div>
-      Invitados autorizados:
-      <b>${r.invitados_activos}</b>
-    </div>
-
-    <div>
-      Asistentes reales:
-      <b>${r.asistentes_reales}</b>
-    </div>
+  <div class="card">
 
     <div
       style="
-        margin-top:8px;
-        color:#22c55e;
+        color:#93c5fd;
         font-weight:bold;
+        margin-bottom:15px;
       "
     >
-      Disponibles:
-      ${r.lugares_disponibles}
+      📋 Información general
     </div>
 
+    <b>🏟 Amenidad:</b>
+    ${r.amenidad}
+
+    <br><br>
+
+    <b>💃 Actividad:</b>
+    ${r.actividad}
+
+    <br><br>
+
+    <b>📅 Vigencia:</b>
+
+    <br>
+
+    ${formatearFecha(r.fecha_inicio)}
+    al
+    ${formatearFecha(r.fecha_fin)}
+
+    <br><br>
+
+    <b>🕒 Horarios:</b>
+
+    <br><br>
+
+    ${renderizarHorariosTexto()}
+
   </div>
 
-  <br>
+  `;
 
-  <div
-    style="
-      color:#22c55e;
-      font-weight:bold;
-    "
-  >
-    👥 Invitados vigentes:
-    ${activos.length}
-  </div>
-
-  <div
-    style="
-      margin-top:6px;
-      color:#ef4444;
-      font-weight:bold;
-    "
-  >
-    🚫 Invitados cancelados:
-    ${cancelados.length}
-  </div>
-
-</div>
-`;
-      
   const lista =
     document.getElementById(
       "lista"
     );
-      
-let html = "";
 
-if(activos.length > 0){
+  let html = "";
 
-  html += `
+  if(activos.length > 0){
 
-    <div
-  class="card"
-  style="
-    border-left:6px solid #22c55e;
-  "
->
-
-  <div
-    style="
-      color:#22c55e;
-      font-weight:bold;
-      font-size:18px;
-    ">
-
-    🟢 Invitados vigentes (${activos.length})
-
-  </div>
-
-</div>
-
-  `;
-
-}
-
-activos.forEach(i => {
-
-  html += `
-
-    <div
-      class="card"
-      style="
-        border-left:6px solid #22c55e;
-      "
-    >
+    html += `
 
       <div
+        class="card"
         style="
-          font-size:18px;
-          font-weight:bold;
-          color:#93c5fd;
-        ">
+          border-left:6px solid #22c55e;
+        "
+      >
 
-        👤 ${i.invitado}
+        <div
+          style="
+            color:#22c55e;
+            font-weight:bold;
+            font-size:18px;
+          "
+        >
 
-      </div>
-      
-      <div
-        style="
-          margin-top:10px;
-          color:#22c55e;
-          font-weight:bold;
-        ">
+          👥 Mis invitados (${activos.length})
 
-        🟢 Autorizado
+        </div>
 
       </div>
 
-      <br>
+    `;
 
-      <button
-  style="
-    background:#dc2626;
-  "
-  onclick="cancelarInvitado('${i.invitado_id}')"
->
+  }
 
-  ❌ Cancelar invitado
+  activos.forEach(i => {
 
-</button>
-
-    </div>
-
-  `;
-
-});
-
-if(cancelados.length > 0){
-
-  html += `
-
-    <div
-  class="card"
-  style="
-    border-left:6px solid #ef4444;
-  "
->
-
-  <div
-    style="
-      color:#ef4444;
-      font-weight:bold;
-      font-size:18px;
-    ">
-
-    🔴 Invitados cancelados (${cancelados.length})
-
-  </div>
-
-</div>
-
-  `;
-
-}
-
-cancelados.forEach(i => {
-
-  html += `
-
-    <div
-      class="card"
-      style="
-        border-left:6px solid #ef4444;
-      "
-    >
+    html += `
 
       <div
+        class="card"
         style="
-          font-size:18px;
-          font-weight:bold;
-          color:#93c5fd;
-        ">
+          border-left:6px solid #22c55e;
+        "
+      >
 
-        👤 ${i.invitado}
+        <div
+          style="
+            font-size:18px;
+            font-weight:bold;
+            color:#93c5fd;
+          "
+        >
+
+          👤 ${i.invitado}
+
+        </div>
+
+        <div
+          style="
+            margin-top:10px;
+            color:#22c55e;
+            font-weight:bold;
+          "
+        >
+
+          🟢 Autorizado
+
+        </div>
+
+        <br>
+
+        <button
+          style="
+            background:#dc2626;
+          "
+          onclick="
+            cancelarInvitado(
+              '${i.invitado_id}'
+            )
+          "
+        >
+
+          ❌ Cancelar invitado
+
+        </button>
 
       </div>
 
-      <div
-        style="
-          margin-top:10px;
-          color:#ef4444;
-          font-weight:bold;
-        ">
+    `;
 
-        🔴 Cancelado
+  });
 
-      </div>
-
-    </div>
-
-  `;
-
-});
-      
-      
   lista.innerHTML = html;
 
   renderizarInstructores();
 
-  renderizarHorarios();
-
-  renderizarParticipantes();   
+  renderizarParticipantes();
 
 }    
      
