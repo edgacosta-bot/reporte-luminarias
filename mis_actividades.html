@@ -181,6 +181,25 @@ let residenteId = null;
 
 let actividades = [];
 
+function formatearFecha(fecha){
+
+  if(!fecha){
+    return "";
+  }
+
+  return new Date(
+    fecha + "T00:00:00"
+  ).toLocaleDateString(
+    "es-MX",
+    {
+      day:"numeric",
+      month:"short",
+      year:"numeric"
+    }
+  );
+
+}  
+
 function renderizar(){
 
   const lista =
@@ -193,9 +212,13 @@ function renderizar(){
   ){
 
     lista.innerHTML = `
+
       <div class="card">
+
         No tienes actividades inscritas.
+
       </div>
+
     `;
 
     return;
@@ -223,85 +246,114 @@ function renderizar(){
 
         </div>
 
-        <div>
+        <div
+          style="
+            margin-bottom:10px;
+          "
+        >
 
           📍 ${a.amenidad}
 
         </div>
 
-        <div>
+        <div
+          style="
+            margin-bottom:10px;
+          "
+        >
 
-          Tipo:
-          ${a.tipo}
+          📅 Vigencia
 
-        </div>
+          <br>
 
-        <div>
-
-          Inicio:
-          ${a.fecha_inicio}
-
-        </div>
-
-        <div>
-
-          Fin:
-          ${a.fecha_fin}
+          ${formatearFecha(a.fecha_inicio)}
+          al
+          ${formatearFecha(a.fecha_fin)}
 
         </div>
 
         <div
           style="
-            margin-top:10px;
-            font-weight:bold;
-            color:${
-              a.estatus_inscripcion === 'activo'
-                ? '#4ade80'
-                : '#f87171'
-            };
+            background:#1f2937;
+            border-radius:10px;
+            padding:10px;
+            margin-bottom:12px;
           "
         >
 
-      ${
-  a.estatus_inscripcion === 'activo'
-  ? `
+          <div>
 
-      <button
-        style="
-          margin-top:12px;
-        "
-        onclick="
-          verInvitados(
-            '${a.actividad_id}'
-          )
-        "
-      >
+            👥 Capacidad:
+            <b>${a.capacidad_maxima}</b>
 
-        🔍 Ver actividad e invitados
+          </div>
 
-      </button>
+          <div>
 
-      <button
-        style="
-          margin-top:8px;
-          background:#dc2626;
-        "
-        onclick="
-          cancelarInscripcion(
-            '${a.actividad_id}'
-          )
-        "
-      >
+            Asistentes:
+            <b>${a.asistentes_reales}</b>
 
-        Cancelar inscripción
+          </div>
 
-      </button>
+          <div
+            style="
+              margin-top:6px;
+              color:#22c55e;
+              font-weight:bold;
+            "
+          >
 
-    `
-  : ''
-}   
-               
-               </div>
+            Disponibles:
+            ${a.lugares_disponibles}
+
+          </div>
+
+        </div>
+
+        <div
+          style="
+            color:#4ade80;
+            font-weight:bold;
+            margin-bottom:12px;
+          "
+        >
+
+          🟢 Inscripción activa
+
+        </div>
+
+        <button
+          style="
+            margin-top:8px;
+          "
+          onclick="
+            verInvitados(
+              '${a.actividad_id}'
+            )
+          "
+        >
+
+          📋 Ver detalle
+
+        </button>
+
+        <button
+          style="
+            margin-top:8px;
+            background:#dc2626;
+          "
+          onclick="
+            cancelarInscripcion(
+              '${a.actividad_id}'
+            )
+          "
+        >
+
+          ❌ Cancelar inscripción
+
+        </button>
+
+      </div>
 
     `;
 
