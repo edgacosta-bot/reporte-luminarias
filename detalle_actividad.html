@@ -64,8 +64,12 @@ button{
 
 <div class="container">
 
-<h1>
-👥 Invitados
+<h1
+  style="
+    margin-bottom:20px;
+  "
+>
+👥 Gestión de invitados
 </h1>
 
 <div
@@ -75,7 +79,12 @@ button{
 Cargando...
 </div>
 
-<div class="card">
+<div
+  class="card"
+  style="
+    border-left:6px solid #2563eb;
+  "
+>
 
   <input
     id="nombreInvitado"
@@ -88,7 +97,7 @@ Cargando...
     onclick="agregarInvitado()"
   >
 
-    Agregar invitado
+    ➕ Agregar invitado
 
   </button>
 
@@ -113,6 +122,8 @@ const actividadId =
 let residenteId = null;
 
 let detalle = [];
+
+let horarios = [];
 
 
 async function cargarResidente(){
@@ -139,27 +150,32 @@ async function cargarResidente(){
       
 function renderizar(){
 
-  console.log(
-    "ENTRO A RENDERIZAR"
-  );
-
-  console.log(
-    detalle
-  );    
-
   if(
     detalle.length === 0
   ){
     return;
   }
 
+let activos = [];
+
+let cancelados = [];
+
+detalle.forEach(i => {
+
+  if(!i.invitado_id){
+    return;
+  }
+
+  if(i.estatus_invitado === 'cancelado'){
+    cancelados.push(i);
+  }else{
+    activos.push(i);
+  }
+
+});
+
 const r =
   detalle[0];
-
-console.log(
-  "REGISTRO",
-  r
-);      
 
 document.getElementById(
   "detalle"
@@ -180,59 +196,70 @@ document.getElementById(
 
   <br><br>
 
-  <b>📅 Inicio:</b>
+   <b>📅 Vigencia:</b>
   ${r.fecha_inicio}
-
-  <br>
-
-  <b>📅 Fin:</b>
+  al
   ${r.fecha_fin}
 
+    <br><br>
+
+  <div
+  style="
+    color:#22c55e;
+    font-weight:bold;
+  "
+>
+  👥 Invitados vigentes:
+  ${activos.length}
+</div>
+
+<div
+  style="
+    margin-top:6px;
+    color:#ef4444;
+    font-weight:bold;
+  "
+>
+  🚫 Invitados cancelados:
+  ${cancelados.length}
+</div>
+
+<br><br>
+
+${renderizarHorarios()}
+  
 `;
       
   const lista =
     document.getElementById(
       "lista"
     );
-
-let activos = [];
-
-let cancelados = [];
-
-detalle.forEach(i => {
-
-  if(!i.invitado_id){
-    return;
-  }
-
-  if(i.estatus_invitado === 'cancelado'){
-    cancelados.push(i);
-  }else{
-    activos.push(i);
-  }
-
-});
-
+      
 let html = "";
 
 if(activos.length > 0){
 
   html += `
 
-    <div class="card">
+    <div
+  class="card"
+  style="
+    border-left:6px solid #22c55e;
+  "
+>
 
-      <div
-        style="
-          color:#22c55e;
-          font-weight:bold;
-          font-size:18px;
-        ">
+  <div
+    style="
+      color:#22c55e;
+      font-weight:bold;
+      font-size:18px;
+    ">
 
-        🟢 Invitados registrados (${activos.length})
+    🟢 Invitados vigentes (${activos.length})
 
-      </div>
+  </div>
 
-    </div>
+</div>
 
   `;
 
@@ -242,7 +269,12 @@ activos.forEach(i => {
 
   html += `
 
-    <div class="card">
+    <div
+      class="card"
+      style="
+        border-left:6px solid #22c55e;
+      "
+    >
 
       <div
         style="
@@ -254,7 +286,7 @@ activos.forEach(i => {
         👤 ${i.invitado}
 
       </div>
-
+      
       <div
         style="
           margin-top:10px;
@@ -269,12 +301,15 @@ activos.forEach(i => {
       <br>
 
       <button
-        onclick="cancelarInvitado('${i.invitado_id}')"
-      >
+  style="
+    background:#dc2626;
+  "
+  onclick="cancelarInvitado('${i.invitado_id}')"
+>
 
-        Cancelar invitado
+  ❌ Cancelar invitado
 
-      </button>
+</button>
 
     </div>
 
@@ -286,20 +321,25 @@ if(cancelados.length > 0){
 
   html += `
 
-    <div class="card">
+    <div
+  class="card"
+  style="
+    border-left:6px solid #ef4444;
+  "
+>
 
-      <div
-        style="
-          color:#ef4444;
-          font-weight:bold;
-          font-size:18px;
-        ">
+  <div
+    style="
+      color:#ef4444;
+      font-weight:bold;
+      font-size:18px;
+    ">
 
-        🔴 Invitados cancelados (${cancelados.length})
+    🔴 Invitados cancelados (${cancelados.length})
 
-      </div>
+  </div>
 
-    </div>
+</div>
 
   `;
 
@@ -309,7 +349,12 @@ cancelados.forEach(i => {
 
   html += `
 
-    <div class="card">
+    <div
+      class="card"
+      style="
+        border-left:6px solid #ef4444;
+      "
+    >
 
       <div
         style="
@@ -339,45 +384,105 @@ cancelados.forEach(i => {
 
 });
       
-console.log(
-  "HTML GENERADO",
-  html
-);
       
   lista.innerHTML = html;
 
 }    
 
+function renderizarHorarios(){
+
+  if(
+    !horarios ||
+    horarios.length === 0
+  ){
+    return "";
+  }
+
+  let html = `
+
+    <hr
+      style="
+        border:0;
+        border-top:1px solid #374151;
+        margin:20px 0;
+      "
+    >
+
+    <div
+      style="
+        color:#93c5fd;
+        font-weight:bold;
+        margin-bottom:10px;
+      "
+    >
+      🕒 Horarios
+    </div>
+
+  `;
+
+  horarios.forEach(h => {
+
+    html += `
+
+      <div
+        style="
+          margin-bottom:8px;
+        "
+      >
+
+        📅 ${h.dia_semana}
+        —
+        ${h.hora_inicio}
+        a
+        ${h.hora_fin}
+
+      </div>
+
+    `;
+
+  });
+
+  return html;
+
+}
+      
 async function cargar(){
 
-  console.log(
-    "Actividad:",
-    actividadId
-  );
+  
+ const [
+  detalleResp,
+  horariosResp
+] = await Promise.all([
 
-  console.log(
-    "Residente:",
-    residenteId
-  );
+  supabaseClient.rpc(
+    "obtener_detalle_actividad_completo",
+    {
+      p_actividad_id:
+        actividadId,
 
-  const { data, error } =
-    await supabaseClient.rpc(
-      "obtener_detalle_actividad_completo",
-      {
-        p_actividad_id:
-          actividadId,
+      p_residente_id:
+        residenteId
+    }
+  ),
 
-        p_residente_id:
-          residenteId
-      }
-    );
+  supabaseClient.rpc(
+    "obtener_horarios_actividad",
+    {
+      p_actividad_id:
+        actividadId
+    }
+  )
 
-  console.table(data);
+]);
 
-  console.log(
-    "ERROR",
-    error
-  );
+const data =
+  detalleResp.data;
+
+const error =
+  detalleResp.error;
+
+horarios =
+  horariosResp.data || [];
 
   if(error){
 
