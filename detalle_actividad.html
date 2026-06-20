@@ -85,6 +85,10 @@ button{
 ></div>
 
 <div
+  id="participantesContainer"
+></div>      
+
+<div
   class="card"
   style="
     border-left:6px solid #2563eb;
@@ -131,6 +135,8 @@ let detalle = [];
 let horarios = [];
 
 let instructores = [];
+
+let participantesResidente = [];      
 
 function formatearFecha(fecha){
 
@@ -477,7 +483,9 @@ cancelados.forEach(i => {
 
   renderizarInstructores();
 
-  renderizarHorarios();    
+  renderizarHorarios();
+
+  renderizarParticipantes();   
 
 }    
 
@@ -650,6 +658,60 @@ ${html}
 `;
 
 }
+
+function renderizarParticipantes(){
+
+  if(
+    !participantesResidente ||
+    participantesResidente.length === 0
+  ){
+    return;
+  }
+
+  let html = `
+
+    <div class="card">
+
+      <div
+        style="
+          color:#93c5fd;
+          font-weight:bold;
+          margin-bottom:10px;
+        "
+      >
+        👨‍👩‍👧‍👦 Residentes asistentes
+      </div>
+
+  `;
+
+  participantesResidente.forEach(p => {
+
+    html += `
+
+      <div
+        style="
+          margin-bottom:8px;
+          padding:8px;
+          background:#1f2937;
+          border-radius:10px;
+        "
+      >
+
+        👤 ${p.nombre}
+
+      </div>
+
+    `;
+
+  });
+
+  html += `</div>`;
+
+  document.getElementById(
+    "participantesContainer"
+  ).innerHTML = html;
+
+}      
       
 async function cargar(){
 
@@ -657,7 +719,8 @@ async function cargar(){
 const [
   detalleResp,
   horariosResp,
-  instructoresResp
+  instructoresResp,
+  participantesResp
 ] = await Promise.all([
 
   supabaseClient.rpc(
@@ -685,6 +748,17 @@ supabaseClient.rpc(
     p_actividad_id:
       actividadId
   }
+),
+
+supabaseClient.rpc(
+  "obtener_participantes_residente_actividad",
+  {
+    p_actividad_id:
+      actividadId,
+
+    p_residente_id:
+      residenteId
+  }
 )
 
 ]);
@@ -701,6 +775,9 @@ horarios =
 
 instructores =
   instructoresResp.data?.instructores || [];
+
+participantesResidente =
+  participantesResp.data?.participantes || [];      
 
   if(error){
 
