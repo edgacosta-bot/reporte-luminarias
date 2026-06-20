@@ -167,7 +167,7 @@ async function cargarInvitados(){
       "obtener_invitados_actividad_vigilancia"
     );
 
-    if(error){
+  if(error){
 
     console.error(error);
 
@@ -177,40 +177,39 @@ async function cargarInvitados(){
     return;
 
   }
-  
-const registros =
-  data || [];
-  
-const dentro =
-  registros.filter(
-    x => x.estado_acceso === "dentro"
-  ).length;
 
-const autorizados =
-  registros.filter(
-    x => x.estado_acceso === "autorizado"
-  ).length;
+  const registros =
+    data || [];
 
-document.getElementById(
-  "resumen"
-).innerHTML = `
+  const dentro =
+    registros.filter(
+      x => x.estado_acceso === "dentro"
+    ).length;
 
-  <div>
-    🟢 Dentro: ${dentro}
-  </div>
+  const autorizados =
+    registros.filter(
+      x => x.estado_acceso === "autorizado"
+    ).length;
 
-  <div>
-    🟡 Autorizados: ${autorizados}
-  </div>
+  document.getElementById(
+    "resumen"
+  ).innerHTML = `
 
-`;
+    <div>
+      🟢 Dentro: ${dentro}
+    </div>
 
-   
-  if(!data || data.length === 0){
+    <div>
+      🟡 Autorizados: ${autorizados}
+    </div>
+
+  `;
+
+  if(registros.length === 0){
 
     contenedor.innerHTML = `
       <div class="vacio">
-        No existen invitados para actividades
+        No existen invitados ni participantes externos para actividades
       </div>
     `;
 
@@ -220,52 +219,63 @@ document.getElementById(
 
   contenedor.innerHTML = "";
 
-  data.forEach(invitado => {
+  registros.forEach(participante => {
 
     contenedor.innerHTML += `
 
       <div class="
-  card
-  ${
-    invitado.estado_acceso === "dentro"
-      ? "card-dentro"
-      : "card-autorizado"
-  }
-">
+        card
+        ${
+          participante.estado_acceso === "dentro"
+            ? "card-dentro"
+            : "card-autorizado"
+        }
+      ">
 
         <div class="nombre">
 
-          ${invitado.invitado}
+          ${participante.nombre}
 
         </div>
 
         <div class="detalle">
 
-  Actividad:
- <b>${invitado.actividad}</b>
+          Actividad:
+          <b>${participante.actividad}</b>
 
-  <br><br>
+          <br><br>
 
-  Amenidad:
- <b>${invitado.amenidad}</b>
+          Amenidad:
+          <b>${participante.amenidad}</b>
 
-  <br><br>
+          <br><br>
 
-  Estado:
-  <b>
-    ${
-  invitado.estado_acceso === "dentro"
-    ? "Dentro del fraccionamiento"
-    : "Autorizado para ingresar"
-}
-  </b>
+          Tipo:
+          <b>
+            ${
+              participante.tipo_participante === "EXTERNO"
+                ? "Participante Externo"
+                : "Invitado"
+            }
+          </b>
 
-</div>
+          <br><br>
+
+          Estado:
+          <b>
+            ${
+              participante.estado_acceso === "dentro"
+                ? "Dentro del fraccionamiento"
+                : "Autorizado para ingresar"
+            }
+          </b>
+
+        </div>
 
         <br>
 
         ${
-          invitado.estado_acceso === "autorizado"
+          participante.estado_acceso === "autorizado"
 
           ?
 
@@ -275,7 +285,8 @@ document.getElementById(
             class="btn btn-verde"
             onclick="
               registrarIngreso(
-                '${invitado.invitado_id}'
+                '${participante.participante_id}',
+                '${participante.tipo_participante}'
               )
             ">
 
@@ -293,7 +304,8 @@ document.getElementById(
             class="btn btn-ambar"
             onclick="
               registrarSalida(
-                '${invitado.invitado_id}'
+                '${participante.participante_id}',
+                '${participante.tipo_participante}'
               )
             ">
 
@@ -313,7 +325,8 @@ document.getElementById(
 }
 
 async function registrarIngreso(
-  invitadoId
+  participanteId,
+  tipoParticipante
 ){
 
   const pin =
@@ -352,18 +365,30 @@ async function registrarIngreso(
 
   }
 
+  const funcionRpc =
+    tipoParticipante === "EXTERNO"
+      ? "registrar_ingreso_participante_externo_actividad"
+      : "registrar_ingreso_invitado_actividad";
+
+  const parametros =
+    tipoParticipante === "EXTERNO"
+      ? {
+          p_participante_externo_id:
+            participanteId,
+          p_vigilante_id:
+            vigilante[0].id
+        }
+      : {
+          p_invitado_id:
+            participanteId,
+          p_vigilante_id:
+            vigilante[0].id
+        };
+
   const { data, error } =
     await supabaseClient.rpc(
-      "registrar_ingreso_invitado_actividad",
-      {
-
-        p_invitado_id:
-          invitadoId,
-
-        p_vigilante_id:
-          vigilante[0].id
-
-      }
+      funcionRpc,
+      parametros
     );
 
   if(error){
@@ -380,19 +405,19 @@ async function registrarIngreso(
 
   if(!data.ok){
 
-  await mostrarConfirmacion({
+    await mostrarConfirmacion({
 
-    titulo:
-      "Acceso no permitido",
+      titulo:
+        "Acceso no permitido",
 
-    mensaje:
-      data.mensaje
+      mensaje:
+        data.mensaje
 
-  });
+    });
 
-  return;
+    return;
 
-}
+  }
 
   ui.success(
     data.mensaje
@@ -400,38 +425,44 @@ async function registrarIngreso(
 
   await cargar();
 
-}  
+} 
 
 async function registrarSalida(
-  invitadoId
+  participanteId,
+  tipoParticipante
 ){
 
   const confirmar =
-  await mostrarConfirmacion({
+    await mostrarConfirmacion({
 
-    titulo:
-      "Registrar salida",
+      titulo:
+        "Registrar salida",
 
-    mensaje:
-      "¿Desea registrar la salida de este invitado?"
+      mensaje:
+        "¿Desea registrar la salida de este participante?"
 
-  });
+    });
 
-if(!confirmar){
-  return;
-}
+  if(!confirmar){
+    return;
+  }
 
-const pin =
-  await mostrarSolicitudPin({
-    titulo:"Registrar salida",
-    mensaje:"Ingrese NIP del vigilante"
-  });
+  const pin =
+    await mostrarSolicitudPin({
 
-if(!pin){
-  return;
-}
+      titulo:
+        "Registrar salida",
 
-  const { data: vigilante } =
+      mensaje:
+        "Ingrese NIP del vigilante"
+
+    });
+
+  if(!pin){
+    return;
+  }
+
+  const { data:vigilante } =
     await supabaseClient.rpc(
       "validar_pin_vigilante",
       {
@@ -440,54 +471,71 @@ if(!pin){
     );
 
   if(
-  !vigilante ||
-  vigilante.length === 0
-){
+    !vigilante ||
+    vigilante.length === 0
+  ){
 
-  ui.error(
-    "NIP incorrecto"
-  );
+    ui.error(
+      "NIP incorrecto"
+    );
 
-  return;
+    return;
 
-}
+  }
+
+  const funcionRpc =
+    tipoParticipante === "EXTERNO"
+      ? "registrar_salida_participante_externo_actividad"
+      : "registrar_salida_invitado_actividad";
+
+  const parametros =
+    tipoParticipante === "EXTERNO"
+      ? {
+          p_participante_externo_id:
+            participanteId,
+          p_vigilante_id:
+            vigilante[0].id
+        }
+      : {
+          p_invitado_id:
+            participanteId,
+          p_vigilante_id:
+            vigilante[0].id
+        };
 
   const { data, error } =
-  await supabaseClient.rpc(
-    "registrar_salida_invitado_actividad",
-    {
-      p_invitado_id: invitadoId,
-      p_vigilante_id: vigilante[0].id
-    }
-  );
+    await supabaseClient.rpc(
+      funcionRpc,
+      parametros
+    );
 
-if(error){
+  if(error){
 
-  console.error(error);
+    console.error(error);
 
-  ui.error(
-    error.message
-  );
+    ui.error(
+      error.message
+    );
 
-  return;
+    return;
 
-}
+  }
 
-if(!data.ok){
+  if(!data.ok){
 
-  ui.error(
+    ui.error(
+      data.mensaje
+    );
+
+    return;
+
+  }
+
+  ui.success(
     data.mensaje
   );
 
-  return;
-
-}
-
-ui.success(
-  data.mensaje
-);
-
-await cargar();
+  await cargar();
 
 }
 
