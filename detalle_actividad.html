@@ -198,23 +198,6 @@ detalle.forEach(i => {
 const r =
   detalle[0];
 
-const capacidadMaxima =
-  r.capacidad_maxima || 0;
-
-const inscritos =
-  r.residentes_inscritos || 0;
-
-const invitadosActivos =
-  activos.length;
-
-const asistentesReales =
-  inscritos + invitadosActivos;
-
-const disponibles =
-  Math.max(
-    0,
-    capacidadMaxima - asistentesReales
-  );      
 
 document.getElementById(
   "detalle"
@@ -273,33 +256,7 @@ ${formatearFecha(r.fecha_fin)}
     margin-bottom:10px;
   "
 >
-  🏟 Cupo
-</div>
-
-<div>
-  Capacidad máxima:
-  ${capacidadMaxima}
-</div>
-
-<div>
-  Residentes inscritos:
-  ${inscritos}
-</div>
-
-<div>
-  Asistentes reales:
-  ${asistentesReales}
-</div>
-
-<div
-  style="
-    margin-top:6px;
-    color:#22c55e;
-    font-weight:bold;
-  "
->
-  Lugares disponibles:
-  ${disponibles}
+  
 </div>
 
 <br><br>
