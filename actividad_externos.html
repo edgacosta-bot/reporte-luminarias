@@ -211,6 +211,30 @@ async function cargarParticipantes(){
 
 }
 
+function mostrarFormularioParticipanteExterno(){
+
+  document.getElementById(
+    "formParticipanteExterno"
+  ).style.display = "block";
+
+  document.getElementById(
+    "btnMostrarParticipanteExterno"
+  ).style.display = "none";
+
+}
+
+function ocultarFormularioParticipanteExterno(){
+
+  document.getElementById(
+    "formParticipanteExterno"
+  ).style.display = "none";
+
+  document.getElementById(
+    "btnMostrarParticipanteExterno"
+  ).style.display = "block";
+
+}  
+
 function renderizar(){
 
   const lista =
@@ -218,82 +242,145 @@ function renderizar(){
       "lista"
     );
 
-  if(
-    participantes.length === 0
-  ){
+  let html = `
 
-    lista.innerHTML = `
+    <div class="card">
 
-      <div class="card">
-
-        No existen participantes externos.
-
+      <div
+        style="
+          color:#93c5fd;
+          font-weight:bold;
+          margin-bottom:15px;
+        "
+      >
+        👤 Participantes Externos Autorizados
       </div>
 
-    `;
+      <button
+        id="btnMostrarParticipanteExterno"
+        onclick="mostrarFormularioParticipanteExterno()"
+      >
 
-    return;
+        ➕ Agregar participante externo
 
-  }
+      </button>
 
-  let html = "";
+      <div
+        id="formParticipanteExterno"
+        style="
+          display:none;
+          margin-top:15px;
+        "
+      >
 
-  participantes.forEach(p=>{
-
-    html += `
-
-      <div class="card">
-
-        <div
-          style="
-            font-size:18px;
-            font-weight:bold;
-            color:#93c5fd;
-          "
+        <input
+          id="txtNombre"
+          placeholder="Nombre completo"
         >
 
-          👤 ${p.nombre}
+        <br><br>
 
-        </div>
-
-        <div
-          style="
-            margin-top:10px;
-          "
+        <button
+          onclick="agregarParticipante()"
         >
 
-          Registro:
-          ${
-            new Date(
-              p.created_at
-            ).toLocaleString(
-              "es-MX"
-            )
-          }
+          Guardar
 
-        </div>
+        </button>
 
         <button
           style="
-            margin-top:12px;
-            background:#dc2626;
+            margin-top:8px;
+            background:#374151;
           "
-          onclick="
-            eliminarParticipante(
-              '${p.id}'
-            )
-          "
+          onclick="ocultarFormularioParticipanteExterno()"
         >
 
-          ❌ Eliminar
+          Cancelar
 
         </button>
 
       </div>
 
+    </div>
+
+  `;
+
+  if(
+    participantes.length === 0
+  ){
+
+    html += `
+
+      <div class="card">
+
+        No existen participantes externos autorizados.
+
+      </div>
+
     `;
 
-  });
+  }
+  else{
+
+    participantes.forEach(p=>{
+
+      html += `
+
+        <div class="card">
+
+          <div
+            style="
+              font-size:18px;
+              font-weight:bold;
+              color:#93c5fd;
+            "
+          >
+
+            👤 ${p.nombre}
+
+          </div>
+
+          <div
+            style="
+              margin-top:10px;
+            "
+          >
+
+            Registro:
+            ${
+              new Date(
+                p.created_at
+              ).toLocaleString(
+                "es-MX"
+              )
+            }
+
+          </div>
+
+          <button
+            style="
+              margin-top:12px;
+              background:#dc2626;
+            "
+            onclick="
+              eliminarParticipante(
+                '${p.id}'
+              )
+            "
+          >
+
+            ❌ Eliminar
+
+          </button>
+
+        </div>
+
+      `;
+
+    });
+
+  }
 
   lista.innerHTML = html;
 
