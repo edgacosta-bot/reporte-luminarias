@@ -277,18 +277,16 @@ function renderizarInstructores(){
     !instructores ||
     instructores.length === 0
   ){
-    return "";
+    return;
   }
 
   let html = `
-
-    <br><br>
 
     <div
       style="
         color:#93c5fd;
         font-weight:bold;
-        margin-bottom:10px;
+        margin-bottom:15px;
       "
     >
       👨‍🏫 Instructor(es)
@@ -296,35 +294,38 @@ function renderizarInstructores(){
 
   `;
 
-  
-instructores.forEach(i => {
+  instructores.forEach(i => {
 
     html += `
 
       <div
         style="
           margin-bottom:8px;
-          padding:8px;
+          padding:12px;
           background:#1f2937;
           border-radius:10px;
         "
       >
 
         <div>
-  👤 ${i.nombre}
-</div>
 
-<div
-  style="
-    margin-top:4px;
-    font-size:13px;
-    color:#9ca3af;
-  "
->
-  ${i.especialidad}
-  ·
-  ${i.rol}
-</div>
+          👤 ${i.nombre}
+
+        </div>
+
+        <div
+          style="
+            margin-top:4px;
+            font-size:13px;
+            color:#9ca3af;
+          "
+        >
+
+          ${i.especialidad}
+          ·
+          ${i.rol}
+
+        </div>
 
       </div>
 
@@ -333,16 +334,16 @@ instructores.forEach(i => {
   });
 
   document.getElementById(
-  "instructoresContainer"
-).innerHTML = `
+    "instructoresContainer"
+  ).innerHTML = `
 
-<div class="card">
+    <div class="card">
 
-${html}
+      ${html}
 
-</div>
+    </div>
 
-`;
+  `;
 
 }
 
