@@ -198,6 +198,24 @@ detalle.forEach(i => {
 const r =
   detalle[0];
 
+const capacidadMaxima =
+  r.capacidad_maxima || 0;
+
+const inscritos =
+  r.residentes_inscritos || 0;
+
+const invitadosActivos =
+  activos.length;
+
+const asistentesReales =
+  inscritos + invitadosActivos;
+
+const disponibles =
+  Math.max(
+    0,
+    capacidadMaxima - asistentesReales
+  );      
+
 document.getElementById(
   "detalle"
 ).innerHTML = `
@@ -238,6 +256,50 @@ ${formatearFecha(r.fecha_fin)}
 >
   🚫 Invitados cancelados:
   ${cancelados.length}
+</div>
+
+<hr
+  style="
+    border:0;
+    border-top:1px solid #374151;
+    margin:20px 0;
+  "
+>
+
+<div
+  style="
+    color:#93c5fd;
+    font-weight:bold;
+    margin-bottom:10px;
+  "
+>
+  🏟 Cupo
+</div>
+
+<div>
+  Capacidad máxima:
+  ${capacidadMaxima}
+</div>
+
+<div>
+  Residentes inscritos:
+  ${inscritos}
+</div>
+
+<div>
+  Asistentes reales:
+  ${asistentesReales}
+</div>
+
+<div
+  style="
+    margin-top:6px;
+    color:#22c55e;
+    font-weight:bold;
+  "
+>
+  Lugares disponibles:
+  ${disponibles}
 </div>
 
 <br><br>
@@ -623,6 +685,10 @@ console.table(
 
   detalle =
     data || [];
+
+  console.table(
+  detalle
+);    
 
   renderizar();
 
