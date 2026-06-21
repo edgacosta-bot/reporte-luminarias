@@ -207,10 +207,33 @@ async function cargarInvitados(){
     "resumen"
   ).innerHTML = `
 
-    <div>👥 ${total}</div>
-    <div>🟢 ${dentro}</div>
-    <div>🟡 ${autorizados}</div>
-    <div>🟣 ${externos}</div>
+    <div style="text-align:center;">
+      <div>👥 ${total}</div>
+      <div style="font-size:12px;">
+        Total
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <div>🟢 ${dentro}</div>
+      <div style="font-size:12px;">
+        Dentro
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <div>🟡 ${autorizados}</div>
+      <div style="font-size:12px;">
+        Autorizados
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <div>🟣 ${externos}</div>
+      <div style="font-size:12px;">
+        Externos
+      </div>
+    </div>
 
   `;
 
@@ -246,9 +269,74 @@ async function cargarInvitados(){
 
         : "card-autorizado";
 
+    const etiquetaEstado =
+
+      participante.estado_acceso === "dentro"
+
+      ? `
+          <div
+            style="
+              position:absolute;
+              top:18px;
+              right:18px;
+              background:#14532d;
+              color:white;
+              padding:6px 12px;
+              border-radius:20px;
+              font-size:12px;
+              font-weight:bold;
+            "
+          >
+            🟢 Dentro
+          </div>
+        `
+
+      : esExterno
+
+        ? `
+            <div
+              style="
+                position:absolute;
+                top:18px;
+                right:18px;
+                background:#581c87;
+                color:white;
+                padding:6px 12px;
+                border-radius:20px;
+                font-size:12px;
+                font-weight:bold;
+              "
+            >
+              🟣 Externo
+            </div>
+          `
+
+        : `
+            <div
+              style="
+                position:absolute;
+                top:18px;
+                right:18px;
+                background:#78350f;
+                color:white;
+                padding:6px 12px;
+                border-radius:20px;
+                font-size:12px;
+                font-weight:bold;
+              "
+            >
+              🟡 Autorizado
+            </div>
+          `;
+
     contenedor.innerHTML += `
 
-      <div class="card ${claseCard}">
+      <div
+        class="card ${claseCard}"
+        style="position:relative;"
+      >
+
+        ${etiquetaEstado}
 
         <div class="nombre">
 
@@ -297,26 +385,6 @@ async function cargarInvitados(){
           Amenidad:
           <b>
             ${participante.amenidad}
-          </b>
-
-          <br><br>
-
-          Estado:
-          <b>
-
-            ${
-              participante.estado_acceso ===
-              "dentro"
-
-              ?
-
-              "Dentro del fraccionamiento"
-
-              :
-
-              "Autorizado para ingresar"
-            }
-
           </b>
 
         </div>
