@@ -188,19 +188,19 @@ async function cargarInvitados(){
   const total =
     registros.length;
 
-  const dentro =
+  const invitados =
     registros.filter(
-      x => x.estado_acceso === "dentro"
-    ).length;
-
-  const autorizados =
-    registros.filter(
-      x => x.estado_acceso === "autorizado"
+      x => x.tipo_participante === "INVITADO"
     ).length;
 
   const externos =
     registros.filter(
       x => x.tipo_participante === "EXTERNO"
+    ).length;
+
+  const dentro =
+    registros.filter(
+      x => x.estado_acceso === "dentro"
     ).length;
 
   document.getElementById(
@@ -215,16 +215,9 @@ async function cargarInvitados(){
     </div>
 
     <div style="text-align:center;">
-      <div>🟢 ${dentro}</div>
+      <div>🟡 ${invitados}</div>
       <div style="font-size:12px;">
-        Dentro
-      </div>
-    </div>
-
-    <div style="text-align:center;">
-      <div>🟡 ${autorizados}</div>
-      <div style="font-size:12px;">
-        Autorizados
+        Invitados
       </div>
     </div>
 
@@ -232,6 +225,13 @@ async function cargarInvitados(){
       <div>🟣 ${externos}</div>
       <div style="font-size:12px;">
         Externos
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <div>🟢 ${dentro}</div>
+      <div style="font-size:12px;">
+        Dentro
       </div>
     </div>
 
