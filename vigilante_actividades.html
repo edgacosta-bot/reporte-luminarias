@@ -185,6 +185,9 @@ async function cargarInvitados(){
   const registros =
     data || [];
 
+  const total =
+    registros.length;
+
   const dentro =
     registros.filter(
       x => x.estado_acceso === "dentro"
@@ -200,30 +203,14 @@ async function cargarInvitados(){
       x => x.tipo_participante === "EXTERNO"
     ).length;
 
-  const invitados =
-    registros.filter(
-      x => x.tipo_participante === "INVITADO"
-    ).length;
-
   document.getElementById(
     "resumen"
   ).innerHTML = `
 
-    <div>
-      👥 ${registros.length}
-    </div>
-
-    <div>
-      🟢 ${dentro}
-    </div>
-
-    <div>
-      🟡 ${autorizados}
-    </div>
-
-    <div>
-      🟣 ${externos}
-    </div>
+    <div>👥 ${total}</div>
+    <div>🟢 ${dentro}</div>
+    <div>🟡 ${autorizados}</div>
+    <div>🟣 ${externos}</div>
 
   `;
 
@@ -247,19 +234,21 @@ async function cargarInvitados(){
       participante.tipo_participante ===
       "EXTERNO";
 
-    const bordeClase =
+    const claseCard =
+
       participante.estado_acceso === "dentro"
-        ? "card-dentro"
-        : esExterno
-          ? "card-externo"
-          : "card-autorizado";
+
+      ? "card-dentro"
+
+      : esExterno
+
+        ? "card-externo"
+
+        : "card-autorizado";
 
     contenedor.innerHTML += `
 
-      <div class="
-        card
-        ${bordeClase}
-      ">
+      <div class="card ${claseCard}">
 
         <div class="nombre">
 
@@ -271,14 +260,12 @@ async function cargarInvitados(){
 
           ${
             esExterno
+
             ?
 
             `
 
-            <b style="
-              color:#c084fc;
-              font-size:16px;
-            ">
+            <b style="color:#c084fc;">
               🟣 Participante Externo
             </b>
 
@@ -291,8 +278,8 @@ async function cargarInvitados(){
             `
 
             <b>
-              Invitado de:
-              ${participante.privada}-${participante.casa}
+              🏠 Invitado de:
+              ${participante.identificador}
             </b>
 
             <br><br>
@@ -316,6 +303,7 @@ async function cargarInvitados(){
 
           Estado:
           <b>
+
             ${
               participante.estado_acceso ===
               "dentro"
@@ -328,6 +316,7 @@ async function cargarInvitados(){
 
               "Autorizado para ingresar"
             }
+
           </b>
 
         </div>
