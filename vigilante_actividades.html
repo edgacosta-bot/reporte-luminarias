@@ -207,32 +207,48 @@ async function cargarInvitados(){
     "resumen"
   ).innerHTML = `
 
-    <div style="text-align:center;">
-      <div>👥 ${total}</div>
-      <div style="font-size:12px;">
-        Total
+    <div style="
+      display:flex;
+      justify-content:center;
+      gap:60px;
+      margin-bottom:12px;
+    ">
+
+      <div style="text-align:center;">
+        <div>👥 ${total}</div>
+        <div style="font-size:12px;">
+          Total
+        </div>
       </div>
+
+      <div style="text-align:center;">
+        <div>🟡 ${invitados}</div>
+        <div style="font-size:12px;">
+          Invitados
+        </div>
+      </div>
+
+      <div style="text-align:center;">
+        <div>🟣 ${externos}</div>
+        <div style="font-size:12px;">
+          Externos
+        </div>
+      </div>
+
     </div>
 
-    <div style="text-align:center;">
-      <div>🟡 ${invitados}</div>
-      <div style="font-size:12px;">
-        Invitados
-      </div>
-    </div>
+    <div style="
+      text-align:center;
+      border-top:1px solid rgba(255,255,255,.08);
+      padding-top:10px;
+    ">
 
-    <div style="text-align:center;">
-      <div>🟣 ${externos}</div>
-      <div style="font-size:12px;">
-        Externos
-      </div>
-    </div>
-
-    <div style="text-align:center;">
       <div>🟢 ${dentro}</div>
+
       <div style="font-size:12px;">
-        Dentro
+        Actualmente dentro
       </div>
+
     </div>
 
   `;
