@@ -1,11 +1,3 @@
-
-body {
-  margin: 0;
-  font-family: Arial;
-  background: #0f172a;
-  color: white;
-}
-
 .container {
   padding: 30px 20px;
   max-width: 500px;
@@ -82,4 +74,3 @@ button:hover {
   text-align: left;
   line-height: 1.4;
 }
-

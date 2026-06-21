@@ -1,4 +1,3 @@
-
 body {
   margin: 0;
   font-family: Arial;
@@ -9,7 +8,6 @@ body {
   align-items: center;
   height: 100vh;
 }
-
 .card {
   background: #111827;
   padding: 25px;
@@ -17,7 +15,6 @@ body {
   width: 90%;
   max-width: 420px;
 }
-
 select, textarea {
   width: 100%;
   padding: 12px;
@@ -27,11 +24,9 @@ select, textarea {
   background: #1f2937;
   color: white;
 }
-
 textarea {
   min-height: 100px;
 }
-
 button {
   width: 100%;
   padding: 14px;
@@ -42,19 +37,14 @@ button {
   font-weight: bold;
   cursor: pointer;
 }
-
 .mensaje {
   text-align: center;
   margin-top: 10px;
 }
-
-.error { color: #f87171; }
 .ok { color: #34d399; }
-
 .info {
   text-align: center;
   font-size: 13px;
   color: #9ca3af;
   margin-bottom: 10px;
 }
-

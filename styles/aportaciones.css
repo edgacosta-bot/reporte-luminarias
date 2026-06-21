@@ -1,41 +1,23 @@
-
-body {
-  margin: 0;
-  font-family: Arial;
-  background: #0f172a;
-  color: white;
-}
-
-.container {
-  max-width: 500px;
-  margin: auto;
-  padding: 20px;
-}
-
 .header {
   text-align: center;
   margin-bottom: 15px;
 }
-
 .filtros {
   display: flex;
   gap: 10px;
   margin-bottom: 15px;
 }
-
 .filtros input, .filtros select {
   flex: 1;
   padding: 10px;
   border-radius: 10px;
   border: none;
 }
-
 .section-title {
   margin: 10px 0;
   font-size: 13px;
   color: #9ca3af;
 }
-
 .lote {
   background: #1e293b;
   padding: 12px;
@@ -45,15 +27,12 @@ body {
   align-items: center;
   gap: 10px;
 }
-
 .lote span { flex: 1; }
-
 select {
   padding: 6px;
   border-radius: 6px;
   border: none;
 }
-
 .btn-save {
   background: #22c55e;
   border: none;
@@ -62,7 +41,6 @@ select {
   color: white;
   cursor: pointer;
 }
-
 .button {
   display: block;
   padding: 14px;
@@ -73,7 +51,6 @@ select {
   background: #2563eb;
   text-decoration: none;
 }
-
 .modal {
   position: fixed;
   inset: 0;
@@ -82,11 +59,9 @@ select {
   align-items: center;
   justify-content: center;
 }
-
 .modal-content {
   background: #1e293b;
   padding: 20px;
   border-radius: 12px;
   text-align: center;
 }
-

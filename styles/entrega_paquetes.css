@@ -1,22 +1,13 @@
-
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: #0f172a;
   color: white;
 }
-
-.container {
-  max-width: 500px;
-  margin: auto;
-  padding: 20px;
-}
-
 .header {
   text-align: center;
   margin-bottom: 20px;
 }
-
 .item {
   background: #1e293b;
   padding: 12px;
@@ -26,7 +17,6 @@ body {
   justify-content: space-between;
   align-items: center;
 }
-
 .button {
   padding: 8px 12px;
   border-radius: 8px;
@@ -35,7 +25,6 @@ body {
   color: white;
   cursor: pointer;
 }
-
 .button-sec {
   display: block;
   text-decoration: none;
@@ -47,7 +36,6 @@ body {
   background: #6b7280;
   text-align: center;
 }
-
 input {
   width: 100%;
   padding: 10px;
@@ -55,7 +43,6 @@ input {
   margin-bottom: 10px;
   border: none;
 }
-
 .modal {
   position: fixed;
   top:0;
@@ -67,7 +54,6 @@ input {
   align-items:center;
   justify-content:center;
 }
-
 .modal-content {
   background:#1e293b;
   padding:20px;
@@ -75,7 +61,6 @@ input {
   text-align:center;
   width:80%;
 }
-
 .modal-content button {
   margin-top:10px;
   padding:10px;
@@ -85,4 +70,3 @@ input {
   color:white;
   width:100%;
 }
-

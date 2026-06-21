@@ -14,9 +14,9 @@
 
 <body>
 
-<h1>📘 Reglas SIGVIC</h1>
+<h1 id="tituloProtocolos"></h1>
 
-<div class="banner" id="bannerProtocolos">
+<div class="banner" id="bannerProtocolos" style="display:none;">
 ⚠️ Estos procedimientos son obligatorios y forman parte del sistema SIGVIC
 </div>
 
@@ -72,20 +72,16 @@ if (moduloFiltro) {
 }
 
 // 🎯 Ajustes visuales
-if (moduloFiltro === "informacion" || moduloFiltro === "privacidad") {
+const titulo = document.getElementById("tituloProtocolos");
+const banner = document.getElementById("bannerProtocolos");
 
-  // Cambiar título
-  if (moduloFiltro === "informacion") {
-    document.querySelector("h1").innerText = "📘 ¿Qué es SIGVIC?";
-  }
-
-  if (moduloFiltro === "privacidad") {
-    document.querySelector("h1").innerText = "📄 Aviso de privacidad";
-  }
-
-  // Ocultar banner
-  const banner = document.getElementById("bannerProtocolos");
-  if (banner) banner.style.display = "none";
+if (moduloFiltro === "informacion") {
+  if (titulo) titulo.innerText = "📘 ¿Qué es SIGVIC?";
+} else if (moduloFiltro === "privacidad") {
+  if (titulo) titulo.innerText = "📄 Aviso de privacidad";
+} else {
+  if (titulo) titulo.innerText = "📘 Reglas SIGVIC";
+  if (banner) banner.style.display = "block";
 }
 
 // 🧪 Debug opcional

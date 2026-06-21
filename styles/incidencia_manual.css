@@ -1,23 +1,13 @@
-
-body {
-  margin: 0;
-  font-family: Arial;
-  background: #0f172a;
-  color: white;
-}
-
 .container {
   max-width: 400px;
   margin: auto;
   padding: 20px;
 }
-
 .card {
   background: #1e293b;
   padding: 20px;
   border-radius: 16px;
 }
-
 /* 🔥 INPUTS MEJORADOS */
 select, textarea, button {
   width: 100%;
@@ -29,28 +19,23 @@ select, textarea, button {
   background: #1f2937;
   color: white;
 }
-
 /* 🔥 NORMALIZAR SELECT */
 select {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
 }
-
 textarea {
   resize: none;
   min-height: 80px;
 }
-
 button {
   background: #dc2626;
   font-weight: bold;
   cursor: pointer;
 }
-
 #msg {
   margin-top: 12px;
   text-align: center;
   color: #34d399;
 }
-

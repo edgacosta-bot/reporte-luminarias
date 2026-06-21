@@ -1,5 +1,4 @@
-
-    body {
+body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #0f172a, #1e293b);
@@ -9,7 +8,6 @@
       justify-content: center;
       height: 100vh;
     }
-
     .card {
       background: #111827;
       padding: 30px 20px;
@@ -19,22 +17,18 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.4);
       text-align: center;
     }
-
     h2 { margin-bottom: 10px; }
-
     p {
       font-size: 13px;
       color: #9ca3af;
       margin-bottom: 15px;
     }
-
     .ayuda {
       font-size: 12px;
       color: #94a3b8;
       margin-bottom: 20px;
       line-height: 1.4;
     }
-
     input {
       width: 100%;
       padding: 14px;
@@ -46,17 +40,14 @@
       background: #1f2937;
       color: white;
     }
-
     .password-container{
   position:relative;
   margin-bottom:12px;
 }
-
 .password-container input{
   margin-bottom:0;
   padding-right:50px;
 }
-
 .toggle-password{
   position:absolute;
   right:15px;
@@ -66,19 +57,16 @@
   font-size:18px;
   user-select:none;
 }
-
     .logo-login {
   text-align: center;
   margin-bottom: 20px;
 }
-
 .logo-sigvic-login {
   width: 100%;
   max-width: 260px;
   transform: scale(1.5);
   transform-origin: center;
 }
-
     button {
       width: 100%;
       padding: 14px;
@@ -89,19 +77,14 @@
       font-size: 16px;
       cursor: pointer;
     }
-
     .mensaje { margin-top: 15px; font-size: 14px; }
-    .error { color: #f87171; }
-
     .registro-link {
       margin-top: 15px;
       font-size: 13px;
       color: #9ca3af;
     }
-
     .registro-link a {
       color: #60a5fa;
       text-decoration: underline;
       cursor: pointer;
     }
-  

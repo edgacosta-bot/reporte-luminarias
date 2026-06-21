@@ -1,6 +1,4 @@
-
 * { box-sizing: border-box; }
-
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -11,7 +9,6 @@ body {
   justify-content: center;
   height: 100vh;
 }
-
 .card {
   background: #111827;
   padding: 25px;
@@ -19,7 +16,6 @@ body {
   width: 90%;
   max-width: 400px;
 }
-
 select, input {
   width: 100%;
   padding: 12px;
@@ -29,7 +25,6 @@ select, input {
   background: #1f2937;
   color: white;
 }
-
 button {
   width: 100%;
   padding: 14px;
@@ -39,12 +34,8 @@ button {
   color: white;
   cursor: pointer;
 }
-
 .mensaje {
   margin-top: 10px;
   text-align: center;
 }
-
-.error { color: #f87171; }
 .ok { color: #34d399; }
-

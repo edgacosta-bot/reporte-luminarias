@@ -1,0 +1,10 @@
+/* Shared rules extracted from page-level CSS */
+
+/* Used in 16 files */
+.container { margin: auto; max-width: 500px; padding: 20px; }
+
+/* Used in 13 files */
+body { background: #0f172a; color: white; font-family: Arial; margin: 0; }
+
+/* Used in 11 files */
+.error { color: #f87171; }

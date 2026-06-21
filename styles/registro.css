@@ -1,5 +1,4 @@
-
-    body {
+body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #0f172a, #1e293b);
@@ -9,7 +8,6 @@
       justify-content: center;
       height: 100vh;
     }
-
     .card {
       background: #111827;
       padding: 30px 20px;
@@ -19,7 +17,6 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.4);
       text-align: center;
     }
-
     select, input {
       width: 100%;
       padding: 14px;
@@ -31,7 +28,6 @@
       background: #1f2937;
       color: white;
     }
-
     button {
       width: 100%;
       padding: 14px;
@@ -41,8 +37,5 @@
       font-size: 16px;
       cursor: pointer;
     }
-
     .mensaje { margin-top: 15px; }
-    .error { color: #f87171; }
     .ok { color: #34d399; }
-  
