@@ -1,0 +1,55 @@
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #161a1d;
+  color: white;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.info {
+  font-size: 13px;
+  color: #9ca3af;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.button {
+  display: block;
+  width: 100%;
+  padding: 18px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  font-size: 16px;
+  text-decoration: none;
+  color: white;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* 🔵 Dashboard */
+.dashboard { 
+  background: #1e5b4f; 
+}
+
+/* 🔵 Formulario */
+.formulario { 
+  background: #2563eb; 
+}
+
+/* 🔵 Volver */
+.back { 
+  background: #374151; 
+}
+

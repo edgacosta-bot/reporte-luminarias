@@ -1,0 +1,108 @@
+
+
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+
+.header-app{
+  display:flex;
+  justify-content:center;
+  margin-top:20px;
+}
+
+.logo-app{
+  width:80px;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:18px;
+}
+
+h2{
+  text-align:center;
+}
+
+input{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  font-size:15px;
+  background:#1f2937;
+  color:white;
+  box-sizing:border-box;
+}
+
+select,
+textarea{
+
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  font-size:15px;
+  background:#1f2937;
+  color:white;
+  box-sizing:border-box;
+
+}  
+
+textarea{
+
+  min-height:80px;
+  resize:vertical;
+
+}  
+
+.card{
+  background:#111827;
+  padding:18px;
+  border-radius:18px;
+  margin-bottom:12px;
+  border-left:6px solid #3b82f6;
+}
+
+.card h3{
+  margin:0 0 8px 0;
+}
+
+.privada{
+  margin-top:25px;
+  margin-bottom:12px;
+  font-size:18px;
+  font-weight:bold;
+  color:#93c5fd;
+}
+
+.vacio{
+  text-align:center;
+  color:#94a3b8;
+  margin-top:20px;
+}
+
+.tipo{
+  font-weight:bold;
+  margin-bottom:8px;
+}
+
+.btn{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:bold;
+  font-size:15px;
+}
+
+.entrada{
+  background:#16a34a;
+  color:white;
+}
+
+

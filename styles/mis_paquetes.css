@@ -1,0 +1,21 @@
+
+body {
+  background:#0f172a;
+  color:white;
+  font-family:Arial;
+  padding:20px;
+}
+
+.item {
+  background:#1e293b;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:8px;
+}
+
+.vacio {
+  text-align:center;
+  color:#94a3af;
+  margin-top:20px;
+}
+

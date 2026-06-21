@@ -1,0 +1,92 @@
+
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.alerta-global {
+  text-align: center;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.card {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+details {
+  margin-bottom: 10px;
+}
+
+summary {
+  cursor: pointer;
+  list-style: none;
+  font-weight: bold;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+.acordeon-privada {
+  transition: all 0.2s ease;
+  background: #1e293b;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 18px;
+}
+
+.acordeon-lote {
+  transition: all 0.2s ease;
+  background: #334155;
+  padding: 12px;
+  border-radius: 10px;
+  margin-top: 8px;
+  margin-left: 10px;
+  font-size: 15px;
+}
+
+.trabajador-item {
+  transition: all 0.2s ease;
+  background: #0f172a;
+  padding: 12px;
+  border-radius: 10px;
+  margin-top: 8px;
+  margin-left: 20px;
+}  
+
+.nombre {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.detalle {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.vacio {
+  text-align: center;
+  margin-top: 40px;
+  color: #9ca3af;
+}
+
+
+
+

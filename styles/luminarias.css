@@ -1,0 +1,59 @@
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #161a1d;
+      color: white;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+
+    .info {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .button {
+      display: block;
+      width: 100%;
+      padding: 18px;
+      margin-bottom: 12px;
+      border-radius: 12px;
+      font-size: 16px;
+      text-decoration: none;
+      color: white;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+
+    /* PRINCIPALES */
+    .dashboard { background: #9b2247; }
+    .formulario { background: #2563eb; }
+
+    /* SECUNDARIOS (MEJORADOS) */
+    .croquis { background: #4b5563; }
+    .aportaciones { background: #a57f2c; }
+    .reportes { background: #611232; }
+
+    /* BACK */
+    .back { background: #374151; text-align: center; }
+
+    /* EFECTO PRO */
+    .button:hover {
+      opacity: 0.9;
+      transform: scale(0.98);
+    }
+
+  

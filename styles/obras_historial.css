@@ -1,0 +1,50 @@
+
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+}
+
+.container {
+  padding: 20px;
+}
+
+h2 {
+  margin-bottom: 15px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.estado {
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.aprobada { color: #22c55e; }
+.rechazada { color: #ef4444; }
+.pendiente { color: #facc15; }
+.suspendida { color: #fb923c; }  
+
+.motivo {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #cbd5f5;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+}
+
