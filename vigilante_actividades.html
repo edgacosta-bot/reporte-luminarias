@@ -50,6 +50,10 @@ h2{
   border-left:6px solid #16a34a;
 }
 
+.card-externo{
+  border-left:6px solid #8b5cf6;
+}  
+
 input,
 select{
   width:100%;
@@ -191,16 +195,34 @@ async function cargarInvitados(){
       x => x.estado_acceso === "autorizado"
     ).length;
 
+  const externos =
+    registros.filter(
+      x => x.tipo_participante === "EXTERNO"
+    ).length;
+
+  const invitados =
+    registros.filter(
+      x => x.tipo_participante === "INVITADO"
+    ).length;
+
   document.getElementById(
     "resumen"
   ).innerHTML = `
 
     <div>
-      🟢 Dentro: ${dentro}
+      👥 ${registros.length}
     </div>
 
     <div>
-      🟡 Autorizados: ${autorizados}
+      🟢 ${dentro}
+    </div>
+
+    <div>
+      🟡 ${autorizados}
+    </div>
+
+    <div>
+      🟣 ${externos}
     </div>
 
   `;
@@ -221,15 +243,22 @@ async function cargarInvitados(){
 
   registros.forEach(participante => {
 
+    const esExterno =
+      participante.tipo_participante ===
+      "EXTERNO";
+
+    const bordeClase =
+      participante.estado_acceso === "dentro"
+        ? "card-dentro"
+        : esExterno
+          ? "card-externo"
+          : "card-autorizado";
+
     contenedor.innerHTML += `
 
       <div class="
         card
-        ${
-          participante.estado_acceso === "dentro"
-            ? "card-dentro"
-            : "card-autorizado"
-        }
+        ${bordeClase}
       ">
 
         <div class="nombre">
@@ -240,23 +269,47 @@ async function cargarInvitados(){
 
         <div class="detalle">
 
+          ${
+            esExterno
+            ?
+
+            `
+
+            <b style="
+              color:#c084fc;
+              font-size:16px;
+            ">
+              🟣 Participante Externo
+            </b>
+
+            <br><br>
+
+            `
+
+            :
+
+            `
+
+            <b>
+              Invitado de:
+              ${participante.privada}-${participante.casa}
+            </b>
+
+            <br><br>
+
+            `
+          }
+
           Actividad:
-          <b>${participante.actividad}</b>
+          <b>
+            ${participante.actividad}
+          </b>
 
           <br><br>
 
           Amenidad:
-          <b>${participante.amenidad}</b>
-
-          <br><br>
-
-          Tipo:
           <b>
-            ${
-              participante.tipo_participante === "EXTERNO"
-                ? "Participante Externo"
-                : "Invitado"
-            }
+            ${participante.amenidad}
           </b>
 
           <br><br>
@@ -264,9 +317,16 @@ async function cargarInvitados(){
           Estado:
           <b>
             ${
-              participante.estado_acceso === "dentro"
-                ? "Dentro del fraccionamiento"
-                : "Autorizado para ingresar"
+              participante.estado_acceso ===
+              "dentro"
+
+              ?
+
+              "Dentro del fraccionamiento"
+
+              :
+
+              "Autorizado para ingresar"
             }
           </b>
 
@@ -275,7 +335,8 @@ async function cargarInvitados(){
         <br>
 
         ${
-          participante.estado_acceso === "autorizado"
+          participante.estado_acceso ===
+          "autorizado"
 
           ?
 
