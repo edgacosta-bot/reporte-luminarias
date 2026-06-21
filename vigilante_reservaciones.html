@@ -167,7 +167,7 @@ async function cargarInvitados(){
       "obtener_invitados_reservacion_vigilancia"
     );
 
-    if(error){
+  if(error){
 
     console.error(error);
 
@@ -177,42 +177,61 @@ async function cargarInvitados(){
     return;
 
   }
-  
-const registros =
-  data || [];
-  
-const dentro =
-  registros.filter(
-    x => x.estado_acceso === "dentro"
-  ).length;
 
-const autorizados =
-  registros.filter(
-    x => x.estado_acceso === "autorizado"
-  ).length;
+  const registros =
+    data || [];
+
+  const dentro =
+    registros.filter(
+      x => x.estado_acceso === "dentro"
+    ).length;
 
   const total =
-  registros.length;
+    registros.length;
 
-document.getElementById(
-  "resumen"
-).innerHTML = `
+  document.getElementById(
+    "resumen"
+  ).innerHTML = `
 
-  <div>
-    👥 Total: ${total}
-  </div>
+    <div style="
+      display:flex;
+      justify-content:center;
+      gap:60px;
+      margin-bottom:10px;
+    ">
 
-  <div>
-    🟢 Dentro: ${dentro}
-  </div>
+      <div style="text-align:center;">
 
-  <div>
-    🟡 Autorizados: ${autorizados}
-  </div>
+        <div>
+          👥 ${total}
+        </div>
 
-`;
-   
-  if(!data || data.length === 0){
+        <div style="font-size:12px;">
+          Invitados
+        </div>
+
+      </div>
+
+    </div>
+
+    <div style="
+      margin-top:15px;
+      margin-bottom:15px;
+      padding:10px;
+      border-radius:12px;
+      background:#052e16;
+      text-align:center;
+      color:#bbf7d0;
+      font-weight:bold;
+    ">
+
+      🟢 Actualmente dentro: ${dentro}
+
+    </div>
+
+  `;
+
+  if(registros.length === 0){
 
     contenedor.innerHTML = `
       <div class="vacio">
@@ -242,16 +261,62 @@ document.getElementById(
   })
   .forEach(invitado => {
 
+    const etiquetaEstado =
+
+      invitado.estado_acceso === "dentro"
+
+      ? `
+          <div
+            style="
+              position:absolute;
+              top:18px;
+              right:18px;
+              background:#14532d;
+              color:white;
+              padding:6px 12px;
+              border-radius:20px;
+              font-size:12px;
+              font-weight:bold;
+            "
+          >
+            🟢 Dentro
+          </div>
+        `
+
+      : `
+          <div
+            style="
+              position:absolute;
+              top:18px;
+              right:18px;
+              background:#78350f;
+              color:white;
+              padding:6px 12px;
+              border-radius:20px;
+              font-size:12px;
+              font-weight:bold;
+            "
+          >
+            🟡 Autorizado
+          </div>
+        `;
+
     contenedor.innerHTML += `
 
-      <div class="
-  card
-  ${
-    invitado.estado_acceso === "dentro"
-      ? "card-dentro"
-      : "card-autorizado"
-  }
-">
+      <div
+        class="
+          card
+          ${
+            invitado.estado_acceso ===
+            "dentro"
+              ? "card-dentro"
+              : "card-autorizado"
+          }
+        "
+        style="position:relative;"
+      >
+
+        ${etiquetaEstado}
 
         <div class="nombre">
 
@@ -259,65 +324,64 @@ document.getElementById(
 
         </div>
 
-      <div class="detalle">
+        <div class="detalle">
 
-  Amenidad:
-  <b>${invitado.amenidad}</b>
+          <b>
+            🏠 Invitado de:
+            ${invitado.privada}-${invitado.casa}
+          </b>
 
-  <br><br>
+          <br><br>
 
-  Fecha:
-  <b>${invitado.fecha_reservacion}</b>
+          Amenidad:
+          <b>
+            ${invitado.amenidad}
+          </b>
 
-  <br><br>
+          <br><br>
 
-  Ubicación:
-  <b>
-    Privada ${invitado.privada}
-    - Casa ${invitado.casa}
-  </b>
+          Fecha:
+          <b>
+            ${invitado.fecha_reservacion}
+          </b>
 
-  <br><br>
+          ${
 
-  Estado:
-<b>
-  ${
-    invitado.estado_acceso === "dentro"
-      ? "Dentro del fraccionamiento"
-      : "Autorizado para ingresar"
-  }
-</b>
+            invitado.hora_entrada
 
-${
-  invitado.hora_entrada
-    ? `
+            ? `
 
-    <br><br>
+              <br><br>
 
-    Ingresó:
+              Ingresó:
 
-    <b>
-      ${new Date(
-        invitado.hora_entrada
-      ).toLocaleTimeString(
-        "es-MX",
-        {
-          hour:"2-digit",
-          minute:"2-digit"
-        }
-      )}
-    </b>
+              <b>
 
-    `
-    : ""
-}
+                ${new Date(
+                  invitado.hora_entrada
+                ).toLocaleTimeString(
+                  "es-MX",
+                  {
+                    hour:"2-digit",
+                    minute:"2-digit"
+                  }
+                )}
 
-</div>  
+              </b>
+
+            `
+
+            : ""
+
+          }
+
+        </div>
 
         <br>
 
         ${
-          invitado.estado_acceso === "autorizado"
+          invitado.estado_acceso ===
+          "autorizado"
 
           ?
 
@@ -354,6 +418,7 @@ ${
           </button>
 
           `
+
         }
 
       </div>
@@ -363,7 +428,6 @@ ${
   });
 
 }
-
 async function registrarIngreso(
   invitadoId
 ){
