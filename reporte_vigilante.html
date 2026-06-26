@@ -11,177 +11,102 @@ protegerPagina(["colono","residente","administracion"]);
 </script>
 
 <meta charset="UTF-8">
+<title>Reporte a Vigilante - Villas de la Concepción</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reporte a Vigilante</title>
 
-        <link rel="stylesheet" href="styles/global.css">
-<link rel="stylesheet" href="styles/reporte_vigilante.css">
 </head>
 
-<body>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
-<div class="card">
+<div class="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md border border-gray-200">
 
-<h2>👮 Reportar Vigilante</h2>
+<div class="text-center mb-6">
+  <h1 class="text-xl font-semibold text-gray-800">
+    Sistema de Información Vecinal
+  </h1>
+  <p class="text-sm text-gray-500">
+    Fraccionamiento Villas de la Concepción
+  </p>
+</div>
 
-<select id="vigilante">
-  <option value="">Selecciona vigilante</option>
+<div class="bg-blue-50 border border-blue-200 text-blue-700 text-sm rounded-lg p-3 mb-5">
+  Utiliza este formulario para reportar una situación relacionada con el personal de vigilancia.
+</div>
+
+<h2 class="text-lg font-semibold text-gray-700 mb-4 text-center">
+  Reportar Vigilante
+</h2>
+
+<form id="formReporte" class="space-y-4" onsubmit="event.preventDefault(); enviar();">
+
+<div>
+<label class="block text-sm font-medium text-gray-600">
+Vigilante <span class="text-red-600">*</span>
+</label>
+
+<select
+id="vigilante"
+class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+>
+<option value="">Selecciona vigilante</option>
 </select>
 
-<select id="tipo">
-  <option value="">Tipo de reporte</option>
+<p id="error_vigilante" class="text-red-600 text-xs mt-1"></p>
+</div>
+
+<div>
+<label class="block text-sm font-medium text-gray-600">
+Tipo de reporte <span class="text-red-600">*</span>
+</label>
+
+<select
+id="tipo"
+class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+>
+<option value="">Tipo de reporte</option>
 </select>
 
-<textarea id="descripcion" placeholder="Describe lo ocurrido..."></textarea>
+<p id="error_tipo" class="text-red-600 text-xs mt-1"></p>
+</div>
 
-<button onclick="enviar()">Enviar reporte</button>
+<div>
+<label class="block text-sm font-medium text-gray-600">
+Descripción <span class="text-red-600">*</span>
+</label>
 
-<div id="mensaje" class="mensaje"></div>
+<textarea
+id="descripcion"
+rows="3"
+class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+placeholder="Describe lo ocurrido...">
+</textarea>
 
-<div class="back" onclick="history.back()">← Volver</div>
+<p id="error_descripcion" class="text-red-600 text-xs mt-1"></p>
+</div>
+
+<button
+id="btn_enviar"
+type="submit"
+class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+Enviar reporte
+</button>
+
+<p id="mensaje" class="text-center text-sm mt-2"></p>
+
+</form>
+
+<a href="javascript:history.back()" class="block text-center mt-4 text-sm text-blue-600">
+← Volver a menú principal
+</a>
+
+<p class="text-xs text-gray-400 text-center mt-4">
+La información proporcionada será utilizada únicamente para fines de atención y seguimiento dentro del fraccionamiento.
+</p>
 
 </div>
 
-<script>
-
-/* 🔥 CATÁLOGO DINÁMICO */
-async function cargarCatalogo(){
-
-  // 🔴 LÍNEA CRÍTICA (faltaba)
-  const residente = await getResidente();
-
-  // 🔴 AQUÍ EXACTO van los logs
-  console.log("RESIDENTE COMPLETO:", residente);
-  console.log("TIPO EXACTO:", JSON.stringify(residente?.tipo));
-
-  if (!residente) {
-    console.error("No se pudo obtener residente");
-    return;
-  }
-
-  const { data, error } = await supabaseClient
-    .from("catalogo_reportes")
-    .select("subtipo")
-    .eq("categoria","seguridad")
-    .in("actor_permitido", [residente.tipo, "residente"])
-    .eq("activo", true)
-    .order("subtipo");
-
-  if(error){
-    console.error(error);
-    return;
-  }
-
-  const select = document.getElementById("tipo");
-
-  select.innerHTML = '<option value="">Tipo de reporte</option>'; // reset limpio
-
-  data?.forEach(i=>{
-    const opt = document.createElement("option");
-    opt.value = i.subtipo;
-
-    opt.textContent = i.subtipo
-      .replaceAll("_"," ")
-      .replace(/\b\w/g, l => l.toUpperCase());
-
-    select.appendChild(opt);
-  });
-}
-
-/* 👮 LISTA DE VIGILANTES (CORREGIDO) */
-async function cargarVigilantes(){
-
-  const { data, error } = await supabaseClient
-    .from("residentes")
-    .select("id,nombre")
-    .eq("tipo","vigilante")
-    .eq("activo", true)
-    .not("casa", "in", "(1,6)")
-    .order("nombre");
-
-  if(error){
-    console.error(error);
-    return;
-  }
-
-  const select = document.getElementById("vigilante");
-
-  data?.forEach(v=>{
-    const opt = document.createElement("option");
-    opt.value = v.id;
-    opt.textContent = v.nombre;
-    select.appendChild(opt);
-  });
-}
-
-/* 🚀 ENVIAR */
-async function enviar(){
-
-  const vigilante_id = document.getElementById("vigilante").value;
-  const tipo = document.getElementById("tipo").value;
-  const descripcion = document.getElementById("descripcion").value.trim();
-  const msg = document.getElementById("mensaje");
-
-  msg.className = "mensaje";
-
-  if(!vigilante_id || !tipo || !descripcion){
-    msg.innerText = "Completa todos los campos";
-    msg.classList.add("error");
-    return;
-  }
-
-  // 🔥 OBTENER RESIDENTE
-  const residente = await getResidente();
-
-  if (!residente) {
-    msg.innerText = "Error de sesión";
-    msg.classList.add("error");
-    return;
-  }
-
-  const { error } = await supabaseClient
-    .from("reportes_vigilantes")
-    .insert([{
-      vigilante_id,
-      tipo,
-      descripcion,
-
-      privada: residente.privada,
-      casa: residente.casa,
-
-      residente_id: residente.id,
-
-      creado_por: residente.id,
-      rol_creador: residente.tipo,
-
-      fecha_reporte: new Date().toISOString(),
-      estatus: "nuevo"
-    }]);
-  
-  if(error){
-    console.error(error);
-    msg.innerText = "Error al enviar reporte";
-    msg.classList.add("error");
-    return;
-  }
-
-  msg.innerText = "Reporte enviado correctamente ✅";
-  msg.classList.add("ok");
-
-  document.getElementById("descripcion").value = "";
-  document.getElementById("tipo").value = "";
-  document.getElementById("vigilante").value = "";
-}
-
-/* INIT */
-async function init(){
-  await cargarCatalogo();
-  await cargarVigilantes();
-}
-
-init();
-
-</script>
+<script src="public/js/reporte_vigilante.js"></script>
 
 </body>
 </html>
