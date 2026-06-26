@@ -296,23 +296,28 @@ async function guardarPin() {
     return;
   }
 
-  /*
-const { data: existe } = await supabaseClient
-  .from("residentes")
-  .select("id")
-  .eq("pin_vigilante", pin)
-  .maybeSingle();
+  const { data: existe } = await supabaseClient
+    .from("residentes")
+    .select("id")
+    .eq("pin_vigilante", nuevo)
+    .neq("id", vigilanteSeleccionado)
+    .maybeSingle();
 
-if (existe) {
-  mostrarToast("PIN ya existe", "error");
-  return;
-}
-*/
+  if (existe) {
+    mostrarToast("PIN ya existe", "error");
+    return;
+  }
 
-  await supabaseClient
+  const { error } = await supabaseClient
     .from("residentes")
     .update({ pin_vigilante: nuevo })
     .eq("id", vigilanteSeleccionado);
+
+  if (error) {
+    console.error(error);
+    mostrarToast("No se pudo actualizar PIN", "error");
+    return;
+  }
 
   cerrarModal();
   mostrarToast("PIN actualizado");
@@ -340,7 +345,7 @@ async function crearVigilante() {
     return;
   }
 
-  const { data: existe } = await supabaseClient
+const { data: existe } = await supabaseClient
     .from("residentes")
     .select("id")
     .eq("pin_vigilante", pin)
