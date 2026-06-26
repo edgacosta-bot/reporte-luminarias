@@ -1,13 +1,66 @@
-const { createClient } = supabase;
+function cargarConfiguracionDesdeEnvJs() {
+  if (window.__APP_ENV__) return;
+
+  const request = new XMLHttpRequest();
+  request.open('GET', 'env.js', false);
+
+  try {
+    request.send(null);
+  } catch (error) {
+    return;
+  }
+
+  if (request.status < 200 || request.status >= 400) {
+    return;
+  }
+
+  const match = request.responseText.match(/window\.__APP_ENV__\s*=\s*(\{[\s\S]*\});?/);
+  if (!match) return;
+
+  window.__APP_ENV__ = JSON.parse(match[1]);
+}
+
+cargarConfiguracionDesdeEnvJs();
+
+function obtenerConfiguracionSupabase() {
+  const config = window.__APP_ENV__;
+
+  if (!config?.SUPABASE_URL || !config?.SUPABASE_ANON_KEY) {
+    throw new Error('Falta la configuración de Supabase en env.js');
+  }
+
+  return config;
+}
+
+function createSupabaseClient() {
+  const { SUPABASE_URL, SUPABASE_ANON_KEY } = obtenerConfiguracionSupabase();
+  return supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+async function validarPinVigilante(pinInput) {
+  const pin = (pinInput || '').toString().trim();
+
+  if (!pin) return null;
+
+  const { data, error } = await supabaseClient
+    .rpc('login_vigilante_por_pin', { p_pin: pin });
+
+  if (error) {
+    console.error('Error validando PIN vigilante:', error);
+    return null;
+  }
+
+  if (!data) return null;
+  return Array.isArray(data) ? (data[0] || null) : data;
+}
 
 // 🔹 Cliente único global (NO duplicar en otros archivos)
-const supabaseClient = createClient(
-  "https://prjxmfhahnzosdwljode.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByanhtZmhhaG56b3Nkd2xqb2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjE1NjUsImV4cCI6MjA4NzYzNzU2NX0.SHZkaOrD0Em9BRJg67QS6DgZ91qJhQFtGL7YqAssULs"
-);
+const supabaseClient = createSupabaseClient();
 
 // 🔥 Exponer globalmente
 window.supabaseClient = supabaseClient;
+window.createSupabaseClient = createSupabaseClient;
+window.validarPinVigilante = validarPinVigilante;
 
 // 🔹 Protección de páginas por rol
 let yaValidado = false;

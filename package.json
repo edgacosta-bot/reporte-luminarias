@@ -10,8 +10,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "http-server . -p 3000 -a localhost -c-1",
-    "dev": "npm run start"
+    "start": "node scripts/generate-env.js && http-server . -p 3000 -a localhost -c-1",
+    "dev": "npm run start",
+    "security:scan": "node scripts/security-scan.js"
   },
   "repository": {
     "type": "git",
