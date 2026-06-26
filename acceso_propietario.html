@@ -49,25 +49,30 @@ async function init(){
     return;
   }
 
-  const { data } = await supabaseClient
+  const { data, error: errorAcceso } = await supabaseClient
   .from("accesos_propietarios")
   .select("*")
   .eq("identificador", qr)
   .eq("activo", true)
   .maybeSingle();
 
-  if(!data){
+  if(errorAcceso || !data){
     pintar("QR inválido","error");
     return;
   }
 
   acceso = data;
 
-  const { data: res } = await supabaseClient
+  const { data: res, error: errorResidente } = await supabaseClient
     .from("residentes")
     .select("id, privada, casa, estado_pago")
     .eq("id", acceso.residente_id)
-    .single();
+    .maybeSingle();
+
+  if(errorResidente || !res){
+    pintar("No se encontró residente","error");
+    return;
+  }
 
   residente = res;
 
@@ -99,6 +104,11 @@ document.getElementById("btnValidar").onclick = async () => {
 
   if(!pin){
     ui.warn("Ingrese PIN");
+    return;
+  }
+
+  if(!residente){
+    ui.error("No se pudo cargar el residente");
     return;
   }
 
@@ -213,6 +223,11 @@ function pintar(texto,color){
 
 // 🔹 DETALLE
 function renderDetalle(){
+  if(!acceso || !residente){
+    document.getElementById("detalle").innerHTML = "";
+    return;
+  }
+
   document.getElementById("detalle").innerHTML = `
     <p><b>PROPIETARIO</b></p>
     <p>${acceso.nombre}</p>
