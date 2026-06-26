@@ -10,7 +10,15 @@ pnpm-debug.log*
 # Environment files
 .env
 .env.*
-!.env.example
+.env.example
+.env_example
+env.js
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+secret*/
 
 # OS files
 .DS_Store
@@ -26,3 +34,11 @@ dist/
 build/
 .tmp/
 tmp/
+
+# One-off maintenance/refactor scripts (not app runtime)
+scripts/tmp-*.js
+scripts/temp-*.js
+scripts/migrate-*.js
+scripts/refactor-*.js
+scripts/patch-*.js
+scripts/*-migration.js
