@@ -7,165 +7,152 @@
 <script src="utils/residente.js"></script>
 
 <meta charset="UTF-8">
+<title>Reporte Agua - Villas de la Concepción</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reporte Agua</title>
 
-        <link rel="stylesheet" href="styles/global.css">
-<link rel="stylesheet" href="styles/formulario_agua.css">
 </head>
 
-<body>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
-<div class="container">
+<div class="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md border border-gray-200">
 
-<h2>Reporte de agua</h2>
+<div class="text-center mb-6">
+  <h1 class="text-xl font-semibold text-gray-800">
+    Sistema de Información Vecinal
+  </h1>
+  <p class="text-sm text-gray-500">
+    Fraccionamiento Villas de la Concepción
+  </p>
+</div>
 
-<p class="info">
-Registra el número de reporte proporcionado por CAASIM junto con los datos correspondientes.
-</p>
+<div class="bg-blue-50 border border-blue-200 text-blue-700 text-sm rounded-lg p-3 mb-5">
+  Registra el número de reporte proporcionado por CAASIM junto con los datos correspondientes.
+</div>
 
-<input id="numero_reporte" placeholder="Número de reporte">
+<h2 class="text-lg font-semibold text-gray-700 mb-4 text-center">
+  Reporte de agua
+</h2>
 
-<input 
-  type="text" 
-  id="fecha_reporte" 
-  placeholder="Seleccione la fecha en que hizo el reporte"
-  onfocus="this.type='date'"
-  onblur="if(!this.value)this.type='text'"
+<form id="formReporte" class="space-y-4" onsubmit="event.preventDefault(); guardar();">
+
+<div>
+<label class="block text-sm font-medium text-gray-600">
+Número de reporte <span class="text-red-600">*</span>
+</label>
+
+<input
+type="text"
+id="numero_reporte"
+placeholder="Número de reporte"
+class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
 >
 
-<select id="tipo_falla">
-  <option value="">Tipo de falla</option>
-  <option value="sin_servicio">Sin servicio</option>
-  <option value="fuga">Fuga</option>
-  <option value="baja_presion">Baja presión</option>
+<p id="error_numero_reporte" class="text-red-600 text-xs mt-1"></p>
+</div>
+
+<div>
+<label class="block text-sm font-medium text-gray-600">
+Fecha del reporte <span class="text-red-600">*</span>
+</label>
+
+<input
+type="text"
+id="fecha_reporte"
+placeholder="Seleccione la fecha en que hizo el reporte"
+onfocus="this.type='date'"
+onblur="if(!this.value)this.type='text'"
+class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+>
+
+<p id="error_fecha_reporte" class="text-red-600 text-xs mt-1"></p>
+</div>
+
+<div>
+<label class="block text-sm font-medium text-gray-600">
+Tipo de falla <span class="text-red-600">*</span>
+</label>
+
+<select
+id="tipo_falla"
+class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+>
+<option value="">Tipo de falla</option>
+<option value="sin_servicio">Sin servicio</option>
+<option value="fuga">Fuga</option>
+<option value="baja_presion">Baja presión</option>
 </select>
 
-<select id="calle"></select>
+<p id="error_tipo_falla" class="text-red-600 text-xs mt-1"></p>
+</div>
 
+<div>
+<label class="block text-sm font-medium text-gray-600">
+Calle <span class="text-red-600">*</span>
+</label>
 
-<select id="medio_reporte">
-  <option value="">Medio de reporte</option>
-  <option value="Teléfono">Teléfono</option>
-  <option value="App">App</option>
+<select
+id="calle"
+class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+>
+<option value="">Selecciona calle</option>
 </select>
 
-<textarea id="observaciones" placeholder="Observaciones (opcional)"></textarea>
+<p id="error_calle" class="text-red-600 text-xs mt-1"></p>
+</div>
 
-<button onclick="guardar()">Guardar reporte</button>
+<div>
+<label class="block text-sm font-medium text-gray-600">
+Medio de reporte <span class="text-red-600">*</span>
+</label>
 
-<div id="msg"></div>
+<select
+id="medio_reporte"
+class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+>
+<option value="">Medio de reporte</option>
+<option value="Teléfono">Teléfono</option>
+<option value="App">App</option>
+</select>
+
+<p id="error_medio_reporte" class="text-red-600 text-xs mt-1"></p>
+</div>
+
+<div>
+<label class="block text-sm font-medium text-gray-600">
+Observaciones (opcional)
+</label>
+
+<textarea
+id="observaciones"
+rows="3"
+class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+placeholder="Observaciones (opcional)">
+</textarea>
+</div>
+
+<button
+id="btn_enviar"
+type="submit"
+class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+Guardar reporte
+</button>
+
+<p id="msg" class="text-center text-sm mt-2"></p>
+
+</form>
+
+<a href="index.html" class="block text-center mt-4 text-sm text-blue-600">
+← Volver a menú principal
+</a>
+
+<p class="text-xs text-gray-400 text-center mt-4">
+La información proporcionada será utilizada únicamente para fines de atención y seguimiento dentro del fraccionamiento.
+</p>
 
 </div>
 
-<script>
-
-let residenteGlobal = null;
-
-window.addEventListener("DOMContentLoaded", async () => {
-
-  await protegerPagina(["colono","residente","admin"]);
-
-  residenteGlobal = await getResidente();
-
-  if (!residenteGlobal) {
-    alert("Sesión no válida");
-    return;
-  }
-
-  cargarCalles();
-
-  const hoy = new Date();
-  const fechaHoy =
-    hoy.getFullYear() + "-" +
-    String(hoy.getMonth() + 1).padStart(2, '0') + "-" +
-    String(hoy.getDate()).padStart(2, '0');
-
-});
-
-async function cargarCalles(){
-
-  if(!residenteGlobal) return;
-
-  const { data } = await supabaseClient
-    .from("ubicaciones")
-    .select("id, calle")
-    .eq("privada", residenteGlobal.privada)
-    .order("calle");
-
-  const select = document.getElementById("calle");
-  select.innerHTML = '<option value="">Selecciona calle</option>';
-
-  const callesUnicas = [...new Map(data.map(item => [item.calle, item])).values()];
-
-  callesUnicas.forEach(c => {
-    const option = document.createElement("option");
-    option.value = c.id;
-    option.textContent = c.calle;
-    select.appendChild(option);
-  });
-}
-
-async function guardar(){
-
-  const numero_reporte = document.getElementById("numero_reporte").value.trim();
-  const fecha_reporte = document.getElementById("fecha_reporte").value;
-  const tipo_falla = document.getElementById("tipo_falla").value;
-  const calle_id = document.getElementById("calle").value;
-  const medio_reporte = document.getElementById("medio_reporte").value;
-  const observaciones = document.getElementById("observaciones").value.trim();
-
-  const msg = document.getElementById("msg");
-
- if(!numero_reporte || !tipo_falla || !calle_id || !fecha_reporte || !medio_reporte){
-    msg.innerText = "Completa los campos requeridos";
-    return;
-  }
-
-  if (!residenteGlobal) {
-    msg.innerText = "No se pudo identificar al residente";
-    return;
-  }
-
-  // 🔥 CONVERSIÓN CORRECTA A TIMESTAMP (CLAVE)
-  const fechaISO = new Date(fecha_reporte + "T00:00:00").toISOString();
-
-  const { error } = await supabaseClient
-    .from("reportes_agua_caasim")
-    .insert([{
-      residente_id: residenteGlobal.id,
-      privada: residenteGlobal.privada,
-      casa: residenteGlobal.casa,
-      calle_id,
-      numero_reporte,
-      tipo_falla,
-      medio_reporte,
-      observaciones,
-      estatus: "reportado",
-      fecha_reporte: fechaISO
-    }]);
-
-  if(error){
-    console.error(error);
-    msg.innerText = "Error al guardar";
-    return;
-  }
-
-  msg.innerText = "Reporte guardado correctamente";
-
-  document.getElementById("numero_reporte").value = "";
-  document.getElementById("observaciones").value = "";
-
-  const hoy = new Date();
-  const fechaHoy =
-    hoy.getFullYear() + "-" +
-    String(hoy.getMonth() + 1).padStart(2, '0') + "-" +
-    String(hoy.getDate()).padStart(2, '0');
-
-  document.getElementById("fecha_reporte").value = fechaHoy;
-}
-
-</script>
+<script src="public/js/formulario_agua.js"></script>
 
 </body>
 </html>
