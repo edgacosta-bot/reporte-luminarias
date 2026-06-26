@@ -37,28 +37,27 @@
 
 <div>
 <label class="block text-sm font-medium text-gray-600">
-Número de luminaria conforme al croquis
+Número de luminaria conforme al croquis <span class="text-red-600">*</span>
 </label>
 
 <input 
 type="number"
 id="no_luminaria"
-required
 placeholder="Ej. 50"
 class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
 >
 
 <div id="info_luminaria" class="text-sm mt-2"></div>
+<p id="error_no_luminaria" class="text-red-600 text-xs mt-1"></p>
 </div>
 
 <div>
 <label class="block text-sm font-medium text-gray-600">
-Tipo de falla
+Tipo de falla <span class="text-red-600">*</span>
 </label>
 
 <select
 id="descripcion"
-required
 class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
 >
 <option value="">Seleccione una opción</option>
@@ -69,6 +68,8 @@ class="mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:
 <option value="DAÑO_FISICO">Daño físico</option>
 <option value="OTRO">Otro</option>
 </select>
+
+<p id="error_descripcion" class="text-red-600 text-xs mt-1"></p>
 </div>
 
 <div>
@@ -87,8 +88,7 @@ placeholder="Describe brevemente el problema si lo deseas">
 <button
 id="btn_enviar"
 type="submit"
-disabled
-class="w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed transition">
+class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
 Registrar reporte
 </button>
 
@@ -106,178 +106,7 @@ La información proporcionada será utilizada únicamente para fines de atenció
 
 </div>
 
-<script>
-
-let reporteValido = false;
-let luminariaActual = null;
-let debounceTimer = null;
-
-/* VALIDAR LUMINARIA */
-
-document.getElementById('no_luminaria').addEventListener('input', () => {
-
-clearTimeout(debounceTimer);
-
-debounceTimer = setTimeout(async () => {
-
-const numero = Number(document.getElementById('no_luminaria').value);
-const info = document.getElementById('info_luminaria');
-const boton = document.getElementById('btn_enviar');
-
-if (!numero) {
-info.innerHTML = "";
-boton.disabled = true;
-luminariaActual = null;
-return;
-}
-
-const { data, error } = await supabaseClient
-.from('luminarias_lookup')
-.select('id, calle, privada, situacion')
-.eq('no_luminaria', numero);
-
-if (error) {
-console.error(error);
-return;
-}
-
-if (data && data.length > 0) {
-
-luminariaActual = data[0];
-
-if (data[0].situacion === "Fuera de servicio") {
-
-info.innerHTML =
-"Calle: <b>" + data[0].calle +
-"</b> | Privada: <b>" + data[0].privada +
-"</b><br><span class='text-orange-600'>Esta luminaria ya está registrada como fuera de servicio.</span>";
-
-reporteValido = false;
-luminariaActual = null;
-
-boton.disabled = true;
-boton.className =
-"w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed";
-
-return;
-}
-
-info.innerHTML =
-"Calle: <b>" + data[0].calle +
-"</b> | Privada: <b>" + data[0].privada + "</b>";
-
-info.className = "text-green-600 text-sm mt-2";
-
-reporteValido = true;
-
-boton.disabled = false;
-boton.className =
-"w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition";
-
-} else {
-
-info.innerHTML = "Número de luminaria no encontrado";
-info.className = "text-red-600 text-sm mt-2";
-
-reporteValido = false;
-luminariaActual = null;
-
-boton.disabled = true;
-boton.className =
-"w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed";
-}
-
-}, 400);
-
-});
-
-/* ENVIAR REPORTE */
-
-document.getElementById('formReporte').addEventListener('submit', async (e) => {
-
-e.preventDefault();
-
-if (!reporteValido) return;
-
-const mensaje = document.getElementById('mensaje');
-
-try {
-
-// 🔥 NUEVO: obtener usuario autenticado
-const { data: userData } = await supabaseClient.auth.getUser();
-const user = userData?.user;
-
-if (!user) {
-throw new Error("Sesión no válida");
-}
-
-// 🔥 obtener residente por user_id
-const { data: residente, error: errorResidente } = await supabaseClient
-.from("residentes")
-.select("id, privada, casa") // 🔥 AQUÍ
-.eq("user_id", user.id)
-.single();
-
-if (errorResidente || !residente) {
-throw new Error("No se pudo obtener la información del usuario");
-}
-
-const no_luminaria = Number(document.getElementById('no_luminaria').value);
-const descripcion = document.getElementById('descripcion').value;
-const comentario = document.getElementById('comentario').value;
-
-if (!luminariaActual) {
-throw new Error("Luminaria no válida");
-}
-
-const luminaria_id = luminariaActual.id;
-
-const { error: errorInsert } = await supabaseClient
-.from('reportes_vecinales')
-.insert([{
-  luminaria_id: luminaria_id,
-  no_luminaria: no_luminaria,
-  descripcion: descripcion,
-  estatus: 'NUEVO',
-  observaciones: comentario,
-
-  privada: residente.privada,
-  casa: residente.casa,
-
-  residente_id: residente.id,
-
-  // 🔥 NUEVO (HOMOLOGACIÓN)
-  creado_por: residente.id,
-  rol_creador: "residente",
-
-  fecha_reporte: new Date().toISOString()
-}]);
-
-if (errorInsert) throw errorInsert;
-
-mensaje.innerText =
-"Reporte registrado correctamente. Gracias por tu apoyo para el mantenimiento del fraccionamiento.";
-
-mensaje.className = "text-center text-green-600";
-
-document.getElementById('formReporte').reset();
-document.getElementById('info_luminaria').innerHTML = "";
-luminariaActual = null;
-
-document.getElementById('btn_enviar').disabled = true;
-
-} catch (error) {
-
-mensaje.innerText = "Error: " + error.message;
-mensaje.className = "text-center text-red-600";
-
-console.error(error);
-
-}
-
-});
-
-</script>
+<script src="public/js/luminarias.js"></script>
 
 </body>
 </html>
