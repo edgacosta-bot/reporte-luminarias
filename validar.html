@@ -36,6 +36,7 @@ button{width:100%;padding:14px;margin-top:12px;border-radius:10px;border:none;fo
 </div>
 <script>
 const qr=new URLSearchParams(location.search).get("qr")?.trim()||"";
+console.log("QR recibido:", qr); 
 let respuestaRPC=null;
 window.addEventListener("DOMContentLoaded",async()=>{
  const {data}=await supabaseClient.auth.getSession();
