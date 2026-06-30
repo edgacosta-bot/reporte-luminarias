@@ -1,409 +1,101 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Validación de acceso</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <script src="auth.js"></script>
-
-  <style>
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: Arial;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      color: white;
-      text-align: center;
-      background: #020617;
-    }
-
-    .container {
-      padding: 20px;
-      max-width: 320px;
-      width: 100%;
-    }
-
-    .logo {
-      width: 80px;
-      margin-bottom: 15px;
-    }
-
-    h1 {
-      font-size: 28px;
-      margin-bottom: 10px;
-      font-weight: bold;
-    }
-
-    .ok { background: #16a34a; }
-    .warn { background: #f59e0b; }
-    .error { background: #dc2626; }
-
-    .control {
-      margin-top: 20px;
-      display: none;
-    }
-
-    input {
-      width: 100%;
-      padding: 16px;
-      border-radius: 10px;
-      border: none;
-      margin-top: 10px;
-      font-size: 18px;
-      text-align: center;
-      background: #020617;
-      color: white;
-      font-weight: bold;
-      letter-spacing: 4px;
-    }
-
-    button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 12px;
-      border-radius: 10px;
-      border: none;
-      font-weight: bold;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .btn {
-      background: #020617;
-      color: white;
-      opacity: 0.5;
-    }
-
-    .btn.enabled {
-      opacity: 1;
-    }
-
-    .error-box {
-      display: none;
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 8px;
-      background: #7f1d1d;
-      color: #fecaca;
-      font-weight: bold;
-    }
-
-    .btn-wa {
-      background: #25D366;
-      color: white;
-    }
-
-    .btn-cerrar {
-      background: #020617;
-      color: white;
-    }
-  </style>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Validación de acceso</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;display:flex;align-items:center;justify-content:center;height:100vh;color:#fff;text-align:center;background:#020617}
+.container{padding:20px;max-width:320px;width:100%}
+.logo{width:80px;margin-bottom:15px}
+h1{font-size:28px;margin-bottom:10px;font-weight:bold}
+.ok{background:#16a34a}.warn{background:#f59e0b}.error{background:#dc2626}
+.control{margin-top:20px;display:block}
+input{width:100%;padding:16px;border-radius:10px;border:none;margin-top:10px;font-size:18px;text-align:center;background:#020617;color:#fff;font-weight:bold;letter-spacing:4px}
+button{width:100%;padding:14px;margin-top:12px;border-radius:10px;border:none;font-weight:bold;font-size:16px;cursor:pointer}
+.btn{background:#020617;color:#fff;opacity:.5}
+.btn.enabled{opacity:1}
+.error-box{display:none;margin-top:10px;padding:10px;border-radius:8px;background:#7f1d1d;color:#fecaca;font-weight:bold}
+.btn-wa{background:#25D366;color:#fff}
+.btn-cerrar{background:#020617;color:#fff}
+</style>
 </head>
-
 <body>
-
 <div class="container">
-
-  <img src="/icono-512.png" class="logo">
-
-  <h1 id="estado">Validando...</h1>
-  <div id="detalle"></div>
-
-  <div id="control" class="control">
-    <input type="password" id="pin" placeholder="Ingrese NIP">
-
-<div id="errorPin" class="error-box">
-  NIP incorrecto
+<img src="/icono-512.png" class="logo">
+<h1 id="estado">Validación de acceso</h1>
+<div id="detalle">Ingrese el NIP del vigilante para autorizar.</div>
+<div id="control" class="control">
+<input type="password" id="pin" placeholder="Ingrese NIP">
+<div id="errorPin" class="error-box"></div>
+<button id="btnAutorizar" class="btn" disabled>Autorizar acceso</button>
 </div>
-
-<button id="btnAutorizar" class="btn" disabled>
-  Autorizar acceso
-</button>
-
-  </div>
-
 </div>
-
 <script>
-
-const params = new URLSearchParams(window.location.search);
-const qr = params.get("qr")?.trim();
-
-let visitaGlobal = null;
-let tipoAccion = "";
-let accesoActual = null;
-
-window.addEventListener("DOMContentLoaded", async ()=>{
-
-  const { data } = await supabaseClient.auth.getSession();
-
-  if (data.session) {
-    await protegerPagina(["vigilante","administracion","residente"]);
-  }
-
-  await validar();
+const qr=new URLSearchParams(location.search).get("qr")?.trim()||"";
+let respuestaRPC=null;
+window.addEventListener("DOMContentLoaded",async()=>{
+ const {data}=await supabaseClient.auth.getSession();
+ if(data.session){await protegerPagina(["vigilante","administracion","residente"]);}
+ if(!qr){
+   document.getElementById("estado").innerText="Código QR no recibido";
+   document.getElementById("detalle").innerText="Escanee nuevamente el código QR.";
+   document.getElementById("btnAutorizar").disabled=true;
+   return;
+ }
+ document.getElementById("pin").focus();
 });
-
-// 🔐 VALIDAR NIP
-async function validarNIP(pin){
-  const { data } = await supabaseClient
-    .from("residentes")
-    .select("id")
-    .eq("pin_vigilante", pin.trim())
-    .eq("tipo","vigilante")
-    .eq("activo", true)
-    .maybeSingle();
-
-  return data || null;
-}
-
-// 🔍 VALIDACIÓN GENERAL
-async function validar(){
-
-  const { data, error } = await supabaseClient
-    .from('visitas_qr')
-    .select('*')
-    .eq('codigo_qr', qr)
-    .eq('estatus', 'activo')
-    .maybeSingle();
-
-  if (error || !data) {
-    pintar("Este QR ya fue usado", "error");
-    return;
-  }
-
-  visitaGlobal = data;
-
-  const hoy = new Date().toLocaleDateString("en-CA");
-
-  // después de detectar tipoAccion
-if (tipoAccion === "entrada") {
-  if (visitaGlobal.fecha_visita !== hoy) {
-    pintar("QR NO VÁLIDO PARA HOY", "error", visitaGlobal);
-    return;
-  }
-}
-
-  const ahora = new Date();
-  const inicio = new Date(`${visitaGlobal.fecha_visita}T${visitaGlobal.hora_inicio}`);
-  const fin = new Date(`${visitaGlobal.fecha_visita}T${visitaGlobal.hora_fin}`);
-
-  if (tipoAccion === "entrada") {
-  if (ahora < inicio || ahora > fin) {
-    pintar("FUERA DE HORARIO", "error", visitaGlobal);
-    return;
-  }
-}
-
-  const { data: accesos } = await supabaseClient
-    .from('accesos_visitas')
-    .select('id')
-    .eq('visita_id', visitaGlobal.id)
-    .is('fecha_hora_salida', null)
-    .limit(1);
-
-  const acceso = accesos?.[0] || null;
-
-  if (!acceso) {
-    tipoAccion = "entrada";
-    pintar("REGISTRAR ENTRADA", "ok", visitaGlobal);
-  } else {
-    tipoAccion = "salida";
-    accesoActual = acceso;
-    pintar("REGISTRAR SALIDA", "warn", visitaGlobal);
-  }
-
-  prepararControl();
-}
-
-// 🎛️ UI CONTROL
-function prepararControl(){
-
-  const btn = document.getElementById("btnAutorizar");
-
-  document.getElementById("control").style.display = "block";
-
-  if (tipoAccion === "entrada") {
-    btn.innerText = "Autorizar acceso";
-    btn.style.background = "#16a34a";
-  } else {
-    btn.innerText = "Autorizar salida";
-    btn.style.background = "#f59e0b";
-  }
-
-  document.getElementById("pin").focus();
-}
-
-// 🔥 INPUT
-const pinInput = document.getElementById("pin");
-const btn = document.getElementById("btnAutorizar");
-const errorDiv = document.getElementById("errorPin");
-
-pinInput.addEventListener("input", () => {
-  const valido = pinInput.value.length >= 4;
-  btn.disabled = !valido;
-  btn.classList.toggle("enabled", valido);
-  errorDiv.style.display = "none";
+const pin=document.getElementById("pin");
+const btn=document.getElementById("btnAutorizar");
+const err=document.getElementById("errorPin");
+pin.addEventListener("input",()=>{
+ const ok=pin.value.trim().length>=4;
+ btn.disabled=!ok;
+ btn.classList.toggle("enabled",ok);
+ err.style.display="none";
 });
-
-// 🚀 ACCIÓN PRINCIPAL
-btn.addEventListener("click", async () => {
-
-  btn.disabled = true;
-  btn.innerText = "Procesando...";
-
-  const vigilante = await validarNIP(pinInput.value);
-
-  if (!vigilante) {
-    errorDiv.style.display = "block";
-    pinInput.value = "";
-    btn.disabled = false;
-    btn.innerText = "Autorizar acceso";
-    return;
-  }
-
-  const ahora = new Date().toISOString();
-
-  if (tipoAccion === "entrada") {
-
-    const { data: nuevoAcceso, error } = await supabaseClient
-      .from('accesos_visitas')
-      .insert([{
-        visita_id: visitaGlobal.id,
-        fecha_hora_entrada: ahora,
-        estatus: 'dentro',
-        vigilante_id: vigilante.id
-      }])
-      .select()
-      .single();
-
-    if (error) {
-  console.error("🔥 ERROR INSERT:", error);
-  alert("Error al registrar entrada");
-  return;
+btn.onclick=async()=>{
+ btn.disabled=true;
+ btn.innerText="Procesando...";
+ err.style.display="none";
+ const {data,error}=await supabaseClient.rpc("validar_acceso_visita",{p_qr:qr,p_pin:pin.value.trim()});
+ if(error){return mostrarError("Error de comunicación con el servidor.");}
+ respuestaRPC=data;
+ if(!respuestaRPC.ok){return mostrarError(respuestaRPC.mensaje||"No fue posible validar el acceso.");}
+ const tipo=respuestaRPC.accion==="entrada"?"ok":"warn";
+ pintar(respuestaRPC.mensaje,tipo,respuestaRPC);
+ const texto=respuestaRPC.accion==="entrada"
+ ?`SIGVIC informa: Estimado residente, su visitante *${respuestaRPC.nombre_visitante}* acaba de ingresar al fraccionamiento. Gracias.`
+ :`SIGVIC informa: Estimado residente, su visita *${respuestaRPC.nombre_visitante}* acaba de salir del fraccionamiento. Gracias.`;
+ crearBotonNotificar(texto,tipo==="ok"?"#16a34a":"#f59e0b");
+};
+function mostrarError(m){
+ err.innerText=m;err.style.display="block";btn.disabled=false;btn.innerText="Autorizar acceso";pin.value="";pin.focus();
 }
-
-    pintar("ENTRADA REGISTRADA", "ok", visitaGlobal);
-
-    await supabaseClient
-      .from('accesos_visitas')
-      .update({
-        notificado: true,
-        fecha_notificacion: new Date().toISOString()
-      })
-      .eq('id', nuevoAcceso.id);
-
-    crearBotonNotificar(
-      `SIGVIC informa: Estimado residente, su visitante *${visitaGlobal.nombre_visitante}* acaba de ingresar al fraccionamiento. Gracias`,
-      "#16a34a"
-    );
-
-  } else {
-
-   const { error } = await supabaseClient
-  .from('accesos_visitas')
-  .update({
-    fecha_hora_salida: ahora,
-    estatus: 'fuera',
-    vigilante_salida_id: vigilante.id
-  })
-  .eq('id', accesoActual.id);
-
-if (error) {
-  console.error("🔥 ERROR UPDATE:", error);
-  alert("Error al registrar salida");
-  return;
+function crearBotonNotificar(mensaje,color){
+ const url=`https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+ document.querySelectorAll(".btn-wa,.btn-cerrar").forEach(e=>e.remove());
+ const b=document.createElement("button");
+ b.className="btn-wa";b.style.background=color;b.innerText="Notificar";
+ b.onclick=()=>{
+   window.open(url,"_blank");
+   b.disabled=true;b.innerText="✔ Notificado";b.style.background="#1e293b";
+   const c=document.createElement("button");
+   c.className="btn-cerrar";c.innerText="Finalizar";
+   c.onclick=()=>{window.close();setTimeout(()=>location.href="about:blank",300);};
+   document.querySelector(".container").appendChild(c);
+ };
+ document.querySelector(".container").appendChild(b);
 }
-
-    console.log("VISITA GLOBAL:", visitaGlobal);
-
-const { data: dataQR, error: errorQR } = await supabaseClient
-  .from('visitas_qr')
-  .update({ estatus: 'usado' })
-  .eq('id', visitaGlobal.id)
-  .select();
-
-console.log("RESULTADO UPDATE:", dataQR);
-console.log("ERROR UPDATE:", errorQR);
-
-if (errorQR) {
-  alert("Error al actualizar QR");
+function pintar(msg,tipo,data){
+ document.getElementById("control").style.display="none";
+ document.body.className=tipo;
+ document.getElementById("estado").innerText=msg;
+ document.getElementById("detalle").innerHTML=`<p><b>${data.nombre_visitante}</b></p><p style="margin-top:10px;font-size:18px;">Privada ${data.privada} - Lote ${data.casa}</p>`;
 }
-
-    pintar("SALIDA REGISTRADA", "warn", visitaGlobal);
-
-    crearBotonNotificar(
-      `SIGVIC informa: Estimado residente, su visita *${visitaGlobal.nombre_visitante}* en este momento acaba de salir del fraccionamiento. Gracias.`,
-      "#f59e0b"
-    );
-  }
-
-});
-
-// 📲 BOTÓN WHATSAPP (RECUPERADO)
-function crearBotonNotificar(mensaje, color) {
-
-  const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
-
-  const existentes = document.querySelectorAll(".btn-wa, .btn-cerrar");
-  existentes.forEach(b => b.remove());
-
-  const btnWA = document.createElement("button");
-  btnWA.innerText = "Notificar";
-  btnWA.className = "btn-wa";
-  btnWA.style.background = color;
-
-  btnWA.onclick = () => {
-
-    window.open(url, '_blank');
-
-    btnWA.innerText = "✔ Notificado";
-    btnWA.style.background = "#1e293b";
-    btnWA.disabled = true;
-
-    const btnCerrar = document.createElement("button");
-    btnCerrar.innerText = "Finalizar";
-    btnCerrar.className = "btn-cerrar";
-
-    btnCerrar.onclick = () => {
-      window.close();
-      setTimeout(() => {
-        window.location.href = "about:blank";
-      }, 300);
-    };
-
-    document.querySelector(".container").appendChild(btnCerrar);
-  };
-
-  document.querySelector(".container").appendChild(btnWA);
-}
-
-// 🎨 UI
-function pintar(mensaje, tipo, data = null) {
-  document.getElementById("control").style.display = "none";
-  document.getElementById("estado").innerText = mensaje;
-  document.body.className = tipo;
-
- if (data) {
-  document.getElementById("detalle").innerHTML = `
-    <p><b>${data.nombre_visitante}</b></p>
-    <p style="margin-top:10px; font-size:18px;">
-      Privada ${data.privada} - Lote ${data.casa}
-    </p>
-  `;
-}
-}
-
 </script>
-
 </body>
 </html>
