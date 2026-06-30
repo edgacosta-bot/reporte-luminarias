@@ -62,6 +62,14 @@ btn.onclick=async()=>{
  btn.disabled=true;
  btn.innerText="Procesando...";
  err.style.display="none";
+ 
+const prueba = await supabaseClient
+    .from("visitas_qr")
+    .select("id,codigo_qr,estatus")
+    .eq("codigo_qr", qr);
+
+console.log("SELECT directo:", prueba);
+ 
  const { data, error } = await supabaseClient.rpc(
     "validar_acceso_visita",
     {
