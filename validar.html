@@ -63,13 +63,7 @@ btn.onclick=async()=>{
  btn.innerText="Procesando...";
  err.style.display="none";
  
-const prueba = await supabaseClient
-    .from("visitas_qr")
-    .select("id,codigo_qr,estatus")
-    .eq("codigo_qr", qr);
 
-console.log("SELECT directo:", prueba);
- 
  const { data, error } = await supabaseClient.rpc(
     "validar_acceso_visita",
     {
@@ -78,12 +72,6 @@ console.log("SELECT directo:", prueba);
     }
 );
 
-console.log("====================================");
-console.log("QR enviado :", qr);
-console.log("PIN enviado:", pin.value.trim());
-console.log("RPC data   :", data);
-console.log("RPC error  :", error);
-console.log("====================================");
 
 if (error) {
     console.error(error);
