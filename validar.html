@@ -62,9 +62,27 @@ btn.onclick=async()=>{
  btn.disabled=true;
  btn.innerText="Procesando...";
  err.style.display="none";
- const {data,error}=await supabaseClient.rpc("validar_acceso_visita",{p_qr:qr,p_pin:pin.value.trim()});
- if(error){return mostrarError("Error de comunicación con el servidor.");}
- respuestaRPC=data;
+ const { data, error } = await supabaseClient.rpc(
+    "validar_acceso_visita",
+    {
+        p_qr: qr,
+        p_pin: pin.value.trim()
+    }
+);
+
+console.log("====================================");
+console.log("QR enviado :", qr);
+console.log("PIN enviado:", pin.value.trim());
+console.log("RPC data   :", data);
+console.log("RPC error  :", error);
+console.log("====================================");
+
+if (error) {
+    console.error(error);
+    return mostrarError("Error de comunicación con el servidor.");
+}
+
+respuestaRPC = data;
  if(!respuestaRPC.ok){return mostrarError(respuestaRPC.mensaje||"No fue posible validar el acceso.");}
  const tipo=respuestaRPC.accion==="entrada"?"ok":"warn";
  pintar(respuestaRPC.mensaje,tipo,respuestaRPC);
