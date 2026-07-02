@@ -244,7 +244,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 });
 
 let idCancelar = null;
-let idArchivar = null;  
+let idArchivar = null; 
+let obrasAbiertas = new Set();  
   
 function toggleObra(id, elemento) {
 
@@ -252,12 +253,21 @@ function toggleObra(id, elemento) {
   const flecha = elemento.querySelector(".flecha");
 
   if (contenido.style.display === "block") {
+
     contenido.style.display = "none";
     flecha.innerText = "▼";
+
+    obrasAbiertas.delete(id);
+
   } else {
+
     contenido.style.display = "block";
     flecha.innerText = "▲";
+
+    obrasAbiertas.add(id);
+
   }
+
 }
   
   
@@ -458,6 +468,19 @@ ${botonesBloqueados ? "disabled" : ""} onclick="archivar('${t.id}')">
     });
 
     lista.appendChild(bloque);
+
+    // 🔥 Restaurar acordeones abiertos
+
+if (obrasAbiertas.has(contenidoId)) {
+
+  const contenido = document.getElementById(contenidoId);
+
+  contenido.style.display = "block";
+
+  bloque.querySelector(".flecha").innerText = "▲";
+
+}
+  
   });
 }
 
