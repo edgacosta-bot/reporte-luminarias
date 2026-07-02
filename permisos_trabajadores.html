@@ -166,8 +166,24 @@ button:disabled {
   <div class="modal-box">
     <p>¿Cancelar permiso?</p>
     <div class="modal-actions">
-      <button onclick="cerrarModal()">Cancelar</button>
-      <button onclick="confirmarCancelacion()">Confirmar</button>
+      <button
+        type="button"
+        onclick="cerrarModal()">
+        Cancelar
+      </button>
+
+<button
+type="button"
+onclick="confirmarCancelacion()">
+Confirmar
+</button>
+
+      
+     <button
+        type="button"
+        onclick="confirmarCancelacion()">
+        Confirmar
+      </button>
     </div>
   </div>
 </div>
@@ -192,12 +208,18 @@ button:disabled {
 
     <div class="modal-actions">
 
-      <button onclick="cerrarModalArchivar()">
+      <button
+        type="button"
+        onclick="cerrarModalArchivar()">
         Cancelar
       </button>
+        
+      </button>
 
-      <button onclick="confirmarArchivado()">
-        Archivar
+     <button
+      type="button"
+      onclick="confirmarArchivado()">
+      Archivar
       </button>
 
     </div>
@@ -249,9 +271,10 @@ function toast(msg, tipo="ok") {
 
 async function cargar() {
 
-  const { data, error } = await supabaseClient
+ const { data, error } = await supabaseClient
     .from("trabajadores_obra")
     .select("*")
+    .eq("visible", true)
     .order("created_at", { ascending: false });
 
   if (error) {
