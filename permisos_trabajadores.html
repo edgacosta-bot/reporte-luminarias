@@ -93,6 +93,7 @@ button {
 .btn-renovar { background: #2563eb; }
 .btn-cancelar { background: #dc2626; }
 .btn-reactivar { background: #16a34a; }
+.btn-archivar { background: #475569; }  
 
 button:disabled {
   opacity: 0.5;
@@ -171,6 +172,40 @@ button:disabled {
   </div>
 </div>
 
+  <div id="modalArchivar" class="modal">
+
+  <div class="modal-box">
+
+    <p style="font-weight:bold;">
+      ¿Archivar trabajador?
+    </p>
+
+    <p style="font-size:14px;color:#cbd5e1;">
+
+      El trabajador dejará de aparecer en el listado.
+
+      <br><br>
+
+      Su historial permanecerá almacenado.
+
+    </p>
+
+    <div class="modal-actions">
+
+      <button onclick="cerrarModalArchivar()">
+        Cancelar
+      </button>
+
+      <button onclick="confirmarArchivado()">
+        Archivar
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
 <script>
 
 // 🔥 INICIO SEGURO
@@ -187,6 +222,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 });
 
 let idCancelar = null;
+let idArchivar = null;  
   
 function toggleObra(id, elemento) {
 
@@ -365,14 +401,34 @@ else if (t.fecha_fin && hoy > t.fecha_fin) {
   ${botonesBloqueados ? "disabled" : ""} onclick="renovar('${t.id}')">🔄 Guardar</button>
 
         ${
-          t.activo
-          ? `<button
-  class="btn-cancelar"
-  ${botonesBloqueados ? "disabled" : ""} onclick="cancelar('${t.id}')">⛔ Cancelar</button>`
-          : `<button
-  class="btn-reactivar"
-  ${botonesBloqueados ? "disabled" : ""} onclick="reactivar('${t.id}')">🟢 Reactivar</button>`
-        }
+  t.activo
+  ? `
+<button
+class="btn-cancelar"
+${botonesBloqueados ? "disabled" : ""} onclick="cancelar('${t.id}')">
+⛔ Cancelar
+</button>
+
+<button
+class="btn-archivar"
+${botonesBloqueados ? "disabled" : ""} onclick="archivar('${t.id}')">
+🗑 Archivar
+</button>
+`
+  : `
+<button
+class="btn-reactivar"
+${botonesBloqueados ? "disabled" : ""} onclick="reactivar('${t.id}')">
+🟢 Reactivar
+</button>
+
+<button
+class="btn-archivar"
+${botonesBloqueados ? "disabled" : ""} onclick="archivar('${t.id}')">
+🗑 Archivar
+</button>
+`
+}
       `;
 
       bloque.querySelector(".obra-contenido").appendChild(card);
@@ -416,6 +472,61 @@ function cerrarModal() {
   document.getElementById("modal").style.display = "none";
 }
 
+// 🗑 ARCHIVAR
+
+function archivar(id) {
+
+  idArchivar = id;
+
+  document.getElementById("modalArchivar").style.display = "flex";
+
+}
+
+function cerrarModalArchivar() {
+
+  document.getElementById("modalArchivar").style.display = "none";
+
+  idArchivar = null;
+
+}
+
+async function confirmarArchivado() {
+
+  const { data, error } = await supabaseClient.rpc(
+    "archivar_trabajador",
+    {
+      p_trabajador_id: idArchivar
+    }
+  );
+
+  if (error) {
+
+    console.error(error);
+
+    toast("Error al archivar.", "error");
+
+    return;
+
+  }
+
+  if (!data.ok) {
+
+    toast(data.mensaje, "warning");
+
+    cerrarModalArchivar();
+
+    return;
+
+  }
+
+  toast(data.mensaje, "ok");
+
+  cerrarModalArchivar();
+
+  cargar();
+
+}
+  
 async function confirmarCancelacion() {
 
   const { error } = await supabaseClient
@@ -434,6 +545,8 @@ async function confirmarCancelacion() {
   cerrarModal();
   cargar();
 }
+
+  
 
 // 🟢 REACTIVAR
 async function reactivar(id) {
