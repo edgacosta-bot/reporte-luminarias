@@ -72,12 +72,13 @@ body {
 
 input {
   width: 100%;
-  padding: 10px;
+  padding: 10px 40px 10px 10px;
   margin-top: 5px;
   border-radius: 8px;
   border: none;
   background: #020617;
   color: white;
+  cursor: pointer;
 }
 
 /* ==========================================================
@@ -455,7 +456,7 @@ else if (t.fecha_fin && hoy > t.fecha_fin) {
   type="date"
   id="inicio_${t.id}"
   value="${t.fecha_inicio || ""}"
-  onclick="ui.abrirCalendario(this)"
+  onpointerdown="ui.abrirCalendario(this)"
   ${botonesBloqueados ? "disabled" : ""}>
        
         
@@ -463,7 +464,7 @@ else if (t.fecha_fin && hoy > t.fecha_fin) {
   type="date"
   id="fin_${t.id}"
   value="${t.fecha_fin || ""}"
-  onclick="ui.abrirCalendario(this)"
+  onpointerdown="ui.abrirCalendario(this)"
   ${botonesBloqueados ? "disabled" : ""}>
 
         
