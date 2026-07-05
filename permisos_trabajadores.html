@@ -451,19 +451,19 @@ else if (t.fecha_fin && hoy > t.fecha_fin) {
         <div class="nombre">${t.nombre}</div>
         <div class="estado ${clase}">${estado}</div>
 
-        <input
+       <input
   type="date"
   id="inicio_${t.id}"
   value="${t.fecha_inicio || ""}"
-  onclick="abrirCalendario(this)"
+  onclick="ui.abrirCalendario(this)"
   ${botonesBloqueados ? "disabled" : ""}>
        
         
-       <input
+      <input
   type="date"
   id="fin_${t.id}"
   value="${t.fecha_fin || ""}"
-  onclick="abrirCalendario(this)"
+  onclick="ui.abrirCalendario(this)"
   ${botonesBloqueados ? "disabled" : ""}>
 
         
