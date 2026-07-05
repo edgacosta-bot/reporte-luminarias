@@ -81,6 +81,65 @@ input {
   color: white;
   cursor: pointer;
 }
+
+/* ==========================================================
+   SIGVIC DATE PICKER
+========================================================== */
+
+.fecha-input {
+
+  position: relative;
+  margin-top: 5px;
+
+}
+
+.fecha-input input[type="date"] {
+
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 46px;
+
+}
+
+.fecha-input button {
+
+  position: absolute;
+
+  top: 50%;
+  right: 8px;
+
+  transform: translateY(-50%);
+
+  width: 32px;
+  height: 32px;
+
+  border: none;
+
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: white;
+
+  cursor: pointer;
+
+  font-size: 18px;
+
+}
+
+.fecha-input button:hover {
+
+  background: rgba(255,255,255,.10);
+
+}
+
+.fecha-input button:disabled{
+
+  opacity:.4;
+  cursor:default;
+
+}
+  
 /* ==========================================================
    Calendario visible en tema oscuro
 ========================================================== */
@@ -452,12 +511,24 @@ else if (t.fecha_fin && hoy > t.fecha_fin) {
         <div class="nombre">${t.nombre}</div>
         <div class="estado ${clase}">${estado}</div>
 
-       <input
-  type="date"
-  id="inicio_${t.id}"
-  value="${t.fecha_inicio || ""}"
-  onpointerdown="ui.abrirCalendario(this)"
-  ${botonesBloqueados ? "disabled" : ""}>
+      <div class="fecha-input">
+
+  <input
+    type="date"
+    id="inicio_${t.id}"
+    value="${t.fecha_inicio || ""}"
+    ${botonesBloqueados ? "disabled" : ""}>
+
+  <button
+    type="button"
+    onclick="ui.abrirCalendario(document.getElementById('inicio_${t.id}'))"
+    ${botonesBloqueados ? "disabled" : ""}>
+
+    📅
+
+  </button>
+
+</div>
        
         
       <input
