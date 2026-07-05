@@ -4,7 +4,7 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reportes fuera de horario</title>
+<title>Incidencias de control de acceso</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
@@ -105,7 +105,7 @@ summary::-webkit-details-marker {
 
 <div class="container">
 
-  <h1>🚨 Reportes fuera de horario</h1>
+ <h1>🚨 Incidencias de control de acceso</h1>
 
   <div id="alerta" class="alerta-global"></div>
 
@@ -149,7 +149,7 @@ async function cargar() {
 
  const { data: reportes, error } =
   await supabaseClient.rpc(
-    "obtener_reportes_fuera_horario"
+    "obtener_incidencias_control_acceso"
   );
 
  if (error) {
@@ -172,7 +172,7 @@ async function cargar() {
  if (reportesHoy.length === 0) {
 
     lista.innerHTML =
-      "<p class='vacio'>No hay reportes fuera de horario</p>";
+      "<p class='vacio'>No hsy incidencias de control de acceso</p>";
 
     alertaDiv.innerHTML = "Todo en orden";
     alertaDiv.style.color = "#34d399";
@@ -319,7 +319,7 @@ async function cargar() {
   }
 
   alertaDiv.innerHTML =
-    `🚨 ${reportesHoy.length} reporte(s) fuera de horario`;
+    `🚨 ${reportesHoy.length} incidencia(s) de control de acceso`
 
   alertaDiv.style.color = "#f87171";
 }
