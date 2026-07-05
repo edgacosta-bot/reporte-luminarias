@@ -51,10 +51,38 @@ window.ui = {
 
     setTimeout(() => div.style.opacity = "1", 50);
 
-    setTimeout(() => {
+       setTimeout(() => {
       div.style.opacity = "0";
       setTimeout(() => div.remove(), 300);
     }, 2500);
+  },
+
+  // ==========================================================
+  // Abrir selector de fecha
+  // ==========================================================
+
+  abrirCalendario(input) {
+
+    if (!input) return;
+
+    try {
+
+      if (typeof input.showPicker === "function") {
+
+        input.showPicker();
+
+      } else {
+
+        input.focus();
+
+      }
+
+    } catch (e) {
+
+      input.focus();
+
+    }
+
   }
 
 };
