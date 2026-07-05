@@ -286,9 +286,23 @@ async function cargar() {
          
          <div class="nombre">
 
-  👷 ${reporte.nombre}
+          ${
+          reporte.tipo === "salida_fuera_horario"
+           ? "⏰ Salida fuera de horario"
+            : "🚪 Omisión de registro de salida"
+            }
 
-</div>
+          </div>
+
+      <div style="
+      margin-top:6px;
+      font-size:17px;
+      font-weight:bold;
+      ">
+
+      👷 ${reporte.nombre}
+
+      </div>
 
 <div class="detalle">
 
