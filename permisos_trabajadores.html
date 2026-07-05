@@ -590,21 +590,39 @@ async function confirmarArchivado() {
   
 async function confirmarCancelacion() {
 
-  const { error } = await supabaseClient
-    .from("trabajadores_obra")
-    .update({ activo: false })
-    .eq("id", idCancelar);
+  const { data, error } = await supabaseClient.rpc(
+    "cancelar_trabajador",
+    {
+      p_trabajador_id: idCancelar
+    }
+  );
 
   if (error) {
-    console.log("ERROR CANCELAR:", error);
-    toast("Error al cancelar", "error");
+
+    console.error(error);
+
+    toast("Error al cancelar.", "error");
+
     return;
+
   }
 
-  toast("Acceso cancelado", "warning");
+  if (!data.ok) {
+
+    toast(data.mensaje, "warning");
+
+    cerrarModal();
+
+    return;
+
+  }
+
+  toast(data.mensaje, "warning");
 
   cerrarModal();
+
   cargar();
+
 }
 
   
