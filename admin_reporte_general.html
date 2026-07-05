@@ -165,6 +165,16 @@ window.addEventListener("DOMContentLoaded", async () => {
   await cargarPrivadas(); // 🔥 ESTA ES LA CLAVE
 });
 
+const TITULOS_REPORTE_OBRA = {
+
+    omision_registro_salida:
+        "🚪 Omisión de registro de salida",
+
+    salida_fuera_horario:
+        "⏰ Salida fuera de horario"
+
+};  
+
 function rangoRapido(dias){
   const rango = getLastDaysRange(dias);
   document.getElementById("inicio").value = rango.start.split("T")[0];
@@ -420,17 +430,7 @@ let { data: luminarias } = await queryLuminarias;
 
   document.getElementById("total").innerText =
     registros.length + " Total";
-
-  const TITULOS_REPORTE_OBRA = {
-
-    omision_registro_salida:
-        "🚪 Omisión de registro de salida",
-
-    salida_fuera_horario:
-        "⏰ Salida fuera de horario"
-
-};  
-
+  
   let html="";
 
   function renderGrupo(grupo,titulo){
