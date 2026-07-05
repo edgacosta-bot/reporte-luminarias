@@ -886,150 +886,45 @@ function abrirPaquetes() {
   }
 }
   
-async function cargarKPIs(){
+async function cargarKPIs() {
+
   try {
 
-  const hoy = new Date(
-  new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" })
-);
-hoy.setHours(0,0,0,0);
+    const { data, error } = await supabaseClient.rpc(
+      "obtener_dashboard_index",
+      {
+        p_rol: rolActual
+      }
+    );
 
-  // 🔥 NUEVO BLOQUE PARA FILTRO CORRECTO
+    if (error) {
+      console.error("Error al obtener dashboard:", error);
+      return;
+    }
 
- let totalReportes = 0;
+    document.getElementById("kpiReportes").innerText =
+      data?.reportes_hoy ?? 0;
 
-if (rolActual === "vigilante") {
+    document.getElementById("kpiTrabajadores").innerText =
+      data?.trabajadores_dentro ?? 0;
 
-  const fechaHoyMX = new Date().toLocaleDateString("en-CA", {
-    timeZone: "America/Mexico_City"
-  });
+    document.getElementById("kpiPaquetes").innerText =
+      data?.paquetes_pendientes ?? 0;
 
-  const inicio = fechaInicioUTC(fechaHoyMX);
-  const fin = fechaFinUTC(fechaHoyMX);
+    document.getElementById("kpiAsesores").innerText =
+      data?.asesores_dentro ?? 0;
 
-  console.log("inicio:", inicio);
-  console.log("fin:", fin);
-  
-  const { data, error } = await supabaseClient
-    .from("reportes_obras")
-    .select("id")
-    .eq("tipo", "salida_fuera_horario")
-    .gte("fecha_reporte", inicio)
-    .lte("fecha_reporte", fin);
+    document.getElementById("kpiAbastecimientos").innerText =
+      data?.abastecimientos_dentro ?? 0;
 
-  if (error) {
-    console.error(error);
-    totalReportes = 0;
-  } else {
-    totalReportes = data?.length || 0;
+  } catch (e) {
+
+    console.error(
+      "ERROR GENERAL KPI:",
+      e
+    );
+
   }
-
-} else {
-
-  // 🔴 TODO TU BLOQUE ORIGINAL DE ADMIN AQUÍ
-
-  // 🔴 VECINALES
-  const { data: vecinal } = await supabaseClient
-    .from("incidencias_vecinales")
-    .select("fecha_reporte");
-
-  totalReportes += vecinal?.filter(r => new Date(r.fecha_reporte) >= hoy).length || 0;
-
-  // 🔵 VIGILANTES
-  const { data: vigilantes } = await supabaseClient
-    .from("reportes_vigilantes")
-    .select("fecha_reporte");
-
-  totalReportes += vigilantes?.filter(r => new Date(r.fecha_reporte) >= hoy).length || 0;
-
-  // 🟣 OBRAS
-  const { data: obras } = await supabaseClient
-    .from("reportes_obras")
-    .select("fecha_reporte");
-
-  totalReportes += obras?.filter(r => new Date(r.fecha_reporte) >= hoy).length || 0;
-
-  // 🟡 AGUA
-  const { data: agua } = await supabaseClient
-    .from("reportes_agua_caasim")
-    .select("fecha_registro");
-
-  totalReportes += agua?.filter(r => new Date(r.fecha_registro) >= hoy).length || 0;
-
-  // 🟢 LUMINARIAS
-  const { data: luminarias } = await supabaseClient
-    .from("vista_reportes_luminarias")
-    .select("fecha_reporte");
-
-  totalReportes += luminarias?.filter(r => new Date(r.fecha_reporte) >= hoy).length || 0;
-
-}
-
-  // 👷 TRABAJADORES DENTRO
-  const { data: trabajadores } = await supabaseClient
-    .from("accesos_trabajadores")
-    .select("id")
-    .is("fecha_hora_salida", null);
-
-  document.getElementById("kpiTrabajadores").innerText = trabajadores?.length || 0;
-
-  // 🏡 ASESORES DENTRO
-
-const { data: asesores } =
-  await supabaseClient.rpc(
-    "obtener_asesores_dentro"
-  );
-
-const kpiAsesores =
-  document.getElementById(
-    "kpiAsesores"
-  );
-
-if(kpiAsesores){
-
-  kpiAsesores.innerText =
-    asesores?.length || 0;
-
-}  
-
-  const { data: abastecimientos } =
-  await supabaseClient.rpc(
-    "obtener_reporte_abastecimientos"
-  );
-
-const abiertos =
-  abastecimientos?.filter(
-    a => a.estatus === "DENTRO"
-  ).length || 0;
-
-const kpiAbastecimientos =
-  document.getElementById(
-    "kpiAbastecimientos"
-  );
-
-if(kpiAbastecimientos){
-
-  kpiAbastecimientos.innerText =
-    abiertos;
-
-}  
-
-  // 📦 PAQUETES
-  const { data: paquetes } = await supabaseClient
-    .from("paquetes")
-    .select("id")
-    .eq("entregado", false);
-
-  const kpiPaquetes = document.querySelectorAll(".kpi span")[1];
-  if (kpiPaquetes) {
-    kpiPaquetes.innerText = paquetes?.length || 0;
-  }
-
-  document.getElementById("kpiReportes").innerText = totalReportes;
-
-    } catch (e) {
-    console.error("ERROR GENERAL KPI:", e);
-  }  
 
 }
 
