@@ -332,7 +332,14 @@ let { data: obras } = await queryObras;
   registros.push({
     tipo:"obra",
     grupo:"obra",
-    titulo:"Reporte de obra",
+    
+    titulo:
+    i.tipo === "omision_registro_salida"
+        ? "🚪 Omisión de registro de salida"
+    : i.tipo === "salida_extemporanea"
+        ? "⏰ Salida fuera de horario"
+    : "🏗️ Reporte de obra",
+    
     descripcion:i.descripcion,
     hora:i.fecha_reporte,
 
