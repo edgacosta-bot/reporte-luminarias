@@ -192,13 +192,7 @@ type="button"
 onclick="confirmarCancelacion()">
 Confirmar
 </button>
-
-      
-     <button
-        type="button"
-        onclick="confirmarCancelacion()">
-        Confirmar
-      </button>
+   
     </div>
   </div>
 </div>
@@ -229,8 +223,7 @@ Confirmar
         Cancelar
       </button>
         
-      </button>
-
+     
      <button
       type="button"
       onclick="confirmarArchivado()">
@@ -628,23 +621,39 @@ async function confirmarCancelacion() {
   
 
 // 🟢 REACTIVAR
+
 async function reactivar(id) {
 
-  const { error } = await supabaseClient
-    .from("trabajadores_obra")
-    .update({ activo: true })
-    .eq("id", id);
+  const { data, error } = await supabaseClient.rpc(
+    "reactivar_trabajador",
+    {
+      p_trabajador_id: id
+    }
+  );
 
   if (error) {
-    console.log("ERROR REACTIVAR:", error);
-    toast("Error al reactivar", "error");
+
+    console.error(error);
+
+    toast("Error al reactivar.", "error");
+
     return;
+
   }
 
-  toast("Acceso reactivado", "ok");
-  cargar();
-}
+  if (!data.ok) {
 
+    toast(data.mensaje, "warning");
+
+    return;
+
+  }
+
+  toast(data.mensaje, "ok");
+
+  cargar();
+
+}
 </script>
 
 </body>
