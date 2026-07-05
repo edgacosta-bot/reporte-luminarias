@@ -301,20 +301,8 @@ async function cargar() {
 
   <br><br>
 
-  📅 Fecha de la incidencia:
+  📝 ${reporte.descripcion}
 
-  <br>
-
-      ${
-  reporte.tipo === "salida_fuera_horario"
-    ? formatMXDate(
-        reporte.fecha_incidencia || reporte.fecha_reporte
-      )
-    : formatMXDateOnly(
-        reporte.fecha_incidencia || reporte.fecha_reporte
-      )
-}
-  
 </div>
         `;
 
