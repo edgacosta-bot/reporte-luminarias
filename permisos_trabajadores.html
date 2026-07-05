@@ -139,6 +139,18 @@ input {
   cursor:default;
 
 }
+
+/* ==========================================================
+   Ocultar icono nativo del navegador
+========================================================== */
+
+.fecha-input input[type="date"]::-webkit-calendar-picker-indicator{
+
+    opacity:0;
+
+    cursor:pointer;
+
+}  
   
 /* ==========================================================
    Calendario visible en tema oscuro
