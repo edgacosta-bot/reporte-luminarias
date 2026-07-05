@@ -872,7 +872,7 @@ function abrirPaquetes() {
   }
 }
 
-  function abrirReportes() {
+ function abrirReportes() {
 
   if (rolActual === "administracion") {
 
@@ -882,8 +882,10 @@ function abrirPaquetes() {
   } else if (rolActual === "vigilante") {
 
     window.location.href =
-      "reportes_fuera_horario.html";
+      "incidencias_control_acceso.html";
+
   }
+
 }
   
 async function cargarKPIs() {
