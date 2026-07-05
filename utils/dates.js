@@ -62,15 +62,25 @@ window.formatMXDate = function(dateString) {
 
 // 🔹 Solo fecha México
 window.formatMXDateOnly = function(dateString) {
-  if (!dateString) return '';
 
-  const date = new Date(dateString + 'Z');
+  if (!dateString) return "";
 
-  return date.toLocaleDateString('es-MX', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
+  let fecha;
+
+  if (dateString.includes("+") || dateString.includes("Z")) {
+    fecha = new Date(dateString);
+  } else {
+    fecha = new Date(dateString + "Z");
+  }
+
+  if (isNaN(fecha.getTime())) return "";
+
+  return fecha.toLocaleDateString("es-MX", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
   });
+
 };
 
 // 🔹 Inicio del día UTC
