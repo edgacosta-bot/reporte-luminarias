@@ -333,12 +333,7 @@ let { data: obras } = await queryObras;
     tipo:"obra",
     grupo:"obra",
     
-    titulo:
-    i.tipo === "omision_registro_salida"
-        ? "🚪 Omisión de registro de salida"
-    : i.tipo === "salida_extemporanea"
-        ? "⏰ Salida fuera de horario"
-    : "🏗️ Reporte de obra",
+    titulo: TITULOS_REPORTE_OBRA[i.tipo] || "🏗️ Reporte de obra",
     
     descripcion:i.descripcion,
     hora:i.fecha_reporte,
@@ -425,6 +420,16 @@ let { data: luminarias } = await queryLuminarias;
 
   document.getElementById("total").innerText =
     registros.length + " Total";
+
+  const TITULOS_REPORTE_OBRA = {
+
+    omision_registro_salida:
+        "🚪 Omisión de registro de salida",
+
+    salida_fuera_horario:
+        "⏰ Salida fuera de horario"
+
+};  
 
   let html="";
 
