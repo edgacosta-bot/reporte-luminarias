@@ -299,6 +299,20 @@ function toast(msg, tipo="ok") {
   setTimeout(() => t.style.display = "none", 2500);
 }
 
+function abrirCalendario(input) {
+
+  if (typeof input.showPicker === "function") {
+
+    input.showPicker();
+
+  } else {
+
+    input.focus();
+
+  }
+
+}
+  
 async function cargar() {
 
  const { data, error } = await supabaseClient
@@ -441,11 +455,15 @@ else if (t.fecha_fin && hoy > t.fecha_fin) {
   type="date"
   id="inicio_${t.id}"
   value="${t.fecha_inicio || ""}"
+  onclick="abrirCalendario(this)"
   ${botonesBloqueados ? "disabled" : ""}>
-        <input
+       
+        
+       <input
   type="date"
   id="fin_${t.id}"
   value="${t.fecha_fin || ""}"
+  onclick="abrirCalendario(this)"
   ${botonesBloqueados ? "disabled" : ""}>
 
         
