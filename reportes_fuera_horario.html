@@ -118,19 +118,6 @@ summary::-webkit-details-marker {
 cargar();
 setInterval(cargar, 10000);
 
-function formatearHora(fecha) {
-
-  if (!fecha) return "-";
-
-  const f = new Date(fecha);
-
-  return f.toLocaleString("es-MX", {
-    hour: "2-digit",
-    minute: "2-digit",
-    day: "2-digit",
-    month: "2-digit"
-  });
-}
 
 let privadasAbiertas = new Set();
 let lotesAbiertos = new Set();
@@ -315,10 +302,15 @@ async function cargar() {
 
   <br><br>
 
-  🕒 Salida:
-  ${formatearHora(
-    reporte.fecha_reporte
-  )}
+  📅 Fecha de la incidencia:
+
+  <br>
+
+  ${
+    reporte.tipo === "salida_fuera_horario"
+      ? formatMXDate(reporte.fecha_incidencia)
+      : formatMXDateOnly(reporte.fecha_incidencia)
+  }
 
 </div>
         `;
