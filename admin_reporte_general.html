@@ -434,7 +434,11 @@ let { data: luminarias } = await queryLuminarias;
         <b>${r.titulo}</b>
         <div class="hora">${formatMXDate(r.hora)}</div>
 
-        ${r.reporta ? `<div class="extra">🏠 Reporta: ${r.reporta}</div>`:""}
+        ${r.reporta && r.rol_creador?.toUpperCase() !== "SISTEMA"
+        ? `<div class="extra">🏠 Reporta: ${r.reporta}</div>`
+        : ""
+        }
+
         ${r.afecta ? `<div class="extra">🎯 Afecta: ${r.afecta}</div>`:""}
         ${(!r.reporta && r.origen) ? `<div class="extra">🏠 ${r.origen}</div>`:""}
         ${r.extra2 ? `<div class="extra">${r.extra2}</div>`:""}
