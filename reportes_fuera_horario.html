@@ -136,7 +136,11 @@ async function cargar() {
 
  const { data: reportes, error } =
   await supabaseClient.rpc(
-    "obtener_incidencias_control_acceso"
+    "obtener_incidencias_control_acceso",
+    {
+      p_fecha_inicio: inicio,
+      p_fecha_fin: fin
+    }
   );
 
  if (error) {
@@ -149,17 +153,12 @@ async function cargar() {
   return;
 }
 
-  const reportesHoy =
-  (reportes || []).filter(r =>
-    r.fecha_reporte >= inicio
-    &&
-    r.fecha_reporte <= fin
-  );
+  const reportesHoy = reportes || [];
   
  if (reportesHoy.length === 0) {
 
     lista.innerHTML =
-      "<p class='vacio'>No hsy incidencias de control de acceso</p>";
+      "<p class='vacio'>No hay incidencias de control de acceso</p>";
 
     alertaDiv.innerHTML = "Todo en orden";
     alertaDiv.style.color = "#34d399";
@@ -258,9 +257,9 @@ async function cargar() {
       `;
 
       reportesLote.sort((a,b) =>
-        new Date(b.fecha_reporte)
-        - new Date(a.fecha_reporte)
-      );
+  new Date(b.fecha_incidencia || b.fecha_reporte)
+  - new Date(a.fecha_incidencia || a.fecha_reporte)
+);
 
       for (const reporte of reportesLote) {
 
@@ -306,12 +305,16 @@ async function cargar() {
 
   <br>
 
-  ${
-    reporte.tipo === "salida_fuera_horario"
-      ? formatMXDate(reporte.fecha_incidencia)
-      : formatMXDateOnly(reporte.fecha_incidencia)
-  }
-
+      ${
+  reporte.tipo === "salida_fuera_horario"
+    ? formatMXDate(
+        reporte.fecha_incidencia || reporte.fecha_reporte
+      )
+    : formatMXDateOnly(
+        reporte.fecha_incidencia || reporte.fecha_reporte
+      )
+}
+  
 </div>
         `;
 
