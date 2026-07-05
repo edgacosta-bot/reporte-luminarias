@@ -80,6 +80,18 @@ input {
   color: white;
 }
 
+/* ==========================================================
+   Calendario visible en tema oscuro
+========================================================== */
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+
+    filter: invert(1);
+    cursor: pointer;
+    opacity: 1;
+
+}  
+
 button {
   margin-top: 8px;
   width: 100%;
@@ -493,29 +505,51 @@ if (obrasAbiertas.has(contenidoId)) {
 }
 
 // 🔄 RENOVAR
-async function renovar(id) {
-  const inicio = document.getElementById(`inicio_${id}`).value;
-  const fin = document.getElementById(`fin_${id}`).value;
 
-  const { error } = await supabaseClient
-    .from("trabajadores_obra")
-    .update({
-      fecha_inicio: inicio || null,
-      fecha_fin: fin || null,
-      activo: true
-    })
-    .eq("id", id);
+async function renovar(id) {
+
+  const inicio =
+    document.getElementById(`inicio_${id}`).value;
+
+  const fin =
+    document.getElementById(`fin_${id}`).value;
+
+  const { data, error } =
+    await supabaseClient.rpc(
+
+      "renovar_permiso_trabajador",
+
+      {
+        p_trabajador_id: id,
+        p_fecha_inicio: inicio || null,
+        p_fecha_fin: fin || null
+      }
+
+    );
 
   if (error) {
-    console.log("ERROR RENOVAR:", error);
-    toast("Error al actualizar", "error");
+
+    console.error(error);
+
+    toast("Error al actualizar.", "error");
+
     return;
+
   }
 
-  toast("Permiso actualizado", "ok");
-  cargar();
-}
+  if (!data.ok) {
 
+    toast(data.mensaje, "warning");
+
+    return;
+
+  }
+
+  toast(data.mensaje, "ok");
+
+  cargar();
+
+}
 // ⛔ CANCELAR
 function cancelar(id) {
   idCancelar = id;
