@@ -439,12 +439,14 @@ let { data: luminarias } = await queryLuminarias;
         ${(!r.reporta && r.origen) ? `<div class="extra">🏠 ${r.origen}</div>`:""}
         ${r.extra2 ? `<div class="extra">${r.extra2}</div>`:""}
         ${r.obra ? `<div class="extra">🏗️ Obra reportada: ${r.obra}</div>`:""}
-        ${r.rol_creador === "vigilante"
-  ? `<div class="extra">👮 Generado por vigilancia</div>`
-  : r.rol_creador === "sistema"
-    ? `<div class="extra">🤖 Generado automáticamente por el sistema</div>`
-    : `<div class="extra">👤 Reportado por residente</div>`
+
+        ${r.rol_creador?.toUpperCase() === "VIGILANTE"
+    ? `<div class="extra">👮 Generado por vigilancia</div>`
+    : r.rol_creador?.toUpperCase() === "SISTEMA"
+        ? `<div class="extra">🤖 Generado automáticamente por SIGVIC</div>`
+        : `<div class="extra">👤 Reportado por residente</div>`
 }
+        
         ${r.trabajador ? `<div class="extra">${r.trabajador}</div>`:""}
 
         <div class="extra">${r.descripcion}</div>
