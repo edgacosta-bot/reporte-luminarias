@@ -82,82 +82,6 @@ input {
   cursor: pointer;
 }
 
-/* ==========================================================
-   SIGVIC DATE PICKER
-========================================================== */
-
-.fecha-input {
-
-  position: relative;
-  margin-top: 5px;
-
-}
-
-.fecha-input input[type="date"] {
-
-  width: 100%;
-  box-sizing: border-box;
-  padding-right: 46px;
-
-  position: relative;
-  z-index: 1;
-
-}
-
-.fecha-input button {
-
-    position: absolute;
-
-    top: 50%;
-    right: 8px;
-
-    transform: translateY(-50%);
-
-    width: 34px;
-    height: 34px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border: none;
-
-    background: transparent;
-
-    color: white;
-
-    cursor: pointer;
-
-    font-size: 22px;
-
-    z-index: 20;
-
-}
-
-.fecha-input button:hover {
-
-  background: rgba(255,255,255,.10);
-
-}
-
-.fecha-input button:disabled{
-
-  opacity:.4;
-  cursor:default;
-
-}
-
-/* ==========================================================
-   Ocultar icono nativo del navegador
-========================================================== */
-
-.fecha-input input[type="date"]::-webkit-calendar-picker-indicator{
-
-    opacity:0;
-
-    cursor:pointer;
-
-}  
   
 /* ==========================================================
    Calendario visible en tema oscuro
@@ -378,20 +302,7 @@ function toast(msg, tipo="ok") {
   setTimeout(() => t.style.display = "none", 2500);
 }
 
-function abrirCalendario(input) {
 
-  if (typeof input.showPicker === "function") {
-
-    input.showPicker();
-
-  } else {
-
-    input.focus();
-
-  }
-
-}
-  
 async function cargar() {
 
  const { data, error } = await supabaseClient
@@ -532,22 +443,11 @@ else if (t.fecha_fin && hoy > t.fecha_fin) {
 
       <div class="fecha-input">
 
-  <input
-    type="date"
-    id="inicio_${t.id}"
-    value="${t.fecha_inicio || ""}"
-    ${botonesBloqueados ? "disabled" : ""}>
-
-  <button
-    type="button"
-    onclick="ui.abrirCalendario(document.getElementById('inicio_${t.id}'))"
-    ${botonesBloqueados ? "disabled" : ""}>
-
-    📅
-
-  </button>
-
-</div>
+ <input
+  type="date"
+  id="inicio_${t.id}"
+  value="${t.fecha_inicio || ""}"
+  ${botonesBloqueados ? "disabled" : ""}>
        
         
       <input
