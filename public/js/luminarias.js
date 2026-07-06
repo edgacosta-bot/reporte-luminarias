@@ -2,6 +2,44 @@ let reporteValido = false;
 let luminariaActual = null;
 let debounceTimer = null;
 
+/* CATÁLOGO DINÁMICO */
+async function cargarCatalogo() {
+ 
+  const select = document.getElementById('descripcion');
+ 
+  const { data, error } = await supabaseClient
+    .from('catalogo_reportes')
+    .select('subtipo')
+    .eq('categoria', 'luminaria')
+    .eq('actor_permitido', 'residente')
+    .eq('activo', true)
+    .order('subtipo');
+ 
+  if (error) {
+    console.error('Error cargando catálogo:', error);
+    return;
+  }
+ 
+  select.innerHTML = '<option value="">Seleccione una opción</option>';
+ 
+  data?.forEach(item => {
+    const option = document.createElement('option');
+    option.value = item.subtipo;
+    option.textContent = item.subtipo
+      .replaceAll('_', ' ')
+      .split(' ')
+      .map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())
+      .join(' ');
+    select.appendChild(option);
+  });
+}
+ 
+async function init() {
+  await cargarCatalogo();
+}
+ 
+init();
+
 /* VALIDAR LUMINARIA */
 
 document.getElementById('no_luminaria').addEventListener('input', () => {
