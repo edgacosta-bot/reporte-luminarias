@@ -1,252 +1,107 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Expediente Electrónico</title>
-
+<title>Expediente | SIGE</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
-
 <style>
-
-body{
-
-    margin:0;
-    font-family:Arial,Helvetica,sans-serif;
-    background:#0f172a;
-    color:white;
-
-}
-
-.container{
-
-    max-width:900px;
-    margin:auto;
-    padding:25px;
-
-}
-
-.logo{
-
-    width:120px;
-    display:block;
-    margin:auto;
-    margin-bottom:25px;
-
-}
-
-h2{
-
-    text-align:center;
-    margin-bottom:25px;
-
-}
-
-.card{
-
-    background:#1e293b;
-    border-radius:14px;
-    padding:18px;
-    margin-bottom:20px;
-
-}
-
-.card h3{
-
-    margin-top:0;
-    color:#60a5fa;
-
-}
-
-.grid{
-
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:12px;
-
-}
-
-.item{
-
-    background:#0f172a;
-    border-radius:10px;
-    padding:12px;
-
-}
-
-.label{
-
-    font-size:12px;
-    color:#94a3b8;
-
-}
-
-.value{
-
-    margin-top:4px;
-    font-size:15px;
-    font-weight:bold;
-
-}
-
-table{
-
-    width:100%;
-    border-collapse:collapse;
-
-}
-
-th{
-
-    background:#2563eb;
-    padding:12px;
-
-}
-
-td{
-
-    padding:12px;
-    border-bottom:1px solid #334155;
-
-}
-
-button{
-
-    background:#2563eb;
-    color:white;
-    border:none;
-    border-radius:10px;
-    padding:10px 18px;
-    cursor:pointer;
-
-}
-
-button:hover{
-
-    background:#1d4ed8;
-
-}
-
+/* Mantener el CSS de las entregas 1 y 2 */
+body{margin:0;font-family:Arial;background:#0f172a;color:#fff}
+.container{max-width:1200px;margin:auto;padding:18px}
+.header,.card{background:#1e293b;border-radius:16px;padding:20px;margin-bottom:18px}
+.folio{font-size:28px;font-weight:bold}
+.titulo{color:#60a5fa;font-size:20px;margin-top:8px}
+.subtitulo{color:#cbd5e1;margin-top:6px}
+.estado-expediente{display:inline-block;margin-top:12px;padding:10px 18px;background:#1d4ed8;border-radius:30px}
+.tabs{display:flex;overflow-x:auto;gap:8px;margin-bottom:18px}
+.tab{background:#1e293b;color:#fff;border:none;border-radius:12px;padding:12px 20px;cursor:pointer}
+.tab.active{background:#2563eb}
+.panel{display:none}
+.panel.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.info,.lista-item{background:#0f172a;border-radius:10px;padding:14px}
+label{display:block;color:#94a3b8;font-size:13px;margin-bottom:6px}
+.timeline{border-left:3px solid #2563eb;padding-left:16px}
+.accion{background:#1f3a8a;border-left:5px solid #f59e0b}
 </style>
-
 </head>
-
 <body>
-
 <div class="container">
+<div class="header">
+<div class="folio">EXP-2026-000002</div>
+<div class="titulo">Expediente de Obra</div>
+<div class="subtitulo">Privada II · Lote 16</div>
+<div class="estado-expediente">🟡 En revisión por Mesa Directiva</div>
+</div>
 
-<img src="/icono-512.png" class="logo">
+<div class="tabs">
+<button class="tab active" data-panel="resumen">Resumen</button>
+<button class="tab" data-panel="documentos">Documentos</button>
+<button class="tab" data-panel="mesa">Mesa Directiva</button>
+<button class="tab" data-panel="resoluciones">Resoluciones</button>
+<button class="tab" data-panel="obra">Obra</button>
+<button class="tab" data-panel="historial">Historial</button>
+</div>
 
-<h2>Expediente Electrónico</h2>
+<section id="resumen" class="panel active">
+<div class="card accion">
+<h2>¿Qué necesitas hacer?</h2>
+<p>No tienes acciones pendientes.</p>
+</div>
 
 <div class="card">
+<h2>¿Qué está ocurriendo?</h2>
+<p>El expediente espera el dictamen del Secretario y del Primer Vocal.</p>
+</div>
 
-<h3>Información General</h3>
+<div class="card">
+<h2>Pendientes para continuar</h2>
+<div class="lista-item">☐ Dictamen del Secretario</div>
+<div class="lista-item">☐ Dictamen del Primer Vocal</div>
+<div class="lista-item">☑ Solicitud</div>
+<div class="lista-item">☑ Proyecto</div>
+<div class="lista-item">☑ Planos</div>
+<div class="lista-item">☑ Fianza</div>
+</div>
 
+<div class="card">
+<h2>Siguiente paso</h2>
 <div class="grid">
-
-<div class="item">
-<div class="label">Folio</div>
-<div class="value" id="folio">-</div>
+<div class="info"><label>Acción</label><strong>Formalizar Resolución</strong></div>
+<div class="info"><label>Responsable</label><strong>Presidente</strong></div>
+<div class="info"><label>Estado</label><strong>No disponible</strong></div>
+<div class="info"><label>Motivo</label><strong>Faltan dos dictámenes.</strong></div>
 </div>
-
-<div class="item">
-<div class="label">Tipo</div>
-<div class="value" id="tipo">-</div>
-</div>
-
-<div class="item">
-<div class="label">Estado</div>
-<div class="value" id="estado">-</div>
-</div>
-
-<div class="item">
-<div class="label">Fase</div>
-<div class="value" id="fase">-</div>
-</div>
-
-<div class="item">
-<div class="label">Privada</div>
-<div class="value" id="privada">-</div>
-</div>
-
-<div class="item">
-<div class="label">Lote</div>
-<div class="value" id="lote">-</div>
-</div>
-
-<div class="item">
-<div class="label">DRO</div>
-<div class="value" id="dro">-</div>
-</div>
-
-</div>
-
 </div>
 
 <div class="card">
+<h2>Últimos movimientos</h2>
+<div class="timeline">
+<p>Hoy · Se integró la Fianza.</p>
+<p>Ayer · Dictamen del Presidente.</p>
+<p>Ayer · Se creó el expediente.</p>
+</div>
+</div>
+</section>
 
-<h3>Documentos del Expediente</h3>
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Documento</th>
-
-<th>Obligatorio</th>
-
-<th>Estado</th>
-
-<th>Acción</th>
-
-</tr>
-
-</thead>
-
-<tbody id="tablaDocumentos">
-
-</tbody>
-
-</table>
+<section id="documentos" class="panel"><div class="card"><h2>Documentos</h2><p>En construcción.</p></div></section>
+<section id="mesa" class="panel"><div class="card"><h2>Mesa Directiva</h2><p>En construcción.</p></div></section>
+<section id="resoluciones" class="panel"><div class="card"><h2>Resoluciones</h2><p>En construcción.</p></div></section>
+<section id="obra" class="panel"><div class="card"><h2>Obra</h2><p>En construcción.</p></div></section>
+<section id="historial" class="panel"><div class="card"><h2>Historial</h2><p>En construcción.</p></div></section>
 
 </div>
-
-<div class="card">
-
-<h3>Bitácora</h3>
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Fecha</th>
-
-<th>Evento</th>
-
-<th>Descripción</th>
-
-</tr>
-
-</thead>
-
-<tbody id="tablaBitacora">
-
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
+<script>
+document.querySelectorAll(".tab").forEach(btn=>{
+ btn.addEventListener("click",()=>{
+   document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+   document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+   btn.classList.add("active");
+   document.getElementById(btn.dataset.panel).classList.add("active");
+ });
+});
+</script>
 </body>
-
 </html>
