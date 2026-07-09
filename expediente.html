@@ -7,33 +7,41 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 <style>
-/* Mantener el CSS de las entregas 1 y 2 */
-body{margin:0;font-family:Arial;background:#0f172a;color:#fff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#0f172a;color:#fff}
 .container{max-width:1200px;margin:auto;padding:18px}
 .header,.card{background:#1e293b;border-radius:16px;padding:20px;margin-bottom:18px}
 .folio{font-size:28px;font-weight:bold}
-.titulo{color:#60a5fa;font-size:20px;margin-top:8px}
-.subtitulo{color:#cbd5e1;margin-top:6px}
-.estado-expediente{display:inline-block;margin-top:12px;padding:10px 18px;background:#1d4ed8;border-radius:30px}
-.tabs{display:flex;overflow-x:auto;gap:8px;margin-bottom:18px}
-.tab{background:#1e293b;color:#fff;border:none;border-radius:12px;padding:12px 20px;cursor:pointer}
+.titulo{font-size:20px;color:#60a5fa;margin-top:8px}
+.subtitulo{margin-top:5px;color:#cbd5e1}
+.estado{display:inline-block;margin-top:14px;padding:10px 18px;border-radius:30px;background:#1d4ed8}
+.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:18px}
+.tab{padding:12px 20px;border:none;border-radius:10px;background:#1e293b;color:#fff;cursor:pointer}
 .tab.active{background:#2563eb}
 .panel{display:none}
 .panel.active{display:block}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
-.info,.lista-item{background:#0f172a;border-radius:10px;padding:14px}
-label{display:block;color:#94a3b8;font-size:13px;margin-bottom:6px}
-.timeline{border-left:3px solid #2563eb;padding-left:16px}
-.accion{background:#1f3a8a;border-left:5px solid #f59e0b}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.info,.item{background:#0f172a;border-radius:10px;padding:14px}
+.info label{display:block;font-size:12px;color:#94a3b8;margin-bottom:6px}
+.timeline{border-left:3px solid #2563eb;padding-left:15px}
+.timeline div{margin-bottom:12px}
+.progress{width:100%;height:12px;background:#0f172a;border-radius:10px;overflow:hidden}
+.progress>div{height:100%;width:40%;background:#22c55e}
+.badge{display:inline-block;padding:6px 12px;border-radius:20px;font-weight:bold}
+.yellow{background:#92400e}
+.green{background:#166534}
+.red{background:#991b1b}
+.accion{border-left:5px solid #f59e0b}
+@media(max-width:700px){.folio{font-size:22px}}
 </style>
 </head>
 <body>
 <div class="container">
 <div class="header">
-<div class="folio">EXP-2026-000002</div>
-<div class="titulo">Expediente de Obra</div>
-<div class="subtitulo">Privada II · Lote 16</div>
-<div class="estado-expediente">🟡 En revisión por Mesa Directiva</div>
+<div class="folio" id="folio">EXP-2026-000002</div>
+<div class="titulo" id="titulo">Expediente de Obra</div>
+<div class="subtitulo" id="ubicacion">Privada II · Lote 16</div>
+<div class="estado" id="estadoExp">🟡 En revisión por Mesa Directiva</div>
 </div>
 
 <div class="tabs">
@@ -48,60 +56,108 @@ label{display:block;color:#94a3b8;font-size:13px;margin-bottom:6px}
 <section id="resumen" class="panel active">
 <div class="card accion">
 <h2>¿Qué necesitas hacer?</h2>
-<p>No tienes acciones pendientes.</p>
+<p id="accionUsuario">No tienes acciones pendientes.</p>
+</div>
+
+<div class="card">
+<h2>Estado general del expediente</h2>
+<p><span id="semaforo" class="badge yellow">🟡 En revisión</span></p><br>
+<div class="progress"><div id="barra"></div></div>
+<p style="margin-top:10px" id="avance">40 % del procedimiento completado.</p>
 </div>
 
 <div class="card">
 <h2>¿Qué está ocurriendo?</h2>
-<p>El expediente espera el dictamen del Secretario y del Primer Vocal.</p>
+<p id="situacion">Esperando el dictamen del Secretario y del Primer Vocal.</p>
 </div>
 
 <div class="card">
 <h2>Pendientes para continuar</h2>
-<div class="lista-item">☐ Dictamen del Secretario</div>
-<div class="lista-item">☐ Dictamen del Primer Vocal</div>
-<div class="lista-item">☑ Solicitud</div>
-<div class="lista-item">☑ Proyecto</div>
-<div class="lista-item">☑ Planos</div>
-<div class="lista-item">☑ Fianza</div>
+<div class="item">☐ Dictamen del Secretario</div>
+<div class="item">☐ Dictamen del Primer Vocal</div>
+<div class="item">☑ Solicitud</div>
+<div class="item">☑ Proyecto</div>
+<div class="item">☑ Planos</div>
+<div class="item">☑ Fianza</div>
 </div>
 
 <div class="card">
 <h2>Siguiente paso</h2>
 <div class="grid">
-<div class="info"><label>Acción</label><strong>Formalizar Resolución</strong></div>
-<div class="info"><label>Responsable</label><strong>Presidente</strong></div>
-<div class="info"><label>Estado</label><strong>No disponible</strong></div>
-<div class="info"><label>Motivo</label><strong>Faltan dos dictámenes.</strong></div>
+<div class="info"><label>Acción</label><strong id="sigPaso">Formalizar Resolución</strong></div>
+<div class="info"><label>Responsable</label><strong id="responsable">Presidente</strong></div>
+<div class="info"><label>Estado</label><strong id="estadoPaso">No disponible</strong></div>
+<div class="info"><label>Motivo</label><strong id="motivo">Faltan dos dictámenes.</strong></div>
+</div>
+</div>
+
+<div class="card">
+<h2>Participantes del expediente</h2>
+<div class="grid">
+<div class="info"><label>Administrador</label><strong id="adm">Edgar</strong></div>
+<div class="info"><label>Propietario</label><strong id="prop">Juan Pérez</strong></div>
+<div class="info"><label>DRO</label><strong id="dro">Ing. XXXXX</strong></div>
+<div class="info"><label>Mesa Directiva</label><strong>5 integrantes</strong></div>
 </div>
 </div>
 
 <div class="card">
 <h2>Últimos movimientos</h2>
-<div class="timeline">
-<p>Hoy · Se integró la Fianza.</p>
-<p>Ayer · Dictamen del Presidente.</p>
-<p>Ayer · Se creó el expediente.</p>
+<div class="timeline" id="timeline">
+<div>Hoy · Se integró la Fianza.</div>
+<div>Ayer · Dictamen del Presidente.</div>
+<div>Ayer · Se creó el expediente.</div>
 </div>
 </div>
 </section>
 
-<section id="documentos" class="panel"><div class="card"><h2>Documentos</h2><p>En construcción.</p></div></section>
-<section id="mesa" class="panel"><div class="card"><h2>Mesa Directiva</h2><p>En construcción.</p></div></section>
-<section id="resoluciones" class="panel"><div class="card"><h2>Resoluciones</h2><p>En construcción.</p></div></section>
-<section id="obra" class="panel"><div class="card"><h2>Obra</h2><p>En construcción.</p></div></section>
-<section id="historial" class="panel"><div class="card"><h2>Historial</h2><p>En construcción.</p></div></section>
+<section id="documentos" class="panel"><div class="card"><h2>Documentos</h2><p>Próximamente se mostrarán documentos, estado, carga y consulta.</p></div></section>
+<section id="mesa" class="panel"><div class="card"><h2>Mesa Directiva</h2><p>Se mostrarán integrantes, dictámenes y avance del acuerdo colegiado.</p></div></section>
+<section id="resoluciones" class="panel"><div class="card"><h2>Resoluciones</h2><p>Aquí aparecerán las resoluciones y oficios emitidos.</p></div></section>
+<section id="obra" class="panel"><div class="card"><h2>Obra</h2><p>Seguimiento operativo de la obra.</p></div></section>
+<section id="historial" class="panel"><div class="card"><h2>Historial</h2><p>Cronología completa del expediente.</p></div></section>
 
 </div>
+
 <script>
-document.querySelectorAll(".tab").forEach(btn=>{
- btn.addEventListener("click",()=>{
-   document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
-   document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
-   btn.classList.add("active");
-   document.getElementById(btn.dataset.panel).classList.add("active");
+const expediente={
+ folio:"EXP-2026-000002",
+ titulo:"Expediente de Obra",
+ privada:"II",
+ lote:"16",
+ estado:"🟡 En revisión por Mesa Directiva",
+ avance:40,
+ usuario:{nombre:"Edgar",tipo:"administracion"},
+ accion:"No tienes acciones pendientes."
+};
+
+function init(){
+ cargarExpediente();
+ activarPestanas();
+}
+
+function cargarExpediente(){
+ document.getElementById("folio").textContent=expediente.folio;
+ document.getElementById("titulo").textContent=expediente.titulo;
+ document.getElementById("ubicacion").textContent=`Privada ${expediente.privada} · Lote ${expediente.lote}`;
+ document.getElementById("estadoExp").textContent=expediente.estado;
+ document.getElementById("barra").style.width=expediente.avance+"%";
+ document.getElementById("avance").textContent=expediente.avance+" % del procedimiento completado.";
+ document.getElementById("accionUsuario").textContent=expediente.accion;
+}
+
+function activarPestanas(){
+ document.querySelectorAll(".tab").forEach(btn=>{
+   btn.onclick=()=>{
+      document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+      document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.panel).classList.add("active");
+   }
  });
-});
+}
+
+window.addEventListener("DOMContentLoaded",init);
 </script>
 </body>
 </html>
