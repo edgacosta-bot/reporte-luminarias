@@ -176,23 +176,15 @@ function renderCard(procedimiento) {
     switch (procedimiento.estado) {
 
         case "Autorizado":
-
-            badge =
-                '<span class="badge badge-success">Autorizado</span>';
-
+            badge = '<span class="badge badge-success">Autorizado</span>';
             break;
 
         case "Observado":
-
-            badge =
-                '<span class="badge badge-danger">Observado</span>';
-
+            badge = '<span class="badge badge-danger">Observado</span>';
             break;
 
         default:
-
-            badge =
-                '<span class="badge badge-warning">En revisión</span>';
+            badge = '<span class="badge badge-warning">En revisión</span>';
 
     }
 
@@ -200,7 +192,6 @@ function renderCard(procedimiento) {
 
         <div
             class="card procedimiento-card"
-            data-id="${procedimiento.id}"
             style="margin-top:18px;">
 
             <div
@@ -269,11 +260,7 @@ function renderCard(procedimiento) {
                         font-size:14px;
                     ">
 
-                    <span>
-
-                        Avance
-
-                    </span>
+                    <span>Avance</span>
 
                     <strong>
 
@@ -334,8 +321,8 @@ function renderCard(procedimiento) {
                 </div>
 
                 <button
-                    class="btn btn-primary abrir-procedimiento"
-                    data-id="${procedimiento.id}">
+                    class="btn btn-primary"
+                    onclick="Router.mostrarEscritorio('${procedimiento.id}')">
 
                     Abrir
 
