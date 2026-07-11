@@ -1,0 +1,537 @@
+/* ==========================================================
+   SIGE
+   Sistema Integral de Gestión de Expedientes
+
+   Archivo:
+   gestion.css
+
+   Versión:
+   1.0.0
+
+   Este archivo constituye la identidad visual del módulo
+   Gestión Institucional.
+
+========================================================== */
+
+
+/* ==========================================================
+   VARIABLES
+========================================================== */
+
+:root{
+
+    /* Colores institucionales */
+
+    --vino:#9F2241;
+    --vino-dark:#691C32;
+
+    --verde:#235B4E;
+    --verde-dark:#10312B;
+
+    --beige:#DDC9A3;
+
+    --gris:#6F7271;
+
+    --gris-claro:#E5E7EB;
+
+    --gris-fondo:#F4F6F8;
+
+    --texto:#1F2937;
+
+    --texto-secundario:#6B7280;
+
+    --blanco:#FFFFFF;
+
+    --borde:#D7DCE2;
+
+    --sombra:0 10px 25px rgba(0,0,0,.08);
+
+    --radio:18px;
+
+    --transicion:.25s;
+
+}
+
+
+/* ==========================================================
+   RESET
+========================================================== */
+
+*{
+
+    margin:0;
+
+    padding:0;
+
+    box-sizing:border-box;
+
+}
+
+html{
+
+    scroll-behavior:smooth;
+
+}
+
+body{
+
+    font-family:Arial,Helvetica,sans-serif;
+
+    background:var(--gris-fondo);
+
+    color:var(--texto);
+
+}
+
+
+/* ==========================================================
+   APP
+========================================================== */
+
+#app{
+
+    width:100%;
+
+    min-height:100vh;
+
+}
+
+
+/* ==========================================================
+   HEADER
+========================================================== */
+
+#appHeader{
+
+    background:linear-gradient(
+        135deg,
+        var(--vino),
+        var(--vino-dark)
+    );
+
+    color:white;
+
+    padding:22px 28px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    box-shadow:var(--sombra);
+
+    position:sticky;
+
+    top:0;
+
+    z-index:100;
+
+}
+
+
+.header-left{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+}
+
+
+.header-button{
+
+    width:46px;
+
+    height:46px;
+
+    border:none;
+
+    border-radius:50%;
+
+    cursor:pointer;
+
+    background:rgba(255,255,255,.15);
+
+    color:white;
+
+    font-size:22px;
+
+    transition:var(--transicion);
+
+}
+
+.header-button:hover{
+
+    background:white;
+
+    color:var(--vino);
+
+}
+
+
+#appHeader h1{
+
+    font-size:28px;
+
+    font-weight:600;
+
+}
+
+
+#subtitulo{
+
+    display:block;
+
+    margin-top:4px;
+
+    font-size:14px;
+
+    opacity:.85;
+
+}
+
+
+.header-user{
+
+    font-size:15px;
+
+    font-weight:600;
+
+}
+
+
+/* ==========================================================
+   DASHBOARD SUPERIOR
+========================================================== */
+
+#dashboardResumen{
+
+    padding:28px;
+
+}
+
+
+/* ==========================================================
+   WORKSPACE
+========================================================== */
+
+#workspace{
+
+    padding:0 28px 40px;
+
+}
+
+
+/* ==========================================================
+   GRID
+========================================================== */
+
+.grid{
+
+    display:grid;
+
+    gap:22px;
+
+}
+
+
+.grid-2{
+
+    grid-template-columns:
+
+        repeat(2,1fr);
+
+}
+
+
+.grid-3{
+
+    grid-template-columns:
+
+        repeat(3,1fr);
+
+}
+
+
+.grid-4{
+
+    grid-template-columns:
+
+        repeat(4,1fr);
+
+}
+
+
+/* ==========================================================
+   TARJETAS
+========================================================== */
+
+.card{
+
+    background:white;
+
+    border-radius:var(--radio);
+
+    border:1px solid var(--borde);
+
+    box-shadow:var(--sombra);
+
+    padding:24px;
+
+    transition:var(--transicion);
+
+}
+
+
+.card:hover{
+
+    transform:translateY(-3px);
+
+}
+
+
+.card-title{
+
+    font-size:18px;
+
+    font-weight:600;
+
+    margin-bottom:12px;
+
+}
+
+
+.card-subtitle{
+
+    color:var(--texto-secundario);
+
+    font-size:14px;
+
+    margin-bottom:18px;
+
+}
+
+
+/* ==========================================================
+   KPIs
+========================================================== */
+
+.kpi-number{
+
+    font-size:42px;
+
+    font-weight:bold;
+
+    color:var(--vino);
+
+}
+
+
+.kpi-label{
+
+    margin-top:8px;
+
+    color:var(--texto-secundario);
+
+}
+
+
+/* ==========================================================
+   BOTONES
+========================================================== */
+
+.btn{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:8px;
+
+    padding:14px 24px;
+
+    border:none;
+
+    border-radius:14px;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    transition:var(--transicion);
+
+}
+
+
+.btn-primary{
+
+    background:var(--vino);
+
+    color:white;
+
+}
+
+
+.btn-primary:hover{
+
+    background:var(--vino-dark);
+
+}
+
+
+.btn-secondary{
+
+    background:var(--verde);
+
+    color:white;
+
+}
+
+
+.btn-secondary:hover{
+
+    background:var(--verde-dark);
+
+}
+
+
+.btn-light{
+
+    background:white;
+
+    color:var(--texto);
+
+    border:1px solid var(--borde);
+
+}
+
+
+.btn-light:hover{
+
+    background:#F8FAFC;
+
+}
+
+
+/* ==========================================================
+   BADGES
+========================================================== */
+
+.badge{
+
+    display:inline-block;
+
+    padding:6px 12px;
+
+    border-radius:999px;
+
+    font-size:12px;
+
+    font-weight:600;
+
+}
+
+
+.badge-warning{
+
+    background:#FFF4CC;
+
+    color:#9A6700;
+
+}
+
+
+.badge-success{
+
+    background:#DCFCE7;
+
+    color:#166534;
+
+}
+
+
+.badge-danger{
+
+    background:#FEE2E2;
+
+    color:#991B1B;
+
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media(max-width:1100px){
+
+    .grid-4{
+
+        grid-template-columns:
+
+            repeat(2,1fr);
+
+    }
+
+}
+
+@media(max-width:800px){
+
+    #appHeader{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+        gap:18px;
+
+    }
+
+    .grid-3,
+
+    .grid-2,
+
+    .grid-4{
+
+        grid-template-columns:1fr;
+
+    }
+
+    #dashboardResumen{
+
+        padding:18px;
+
+    }
+
+    #workspace{
+
+        padding:18px;
+
+    }
+
+}
+
+@media(max-width:520px){
+
+    #appHeader h1{
+
+        font-size:22px;
+
+    }
+
+    .header-button{
+
+        width:42px;
+
+        height:42px;
+
+    }
+
+}
