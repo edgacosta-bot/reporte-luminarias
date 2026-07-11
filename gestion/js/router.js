@@ -115,12 +115,14 @@ function mostrarListaProcedimientos() {
    PROCEDIMIENTO
 ========================================================== */
 
-function mostrarEscritorio(idProcedimiento = null) {
+async function mostrarEscritorio(idProcedimiento = null) {
 
     cambiarVista("procedimiento");
 
     const procedimiento =
-        Store.obtenerProcedimiento(idProcedimiento);
+        Store.obtenerProcedimiento(
+            idProcedimiento
+        );
 
     SIGE_STATE.expedienteActual =
         procedimiento;
@@ -130,12 +132,11 @@ function mostrarEscritorio(idProcedimiento = null) {
     );
 
 }
-
 /* ==========================================================
    CENTRO DE TRABAJO
 ========================================================== */
 
-function mostrarCentroTrabajo(idActuacion = null) {
+async function mostrarCentroTrabajo(idActuacion = null) {
 
     console.log(
         "Router.mostrarCentroTrabajo()",
@@ -145,7 +146,9 @@ function mostrarCentroTrabajo(idActuacion = null) {
     cambiarVista("centro-trabajo");
 
     const actuacion =
-        Store.obtenerActuacion(idActuacion);
+        Store.obtenerActuacion(
+            idActuacion
+        );
 
     CentroTrabajo.render(
         actuacion
