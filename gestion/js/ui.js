@@ -24,6 +24,46 @@ function inicializarUI() {
 
     console.log("✓ Interfaz inicializada.");
 
+    const boton =
+        document.getElementById("btnRegresar");
+
+    if (!boton)
+        return;
+
+    boton.onclick = function () {
+
+        switch (Router.vistaActual) {
+
+            case "dashboard":
+
+                window.location.href = "../index.html";
+                break;
+
+            case "procedimientos":
+
+                Router.mostrarDashboard();
+                break;
+
+            case "procedimiento":
+
+                Router.mostrarListaProcedimientos();
+                break;
+
+            case "centro-trabajo":
+
+                Router.mostrarEscritorio(
+                    SIGE_STATE.expedienteActual?.id ?? 1
+                );
+                break;
+
+            default:
+
+                Router.mostrarDashboard();
+
+        }
+
+    };
+
 }
 
 
