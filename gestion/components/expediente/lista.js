@@ -353,36 +353,31 @@ function renderCard(procedimiento) {
 
 function registrarEventos() {
 
-    const botones =
-        document.querySelectorAll(
-            ".abrir-procedimiento"
-        );
-
-    botones.forEach(
-
-        boton => {
-
-            boton.addEventListener(
-
-                "click",
-
-                function () {
-
-                    const id =
-                        this.dataset.id;
-
-                    abrirProcedimiento(id);
-
-                }
-
-            );
-
-        }
-
+    const botones = document.querySelectorAll(
+        ".abrir-procedimiento"
     );
 
-}
+    console.log("Registrando", botones.length, "botones.");
 
+    botones.forEach(boton => {
+
+        boton.addEventListener("click", function (event) {
+
+            console.log("CLICK detectado");
+
+            console.log("Botón:", this);
+
+            console.log("ID:", this.dataset.id);
+
+            event.preventDefault();
+
+            abrirProcedimiento(this.dataset.id);
+
+        });
+
+    });
+
+}
 
 
 /* ==========================================================
