@@ -353,27 +353,16 @@ function renderCard(procedimiento) {
 
 function registrarEventos() {
 
-    const botones = document.querySelectorAll(
-        ".abrir-procedimiento"
-    );
+    document.addEventListener("click", function (event) {
 
-    console.log("Registrando", botones.length, "botones.");
+        const boton = event.target.closest(".abrir-procedimiento");
 
-    botones.forEach(boton => {
+        if (!boton)
+            return;
 
-        boton.addEventListener("click", function (event) {
+        console.log("CLICK detectado");
 
-            console.log("CLICK detectado");
-
-            console.log("Botón:", this);
-
-            console.log("ID:", this.dataset.id);
-
-            event.preventDefault();
-
-            abrirProcedimiento(this.dataset.id);
-
-        });
+        abrirProcedimiento(boton.dataset.id);
 
     });
 
