@@ -355,21 +355,41 @@ function renderCard(procedimiento) {
 
 function registrarEventos() {
 
-    document.addEventListener("click", function (event) {
+    console.log("registrarEventos()");
 
-        const boton = event.target.closest(".abrir-procedimiento");
+    try {
 
-        if (!boton)
-            return;
+        document.addEventListener("click", function(event) {
 
-        console.log("CLICK detectado");
+            console.log("CLICK DOCUMENTO INTERNO");
 
-        abrirProcedimiento(boton.dataset.id);
+            const boton =
+                event.target.closest(".abrir-procedimiento");
 
-    });
+            console.log("boton:", boton);
+
+            if (!boton)
+                return;
+
+            console.log("CLICK BOTÓN");
+
+            abrirProcedimiento(
+                boton.dataset.id
+            );
+
+        });
+
+        console.log("Listener instalado correctamente.");
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+    }
 
 }
-
 
 /* ==========================================================
    ABRIR PROCEDIMIENTO
