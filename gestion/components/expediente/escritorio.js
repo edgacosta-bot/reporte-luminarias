@@ -322,14 +322,15 @@ function renderActuacion(
             class="card"
             style="
                 margin-top:16px;
-                cursor:pointer;
+                border-left:5px solid var(--vino);
             ">
 
             <div
                 style="
                     display:flex;
                     justify-content:space-between;
-                    align-items:center;
+                    align-items:flex-start;
+                    gap:24px;
                 ">
 
                 <div>
@@ -340,15 +341,25 @@ function renderActuacion(
 
                     </strong>
 
-                    <br>
+                    <br><br>
 
                     ${nombre}
+
+                    <br><br>
+
+                    ${badge}
 
                 </div>
 
                 <div>
 
-                    ${badge}
+                    <button
+                        class="btn btn-primary"
+                        onclick="Router.mostrarCentroTrabajo(${numero})">
+
+                        Abrir Centro de Trabajo
+
+                    </button>
 
                 </div>
 
