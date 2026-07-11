@@ -111,10 +111,12 @@ const procedimientosDemo = [
 
 function render() {
 
+    console.log("ListaProcedimientos.render()");
+
     const workspace =
         document.getElementById("workspace");
 
-    if(!workspace)
+    if (!workspace)
         return;
 
     workspace.innerHTML = `
@@ -134,31 +136,30 @@ function render() {
 
             </div>
 
-            <div id="listaProcedimientos">
-
-            </div>
+            <div id="listaProcedimientos"></div>
 
         </div>
 
     `;
 
     const contenedor =
-        document.getElementById(
-            "listaProcedimientos"
-        );
+        document.getElementById("listaProcedimientos");
 
-    procedimientosDemo.forEach(
+    procedimientosDemo.forEach(procedimiento => {
 
-        procedimiento=>{
+        contenedor.innerHTML +=
+            renderCard(procedimiento);
 
-            contenedor.innerHTML +=
-                renderCard(procedimiento);
+    });
 
-        }
-
+    console.log(
+        "Botones encontrados:",
+        document.querySelectorAll(".abrir-procedimiento").length
     );
 
     registrarEventos();
+
+    console.log("Eventos registrados.");
 
 }
 
