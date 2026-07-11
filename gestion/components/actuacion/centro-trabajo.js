@@ -806,10 +806,7 @@ function renderVoBo(vobo){
             badge =
                 '<span class="badge badge-warning">Pendiente</span>';
 
-                    Pendiente
-
-                </span>';
-
+                    
             accion = `
 
                 <button
@@ -821,6 +818,8 @@ function renderVoBo(vobo){
                 </button>
 
             `;
+          
+          break;
 
     }
 
