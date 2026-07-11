@@ -135,15 +135,11 @@ function mostrarEscritorio(idProcedimiento = null) {
 
     };
 
-    EscritorioExpediente.render(
+    SIGE_STATE.expedienteActual = procedimientoDemo;
 
-        procedimientoDemo
-
-    );
+    EscritorioExpediente.render(procedimientoDemo);
 
 }
-
-
 
 /* ==========================================================
    CENTRO DE TRABAJO
