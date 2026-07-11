@@ -354,12 +354,15 @@ function renderActuacion(
                 <div>
 
                     <button
-                        class="btn btn-primary"
-                        onclick="Router.mostrarCentroTrabajo(${numero})">
+    class="btn btn-primary"
+    onclick="
+        console.log('CLICK ACTUACIÓN', ${numero});
+        Router.mostrarCentroTrabajo(${numero});
+    ">
 
-                        Abrir Centro de Trabajo
+    Abrir Centro de Trabajo
 
-                    </button>
+</button>
 
                 </div>
 
