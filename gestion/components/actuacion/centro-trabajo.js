@@ -831,11 +831,7 @@ function renderDocumento(documento) {
         case "no_requerido":
 
             badge =
-                '<span class="badge">
-
-                    No requerido
-
-                </span>';
+                '<span class="badge">No requerido</span>';
 
             acciones = "";
 
@@ -844,11 +840,11 @@ function renderDocumento(documento) {
         default:
 
             badge =
-                '<span class="badge">
+                '<span class="badge">Sin estado</span>';
 
-                    Sin estado
+            acciones = "";
 
-                </span>';
+            break;
 
     }
 
@@ -940,7 +936,6 @@ function renderDocumento(documento) {
     `;
 
 }
-
 
 
 /* ==========================================================
