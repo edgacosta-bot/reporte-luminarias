@@ -119,25 +119,15 @@ function mostrarEscritorio(idProcedimiento = null) {
 
     cambiarVista("procedimiento");
 
-    const procedimientoDemo = {
+    const procedimiento =
+        Store.obtenerProcedimiento(idProcedimiento);
 
-        id: idProcedimiento,
+    SIGE_STATE.expedienteActual =
+        procedimiento;
 
-        numero: "O-2026-001",
-
-        nombre: "Construcción de vivienda",
-
-        avance: 68,
-
-        totalActuaciones: 6,
-
-        actuacionesCompletadas: 3
-
-    };
-
-    SIGE_STATE.expedienteActual = procedimientoDemo;
-
-    EscritorioExpediente.render(procedimientoDemo);
+    EscritorioExpediente.render(
+        procedimiento
+    );
 
 }
 
@@ -154,20 +144,14 @@ function mostrarCentroTrabajo(idActuacion = null) {
 
     cambiarVista("centro-trabajo");
 
-    const actuacionDemo = {
+    const actuacion =
+        Store.obtenerActuacion(idActuacion);
 
-        id: idActuacion,
-
-        procedimiento: "O-2026-001",
-
-        nombre: "Integración Documental"
-
-    };
-
-    CentroTrabajo.render(actuacionDemo);
+    CentroTrabajo.render(
+        actuacion
+    );
 
 }
-
 
 /* ==========================================================
    MÓDULOS
