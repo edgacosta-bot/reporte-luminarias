@@ -8,10 +8,10 @@
    app.js
 
    Versión:
-   1.0.0
+   2.0.0
 
    Responsabilidad:
-   Inicializar la aplicación.
+   Inicializar completamente la aplicación.
 
 ========================================================== */
 
@@ -22,9 +22,11 @@
 
 const SIGE = {
 
-    version: "1.0.0",
+    version: "2.0.0",
 
-    initialized: false,
+    iniciado: false,
+
+    usuario: null,
 
     iniciar
 
@@ -37,18 +39,14 @@ const SIGE = {
 
 async function iniciar() {
 
+    console.clear();
+
     console.log("");
-
-    console.log("========================================");
-
+    console.log("=======================================");
     console.log(" SIGE");
-
-    console.log(" Gestión Institucional");
-
-    console.log(" Versión:", SIGE.version);
-
-    console.log("========================================");
-
+    console.log(" Sistema Integral de Gestión");
+    console.log(" Versión", SIGE.version);
+    console.log("=======================================");
     console.log("");
 
     try {
@@ -57,21 +55,31 @@ async function iniciar() {
 
         inicializarEstado();
 
-        inicializarRouter();
-
         inicializarUI();
 
-        cargarDashboard();
+        inicializarRouter();
 
-        SIGE.initialized = true;
+        Router.mostrarDashboard();
 
-        console.log("SIGE iniciado correctamente.");
+        SIGE.iniciado = true;
+
+        console.log("");
+        console.log("Aplicación iniciada correctamente.");
+        console.log("");
 
     }
 
     catch (error) {
 
-        console.error("Error al iniciar SIGE:", error);
+        console.error("");
+
+        console.error("Error al iniciar SIGE");
+
+        console.error(error);
+
+        console.error("");
+
+        mostrarErrorInicio(error);
 
     }
 
@@ -79,33 +87,101 @@ async function iniciar() {
 
 
 /* ==========================================================
-   VALIDAR SESIÓN
+   SESIÓN
 ========================================================== */
 
 async function validarSesion() {
 
-    const { data } =
-        await supabaseClient.auth.getSession();
+    const {
 
-    const usuario =
-        data?.session?.user;
+        data,
+        error
 
-    if (!usuario) {
+    } = await supabaseClient.auth.getSession();
 
-        window.location.href =
-            "../login.html";
+    if (error)
+        throw error;
+
+    if (!data.session) {
+
+        window.location.href = "../login.html";
 
         return;
 
     }
 
-    window.usuarioSIGE = usuario;
+    SIGE.usuario = data.session.user;
+
+    actualizarUsuario();
 
 }
 
 
 /* ==========================================================
-   EVENTO DOM
+   USUARIO
+========================================================== */
+
+function actualizarUsuario() {
+
+    const contenedor =
+        document.getElementById("usuarioActual");
+
+    if (!contenedor)
+        return;
+
+    const correo =
+        SIGE.usuario?.email ?? "";
+
+    contenedor.textContent = correo;
+
+}
+
+
+/* ==========================================================
+   ERROR DE INICIO
+========================================================== */
+
+function mostrarErrorInicio(error) {
+
+    const workspace =
+        document.getElementById("workspace");
+
+    if (!workspace)
+        return;
+
+    workspace.innerHTML = `
+
+        <div class="card">
+
+            <div class="card-title">
+
+                No fue posible iniciar SIGE
+
+            </div>
+
+            <div class="card-subtitle">
+
+                ${error.message}
+
+            </div>
+
+            <button
+                class="btn btn-primary"
+                onclick="location.reload()">
+
+                Reintentar
+
+            </button>
+
+        </div>
+
+    `;
+
+}
+
+
+/* ==========================================================
+   DOM
 ========================================================== */
 
 document.addEventListener(
