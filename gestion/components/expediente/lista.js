@@ -30,8 +30,6 @@ const ListaProcedimientos = {
 
     renderCard,
 
-    registrarEventos,
-
     actualizar,
 
     destruir
@@ -153,15 +151,6 @@ function render() {
             renderCard(procedimiento);
 
     });
-
-    console.log(
-        "Botones encontrados:",
-        document.querySelectorAll(".abrir-procedimiento").length
-    );
-
-    registrarEventos();
-
-    console.log("Eventos registrados.");
 
 }
 
@@ -335,94 +324,6 @@ function renderCard(procedimiento) {
     `;
 
 }
-
-/* ==========================================================
-   EVENTOS
-========================================================== */
-
-function registrarEventos() {
-
-    console.log("registrarEventos()");
-
-    try {
-
-        document.addEventListener("click", function(event) {
-
-            console.log("CLICK DOCUMENTO INTERNO");
-
-            const boton =
-                event.target.closest(".abrir-procedimiento");
-
-            console.log("boton:", boton);
-
-            if (!boton)
-                return;
-
-            console.log("CLICK BOTÓN");
-
-            abrirProcedimiento(
-                boton.dataset.id
-            );
-
-        });
-
-        console.log("Listener instalado correctamente.");
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-    }
-
-}
-
-/* ==========================================================
-   ABRIR PROCEDIMIENTO
-========================================================== */
-
-function abrirProcedimiento(idProcedimiento) {
-
-    console.log(
-
-        "Abrir procedimiento:",
-
-        idProcedimiento
-
-    );
-
-    /*
-        Sprint siguiente:
-
-        1) Obtener el procedimiento desde Supabase.
-
-        2) Obtener actuaciones.
-
-        3) Router.mostrarEscritorio(idProcedimiento);
-
-    */
-
-    if (
-
-        typeof Router !== "undefined"
-
-        &&
-
-        typeof Router.mostrarEscritorio === "function"
-
-    ) {
-
-        Router.mostrarEscritorio(
-
-            idProcedimiento
-
-        );
-
-    }
-
-}
-
 
 
 /* ==========================================================
