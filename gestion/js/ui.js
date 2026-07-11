@@ -8,7 +8,7 @@
    ui.js
 
    Versión:
-   1.0.0
+   2.0.0
 
    Responsabilidad:
    Construcción de la interfaz de usuario.
@@ -22,7 +22,7 @@
 
 function inicializarUI() {
 
-    console.log("Inicializando interfaz...");
+    console.log("✓ Interfaz inicializada.");
 
 }
 
@@ -31,24 +31,23 @@ function inicializarUI() {
    DASHBOARD
 ========================================================== */
 
-function cargarDashboard() {
+function construirDashboard() {
 
-    construirDashboard();
+    construirKPIs();
+
+    construirWorkspaceDashboard();
 
 }
 
 
 /* ==========================================================
-   CONSTRUCCIÓN DEL DASHBOARD
+   KPIs
 ========================================================== */
 
-function construirDashboard() {
+function construirKPIs() {
 
     const dashboard =
         document.getElementById("dashboardResumen");
-
-    const workspace =
-        document.getElementById("workspace");
 
     dashboard.innerHTML = `
 
@@ -146,6 +145,18 @@ function construirDashboard() {
 
     `;
 
+}
+
+
+/* ==========================================================
+   DASHBOARD PRINCIPAL
+========================================================== */
+
+function construirWorkspaceDashboard() {
+
+    const workspace =
+        document.getElementById("workspace");
+
     workspace.innerHTML = `
 
         <div class="grid grid-2">
@@ -160,23 +171,39 @@ function construirDashboard() {
 
                 <div class="card-subtitle">
 
-                    Gestión Institucional constituye el
-                    centro de administración de los
-                    procedimientos del fraccionamiento.
+                    Gestión Institucional será el centro
+                    de administración de todos los
+                    procedimientos institucionales.
 
                     <br><br>
 
-                    Desde este módulo se administrarán
-                    expedientes, obras,
-                    contrataciones,
-                    proyectos de inversión
-                    y demás procedimientos
-                    institucionales.
+                    Desde aquí se administrarán:
+
+                    <br><br>
+
+                    • Gestión de Obras
+
+                    <br>
+
+                    • Contrataciones
+
+                    <br>
+
+                    • Proyectos de Inversión
+
+                    <br>
+
+                    • Convenios
+
+                    <br>
+
+                    • Reportes
 
                 </div>
 
                 <button
-                    class="btn btn-primary">
+                    class="btn btn-primary"
+                    onclick="Router.mostrarEscritorio()">
 
                     Iniciar procedimiento
 
@@ -194,7 +221,7 @@ function construirDashboard() {
 
                 <div class="card-subtitle">
 
-                    Seleccione un módulo.
+                    Seleccione una opción.
 
                 </div>
 
@@ -206,28 +233,32 @@ function construirDashboard() {
                     ">
 
                     <button
-                        class="btn btn-secondary">
+                        class="btn btn-secondary"
+                        onclick="Router.mostrarModulo('Gestión de Obras')">
 
                         🏗 Gestión de Obras
 
                     </button>
 
                     <button
-                        class="btn btn-light">
+                        class="btn btn-light"
+                        onclick="Router.mostrarModulo('Contrataciones')">
 
                         📑 Contrataciones
 
                     </button>
 
                     <button
-                        class="btn btn-light">
+                        class="btn btn-light"
+                        onclick="Router.mostrarModulo('Proyectos de Inversión')">
 
-                        🏛 Proyectos de inversión
+                        🏛 Proyectos de Inversión
 
                     </button>
 
                     <button
-                        class="btn btn-light">
+                        class="btn btn-light"
+                        onclick="Router.mostrarModulo('Reportes')">
 
                         📊 Reportes
 
