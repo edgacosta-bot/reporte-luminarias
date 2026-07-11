@@ -120,7 +120,7 @@ async function mostrarEscritorio(idProcedimiento = null) {
     cambiarVista("procedimiento");
 
     const procedimiento =
-        Store.obtenerProcedimiento(
+        await Workflow.abrirProcedimiento(
             idProcedimiento
         );
 
@@ -132,21 +132,17 @@ async function mostrarEscritorio(idProcedimiento = null) {
     );
 
 }
+
 /* ==========================================================
    CENTRO DE TRABAJO
 ========================================================== */
 
 async function mostrarCentroTrabajo(idActuacion = null) {
 
-    console.log(
-        "Router.mostrarCentroTrabajo()",
-        idActuacion
-    );
-
     cambiarVista("centro-trabajo");
 
     const actuacion =
-        Store.obtenerActuacion(
+        await Workflow.abrirActuacion(
             idActuacion
         );
 
