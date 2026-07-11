@@ -8,11 +8,11 @@
    router.js
 
    Versión:
-   1.0.0
+   2.0.0
 
    Responsabilidad:
-   Administrar la navegación interna del módulo
-   Gestión Institucional.
+   Controlar toda la navegación interna
+   de Gestión Institucional.
 
 ========================================================== */
 
@@ -23,13 +23,15 @@
 
 const Router = {
 
-    vistaActual: "dashboard",
+    vistaActual: null,
 
     mostrarDashboard,
 
     mostrarEscritorio,
 
-    mostrarModulo
+    mostrarModulo,
+
+    cambiarVista
 
 };
 
@@ -46,33 +48,36 @@ function inicializarRouter() {
 
 
 /* ==========================================================
-   DASHBOARD
+   CAMBIO DE VISTA
 ========================================================== */
 
-function mostrarDashboard() {
+function cambiarVista(nombreVista) {
 
-    Router.vistaActual = "dashboard";
-
-    cargarDashboard();
+    Router.vistaActual = nombreVista;
 
 }
 
 
 /* ==========================================================
-   ESCRITORIO DEL EXPEDIENTE
+   DASHBOARD
+========================================================== */
+
+function mostrarDashboard() {
+
+    cambiarVista("dashboard");
+
+    construirDashboard();
+
+}
+
+
+/* ==========================================================
+   ESCRITORIO
 ========================================================== */
 
 function mostrarEscritorio(idExpediente = null) {
 
-    Router.vistaActual = "expediente";
-
-    console.log(
-
-        "Abrir expediente:",
-
-        idExpediente
-
-    );
+    cambiarVista("expediente");
 
     const workspace =
         document.getElementById("workspace");
@@ -83,24 +88,28 @@ function mostrarEscritorio(idExpediente = null) {
 
             <div class="card-title">
 
-                Escritorio del expediente
+                Expediente
 
             </div>
 
             <div class="card-subtitle">
 
-                Esta vista será desarrollada
-                en el siguiente commit.
+                Expediente:
+                ${idExpediente ?? "Nuevo procedimiento"}
 
             </div>
 
-            <button
-                class="btn btn-primary"
-                onclick="Router.mostrarDashboard()">
+            <div style="margin-top:20px;">
 
-                Volver al Dashboard
+                <button
+                    class="btn btn-primary"
+                    onclick="Router.mostrarDashboard()">
 
-            </button>
+                    Regresar
+
+                </button>
+
+            </div>
 
         </div>
 
@@ -113,16 +122,40 @@ function mostrarEscritorio(idExpediente = null) {
    MÓDULOS
 ========================================================== */
 
-function mostrarModulo(nombre) {
+function mostrarModulo(nombreModulo) {
 
-    Router.vistaActual = nombre;
+    cambiarVista(nombreModulo);
 
-    console.log(
+    const workspace =
+        document.getElementById("workspace");
 
-        "Abrir módulo:",
+    workspace.innerHTML = `
 
-        nombre
+        <div class="card">
 
-    );
+            <div class="card-title">
+
+                ${nombreModulo}
+
+            </div>
+
+            <div class="card-subtitle">
+
+                Este módulo será desarrollado
+                en siguientes entregas.
+
+            </div>
+
+            <button
+                class="btn btn-primary"
+                onclick="Router.mostrarDashboard()">
+
+                Volver
+
+            </button>
+
+        </div>
+
+    `;
 
 }
