@@ -1,1 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
 
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>Gestión Institucional | SIGVIC</title>
+
+    <!-- ==========================================================
+         SUPABASE
+    =========================================================== -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- ==========================================================
+         SIGVIC
+    =========================================================== -->
+
+    <script src="../auth.js"></script>
+
+    <script src="../utils/dates.js"></script>
+
+    <script src="../utils/modal.js"></script>
+
+    <!-- ==========================================================
+         SIGE
+    =========================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="css/gestion.css">
+
+</head>
+
+<body>
+
+    <!-- ==========================================================
+         APP SHELL
+    =========================================================== -->
+
+    <div id="app">
+
+        <!-- ======================================================
+             HEADER
+        ======================================================= -->
+
+        <header id="appHeader">
+
+            <div class="header-left">
+
+                <button
+                    id="btnRegresar"
+                    class="header-button">
+
+                    ←
+
+                </button>
+
+                <div>
+
+                    <h1>
+
+                        Gestión Institucional
+
+                    </h1>
+
+                    <span id="subtitulo">
+
+                        Sistema Integral de Gestión de Expedientes
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div
+                id="usuarioActual"
+                class="header-user">
+
+                Cargando...
+
+            </div>
+
+        </header>
+
+        <!-- ======================================================
+             DASHBOARD SUPERIOR
+             (se llena dinámicamente)
+        ======================================================= -->
+
+        <section id="dashboardResumen">
+
+        </section>
+
+        <!-- ======================================================
+             CONTENIDO PRINCIPAL
+             AQUÍ SE CARGARÁN LAS VISTAS
+        ======================================================= -->
+
+        <main id="workspace">
+
+        </main>
+
+    </div>
+
+    <!-- ==========================================================
+         PLANTILLAS DINÁMICAS
+         (se agregan posteriormente)
+    =========================================================== -->
+
+    <template id="template-dashboard">
+
+    </template>
+
+    <template id="template-expedientes">
+
+    </template>
+
+    <template id="template-expediente">
+
+    </template>
+
+    <template id="template-obras">
+
+    </template>
+
+    <template id="template-documentos">
+
+    </template>
+
+    <template id="template-vobos">
+
+    </template>
+
+    <template id="template-bitacora">
+
+    </template>
+
+    <!-- ==========================================================
+         JAVASCRIPT
+    =========================================================== -->
+
+    <script src="js/gestion.js"></script>
+
+</body>
+
+</html>
