@@ -126,6 +126,11 @@ function mostrarEscritorio(idProcedimiento = null) {
 
 function mostrarCentroTrabajo(idActuacion = null) {
 
+    console.log(
+        "Router.mostrarCentroTrabajo()",
+        idActuacion
+    );
+
     cambiarVista("centro-trabajo");
 
     const actuacionDemo = {
@@ -138,14 +143,9 @@ function mostrarCentroTrabajo(idActuacion = null) {
 
     };
 
-    CentroTrabajo.render(
-
-        actuacionDemo
-
-    );
+    CentroTrabajo.render(actuacionDemo);
 
 }
-
 
 
 /* ==========================================================
