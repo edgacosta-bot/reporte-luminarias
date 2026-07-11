@@ -209,63 +209,88 @@ function renderResumen(expediente) {
    ACTUACIONES
 ========================================================== */
 
-function renderActuaciones(expediente) {
+function renderActuacion(
+    numero,
+    nombre,
+    estado
+) {
+
+    console.log("renderActuacion()", numero);
+
+    let badge = "";
+
+    switch (estado) {
+
+        case "success":
+
+            badge =
+                '<span class="badge badge-success">Completada</span>';
+
+            break;
+
+        case "warning":
+
+            badge =
+                '<span class="badge badge-warning">En proceso</span>';
+
+            break;
+
+        default:
+
+            badge =
+                '<span class="badge">Pendiente</span>';
+
+    }
 
     return `
 
-        <div class="card">
+        <div
+            class="card"
+            style="
+                margin-top:16px;
+                border-left:5px solid var(--vino);
+            ">
 
-            <div class="card-title">
+            <div
+                style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:flex-start;
+                    gap:24px;
+                ">
 
-                Actuaciones del procedimiento
+                <div>
 
-            </div>
+                    <strong>
 
-            <div class="card-subtitle">
+                        Actuación ${numero}
 
-                Seleccione una actuación para
-                consultar su documentación,
-                VoBos y observaciones.
+                    </strong>
 
-            </div>
+                    <br><br>
 
-            <div class="workflow">
+                    ${nombre}
 
-                ${renderActuacion(
-                    1,
-                    "Solicitud",
-                    "success"
-                )}
+                    <br><br>
 
-                ${renderActuacion(
-                    2,
-                    "Integración documental",
-                    "success"
-                )}
+                    ${badge}
 
-                ${renderActuacion(
-                    3,
-                    "Dictamen Técnico",
-                    "warning"
-                )}
+                </div>
 
-                ${renderActuacion(
-                    4,
-                    "Mesa Directiva",
-                    "pending"
-                )}
+                <div>
 
-                ${renderActuacion(
-                    5,
-                    "Inicio de Obra",
-                    "pending"
-                )}
+                    <button
+                        class="btn btn-primary"
+                        onclick="
+                            console.log('CLICK ACTUACIÓN', ${numero});
+                            Router.mostrarCentroTrabajo(${numero});
+                        ">
 
-                ${renderActuacion(
-                    6,
-                    "Concluido",
-                    "pending"
-                )}
+                        Abrir Centro de Trabajo
+
+                    </button>
+
+                </div>
 
             </div>
 
@@ -274,8 +299,6 @@ function renderActuaciones(expediente) {
     `;
 
 }
-
-
 
 /* ==========================================================
    ACTUACIÓN
