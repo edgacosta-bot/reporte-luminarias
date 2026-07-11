@@ -1,5 +1,7 @@
 "use strict";
 
+console.log("LISTA.JS VERSION 2026-07-11 15:45");
+
 /* ==========================================================
    SIGE
    Sistema Integral de Gestión de Expedientes
