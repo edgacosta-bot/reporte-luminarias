@@ -204,7 +204,75 @@ function renderResumen(expediente) {
 
 }
 
+/* ==========================================================
+   ACTUACIONES
+========================================================== */
 
+function renderActuaciones(expediente) {
+
+    return `
+
+        <div class="card">
+
+            <div class="card-title">
+
+                Actuaciones del procedimiento
+
+            </div>
+
+            <div class="card-subtitle">
+
+                Seleccione una actuación para
+                consultar su documentación,
+                VoBos y observaciones.
+
+            </div>
+
+            <div class="workflow">
+
+                ${renderActuacion(
+                    1,
+                    "Solicitud",
+                    "success"
+                )}
+
+                ${renderActuacion(
+                    2,
+                    "Integración documental",
+                    "success"
+                )}
+
+                ${renderActuacion(
+                    3,
+                    "Dictamen Técnico",
+                    "warning"
+                )}
+
+                ${renderActuacion(
+                    4,
+                    "Mesa Directiva",
+                    "pending"
+                )}
+
+                ${renderActuacion(
+                    5,
+                    "Inicio de Obra",
+                    "pending"
+                )}
+
+                ${renderActuacion(
+                    6,
+                    "Concluido",
+                    "pending"
+                )}
+
+            </div>
+
+        </div>
+
+    `;
+
+}
 /* ==========================================================
    ACTUACIONES
 ========================================================== */
