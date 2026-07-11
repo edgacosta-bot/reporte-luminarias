@@ -9,29 +9,8 @@
 
    RELEASE 001
 
-   Responsabilidad
-
-   Construir el Centro de Trabajo de una actuación.
-
-   El Centro de Trabajo representa la unidad operativa
-   del Workflow.
-
-   Desde aquí el usuario puede consultar:
-
-   • Estado de la actuación
-   • Workflow
-   • Control documental
-   • Observaciones
-   • VoBos
-   • Bitácora
-   • Acciones disponibles
-
-   IMPORTANTE
-
-   Este componente NO implementa reglas de negocio.
-
-   Todas las decisiones deberán provenir del Workflow
-   Engine mediante RPC.
+   MÓDULO 1
+   Infraestructura del componente
 
 ========================================================== */
 
@@ -115,6 +94,8 @@ function render(actuacion = {}) {
     registrarEventos();
 
 }
+
+
 
 /* ==========================================================
    ENCABEZADO
@@ -286,28 +267,22 @@ function renderHeader(actuacion) {
 function renderEstado(actuacion) {
 
     const avance =
-        actuacion.avance
-        ?? 45;
+        actuacion.avance ?? 45;
 
     const estado =
-        actuacion.estado
-        ?? "En proceso";
+        actuacion.estado ?? "En proceso";
 
     const etapa =
-        actuacion.etapa
-        ?? "Integración documental";
+        actuacion.etapa ?? "Integración documental";
 
     const documentos =
-        actuacion.documentosPendientes
-        ?? 1;
+        actuacion.documentosPendientes ?? 1;
 
     const observaciones =
-        actuacion.observacionesPendientes
-        ?? 2;
+        actuacion.observacionesPendientes ?? 2;
 
     const voBos =
-        actuacion.voBosPendientes
-        ?? 1;
+        actuacion.voBosPendientes ?? 1;
 
     return `
 
@@ -402,33 +377,21 @@ function renderEstado(actuacion) {
                     <div>
 
                         📄 Documentos:
-                        <strong>
-
-                            ${documentos}
-
-                        </strong>
+                        <strong>${documentos}</strong>
 
                     </div>
 
                     <div>
 
                         💬 Observaciones:
-                        <strong>
-
-                            ${observaciones}
-
-                        </strong>
+                        <strong>${observaciones}</strong>
 
                     </div>
 
                     <div>
 
                         ✔ VoBos:
-                        <strong>
-
-                            ${voBos}
-
-                        </strong>
+                        <strong>${voBos}</strong>
 
                     </div>
 
@@ -449,7 +412,8 @@ function renderEstado(actuacion) {
 function renderWorkflow(actuacion) {
 
     const workflow =
-        actuacion.workflow ?? obtenerWorkflowDemo();
+        actuacion.workflow
+        ?? obtenerWorkflowDemo();
 
     return `
 
@@ -463,9 +427,10 @@ function renderWorkflow(actuacion) {
 
             <div class="card-subtitle">
 
-                El Workflow determina el estado
-                operativo de la actuación y las
-                acciones permitidas para el usuario.
+                El Workflow determina la etapa
+                actual del procedimiento y las
+                transiciones disponibles para
+                el usuario.
 
             </div>
 
@@ -546,7 +511,8 @@ function renderPasoWorkflow(paso) {
                     flex-wrap:wrap;
                 ">
 
-                <div>
+                <div
+                    style="flex:1;">
 
                     <strong>
 
@@ -558,11 +524,45 @@ function renderPasoWorkflow(paso) {
 
                     ${paso.descripcion}
 
+                    ${paso.responsable
+                        ? `
+                            <br><br>
+
+                            <strong>
+
+                                Responsable
+
+                            </strong>
+
+                            <br>
+
+                            ${paso.responsable}
+                        `
+                        : ""
+                    }
+
                 </div>
 
-                <div>
+                <div
+                    style="
+                        display:flex;
+                        flex-direction:column;
+                        align-items:flex-end;
+                        gap:12px;
+                    ">
 
                     ${badge}
+
+                    ${paso.fecha
+                        ? `
+                            <small>
+
+                                ${paso.fecha}
+
+                            </small>
+                        `
+                        : ""
+                    }
 
                 </div>
 
@@ -579,7 +579,7 @@ function renderPasoWorkflow(paso) {
 /* ==========================================================
    WORKFLOW DEMO
 
-   Será sustituido por RPC.
+   Sustituido posteriormente por RPC
 ========================================================== */
 
 function obtenerWorkflowDemo() {
@@ -591,13 +591,19 @@ function obtenerWorkflowDemo() {
             id:1,
 
             nombre:
-                "Recepción de documentos",
+                "Recepción",
 
             descripcion:
-                "La documentación inicial fue recibida.",
+                "Solicitud recibida e integrada.",
+
+            responsable:
+                "Mesa de Control",
 
             estado:
-                "completado"
+                "completado",
+
+            fecha:
+                "15/07/2026"
 
         },
 
@@ -609,10 +615,16 @@ function obtenerWorkflowDemo() {
                 "Integración documental",
 
             descripcion:
-                "Se valida la documentación obligatoria.",
+                "Validación de documentos obligatorios.",
+
+            responsable:
+                "Secretaría",
 
             estado:
-                "completado"
+                "completado",
+
+            fecha:
+                "16/07/2026"
 
         },
 
@@ -621,13 +633,19 @@ function obtenerWorkflowDemo() {
             id:3,
 
             nombre:
-                "Dictamen técnico",
+                "Dictamen Técnico",
 
             descripcion:
-                "El área técnica revisa la información presentada.",
+                "Revisión técnica del expediente.",
+
+            responsable:
+                "Dirección Técnica",
 
             estado:
-                "activo"
+                "activo",
+
+            fecha:
+                "17/07/2026"
 
         },
 
@@ -641,6 +659,9 @@ function obtenerWorkflowDemo() {
             descripcion:
                 "Pendiente de autorización.",
 
+            responsable:
+                "Mesa Directiva",
+
             estado:
                 "pendiente"
 
@@ -651,10 +672,13 @@ function obtenerWorkflowDemo() {
             id:5,
 
             nombre:
-                "Autorización final",
+                "Resolución",
 
             descripcion:
-                "Se habilitará cuando concluya la etapa anterior.",
+                "Disponible al concluir todas las etapas.",
+
+            responsable:
+                "Presidencia",
 
             estado:
                 "bloqueado"
@@ -672,7 +696,8 @@ function obtenerWorkflowDemo() {
 function renderControlDocumental(actuacion) {
 
     const documentos =
-        actuacion.documentos ?? obtenerDocumentosDemo();
+        actuacion.documentos
+        ?? obtenerDocumentosDemo();
 
     return `
 
@@ -686,9 +711,8 @@ function renderControlDocumental(actuacion) {
 
             <div class="card-subtitle">
 
-                Documentación requerida para la
-                actuación y su estado dentro del
-                Workflow.
+                Documentos requeridos para esta
+                actuación conforme al Workflow.
 
             </div>
 
@@ -721,8 +745,7 @@ function renderControlDocumental(actuacion) {
 function renderDocumento(documento) {
 
     let badge = "";
-    let accion = "";
-    let claseBoton = "btn btn-primary";
+    let acciones = "";
 
     switch (documento.estado) {
 
@@ -731,10 +754,15 @@ function renderDocumento(documento) {
             badge =
                 '<span class="badge badge-success">Vigente</span>';
 
-            accion = `
-                <button class="btn btn-secondary">
+            acciones = `
+
+                <button
+                    class="btn btn-secondary">
+
                     Ver documento
+
                 </button>
+
             `;
 
             break;
@@ -744,10 +772,15 @@ function renderDocumento(documento) {
             badge =
                 '<span class="badge">Pendiente</span>';
 
-            accion = `
-                <button class="${claseBoton}">
+            acciones = `
+
+                <button
+                    class="btn btn-primary">
+
                     Subir documento
+
                 </button>
+
             `;
 
             break;
@@ -755,18 +788,42 @@ function renderDocumento(documento) {
         case "observado":
 
             badge =
-                '<span class="badge badge-warning">
-                    Observado
-                </span>';
+                '<span class="badge badge-warning">Observado</span>';
 
-            accion = `
-                <button class="${claseBoton}">
+            acciones = `
+
+                <button
+                    class="btn btn-primary">
+
                     Actualizar versión
+
                 </button>
 
-                <button class="btn btn-secondary">
+                <button
+                    class="btn btn-secondary">
+
                     Ver documento
+
                 </button>
+
+            `;
+
+            break;
+
+        case "rechazado":
+
+            badge =
+                '<span class="badge badge-danger">Rechazado</span>';
+
+            acciones = `
+
+                <button
+                    class="btn btn-primary">
+
+                    Sustituir documento
+
+                </button>
+
             `;
 
             break;
@@ -775,10 +832,12 @@ function renderDocumento(documento) {
 
             badge =
                 '<span class="badge">
+
                     No requerido
+
                 </span>';
 
-            accion = "";
+            acciones = "";
 
             break;
 
@@ -786,7 +845,9 @@ function renderDocumento(documento) {
 
             badge =
                 '<span class="badge">
+
                     Sin estado
+
                 </span>';
 
     }
@@ -807,7 +868,8 @@ function renderDocumento(documento) {
                     flex-wrap:wrap;
                 ">
 
-                <div>
+                <div
+                    style="flex:1;min-width:340px;">
 
                     <strong>
 
@@ -823,17 +885,51 @@ function renderDocumento(documento) {
 
                     ${badge}
 
+                    ${documento.version
+                        ? `
+
+                            <br><br>
+
+                            <strong>
+
+                                Versión
+
+                            </strong>
+
+                            ${documento.version}
+
+                        `
+                        : ""
+                    }
+
+                    ${documento.fecha
+                        ? `
+
+                            <br>
+
+                            <strong>
+
+                                Fecha
+
+                            </strong>
+
+                            ${documento.fecha}
+
+                        `
+                        : ""
+                    }
+
                 </div>
 
                 <div
                     style="
                         display:flex;
-                        gap:12px;
                         flex-wrap:wrap;
+                        gap:10px;
                         align-items:flex-start;
                     ">
 
-                    ${accion}
+                    ${acciones}
 
                 </div>
 
@@ -850,7 +946,7 @@ function renderDocumento(documento) {
 /* ==========================================================
    DOCUMENTOS DEMO
 
-   Posteriormente serán obtenidos mediante RPC.
+   Sustituido posteriormente por RPC
 ========================================================== */
 
 function obtenerDocumentosDemo() {
@@ -862,13 +958,19 @@ function obtenerDocumentosDemo() {
             id:1,
 
             nombre:
-                "Plano arquitectónico",
+                "Solicitud firmada",
 
             descripcion:
-                "Versión oficial del proyecto.",
+                "Documento inicial del procedimiento.",
 
             estado:
-                "observado"
+                "vigente",
+
+            version:
+                "1.0",
+
+            fecha:
+                "15/07/2026"
 
         },
 
@@ -877,13 +979,19 @@ function obtenerDocumentosDemo() {
             id:2,
 
             nombre:
-                "Memoria descriptiva",
+                "Plano arquitectónico",
 
             descripcion:
-                "Documento técnico.",
+                "Plano oficial presentado por el promovente.",
 
             estado:
-                "vigente"
+                "observado",
+
+            version:
+                "2.1",
+
+            fecha:
+                "17/07/2026"
 
         },
 
@@ -892,13 +1000,19 @@ function obtenerDocumentosDemo() {
             id:3,
 
             nombre:
-                "Fianza",
+                "Memoria descriptiva",
 
             descripcion:
-                "Garantía del procedimiento.",
+                "Documento técnico del proyecto.",
 
             estado:
-                "pendiente"
+                "vigente",
+
+            version:
+                "1.2",
+
+            fecha:
+                "16/07/2026"
 
         },
 
@@ -907,7 +1021,22 @@ function obtenerDocumentosDemo() {
             id:4,
 
             nombre:
-                "Impacto ambiental",
+                "Fianza",
+
+            descripcion:
+                "Garantía requerida por el procedimiento.",
+
+            estado:
+                "pendiente"
+
+        },
+
+        {
+
+            id:5,
+
+            nombre:
+                "Resolución ambiental",
 
             descripcion:
                 "No aplica para este procedimiento.",
@@ -943,8 +1072,8 @@ function renderObservaciones(actuacion) {
 
             <div class="card-subtitle">
 
-                Observaciones emitidas durante la
-                revisión de la actuación.
+                Observaciones registradas durante
+                el desarrollo de esta actuación.
 
             </div>
 
@@ -977,7 +1106,7 @@ function renderObservaciones(actuacion) {
 function renderObservacion(observacion) {
 
     let badge = "";
-    let accion = "";
+    let acciones = "";
 
     switch (observacion.estado) {
 
@@ -986,12 +1115,15 @@ function renderObservacion(observacion) {
             badge =
                 '<span class="badge badge-warning">Pendiente</span>';
 
-            accion = `
-                <button class="btn btn-primary">
+            acciones = `
+
+                <button
+                    class="btn btn-primary">
 
                     Atender observación
 
                 </button>
+
             `;
 
             break;
@@ -1001,12 +1133,15 @@ function renderObservacion(observacion) {
             badge =
                 '<span class="badge badge-success">Atendida</span>';
 
-            accion = `
-                <button class="btn btn-secondary">
+            acciones = `
+
+                <button
+                    class="btn btn-secondary">
 
                     Consultar atención
 
                 </button>
+
             `;
 
             break;
@@ -1016,7 +1151,7 @@ function renderObservacion(observacion) {
             badge =
                 '<span class="badge">Cancelada</span>';
 
-            accion = "";
+            acciones = "";
 
             break;
 
@@ -1044,7 +1179,7 @@ function renderObservacion(observacion) {
                 ">
 
                 <div
-                    style="flex:1;min-width:320px;">
+                    style="flex:1;min-width:340px;">
 
                     <strong>
 
@@ -1064,15 +1199,24 @@ function renderObservacion(observacion) {
 
                     ${observacion.descripcion}
 
-                    <br><br>
+                    ${observacion.documento
+                        ? `
 
-                    <strong>
+                            <br><br>
 
-                        Documento relacionado:
+                            <strong>
 
-                    </strong>
+                                Documento relacionado
 
-                    ${observacion.documento}
+                            </strong>
+
+                            <br>
+
+                            ${observacion.documento}
+
+                        `
+                        : ""
+                    }
 
                     <br><br>
 
@@ -1083,10 +1227,12 @@ function renderObservacion(observacion) {
                 <div
                     style="
                         display:flex;
+                        flex-wrap:wrap;
+                        gap:10px;
                         align-items:flex-start;
                     ">
 
-                    ${accion}
+                    ${acciones}
 
                 </div>
 
@@ -1103,7 +1249,7 @@ function renderObservacion(observacion) {
 /* ==========================================================
    OBSERVACIONES DEMO
 
-   Posteriormente serán obtenidas mediante RPC.
+   Sustituido posteriormente por RPC
 ========================================================== */
 
 function obtenerObservacionesDemo() {
@@ -1118,13 +1264,13 @@ function obtenerObservacionesDemo() {
                 "Dirección Técnica",
 
             fecha:
-                "18/07/2026 09:30",
+                "18/07/2026 09:15",
 
             documento:
                 "Plano arquitectónico",
 
             descripcion:
-                "Actualizar el plano para incorporar el cajón adicional de estacionamiento solicitado durante la revisión.",
+                "Actualizar el plano para incorporar las observaciones realizadas durante la revisión técnica.",
 
             estado:
                 "pendiente"
@@ -1139,13 +1285,13 @@ function obtenerObservacionesDemo() {
                 "Secretaría",
 
             fecha:
-                "17/07/2026 12:10",
+                "17/07/2026 15:40",
 
             documento:
                 "Memoria descriptiva",
 
             descripcion:
-                "Se verificó la corrección realizada y la observación quedó solventada.",
+                "La observación fue solventada correctamente mediante la versión 1.2.",
 
             estado:
                 "atendida"
@@ -1155,6 +1301,8 @@ function obtenerObservacionesDemo() {
     ];
 
 }
+
+
 
 /* ==========================================================
    VISTOS BUENOS (VoBos)
@@ -1179,7 +1327,7 @@ function renderVoBos(actuacion) {
             <div class="card-subtitle">
 
                 Autorizaciones requeridas por el
-                Workflow para concluir la actuación.
+                Workflow para concluir esta etapa.
 
             </div>
 
@@ -1212,7 +1360,7 @@ function renderVoBos(actuacion) {
 function renderVoBo(vobo) {
 
     let badge = "";
-    let accion = "";
+    let acciones = "";
 
     switch (vobo.estado) {
 
@@ -1221,12 +1369,15 @@ function renderVoBo(vobo) {
             badge =
                 '<span class="badge badge-success">Emitido</span>';
 
-            accion = `
-                <button class="btn btn-secondary">
+            acciones = `
+
+                <button
+                    class="btn btn-secondary">
 
                     Consultar VoBo
 
                 </button>
+
             `;
 
             break;
@@ -1236,12 +1387,15 @@ function renderVoBo(vobo) {
             badge =
                 '<span class="badge badge-warning">Pendiente</span>';
 
-            accion = `
-                <button class="btn btn-primary">
+            acciones = `
+
+                <button
+                    class="btn btn-primary">
 
                     Emitir VoBo
 
                 </button>
+
             `;
 
             break;
@@ -1251,12 +1405,15 @@ function renderVoBo(vobo) {
             badge =
                 '<span class="badge badge-danger">Rechazado</span>';
 
-            accion = `
-                <button class="btn btn-secondary">
+            acciones = `
+
+                <button
+                    class="btn btn-secondary">
 
                     Consultar rechazo
 
                 </button>
+
             `;
 
             break;
@@ -1264,11 +1421,7 @@ function renderVoBo(vobo) {
         default:
 
             badge =
-                '<span class="badge">
-
-                    Sin definir
-
-                </span>';
+                '<span class="badge">Sin definir</span>';
 
     }
 
@@ -1289,7 +1442,7 @@ function renderVoBo(vobo) {
                 ">
 
                 <div
-                    style="flex:1;min-width:320px;">
+                    style="flex:1;min-width:340px;">
 
                     <strong>
 
@@ -1299,15 +1452,9 @@ function renderVoBo(vobo) {
 
                     <br>
 
-                    <small>
-
-                        ${vobo.cargo}
-
-                    </small>
+                    ${vobo.cargo}
 
                     <br><br>
-
-                    Estado:
 
                     ${badge}
 
@@ -1321,17 +1468,19 @@ function renderVoBo(vobo) {
 
                     <br>
 
-                    ${vobo.fecha}
+                    ${vobo.fecha ?? "--/--/----"}
 
                 </div>
 
                 <div
                     style="
                         display:flex;
+                        flex-wrap:wrap;
+                        gap:10px;
                         align-items:flex-start;
                     ">
 
-                    ${accion}
+                    ${acciones}
 
                 </div>
 
@@ -1348,7 +1497,7 @@ function renderVoBo(vobo) {
 /* ==========================================================
    VoBos DEMO
 
-   Posteriormente serán obtenidos mediante RPC.
+   Sustituido posteriormente por RPC
 ========================================================== */
 
 function obtenerVoBosDemo() {
@@ -1366,7 +1515,7 @@ function obtenerVoBosDemo() {
                 "Director Técnico",
 
             fecha:
-                "18/07/2026 11:40",
+                "18/07/2026",
 
             estado:
                 "emitido"
@@ -1384,7 +1533,7 @@ function obtenerVoBosDemo() {
                 "Secretaría",
 
             fecha:
-                "--/--/----",
+                null,
 
             estado:
                 "pendiente"
@@ -1399,10 +1548,10 @@ function obtenerVoBosDemo() {
                 "Arq. José Ramírez",
 
             cargo:
-                "Presidencia",
+                "Presidente",
 
             fecha:
-                "--/--/----",
+                null,
 
             estado:
                 "pendiente"
@@ -1412,3 +1561,405 @@ function obtenerVoBosDemo() {
     ];
 
 }
+
+/* ==========================================================
+   BITÁCORA
+========================================================== */
+
+function renderBitacora(actuacion) {
+
+    const movimientos =
+        actuacion.bitacora
+        ?? obtenerBitacoraDemo();
+
+    return `
+
+        <div class="card">
+
+            <div class="card-title">
+
+                Bitácora de la actuación
+
+            </div>
+
+            <div class="card-subtitle">
+
+                Registro cronológico de todos los
+                movimientos realizados durante
+                esta actuación.
+
+            </div>
+
+            <div
+                style="
+                    display:flex;
+                    flex-direction:column;
+                    gap:16px;
+                    margin-top:24px;
+                ">
+
+                ${movimientos
+                    .map(renderMovimiento)
+                    .join("")}
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+
+/* ==========================================================
+   MOVIMIENTO
+========================================================== */
+
+function renderMovimiento(movimiento) {
+
+    return `
+
+        <div
+            class="card"
+            style="
+                border-left:5px solid var(--vino);
+            ">
+
+            <div
+                style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:flex-start;
+                    gap:20px;
+                    flex-wrap:wrap;
+                ">
+
+                <div style="flex:1;">
+
+                    <strong>
+
+                        ${movimiento.usuario}
+
+                    </strong>
+
+                    <br>
+
+                    <small>
+
+                        ${movimiento.fecha}
+
+                    </small>
+
+                    <br><br>
+
+                    ${movimiento.descripcion}
+
+                </div>
+
+                <div>
+
+                    <span class="badge">
+
+                        ${movimiento.tipo}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+
+/* ==========================================================
+   ACCIONES DEL WORKFLOW
+========================================================== */
+
+function renderAcciones(actuacion) {
+
+    const acciones =
+        actuacion.acciones
+        ?? obtenerAccionesDemo();
+
+    return `
+
+        <div class="card">
+
+            <div class="card-title">
+
+                Acciones disponibles
+
+            </div>
+
+            <div class="card-subtitle">
+
+                Estas acciones son determinadas
+                por el Workflow para el estado
+                actual de la actuación.
+
+            </div>
+
+            <div
+                style="
+                    display:flex;
+                    flex-wrap:wrap;
+                    gap:14px;
+                    margin-top:24px;
+                ">
+
+                ${acciones
+                    .map(renderAccion)
+                    .join("")}
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+
+/* ==========================================================
+   ACCIÓN
+========================================================== */
+
+function renderAccion(accion) {
+
+    return `
+
+        <button
+            class="${accion.clase || 'btn btn-primary'}"
+            data-accion="${accion.codigo}">
+
+            ${accion.nombre}
+
+        </button>
+
+    `;
+
+}
+
+
+
+/* ==========================================================
+   EVENTOS
+========================================================== */
+
+function registrarEventos() {
+
+    document
+        .querySelectorAll("[data-accion]")
+        .forEach(boton => {
+
+            boton.addEventListener(
+
+                "click",
+
+                manejarAccionWorkflow
+
+            );
+
+        });
+
+}
+
+
+
+/* ==========================================================
+   MANEJADOR DE ACCIONES
+========================================================== */
+
+function manejarAccionWorkflow(evento) {
+
+    const codigo =
+        evento.currentTarget.dataset.accion;
+
+    console.log(
+
+        "Acción Workflow:",
+
+        codigo
+
+    );
+
+    /*
+        RELEASE 002
+
+        Este método ejecutará la RPC
+        correspondiente enviada por
+        el Workflow Engine.
+
+    */
+
+}
+
+
+
+/* ==========================================================
+   ACTUALIZAR
+========================================================== */
+
+function actualizar(actuacion = actuacionActual) {
+
+    render(actuacion);
+
+}
+
+
+
+/* ==========================================================
+   DESTRUIR
+========================================================== */
+
+function destruir() {
+
+    const workspace =
+        document.getElementById("workspace");
+
+    if (workspace) {
+
+        workspace.innerHTML = "";
+
+    }
+
+}
+
+
+
+/* ==========================================================
+   DATOS DEMO
+========================================================== */
+
+function obtenerBitacoraDemo() {
+
+    return [
+
+        {
+
+            usuario:
+                "Administrador",
+
+            fecha:
+                "15/07/2026 09:15",
+
+            descripcion:
+                "Se registró el expediente.",
+
+            tipo:
+                "Registro"
+
+        },
+
+        {
+
+            usuario:
+                "Dirección Técnica",
+
+            fecha:
+                "16/07/2026 12:40",
+
+            descripcion:
+                "Se emitió observación al plano arquitectónico.",
+
+            tipo:
+                "Observación"
+
+        },
+
+        {
+
+            usuario:
+                "Administrador",
+
+            fecha:
+                "17/07/2026 08:20",
+
+            descripcion:
+                "Se integró una nueva versión del plano.",
+
+            tipo:
+                "Documento"
+
+        },
+
+        {
+
+            usuario:
+                "Secretaría",
+
+            fecha:
+                "18/07/2026 10:05",
+
+            descripcion:
+                "La actuación quedó lista para VoBo.",
+
+            tipo:
+                "Workflow"
+
+        }
+
+    ];
+
+}
+
+
+
+function obtenerAccionesDemo() {
+
+    return [
+
+        {
+
+            codigo:
+                "ACTUALIZAR_PLANO",
+
+            nombre:
+                "Actualizar plano"
+
+        },
+
+        {
+
+            codigo:
+                "EMITIR_VOBO",
+
+            nombre:
+                "Emitir VoBo",
+
+            clase:
+                "btn btn-secondary"
+
+        },
+
+        {
+
+            codigo:
+                "CONSULTAR_HISTORIAL",
+
+            nombre:
+                "Consultar historial",
+
+            clase:
+                "btn btn-light"
+
+        }
+
+    ];
+
+}
+
+
+
+/* ==========================================================
+   EXPORTACIÓN
+========================================================== */
+
+window.CentroTrabajo = CentroTrabajo;
