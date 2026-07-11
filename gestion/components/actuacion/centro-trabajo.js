@@ -804,7 +804,7 @@ function renderVoBo(vobo){
         default:
 
             badge =
-                '<span class="badge badge-warning">
+                '<span class="badge badge-warning">Pendiente</span>';
 
                     Pendiente
 
