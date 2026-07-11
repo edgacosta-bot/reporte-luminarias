@@ -7,18 +7,16 @@
    Archivo:
    components/actuacion/centro-trabajo.js
 
-   Versión:
-   1.0.0
+   RELEASE 001
 
-   Responsabilidad:
+   Responsabilidad
 
-   Construir el Centro de Trabajo de una
-   actuación.
+   Construir el Centro de Trabajo de una actuación.
 
-   Este componente constituye el principal
-   espacio de trabajo del usuario.
+   El Centro de Trabajo representa la unidad operativa
+   del Workflow.
 
-   Aquí se concentran:
+   Desde aquí el usuario puede consultar:
 
    • Estado de la actuación
    • Workflow
@@ -27,6 +25,13 @@
    • VoBos
    • Bitácora
    • Acciones disponibles
+
+   IMPORTANTE
+
+   Este componente NO implementa reglas de negocio.
+
+   Todas las decisiones deberán provenir del Workflow
+   Engine mediante RPC.
 
 ========================================================== */
 
@@ -38,6 +43,12 @@
 const CentroTrabajo = {
 
     render,
+
+    actualizar,
+
+    destruir,
+
+    registrarEventos,
 
     renderHeader,
 
@@ -53,15 +64,17 @@ const CentroTrabajo = {
 
     renderBitacora,
 
-    renderAcciones,
-
-    registrarEventos,
-
-    actualizar,
-
-    destruir
+    renderAcciones
 
 };
+
+
+
+/* ==========================================================
+   ESTADO INTERNO
+========================================================== */
+
+let actuacionActual = {};
 
 
 
@@ -70,6 +83,8 @@ const CentroTrabajo = {
 ========================================================== */
 
 function render(actuacion = {}) {
+
+    actuacionActual = actuacion;
 
     const workspace =
         document.getElementById("workspace");
@@ -101,45 +116,158 @@ function render(actuacion = {}) {
 
 }
 
-
-
 /* ==========================================================
    ENCABEZADO
 ========================================================== */
 
 function renderHeader(actuacion) {
 
+    const expediente =
+        actuacion.expediente
+        ?? "EXP-2026-001";
+
+    const procedimiento =
+        actuacion.procedimiento
+        ?? "Procedimiento Institucional";
+
+    const nombre =
+        actuacion.nombre
+        ?? "Dictamen Técnico";
+
+    const responsable =
+        actuacion.responsable
+        ?? "Pendiente de asignación";
+
+    const estado =
+        actuacion.estado
+        ?? "En proceso";
+
+    const prioridad =
+        actuacion.prioridad
+        ?? "Normal";
+
+    const fechaInicio =
+        actuacion.fechaInicio
+        ?? "--/--/----";
+
+    const fechaLimite =
+        actuacion.fechaLimite
+        ?? "--/--/----";
+
     return `
 
         <div class="card">
 
-            <div class="card-title">
+            <div
+                style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:flex-start;
+                    gap:24px;
+                    flex-wrap:wrap;
+                ">
 
-                Centro de Trabajo
+                <div>
+
+                    <div class="card-title">
+
+                        ${nombre}
+
+                    </div>
+
+                    <div class="card-subtitle">
+
+                        Expediente
+
+                        <strong>
+
+                            ${expediente}
+
+                        </strong>
+
+                        <br>
+
+                        ${procedimiento}
+
+                    </div>
+
+                </div>
+
+                <div
+                    style="
+                        display:flex;
+                        flex-direction:column;
+                        gap:8px;
+                        align-items:flex-end;
+                    ">
+
+                    <span class="badge badge-warning">
+
+                        ${estado}
+
+                    </span>
+
+                    <span class="badge">
+
+                        Prioridad:
+                        ${prioridad}
+
+                    </span>
+
+                </div>
 
             </div>
 
-            <div class="card-subtitle">
+            <div
+                style="
+                    display:grid;
+                    grid-template-columns:
+                        repeat(auto-fit,minmax(180px,1fr));
+                    gap:18px;
+                    margin-top:26px;
+                ">
 
-                Procedimiento
+                <div>
 
-                <strong>
+                    <strong>
 
-                    ${actuacion.procedimiento
-                        ?? "O-2026-001"}
+                        Responsable
 
-                </strong>
+                    </strong>
 
-                <br><br>
+                    <br>
 
-                Actuación
+                    ${responsable}
 
-                <strong>
+                </div>
 
-                    ${actuacion.nombre
-                        ?? "Integración Documental"}
+                <div>
 
-                </strong>
+                    <strong>
+
+                        Inicio
+
+                    </strong>
+
+                    <br>
+
+                    ${fechaInicio}
+
+                </div>
+
+                <div>
+
+                    <strong>
+
+                        Fecha compromiso
+
+                    </strong>
+
+                    <br>
+
+                    ${fechaLimite}
+
+                </div>
 
             </div>
 
@@ -152,14 +280,38 @@ function renderHeader(actuacion) {
 
 
 /* ==========================================================
-   ESTADO
+   ESTADO DE LA ACTUACIÓN
 ========================================================== */
 
 function renderEstado(actuacion) {
 
+    const avance =
+        actuacion.avance
+        ?? 45;
+
+    const estado =
+        actuacion.estado
+        ?? "En proceso";
+
+    const etapa =
+        actuacion.etapa
+        ?? "Integración documental";
+
+    const documentos =
+        actuacion.documentosPendientes
+        ?? 1;
+
+    const observaciones =
+        actuacion.observacionesPendientes
+        ?? 2;
+
+    const voBos =
+        actuacion.voBosPendientes
+        ?? 1;
+
     return `
 
-        <div class="grid grid-3">
+        <div class="grid grid-4">
 
             <div class="card">
 
@@ -169,15 +321,17 @@ function renderEstado(actuacion) {
 
                 </div>
 
-                <div class="kpi-number">
+                <div
+                    class="kpi-number"
+                    style="font-size:22px;">
 
-                    🟡
+                    ${estado}
 
                 </div>
 
                 <div class="kpi-label">
 
-                    En revisión
+                    Situación actual
 
                 </div>
 
@@ -187,19 +341,19 @@ function renderEstado(actuacion) {
 
                 <div class="card-title">
 
-                    Documentos
+                    Avance
 
                 </div>
 
                 <div class="kpi-number">
 
-                    3 / 4
+                    ${avance}%
 
                 </div>
 
                 <div class="kpi-label">
 
-                    Integrados
+                    Workflow
 
                 </div>
 
@@ -209,19 +363,74 @@ function renderEstado(actuacion) {
 
                 <div class="card-title">
 
-                    VoBos
+                    Etapa
 
                 </div>
 
-                <div class="kpi-number">
+                <div
+                    class="kpi-number"
+                    style="font-size:20px;">
 
-                    2 / 3
+                    ${etapa}
 
                 </div>
 
                 <div class="kpi-label">
 
-                    Emitidos
+                    Activa
+
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-title">
+
+                    Pendientes
+
+                </div>
+
+                <div
+                    style="
+                        margin-top:16px;
+                        display:flex;
+                        flex-direction:column;
+                        gap:10px;
+                    ">
+
+                    <div>
+
+                        📄 Documentos:
+                        <strong>
+
+                            ${documentos}
+
+                        </strong>
+
+                    </div>
+
+                    <div>
+
+                        💬 Observaciones:
+                        <strong>
+
+                            ${observaciones}
+
+                        </strong>
+
+                    </div>
+
+                    <div>
+
+                        ✔ VoBos:
+                        <strong>
+
+                            ${voBos}
+
+                        </strong>
+
+                    </div>
 
                 </div>
 
@@ -234,10 +443,13 @@ function renderEstado(actuacion) {
 }
 
 /* ==========================================================
-   CONTROL DOCUMENTAL
+   WORKFLOW
 ========================================================== */
 
-function renderControlDocumental(actuacion) {
+function renderWorkflow(actuacion) {
+
+    const workflow =
+        actuacion.workflow ?? obtenerWorkflowDemo();
 
     return `
 
@@ -245,70 +457,254 @@ function renderControlDocumental(actuacion) {
 
             <div class="card-title">
 
-                Control Documental
+                Workflow de la actuación
 
             </div>
 
             <div class="card-subtitle">
 
-                El Workflow determina los documentos
-                requeridos para esta actuación.
+                El Workflow determina el estado
+                operativo de la actuación y las
+                acciones permitidas para el usuario.
 
             </div>
 
-            ${renderDocumento({
+            <div
+                style="
+                    display:flex;
+                    flex-direction:column;
+                    gap:18px;
+                    margin-top:24px;
+                ">
 
-                id:1,
+                ${workflow
+                    .map(renderPasoWorkflow)
+                    .join("")}
 
-                nombre:"Plano arquitectónico",
+            </div>
 
-                requerido:true,
+        </div>
 
-                version:2,
+    `;
 
-                estado:"OBSERVADO",
+}
 
-                observacion:"El plano no es legible.",
 
-                accion:"ACTUALIZAR"
 
-            })}
+/* ==========================================================
+   PASO DEL WORKFLOW
+========================================================== */
 
-            ${renderDocumento({
+function renderPasoWorkflow(paso) {
 
-                id:2,
+    let badge = "";
 
-                nombre:"Comprobante de fianza",
+    switch (paso.estado) {
 
-                requerido:true,
+        case "completado":
 
-                version:1,
+            badge =
+                '<span class="badge badge-success">Completado</span>';
 
-                estado:"VIGENTE",
+            break;
 
-                observacion:null,
+        case "activo":
 
-                accion:"VER"
+            badge =
+                '<span class="badge badge-warning">En proceso</span>';
 
-            })}
+            break;
 
-            ${renderDocumento({
+        case "bloqueado":
 
-                id:3,
+            badge =
+                '<span class="badge badge-danger">Bloqueado</span>';
 
-                nombre:"Cotización",
+            break;
 
-                requerido:true,
+        default:
 
-                version:null,
+            badge =
+                '<span class="badge">Pendiente</span>';
 
-                estado:"PENDIENTE",
+    }
 
-                observacion:null,
+    return `
 
-                accion:"SUBIR"
+        <div
+            class="card"
+            style="
+                border-left:5px solid var(--vino);
+            ">
 
-            })}
+            <div
+                style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:flex-start;
+                    gap:24px;
+                    flex-wrap:wrap;
+                ">
+
+                <div>
+
+                    <strong>
+
+                        ${paso.nombre}
+
+                    </strong>
+
+                    <br><br>
+
+                    ${paso.descripcion}
+
+                </div>
+
+                <div>
+
+                    ${badge}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+
+/* ==========================================================
+   WORKFLOW DEMO
+
+   Será sustituido por RPC.
+========================================================== */
+
+function obtenerWorkflowDemo() {
+
+    return [
+
+        {
+
+            id:1,
+
+            nombre:
+                "Recepción de documentos",
+
+            descripcion:
+                "La documentación inicial fue recibida.",
+
+            estado:
+                "completado"
+
+        },
+
+        {
+
+            id:2,
+
+            nombre:
+                "Integración documental",
+
+            descripcion:
+                "Se valida la documentación obligatoria.",
+
+            estado:
+                "completado"
+
+        },
+
+        {
+
+            id:3,
+
+            nombre:
+                "Dictamen técnico",
+
+            descripcion:
+                "El área técnica revisa la información presentada.",
+
+            estado:
+                "activo"
+
+        },
+
+        {
+
+            id:4,
+
+            nombre:
+                "Mesa Directiva",
+
+            descripcion:
+                "Pendiente de autorización.",
+
+            estado:
+                "pendiente"
+
+        },
+
+        {
+
+            id:5,
+
+            nombre:
+                "Autorización final",
+
+            descripcion:
+                "Se habilitará cuando concluya la etapa anterior.",
+
+            estado:
+                "bloqueado"
+
+        }
+
+    ];
+
+}
+
+/* ==========================================================
+   CONTROL DOCUMENTAL
+========================================================== */
+
+function renderControlDocumental(actuacion) {
+
+    const documentos =
+        actuacion.documentos ?? obtenerDocumentosDemo();
+
+    return `
+
+        <div class="card">
+
+            <div class="card-title">
+
+                Control documental
+
+            </div>
+
+            <div class="card-subtitle">
+
+                Documentación requerida para la
+                actuación y su estado dentro del
+                Workflow.
+
+            </div>
+
+            <div
+                style="
+                    display:flex;
+                    flex-direction:column;
+                    gap:18px;
+                    margin-top:24px;
+                ">
+
+                ${documentos
+                    .map(renderDocumento)
+                    .join("")}
+
+            </div>
 
         </div>
 
@@ -325,65 +721,73 @@ function renderControlDocumental(actuacion) {
 function renderDocumento(documento) {
 
     let badge = "";
+    let accion = "";
+    let claseBoton = "btn btn-primary";
 
-    let boton = "";
+    switch (documento.estado) {
 
-    switch(documento.estado){
-
-        case "VIGENTE":
+        case "vigente":
 
             badge =
                 '<span class="badge badge-success">Vigente</span>';
 
-            boton = `
-
-                <button
-                    class="btn btn-secondary documento-ver"
-                    data-id="${documento.id}">
-
+            accion = `
+                <button class="btn btn-secondary">
                     Ver documento
-
                 </button>
-
             `;
 
             break;
 
-        case "OBSERVADO":
+        case "pendiente":
 
             badge =
-                '<span class="badge badge-danger">Observado</span>';
+                '<span class="badge">Pendiente</span>';
 
-            boton = `
+            accion = `
+                <button class="${claseBoton}">
+                    Subir documento
+                </button>
+            `;
 
-                <button
-                    class="btn btn-primary documento-actualizar"
-                    data-id="${documento.id}">
+            break;
 
+        case "observado":
+
+            badge =
+                '<span class="badge badge-warning">
+                    Observado
+                </span>';
+
+            accion = `
+                <button class="${claseBoton}">
                     Actualizar versión
-
                 </button>
 
+                <button class="btn btn-secondary">
+                    Ver documento
+                </button>
             `;
+
+            break;
+
+        case "no_requerido":
+
+            badge =
+                '<span class="badge">
+                    No requerido
+                </span>';
+
+            accion = "";
 
             break;
 
         default:
 
             badge =
-                '<span class="badge">Pendiente</span>';
-
-            boton = `
-
-                <button
-                    class="btn btn-primary documento-subir"
-                    data-id="${documento.id}">
-
-                    Subir documento
-
-                </button>
-
-            `;
+                '<span class="badge">
+                    Sin estado
+                </span>';
 
     }
 
@@ -392,7 +796,6 @@ function renderDocumento(documento) {
         <div
             class="card"
             style="
-                margin-top:18px;
                 border-left:5px solid var(--vino);
             ">
 
@@ -400,68 +803,39 @@ function renderDocumento(documento) {
                 style="
                     display:flex;
                     justify-content:space-between;
-                    align-items:flex-start;
-                    gap:20px;
+                    gap:24px;
+                    flex-wrap:wrap;
                 ">
 
                 <div>
 
-                    <div
-                        style="
-                            font-size:18px;
-                            font-weight:600;
-                        ">
+                    <strong>
 
                         ${documento.nombre}
 
-                    </div>
+                    </strong>
 
-                    <div
-                        style="
-                            margin-top:8px;
-                            color:var(--texto-secundario);
-                        ">
+                    <br><br>
 
-                        Documento requerido
+                    ${documento.descripcion}
 
-                    </div>
+                    <br><br>
 
-                    <div
-                        style="
-                            margin-top:10px;
-                        ">
-
-                        ${badge}
-
-                    </div>
+                    ${badge}
 
                 </div>
 
                 <div
                     style="
-                        text-align:right;
+                        display:flex;
+                        gap:12px;
+                        flex-wrap:wrap;
+                        align-items:flex-start;
                     ">
 
-                    <strong>
-
-                        ${documento.version
-                            ? "Versión " + documento.version
-                            : "Sin versión"}
-
-                    </strong>
+                    ${accion}
 
                 </div>
-
-            </div>
-
-            ${renderObservacionDocumento(documento)}
-
-            <div
-                style="
-                    margin-top:18px;
-                ">
-
-                ${boton}
 
             </div>
 
@@ -474,38 +848,76 @@ function renderDocumento(documento) {
 
 
 /* ==========================================================
-   OBSERVACIÓN DEL DOCUMENTO
+   DOCUMENTOS DEMO
+
+   Posteriormente serán obtenidos mediante RPC.
 ========================================================== */
 
-function renderObservacionDocumento(documento){
+function obtenerDocumentosDemo() {
 
-    if(!documento.observacion)
-        return "";
+    return [
 
-    return `
+        {
 
-        <div
-            style="
-                margin-top:18px;
-                padding:16px;
-                border-radius:10px;
-                background:#FEF2F2;
-                border:1px solid #FECACA;
-            ">
+            id:1,
 
-            <strong>
+            nombre:
+                "Plano arquitectónico",
 
-                Observación
+            descripcion:
+                "Versión oficial del proyecto.",
 
-            </strong>
+            estado:
+                "observado"
 
-            <br><br>
+        },
 
-            ${documento.observacion}
+        {
 
-        </div>
+            id:2,
 
-    `;
+            nombre:
+                "Memoria descriptiva",
+
+            descripcion:
+                "Documento técnico.",
+
+            estado:
+                "vigente"
+
+        },
+
+        {
+
+            id:3,
+
+            nombre:
+                "Fianza",
+
+            descripcion:
+                "Garantía del procedimiento.",
+
+            estado:
+                "pendiente"
+
+        },
+
+        {
+
+            id:4,
+
+            nombre:
+                "Impacto ambiental",
+
+            descripcion:
+                "No aplica para este procedimiento.",
+
+            estado:
+                "no_requerido"
+
+        }
+
+    ];
 
 }
 
@@ -514,6 +926,10 @@ function renderObservacionDocumento(documento){
 ========================================================== */
 
 function renderObservaciones(actuacion) {
+
+    const observaciones =
+        actuacion.observaciones
+        ?? obtenerObservacionesDemo();
 
     return `
 
@@ -527,43 +943,24 @@ function renderObservaciones(actuacion) {
 
             <div class="card-subtitle">
 
-                Revise las observaciones pendientes
-                y atiéndalas para continuar con
-                el procedimiento.
+                Observaciones emitidas durante la
+                revisión de la actuación.
 
             </div>
 
-            ${renderObservacion({
+            <div
+                style="
+                    display:flex;
+                    flex-direction:column;
+                    gap:18px;
+                    margin-top:24px;
+                ">
 
-                id:1,
+                ${observaciones
+                    .map(renderObservacion)
+                    .join("")}
 
-                usuario:"Secretario",
-
-                fecha:"16/07/2026 12:40",
-
-                documento:"Plano arquitectónico",
-
-                descripcion:"El plano arquitectónico no es legible. Favor de adjuntar una versión con mayor resolución.",
-
-                atendida:false
-
-            })}
-
-            ${renderObservacion({
-
-                id:2,
-
-                usuario:"Tesorero",
-
-                fecha:"17/07/2026 09:10",
-
-                documento:"Comprobante de fianza",
-
-                descripcion:"Documento validado correctamente.",
-
-                atendida:true
-
-            })}
+            </div>
 
         </div>
 
@@ -577,70 +974,77 @@ function renderObservaciones(actuacion) {
    OBSERVACIÓN
 ========================================================== */
 
-function renderObservacion(observacion){
+function renderObservacion(observacion) {
 
-    const estado = observacion.atendida
+    let badge = "";
+    let accion = "";
 
-        ?
+    switch (observacion.estado) {
 
-        '<span class="badge badge-success">Atendida</span>'
+        case "pendiente":
 
-        :
+            badge =
+                '<span class="badge badge-warning">Pendiente</span>';
 
-        '<span class="badge badge-warning">Pendiente</span>';
+            accion = `
+                <button class="btn btn-primary">
 
+                    Atender observación
 
+                </button>
+            `;
 
-    const boton = observacion.atendida
+            break;
 
-        ?
+        case "atendida":
 
-        `
+            badge =
+                '<span class="badge badge-success">Atendida</span>';
 
-            <button
-                class="btn btn-secondary"
-                disabled>
+            accion = `
+                <button class="btn btn-secondary">
 
-                Atendida
+                    Consultar atención
 
-            </button>
+                </button>
+            `;
 
-        `
+            break;
 
-        :
+        case "cancelada":
 
-        `
+            badge =
+                '<span class="badge">Cancelada</span>';
 
-            <button
-                class="btn btn-primary atender-observacion"
-                data-id="${observacion.id}">
+            accion = "";
 
-                Atender observación
+            break;
 
-            </button>
+        default:
 
-        `;
+            badge =
+                '<span class="badge">Registrada</span>';
 
-
+    }
 
     return `
 
         <div
             class="card"
             style="
-                margin-top:18px;
-                border-left:5px solid #F59E0B;
+                border-left:5px solid var(--vino);
             ">
 
             <div
                 style="
                     display:flex;
                     justify-content:space-between;
-                    align-items:flex-start;
-                    gap:18px;
+                    gap:24px;
+                    flex-wrap:wrap;
                 ">
 
-                <div>
+                <div
+                    style="flex:1;min-width:320px;">
 
                     <strong>
 
@@ -650,50 +1054,41 @@ function renderObservacion(observacion){
 
                     <br>
 
-                    ${observacion.fecha}
+                    <small>
+
+                        ${observacion.fecha}
+
+                    </small>
+
+                    <br><br>
+
+                    ${observacion.descripcion}
 
                     <br><br>
 
                     <strong>
 
-                        Documento
+                        Documento relacionado:
 
                     </strong>
 
-                    <br>
-
                     ${observacion.documento}
 
-                </div>
+                    <br><br>
 
-                <div>
-
-                    ${estado}
+                    ${badge}
 
                 </div>
 
-            </div>
+                <div
+                    style="
+                        display:flex;
+                        align-items:flex-start;
+                    ">
 
-            <div
-                style="
-                    margin-top:18px;
-                    padding:16px;
-                    background:#FFF7ED;
-                    border-radius:10px;
-                ">
+                    ${accion}
 
-                ${observacion.descripcion}
-
-            </div>
-
-            <div
-                style="
-                    margin-top:18px;
-                    display:flex;
-                    justify-content:flex-end;
-                ">
-
-                ${boton}
+                </div>
 
             </div>
 
@@ -703,11 +1098,73 @@ function renderObservacion(observacion){
 
 }
 
+
+
 /* ==========================================================
-   VOBOS
+   OBSERVACIONES DEMO
+
+   Posteriormente serán obtenidas mediante RPC.
+========================================================== */
+
+function obtenerObservacionesDemo() {
+
+    return [
+
+        {
+
+            id:1,
+
+            usuario:
+                "Dirección Técnica",
+
+            fecha:
+                "18/07/2026 09:30",
+
+            documento:
+                "Plano arquitectónico",
+
+            descripcion:
+                "Actualizar el plano para incorporar el cajón adicional de estacionamiento solicitado durante la revisión.",
+
+            estado:
+                "pendiente"
+
+        },
+
+        {
+
+            id:2,
+
+            usuario:
+                "Secretaría",
+
+            fecha:
+                "17/07/2026 12:10",
+
+            documento:
+                "Memoria descriptiva",
+
+            descripcion:
+                "Se verificó la corrección realizada y la observación quedó solventada.",
+
+            estado:
+                "atendida"
+
+        }
+
+    ];
+
+}
+
+/* ==========================================================
+   VISTOS BUENOS (VoBos)
 ========================================================== */
 
 function renderVoBos(actuacion) {
+
+    const voBos =
+        actuacion.voBos
+        ?? obtenerVoBosDemo();
 
     return `
 
@@ -715,52 +1172,30 @@ function renderVoBos(actuacion) {
 
             <div class="card-title">
 
-                VoBos del Workflow
+                Vistos Buenos
 
             </div>
 
             <div class="card-subtitle">
 
-                Estado actual de aprobación
-                de la actuación.
+                Autorizaciones requeridas por el
+                Workflow para concluir la actuación.
 
             </div>
 
-            ${renderVoBo({
+            <div
+                style="
+                    display:flex;
+                    flex-direction:column;
+                    gap:18px;
+                    margin-top:24px;
+                ">
 
-                id:1,
+                ${voBos
+                    .map(renderVoBo)
+                    .join("")}
 
-                responsable:"Presidente",
-
-                estado:"PENDIENTE",
-
-                fecha:null
-
-            })}
-
-            ${renderVoBo({
-
-                id:2,
-
-                responsable:"Secretario",
-
-                estado:"EMITIDO",
-
-                fecha:"17/07/2026 10:45"
-
-            })}
-
-            ${renderVoBo({
-
-                id:3,
-
-                responsable:"Tesorero",
-
-                estado:"EMITIDO",
-
-                fecha:"17/07/2026 09:22"
-
-            })}
+            </div>
 
         </div>
 
@@ -771,32 +1206,57 @@ function renderVoBos(actuacion) {
 
 
 /* ==========================================================
-   VOBO
+   VoBo
 ========================================================== */
 
-function renderVoBo(vobo){
+function renderVoBo(vobo) {
 
-    let badge="";
+    let badge = "";
+    let accion = "";
 
-    let accion="";
+    switch (vobo.estado) {
 
-    switch(vobo.estado){
-
-        case "EMITIDO":
+        case "emitido":
 
             badge =
                 '<span class="badge badge-success">Emitido</span>';
 
             accion = `
+                <button class="btn btn-secondary">
 
-                <button
-                    class="btn btn-secondary"
-                    disabled>
-
-                    Emitido
+                    Consultar VoBo
 
                 </button>
+            `;
 
+            break;
+
+        case "pendiente":
+
+            badge =
+                '<span class="badge badge-warning">Pendiente</span>';
+
+            accion = `
+                <button class="btn btn-primary">
+
+                    Emitir VoBo
+
+                </button>
+            `;
+
+            break;
+
+        case "rechazado":
+
+            badge =
+                '<span class="badge badge-danger">Rechazado</span>';
+
+            accion = `
+                <button class="btn btn-secondary">
+
+                    Consultar rechazo
+
+                </button>
             `;
 
             break;
@@ -804,22 +1264,11 @@ function renderVoBo(vobo){
         default:
 
             badge =
-                '<span class="badge badge-warning">Pendiente</span>';
+                '<span class="badge">
 
-                    
-            accion = `
+                    Sin definir
 
-                <button
-                    class="btn btn-primary emitir-vobo"
-                    data-id="${vobo.id}">
-
-                    Emitir VoBo
-
-                </button>
-
-            `;
-          
-          break;
+                </span>';
 
     }
 
@@ -828,19 +1277,19 @@ function renderVoBo(vobo){
         <div
             class="card"
             style="
-                margin-top:18px;
-                border-left:5px solid #2563EB;
+                border-left:5px solid var(--vino);
             ">
 
             <div
                 style="
                     display:flex;
                     justify-content:space-between;
-                    align-items:flex-start;
-                    gap:20px;
+                    gap:24px;
+                    flex-wrap:wrap;
                 ">
 
-                <div>
+                <div
+                    style="flex:1;min-width:320px;">
 
                     <strong>
 
@@ -848,90 +1297,46 @@ function renderVoBo(vobo){
 
                     </strong>
 
+                    <br>
+
+                    <small>
+
+                        ${vobo.cargo}
+
+                    </small>
+
                     <br><br>
 
-                    ${vobo.fecha
-                        ?? "Pendiente de emisión"}
-
-                </div>
-
-                <div>
+                    Estado:
 
                     ${badge}
 
+                    <br><br>
+
+                    <strong>
+
+                        Fecha
+
+                    </strong>
+
+                    <br>
+
+                    ${vobo.fecha}
+
+                </div>
+
+                <div
+                    style="
+                        display:flex;
+                        align-items:flex-start;
+                    ">
+
+                    ${accion}
+
                 </div>
 
             </div>
 
-            <div
-                style="
-                    margin-top:18px;
-                    display:flex;
-                    justify-content:flex-end;
-                ">
-
-                ${accion}
-
-            </div>
-
-        </div>
-
-    `;
-
-}
-
-/* ==========================================================
-   BITÁCORA
-========================================================== */
-
-function renderBitacora(actuacion) {
-
-    return `
-
-        <div class="card">
-
-            <div class="card-title">
-
-                Bitácora de la actuación
-
-            </div>
-
-            <div class="card-subtitle">
-
-                Historial cronológico de eventos.
-
-            </div>
-
-            ${renderEventoBitacora({
-
-                fecha:"15/07/2026 09:18",
-
-                usuario:"Administrador",
-
-                descripcion:"Se registró la actuación."
-
-            })}
-
-            ${renderEventoBitacora({
-
-                fecha:"16/07/2026 12:40",
-
-                usuario:"Secretario",
-
-                descripcion:"Se emitió una observación al plano arquitectónico."
-
-            })}
-
-            ${renderEventoBitacora({
-
-                fecha:"17/07/2026 08:22",
-
-                usuario:"Administrador",
-
-                descripcion:"Se cargó la versión 2 del plano arquitectónico."
-
-            })}
-
         </div>
 
     `;
@@ -941,455 +1346,69 @@ function renderBitacora(actuacion) {
 
 
 /* ==========================================================
-   EVENTO
+   VoBos DEMO
+
+   Posteriormente serán obtenidos mediante RPC.
 ========================================================== */
 
-function renderEventoBitacora(evento){
+function obtenerVoBosDemo() {
 
-    return `
+    return [
 
-        <div
-            class="card"
-            style="
-                margin-top:16px;
-                border-left:4px solid var(--vino);
-            ">
+        {
 
-            <strong>
+            id:1,
 
-                ${evento.fecha}
+            responsable:
+                "Ing. Carlos Hernández",
 
-            </strong>
+            cargo:
+                "Director Técnico",
 
-            <br><br>
+            fecha:
+                "18/07/2026 11:40",
 
-            <strong>
+            estado:
+                "emitido"
 
-                ${evento.usuario}
+        },
 
-            </strong>
+        {
 
-            <br>
+            id:2,
 
-            ${evento.descripcion}
+            responsable:
+                "Lic. María González",
 
-        </div>
+            cargo:
+                "Secretaría",
 
-    `;
+            fecha:
+                "--/--/----",
+
+            estado:
+                "pendiente"
+
+        },
+
+        {
+
+            id:3,
+
+            responsable:
+                "Arq. José Ramírez",
+
+            cargo:
+                "Presidencia",
+
+            fecha:
+                "--/--/----",
+
+            estado:
+                "pendiente"
+
+        }
+
+    ];
 
 }
-
-
-
-/* ==========================================================
-   ACCIONES
-========================================================== */
-
-function renderAcciones(actuacion){
-
-    return `
-
-        <div class="card">
-
-            <div class="card-title">
-
-                Acciones disponibles
-
-            </div>
-
-            <div class="card-subtitle">
-
-                El Workflow únicamente habilita
-                las acciones permitidas para
-                este usuario.
-
-            </div>
-
-            <div
-                style="
-                    display:grid;
-                    grid-template-columns:
-                        repeat(auto-fit,minmax(260px,1fr));
-                    gap:16px;
-                    margin-top:24px;
-                ">
-
-                ${renderAccion({
-
-                    icono:"📄",
-
-                    titulo:"Actualizar plano arquitectónico",
-
-                    descripcion:"Atender la observación del Secretario.",
-
-                    clase:"btn-primary",
-
-                    accion:"actualizar-plano"
-
-                })}
-
-                ${renderAccion({
-
-                    icono:"✔",
-
-                    titulo:"Emitir VoBo",
-
-                    descripcion:"Continuar el Workflow.",
-
-                    clase:"btn-secondary",
-
-                    accion:"emitir-vobo"
-
-                })}
-
-                ${renderAccion({
-
-                    icono:"🕓",
-
-                    titulo:"Consultar historial",
-
-                    descripcion:"Ver todas las versiones y movimientos.",
-
-                    clase:"btn-light",
-
-                    accion:"historial"
-
-                })}
-
-            </div>
-
-        </div>
-
-    `;
-
-}
-
-
-
-/* ==========================================================
-   ACCIÓN
-========================================================== */
-
-function renderAccion(accion){
-
-    return `
-
-        <div
-            class="card"
-            style="
-                display:flex;
-                flex-direction:column;
-                gap:14px;
-            ">
-
-            <div
-                style="
-                    font-size:32px;
-                ">
-
-                ${accion.icono}
-
-            </div>
-
-            <strong>
-
-                ${accion.titulo}
-
-            </strong>
-
-            <div
-                style="
-                    color:var(--texto-secundario);
-                ">
-
-                ${accion.descripcion}
-
-            </div>
-
-            <button
-                class="btn ${accion.clase}"
-                data-accion="${accion.accion}">
-
-                Ejecutar
-
-            </button>
-
-        </div>
-
-    `;
-
-}
-
-/* ==========================================================
-   EVENTOS
-========================================================== */
-
-function registrarEventos() {
-
-    document
-
-        .querySelectorAll(
-
-            ".documento-subir"
-
-        )
-
-        .forEach(
-
-            boton => {
-
-                boton.addEventListener(
-
-                    "click",
-
-                    () => {
-
-                        console.log(
-
-                            "Subir documento",
-
-                            boton.dataset.id
-
-                        );
-
-                    }
-
-                );
-
-            }
-
-        );
-
-
-
-    document
-
-        .querySelectorAll(
-
-            ".documento-actualizar"
-
-        )
-
-        .forEach(
-
-            boton => {
-
-                boton.addEventListener(
-
-                    "click",
-
-                    () => {
-
-                        console.log(
-
-                            "Actualizar documento",
-
-                            boton.dataset.id
-
-                        );
-
-                    }
-
-                );
-
-            }
-
-        );
-
-
-
-    document
-
-        .querySelectorAll(
-
-            ".documento-ver"
-
-        )
-
-        .forEach(
-
-            boton => {
-
-                boton.addEventListener(
-
-                    "click",
-
-                    () => {
-
-                        console.log(
-
-                            "Ver documento",
-
-                            boton.dataset.id
-
-                        );
-
-                    }
-
-                );
-
-            }
-
-        );
-
-
-
-    document
-
-        .querySelectorAll(
-
-            ".emitir-vobo"
-
-        )
-
-        .forEach(
-
-            boton => {
-
-                boton.addEventListener(
-
-                    "click",
-
-                    () => {
-
-                        console.log(
-
-                            "Emitir VoBo",
-
-                            boton.dataset.id
-
-                        );
-
-                    }
-
-                );
-
-            }
-
-        );
-
-
-
-    document
-
-        .querySelectorAll(
-
-            ".atender-observacion"
-
-        )
-
-        .forEach(
-
-            boton => {
-
-                boton.addEventListener(
-
-                    "click",
-
-                    () => {
-
-                        console.log(
-
-                            "Atender observación",
-
-                            boton.dataset.id
-
-                        );
-
-                    }
-
-                );
-
-            }
-
-        );
-
-
-
-    document
-
-        .querySelectorAll(
-
-            "[data-accion]"
-
-        )
-
-        .forEach(
-
-            boton => {
-
-                boton.addEventListener(
-
-                    "click",
-
-                    () => {
-
-                        console.log(
-
-                            "Acción:",
-
-                            boton.dataset.accion
-
-                        );
-
-                    }
-
-                );
-
-            }
-
-        );
-
-
-
-    console.log(
-
-        "✓ Centro de Trabajo listo."
-
-    );
-
-}
-
-
-
-/* ==========================================================
-   ACTUALIZAR
-========================================================== */
-
-function actualizar(actuacion) {
-
-    render(actuacion);
-
-}
-
-
-
-/* ==========================================================
-   DESTRUIR
-========================================================== */
-
-function destruir() {
-
-    const workspace =
-
-        document.getElementById(
-
-            "workspace"
-
-        );
-
-    if(!workspace)
-        return;
-
-    workspace.innerHTML = "";
-
-}
-
-
-
-/* ==========================================================
-   EXPORTACIÓN
-========================================================== */
-
-window.CentroTrabajo =
-    CentroTrabajo;
