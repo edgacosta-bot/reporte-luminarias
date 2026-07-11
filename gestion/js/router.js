@@ -28,10 +28,11 @@ const Router = {
 
     mostrarCentroTrabajo,
 
-    mostrarModulo
+    mostrarModulo,
+
+    actualizarBotonRegresar
 
 };
-
 
 
 /* ==========================================================
@@ -54,9 +55,33 @@ function cambiarVista(vista) {
 
     Router.vistaActual = vista;
 
+    actualizarBotonRegresar();
+
 }
 
+/* ==========================================================
+   BOTÓN REGRESAR
+========================================================== */
 
+function actualizarBotonRegresar() {
+
+    const boton =
+        document.getElementById("btnRegresar");
+
+    if (!boton)
+        return;
+
+    if (Router.vistaActual === "dashboard") {
+
+        boton.style.visibility = "hidden";
+
+    } else {
+
+        boton.style.visibility = "visible";
+
+    }
+
+}
 
 /* ==========================================================
    DASHBOARD
