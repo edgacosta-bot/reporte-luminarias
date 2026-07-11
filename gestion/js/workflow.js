@@ -27,15 +27,58 @@ const Workflow = {
 
 async function abrirProcedimiento(idProcedimiento) {
 
-    return Store.obtenerProcedimiento(
+    const {
 
-        idProcedimiento
+        data,
+
+        error
+
+    } = await supabaseClient.rpc(
+
+        "obtener_expediente",
+
+        {
+
+            p_expediente_id: idProcedimiento
+
+        }
 
     );
 
+    if (error)
+        throw error;
+
+    const expediente =
+
+        Array.isArray(data)
+
+            ? data[0]
+
+            : data;
+
+    return {
+
+        id: expediente.id,
+
+        numero: expediente.folio,
+
+        nombre: expediente.titulo,
+
+        estado: expediente.estado,
+
+        tipo: expediente.tipo,
+
+        clasificacion: expediente.clasificacion,
+
+        avance: 0,
+
+        totalActuaciones: 0,
+
+        actuacionesCompletadas: 0
+
+    };
+
 }
-
-
 /* ==========================================================
    ACTUACIÓN
 ========================================================== */
