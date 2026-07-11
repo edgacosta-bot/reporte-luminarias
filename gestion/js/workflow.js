@@ -27,34 +27,35 @@ const Workflow = {
 
 async function abrirProcedimiento(idProcedimiento) {
 
-    const {
-
-        data,
-
-        error
-
-    } = await supabaseClient.rpc(
-
-        "obtener_expediente",
-
-        {
-
-            p_expediente_id: idProcedimiento
-
-        }
-
+    console.log(
+        "Workflow.abrirProcedimiento()",
+        idProcedimiento
     );
 
-    if (error)
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "obtener_expediente",
+        {
+            p_expediente_id: idProcedimiento
+        }
+    );
+
+    if (error) {
+        console.error(error);
         throw error;
+    }
+
+    console.log("RPC obtener_expediente:", data);
 
     const expediente =
-
         Array.isArray(data)
-
             ? data[0]
-
             : data;
+
+    if (!expediente)
+        throw new Error("El expediente no existe.");
 
     return {
 
@@ -79,6 +80,7 @@ async function abrirProcedimiento(idProcedimiento) {
     };
 
 }
+
 /* ==========================================================
    ACTUACIÓN
 ========================================================== */
