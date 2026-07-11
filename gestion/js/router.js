@@ -5,10 +5,14 @@
    Sistema Integral de Gestión de Expedientes
 
    Archivo:
-   router.js
+   js/router.js
 
    Versión:
-   3.0.0
+   4.0.0
+
+   Responsabilidad:
+
+   Administrar la navegación entre componentes.
 
 ========================================================== */
 
@@ -21,6 +25,8 @@ const Router = {
     mostrarListaProcedimientos,
 
     mostrarEscritorio,
+
+    mostrarCentroTrabajo,
 
     mostrarModulo
 
@@ -81,7 +87,7 @@ function mostrarListaProcedimientos() {
 
 
 /* ==========================================================
-   ESCRITORIO DEL PROCEDIMIENTO
+   PROCEDIMIENTO
 ========================================================== */
 
 function mostrarEscritorio(idProcedimiento = null) {
@@ -115,6 +121,34 @@ function mostrarEscritorio(idProcedimiento = null) {
 
 
 /* ==========================================================
+   CENTRO DE TRABAJO
+========================================================== */
+
+function mostrarCentroTrabajo(idActuacion = null) {
+
+    cambiarVista("centro-trabajo");
+
+    const actuacionDemo = {
+
+        id: idActuacion,
+
+        procedimiento: "O-2026-001",
+
+        nombre: "Integración Documental"
+
+    };
+
+    CentroTrabajo.render(
+
+        actuacionDemo
+
+    );
+
+}
+
+
+
+/* ==========================================================
    MÓDULOS
 ========================================================== */
 
@@ -124,6 +158,9 @@ function mostrarModulo(nombreModulo) {
 
     const workspace =
         document.getElementById("workspace");
+
+    if (!workspace)
+        return;
 
     workspace.innerHTML = `
 
@@ -140,6 +177,8 @@ function mostrarModulo(nombreModulo) {
                 Módulo en construcción.
 
             </div>
+
+            <br>
 
             <button
                 class="btn btn-primary"
