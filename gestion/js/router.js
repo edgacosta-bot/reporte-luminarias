@@ -8,17 +8,8 @@
    router.js
 
    Versión:
-   2.0.0
+   3.0.0
 
-   Responsabilidad:
-   Controlar toda la navegación interna
-   de Gestión Institucional.
-
-========================================================== */
-
-
-/* ==========================================================
-   ROUTER
 ========================================================== */
 
 const Router = {
@@ -27,13 +18,14 @@ const Router = {
 
     mostrarDashboard,
 
+    mostrarListaProcedimientos,
+
     mostrarEscritorio,
 
-    mostrarModulo,
-
-    cambiarVista
+    mostrarModulo
 
 };
+
 
 
 /* ==========================================================
@@ -47,15 +39,17 @@ function inicializarRouter() {
 }
 
 
+
 /* ==========================================================
    CAMBIO DE VISTA
 ========================================================== */
 
-function cambiarVista(nombreVista) {
+function cambiarVista(vista) {
 
-    Router.vistaActual = nombreVista;
+    Router.vistaActual = vista;
 
 }
+
 
 
 /* ==========================================================
@@ -71,51 +65,53 @@ function mostrarDashboard() {
 }
 
 
+
 /* ==========================================================
-   ESCRITORIO
+   LISTA DE PROCEDIMIENTOS
 ========================================================== */
 
-function mostrarEscritorio(idExpediente = null) {
+function mostrarListaProcedimientos() {
 
-    cambiarVista("expediente");
+    cambiarVista("procedimientos");
 
-    const workspace =
-        document.getElementById("workspace");
-
-    workspace.innerHTML = `
-
-        <div class="card">
-
-            <div class="card-title">
-
-                Expediente
-
-            </div>
-
-            <div class="card-subtitle">
-
-                Expediente:
-                ${idExpediente ?? "Nuevo procedimiento"}
-
-            </div>
-
-            <div style="margin-top:20px;">
-
-                <button
-                    class="btn btn-primary"
-                    onclick="Router.mostrarDashboard()">
-
-                    Regresar
-
-                </button>
-
-            </div>
-
-        </div>
-
-    `;
+    ListaProcedimientos.render();
 
 }
+
+
+
+/* ==========================================================
+   ESCRITORIO DEL PROCEDIMIENTO
+========================================================== */
+
+function mostrarEscritorio(idProcedimiento = null) {
+
+    cambiarVista("procedimiento");
+
+    const procedimientoDemo = {
+
+        id: idProcedimiento,
+
+        numero: "O-2026-001",
+
+        nombre: "Construcción de vivienda",
+
+        avance: 68,
+
+        totalActuaciones: 6,
+
+        actuacionesCompletadas: 3
+
+    };
+
+    EscritorioExpediente.render(
+
+        procedimientoDemo
+
+    );
+
+}
+
 
 
 /* ==========================================================
@@ -141,8 +137,7 @@ function mostrarModulo(nombreModulo) {
 
             <div class="card-subtitle">
 
-                Este módulo será desarrollado
-                en siguientes entregas.
+                Módulo en construcción.
 
             </div>
 
@@ -150,7 +145,7 @@ function mostrarModulo(nombreModulo) {
                 class="btn btn-primary"
                 onclick="Router.mostrarDashboard()">
 
-                Volver
+                Regresar
 
             </button>
 
