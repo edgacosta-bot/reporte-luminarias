@@ -514,43 +514,6 @@ function renderAcciones(expediente) {
 
 }
 
-/* ==========================================================
-   EVENTOS
-========================================================== */
-
-function registrarEventos() {
-
-    console.log("✓ Escritorio del expediente listo.");
-
-}
-
-
-
-/* ==========================================================
-   APERTURA DE ACTUACIÓN
-========================================================== */
-
-function abrirActuacion(numeroActuacion) {
-
-    console.log(
-
-        "Abrir actuación:",
-
-        numeroActuacion
-
-    );
-
-    /*
-        En el siguiente Sprint esta función
-        será sustituida por:
-
-        Router.mostrarActuacion(id);
-
-    */
-
-}
-
-
 
 /* ==========================================================
    RECARGAR
