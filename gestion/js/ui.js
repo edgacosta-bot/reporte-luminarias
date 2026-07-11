@@ -8,7 +8,7 @@
    ui.js
 
    Versión:
-   2.0.0
+   3.0.0
 
    Responsabilidad:
    Construcción de la interfaz de usuario.
@@ -49,6 +49,9 @@ function construirKPIs() {
     const dashboard =
         document.getElementById("dashboardResumen");
 
+    if (!dashboard)
+        return;
+
     dashboard.innerHTML = `
 
         <div class="grid grid-4">
@@ -57,7 +60,7 @@ function construirKPIs() {
 
                 <div class="card-title">
 
-                    Expedientes activos
+                    Mis procedimientos
 
                 </div>
 
@@ -69,7 +72,7 @@ function construirKPIs() {
 
                 <div class="kpi-label">
 
-                    Procedimientos en curso
+                    Activos
 
                 </div>
 
@@ -157,6 +160,9 @@ function construirWorkspaceDashboard() {
     const workspace =
         document.getElementById("workspace");
 
+    if (!workspace)
+        return;
+
     workspace.innerHTML = `
 
         <div class="grid grid-2">
@@ -165,47 +171,29 @@ function construirWorkspaceDashboard() {
 
                 <div class="card-title">
 
-                    Bienvenido
+                    Bienvenido a Gestión Institucional
 
                 </div>
 
                 <div class="card-subtitle">
 
-                    Gestión Institucional será el centro
-                    de administración de todos los
-                    procedimientos institucionales.
+                    Desde este módulo se administran
+                    todos los procedimientos
+                    institucionales.
 
                     <br><br>
 
-                    Desde aquí se administrarán:
-
-                    <br><br>
-
-                    • Gestión de Obras
-
-                    <br>
-
-                    • Contrataciones
-
-                    <br>
-
-                    • Proyectos de Inversión
-
-                    <br>
-
-                    • Convenios
-
-                    <br>
-
-                    • Reportes
+                    El Workflow determinará
+                    automáticamente las acciones
+                    disponibles para cada usuario.
 
                 </div>
 
                 <button
                     class="btn btn-primary"
-                    onclick="Router.mostrarEscritorio()">
+                    onclick="Router.mostrarListaProcedimientos()">
 
-                    Iniciar procedimiento
+                    Mis procedimientos
 
                 </button>
 
@@ -215,13 +203,7 @@ function construirWorkspaceDashboard() {
 
                 <div class="card-title">
 
-                    Módulos
-
-                </div>
-
-                <div class="card-subtitle">
-
-                    Seleccione una opción.
+                    Accesos rápidos
 
                 </div>
 
@@ -234,33 +216,25 @@ function construirWorkspaceDashboard() {
 
                     <button
                         class="btn btn-secondary"
-                        onclick="Router.mostrarModulo('Gestión de Obras')">
-
-                        🏗 Gestión de Obras
-
-                    </button>
-
-                    <button
-                        class="btn btn-light"
-                        onclick="Router.mostrarModulo('Contrataciones')">
-
-                        📑 Contrataciones
-
-                    </button>
-
-                    <button
-                        class="btn btn-light"
-                        onclick="Router.mostrarModulo('Proyectos de Inversión')">
-
-                        🏛 Proyectos de Inversión
-
-                    </button>
-
-                    <button
-                        class="btn btn-light"
                         onclick="Router.mostrarModulo('Reportes')">
 
                         📊 Reportes
+
+                    </button>
+
+                    <button
+                        class="btn btn-light"
+                        onclick="Router.mostrarModulo('Catálogos')">
+
+                        ⚙ Catálogos
+
+                    </button>
+
+                    <button
+                        class="btn btn-light"
+                        onclick="Router.mostrarModulo('Administración')">
+
+                        🛠 Administración
 
                     </button>
 
