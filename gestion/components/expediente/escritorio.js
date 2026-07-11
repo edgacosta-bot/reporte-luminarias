@@ -283,28 +283,21 @@ function renderActuacion(
     estado
 ) {
 
-    console.log("renderActuacion()", numero);
-
     let badge = "";
 
     switch (estado) {
 
         case "success":
-
             badge =
                 '<span class="badge badge-success">Completada</span>';
-
             break;
 
         case "warning":
-
             badge =
                 '<span class="badge badge-warning">En proceso</span>';
-
             break;
 
         default:
-
             badge =
                 '<span class="badge">Pendiente</span>';
 
@@ -330,9 +323,7 @@ function renderActuacion(
                 <div>
 
                     <strong>
-
                         Actuación ${numero}
-
                     </strong>
 
                     <br><br>
@@ -349,10 +340,7 @@ function renderActuacion(
 
                     <button
                         class="btn btn-primary"
-                        onclick="
-                            console.log('CLICK ACTUACIÓN', ${numero});
-                            Router.mostrarCentroTrabajo(${numero});
-                        ">
+                        onclick="Router.mostrarCentroTrabajo(${numero})">
 
                         Abrir Centro de Trabajo
 
