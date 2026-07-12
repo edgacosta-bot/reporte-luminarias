@@ -45,7 +45,7 @@ const ListaProcedimientos = {
    por las RPC del Workflow)
 ========================================================== */
 
-const procedimientosDemo = [
+const expedientesDemo = [
 
     {
 
@@ -125,16 +125,33 @@ function render() {
 
             <div class="card-title">
 
-                Mis procedimientos
+                Expedientes
 
             </div>
 
             <div class="card-subtitle">
 
-                Seleccione un procedimiento
-                para continuar su trámite.
+                Seleccione un expediente
+                o cree uno nuevo.
 
             </div>
+
+            <div
+    style="
+        display:flex;
+        justify-content:flex-end;
+        margin:20px 0;
+    ">
+
+    <button
+        id="btnCrearExpediente"
+        class="btn btn-primary">
+
+        ➕ Crear expediente
+
+    </button>
+
+</div>
 
             <div id="listaProcedimientos"></div>
 
@@ -145,7 +162,12 @@ function render() {
     const contenedor =
         document.getElementById("listaProcedimientos");
 
-    procedimientosDemo.forEach(procedimiento => {
+   const btnCrear =
+    document.getElementById("btnCrearExpediente");
+
+    btnCrear.addEventListener("click", mostrarDialogoNuevoExpediente);
+
+    expedientesDemo.forEach(procedimiento => {
 
         contenedor.innerHTML +=
             renderCard(procedimiento);
@@ -353,7 +375,17 @@ function destruir() {
 }
 
 
+function mostrarDialogoNuevoExpediente() {
 
+    alert(
+`Crear expediente
+
+1. Obra Particular
+2. Proyecto de Inversión
+3. Contratación de Servicio`
+    );
+
+}
 /* ==========================================================
    EXPORTACIÓN
 ========================================================== */
