@@ -48,57 +48,23 @@ const ListaProcedimientos = {
 const expedientesDemo = [
 
     {
-
-        id:"1",
-
-        numero:"O-2026-001",
-
-        tipo:"Obra",
-
-        nombre:"Construcción de vivienda",
-
-        estado:"Revisión Mesa Directiva",
-
-        avance:68,
-
-        responsable:"Presidente"
-
+        id: "REG-001",
+        origen: "SIGVIC",
+        folio: "REG-OBR-001",
+        tipo: "Obra Particular",
+        titulo: "Construcción Casa 27",
+        etapa: "Ejecución",
+        estado: "Regularización SIGVIC"
     },
 
     {
-
-        id:"2",
-
-        numero:"O-2026-002",
-
-        tipo:"Obra",
-
-        nombre:"Ampliación de cochera",
-
-        estado:"Autorizado",
-
-        avance:100,
-
-        responsable:"Administrador"
-
-    },
-
-    {
-
-        id:"3",
-
-        numero:"O-2026-003",
-
-        tipo:"Obra",
-
-        nombre:"Construcción de alberca",
-
-        estado:"Observado",
-
-        avance:42,
-
-        responsable:"Administrador"
-
+        id: "REG-002",
+        origen: "SIGVIC",
+        folio: "REG-OBR-002",
+        tipo: "Obra Particular",
+        titulo: "Construcción Casa 14",
+        etapa: "Ejecución",
+        estado: "Regularización SIGVIC"
     }
 
 ];
@@ -109,7 +75,7 @@ const expedientesDemo = [
    RENDER
 ========================================================== */
 
-function render() {
+async function render() {
 
     console.log("ListaProcedimientos.render()");
 
@@ -123,35 +89,40 @@ function render() {
 
         <div class="card">
 
-            <div class="card-title">
-
-                Expedientes
-
-            </div>
-
-            <div class="card-subtitle">
-
-                Seleccione un expediente
-                o cree uno nuevo.
-
-            </div>
-
             <div
-    style="
-        display:flex;
-        justify-content:flex-end;
-        margin:20px 0;
-    ">
+                style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                    margin-bottom:18px;
+                ">
 
-    <button
-        id="btnCrearExpediente"
-        class="btn btn-primary">
+                <div>
 
-        ➕ Crear expediente
+                    <div class="card-title">
 
-    </button>
+                        Expedientes
 
-</div>
+                    </div>
+
+                    <div class="card-subtitle">
+
+                        Seleccione un expediente
+                        o cree uno nuevo.
+
+                    </div>
+
+                </div>
+
+                <button
+                    id="btnCrearExpediente"
+                    class="btn btn-primary">
+
+                    ➕ Crear expediente
+
+                </button>
+
+            </div>
 
             <div id="listaProcedimientos"></div>
 
@@ -159,18 +130,23 @@ function render() {
 
     `;
 
+    document
+        .getElementById("btnCrearExpediente")
+        .addEventListener(
+            "click",
+            mostrarDialogoNuevoExpediente
+        );
+
     const contenedor =
         document.getElementById("listaProcedimientos");
 
-   const btnCrear =
-    document.getElementById("btnCrearExpediente");
+    const expedientes =
+        await obtenerExpedientes();
 
-    btnCrear.addEventListener("click", mostrarDialogoNuevoExpediente);
-
-    expedientesDemo.forEach(procedimiento => {
+    expedientes.forEach(expediente => {
 
         contenedor.innerHTML +=
-            renderCard(procedimiento);
+            renderCard(expediente);
 
     });
 
@@ -182,22 +158,11 @@ function render() {
 
 function renderCard(procedimiento) {
 
-    let badge = "";
-
-    switch (procedimiento.estado) {
-
-        case "Autorizado":
-            badge = '<span class="badge badge-success">Autorizado</span>';
-            break;
-
-        case "Observado":
-            badge = '<span class="badge badge-danger">Observado</span>';
-            break;
-
-        default:
-            badge = '<span class="badge badge-warning">En revisión</span>';
-
-    }
+    let badge = `
+        <span class="badge badge-info">
+            ${procedimiento.estado}
+        </span>
+    `;
 
     return `
 
@@ -233,7 +198,7 @@ function renderCard(procedimiento) {
                             color:var(--vino);
                         ">
 
-                        ${procedimiento.numero}
+                        ${procedimiento.folio}
 
                     </div>
 
@@ -244,7 +209,7 @@ function renderCard(procedimiento) {
                             font-weight:600;
                         ">
 
-                        ${procedimiento.nombre}
+                        ${procedimiento.titulo}
 
                     </div>
 
@@ -260,46 +225,23 @@ function renderCard(procedimiento) {
 
             <div
                 style="
-                    margin-top:20px;
+                    margin-top:18px;
+                    display:flex;
+                    gap:10px;
+                    flex-wrap:wrap;
                 ">
 
-                <div
-                    style="
-                        display:flex;
-                        justify-content:space-between;
-                        margin-bottom:6px;
-                        font-size:14px;
-                    ">
+                <span class="badge">
 
-                    <span>Avance</span>
+                    ${procedimiento.tipo}
 
-                    <strong>
+                </span>
 
-                        ${procedimiento.avance}%
+                <span class="badge badge-warning">
 
-                    </strong>
+                    ${procedimiento.etapa}
 
-                </div>
-
-                <div
-                    style="
-                        width:100%;
-                        height:10px;
-                        background:#E5E7EB;
-                        border-radius:999px;
-                        overflow:hidden;
-                    ">
-
-                    <div
-                        style="
-                            width:${procedimiento.avance}%;
-                            height:100%;
-                            background:var(--vino);
-                        ">
-
-                    </div>
-
-                </div>
+                </span>
 
             </div>
 
@@ -319,13 +261,13 @@ function renderCard(procedimiento) {
                             color:var(--texto-secundario);
                         ">
 
-                        Responsable actual
+                        Origen
 
                     </div>
 
                     <strong>
 
-                        ${procedimiento.responsable}
+                        ${procedimiento.origen}
 
                     </strong>
 
@@ -347,6 +289,58 @@ function renderCard(procedimiento) {
 
 }
 
+/* ==========================================================
+   OBTENER EXPEDIENTES
+
+   (Temporalmente desde SIGVIC)
+
+========================================================== */
+
+async function obtenerExpedientes() {
+
+    const { data, error } = await supabaseClient
+
+        .from("obras")
+
+        .select(`
+            id,
+            privada,
+            casa,
+            estatus,
+            created_at
+        `)
+
+        .eq("estatus", "aprobada")
+
+        .order("created_at", { ascending: false });
+
+    if (error) {
+
+        console.error(error);
+
+        return [];
+
+    }
+
+    return data.map((obra, indice) => ({
+
+        id: obra.id,
+
+        origen: "Regularización SIGVIC",
+
+        folio: `REG-OBR-${String(indice + 1).padStart(3,"0")}`,
+
+        tipo: "Obra Particular",
+
+        titulo: `Privada ${obra.privada} · Casa ${obra.casa}`,
+
+        etapa: "Ejecución",
+
+        estado: "Regularización SIGVIC"
+
+    }));
+
+}
 
 /* ==========================================================
    ACTUALIZAR
