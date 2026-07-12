@@ -134,7 +134,7 @@ async function render() {
         .getElementById("btnCrearExpediente")
         .addEventListener(
             "click",
-            mostrarDialogoNuevoExpediente
+            Router.mostrarNuevoExpediente();
         );
 
     const contenedor =
