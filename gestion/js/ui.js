@@ -84,6 +84,10 @@ function construirDashboard() {
    KPIs
 ========================================================== */
 
+/* ==========================================================
+   KPIs
+========================================================== */
+
 function construirKPIs() {
 
     const dashboard =
@@ -100,29 +104,7 @@ function construirKPIs() {
 
                 <div class="card-title">
 
-                    Mis procedimientos
-
-                </div>
-
-                <div class="kpi-number">
-
-                    12
-
-                </div>
-
-                <div class="kpi-label">
-
-                    Activos
-
-                </div>
-
-            </div>
-
-            <div class="card">
-
-                <div class="card-title">
-
-                    Pendientes
+                    Procedimientos
 
                 </div>
 
@@ -134,7 +116,7 @@ function construirKPIs() {
 
                 <div class="kpi-label">
 
-                    Requieren atención
+                    Disponibles
 
                 </div>
 
@@ -144,19 +126,19 @@ function construirKPIs() {
 
                 <div class="card-title">
 
-                    Concluidos
+                    Expedientes
 
                 </div>
 
                 <div class="kpi-number">
 
-                    148
+                    —
 
                 </div>
 
                 <div class="kpi-label">
 
-                    Históricos
+                    Seleccione un procedimiento
 
                 </div>
 
@@ -166,19 +148,41 @@ function construirKPIs() {
 
                 <div class="card-title">
 
-                    Obras activas
+                    Etapa
 
                 </div>
 
                 <div class="kpi-number">
 
-                    4
+                    —
 
                 </div>
 
                 <div class="kpi-label">
 
-                    En ejecución
+                    Sin seleccionar
+
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-title">
+
+                    Estado
+
+                </div>
+
+                <div class="kpi-number">
+
+                    —
+
+                </div>
+
+                <div class="kpi-label">
+
+                    Pendiente
 
                 </div>
 
@@ -190,6 +194,9 @@ function construirKPIs() {
 
 }
 
+/* ==========================================================
+   DASHBOARD PRINCIPAL
+========================================================== */
 
 /* ==========================================================
    DASHBOARD PRINCIPAL
@@ -205,35 +212,54 @@ function construirWorkspaceDashboard() {
 
     workspace.innerHTML = `
 
-        <div class="grid grid-2">
+        <div class="card">
+
+            <div class="card-title">
+
+                Gestión Institucional
+
+            </div>
+
+            <div class="card-subtitle">
+
+                Seleccione el procedimiento cuyos
+                expedientes desea administrar.
+
+                <br><br>
+
+                Cada procedimiento posee su propio
+                flujo de trabajo, requisitos,
+                indicadores y expedientes.
+
+            </div>
+
+        </div>
+
+        <br>
+
+        <div class="grid grid-3">
 
             <div class="card">
 
                 <div class="card-title">
 
-                    Bienvenido a Gestión Institucional
+                    🏗 Obras Particulares
 
                 </div>
 
                 <div class="card-subtitle">
 
-                    Desde este módulo se administran
-                    todos los procedimientos
-                    institucionales.
-
-                    <br><br>
-
-                    El Workflow determinará
-                    automáticamente las acciones
-                    disponibles para cada usuario.
+                    Expedientes para autorización,
+                    ejecución y conclusión de obras
+                    particulares.
 
                 </div>
 
                 <button
                     class="btn btn-primary"
-                    onclick="Router.mostrarListaProcedimientos()">
+                    onclick="ListaProcedimientos.render('OBR')">
 
-                    Mis procedimientos
+                    Abrir expedientes
 
                 </button>
 
@@ -243,42 +269,51 @@ function construirWorkspaceDashboard() {
 
                 <div class="card-title">
 
-                    Accesos rápidos
+                    💰 Proyectos de Inversión
 
                 </div>
 
-                <div
-                    style="
-                        display:flex;
-                        flex-direction:column;
-                        gap:14px;
-                    ">
+                <div class="card-subtitle">
 
-                    <button
-                        class="btn btn-secondary"
-                        onclick="Router.mostrarModulo('Reportes')">
-
-                        📊 Reportes
-
-                    </button>
-
-                    <button
-                        class="btn btn-light"
-                        onclick="Router.mostrarModulo('Catálogos')">
-
-                        ⚙ Catálogos
-
-                    </button>
-
-                    <button
-                        class="btn btn-light"
-                        onclick="Router.mostrarModulo('Administración')">
-
-                        🛠 Administración
-
-                    </button>
+                    Expedientes relacionados con
+                    proyectos de inversión
+                    institucional.
 
                 </div>
+
+                <button
+                    class="btn btn-primary"
+                    onclick="ListaProcedimientos.render('INV')">
+
+                    Abrir expedientes
+
+                </button>
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-title">
+
+                    🤝 Contratación de Servicios
+
+                </div>
+
+                <div class="card-subtitle">
+
+                    Expedientes para contratación,
+                    seguimiento y cierre de
+                    servicios.
+
+                </div>
+
+                <button
+                    class="btn btn-primary"
+                    onclick="ListaProcedimientos.render('SER')">
+
+                    Abrir expedientes
+
+                </button>
 
             </div>
 
