@@ -9,7 +9,7 @@
         name="viewport"
         content="width=device-width, initial-scale=1.0">
 
-    <title>Gestión Institucional | SIGVIC</title>
+    <title>Gestión Institucional | SIGE</title>
 
     <!-- ==========================================================
          SUPABASE
@@ -26,7 +26,7 @@
     <script src="../modal.js"></script>
 
     <!-- ==========================================================
-         SIGE
+         ESTILOS
     =========================================================== -->
 
     <link
@@ -37,126 +37,120 @@
 
 <body>
 
-    <!-- ==========================================================
-         APP SHELL
-    =========================================================== -->
+<div id="app">
 
-    <div id="app">
+    <!-- ======================================================
+         HEADER
+    ======================================================= -->
 
-        <!-- ======================================================
-             HEADER
-        ======================================================= -->
+    <header id="appHeader">
 
-        <header id="appHeader">
+        <div class="header-left">
 
-            <div class="header-left">
+            <button
+                id="btnRegresar"
+                class="header-button">
 
-                <button
-                    id="btnRegresar"
-                    class="header-button">
+                ←
 
-                    ←
+            </button>
 
-                </button>
+            <div>
 
-                <div>
+                <h1>
 
-                    <h1>
+                    Gestión Institucional
 
-                        Gestión Institucional
+                </h1>
 
-                    </h1>
+                <span id="subtitulo">
 
-                    <span id="subtitulo">
+                    Sistema Integral de Gestión Institucional
 
-                        Sistema Integral de Gestión de Expedientes
-
-                    </span>
-
-                </div>
+                </span>
 
             </div>
 
-            <div
-                id="usuarioActual"
-                class="header-user">
+        </div>
 
-                Cargando...
+        <div
+            id="usuarioActual"
+            class="header-user">
 
-            </div>
+            Cargando...
 
-        </header>
+        </div>
 
-        <!-- ======================================================
-             DASHBOARD SUPERIOR
-             (se llena dinámicamente)
-        ======================================================= -->
+    </header>
 
-        <section id="dashboardResumen">
+    <!-- ======================================================
+         DASHBOARD
+    ======================================================= -->
 
-        </section>
+    <section id="dashboardResumen">
 
-        <!-- ======================================================
-             CONTENIDO PRINCIPAL
-             AQUÍ SE CARGARÁN LAS VISTAS
-        ======================================================= -->
+    </section>
 
-        <main id="workspace">
+    <!-- ======================================================
+         WORKSPACE
+    ======================================================= -->
 
-        </main>
+    <main id="workspace">
 
-    </div>
+    </main>
 
-    <!-- ==========================================================
-         PLANTILLAS DINÁMICAS
-         (se agregan posteriormente)
-    =========================================================== -->
+</div>
 
-    <template id="template-dashboard">
+<!-- ==========================================================
+     PLANTILLAS
+========================================================== -->
 
-    </template>
+<template id="template-dashboard"></template>
 
-    <template id="template-expedientes">
+<template id="template-obras"></template>
 
-    </template>
+<template id="template-inversiones"></template>
 
-    <template id="template-expediente">
+<template id="template-servicios"></template>
 
-    </template>
+<template id="template-escritorio"></template>
 
-    <template id="template-obras">
+<template id="template-documentos"></template>
 
-    </template>
+<template id="template-vobos"></template>
 
-    <template id="template-documentos">
+<template id="template-bitacora"></template>
 
-    </template>
-
-    <template id="template-vobos">
-
-    </template>
-
-    <template id="template-bitacora">
-
-    </template>
-
-    <!-- ==========================================================
-         JAVASCRIPT
-    =========================================================== -->
+<!-- ==========================================================
+     JAVASCRIPT
+========================================================== -->
 
 <script src="js/ui.js"></script>
-<script src="js/store.js"></script> 
-<script src="js/workflow.js"></script>    
+
+<script src="js/store.js"></script>
+
+<script src="js/workflow.js"></script>
+
 <script src="js/router.js"></script>
+
 <script src="js/bootstrap.js"></script>
 
-<script src="components/expediente/lista.js"></script>
-<script src="components/expediente/nuevo-expediente.js"></script>    
-<script src="components/expediente/escritorio.js"></script>
+<!-- ==========================================================
+     COMPONENTES
+========================================================== -->
+
+<script src="components/inicio/dashboard.js"></script>
+
+<script src="components/obras/bandeja.js"></script>
+
+<script src="components/obras/nueva.js"></script>
+
+<script src="components/obras/escritorio.js"></script>
+
 <script src="components/actuacion/centro-trabajo.js"></script>
 
 <script src="js/app.js"></script>
 
-
 </body>
+
 </html>
