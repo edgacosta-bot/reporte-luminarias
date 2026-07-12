@@ -1,6 +1,6 @@
 "use strict";
 
-console.log("LISTA.JS VERSION 2026-07-11 15:45");
+console.log("LISTA.JS VERSION 2026-07-12 09:30");
 
 /* ==========================================================
    SIGE
@@ -9,19 +9,10 @@ console.log("LISTA.JS VERSION 2026-07-11 15:45");
    Archivo:
    components/expediente/lista.js
 
-   Versión:
-   1.0.0
-
    Responsabilidad:
 
-   Mostrar la bandeja de procedimientos
-   disponibles para el usuario.
+   Mostrar la lista de expedientes.
 
-========================================================== */
-
-
-/* ==========================================================
-   COMPONENTE
 ========================================================== */
 
 const ListaProcedimientos = {
@@ -35,41 +26,6 @@ const ListaProcedimientos = {
     destruir
 
 };
-
-
-
-/* ==========================================================
-   DATOS DEMO
-
-   (Se sustituirán posteriormente
-   por las RPC del Workflow)
-========================================================== */
-
-const expedientesDemo = [
-
-    {
-        id: "REG-001",
-        origen: "SIGVIC",
-        folio: "REG-OBR-001",
-        tipo: "Obra Particular",
-        titulo: "Construcción Casa 27",
-        etapa: "Ejecución",
-        estado: "Regularización SIGVIC"
-    },
-
-    {
-        id: "REG-002",
-        origen: "SIGVIC",
-        folio: "REG-OBR-002",
-        tipo: "Obra Particular",
-        titulo: "Construcción Casa 14",
-        etapa: "Ejecución",
-        estado: "Regularización SIGVIC"
-    }
-
-];
-
-
 
 /* ==========================================================
    RENDER
@@ -134,11 +90,13 @@ async function render() {
         .getElementById("btnCrearExpediente")
         .addEventListener(
             "click",
-            Router.mostrarNuevoExpediente();
+            Router.mostrarNuevoExpediente
         );
 
     const contenedor =
-        document.getElementById("listaProcedimientos");
+        document.getElementById(
+            "listaProcedimientos"
+        );
 
     const expedientes =
         await obtenerExpedientes();
@@ -157,12 +115,6 @@ async function render() {
 ========================================================== */
 
 function renderCard(procedimiento) {
-
-    let badge = `
-        <span class="badge badge-info">
-            ${procedimiento.estado}
-        </span>
-    `;
 
     return `
 
@@ -217,7 +169,11 @@ function renderCard(procedimiento) {
 
                 <div>
 
-                    ${badge}
+                    <span class="badge badge-info">
+
+                        ${procedimiento.estado}
+
+                    </span>
 
                 </div>
 
@@ -291,28 +247,34 @@ function renderCard(procedimiento) {
 
 /* ==========================================================
    OBTENER EXPEDIENTES
-
-   (Temporalmente desde SIGVIC)
-
 ========================================================== */
 
 async function obtenerExpedientes() {
 
-    const { data, error } = await supabaseClient
+    const { data, error } =
+        await supabaseClient
 
-        .from("obras")
+            .from("obras")
 
-        .select(`
-            id,
-            privada,
-            casa,
-            estatus,
-            created_at
-        `)
+            .select(`
+                id,
+                privada,
+                casa,
+                estatus,
+                created_at
+            `)
 
-        .eq("estatus", "aprobada")
+            .eq(
+                "estatus",
+                "aprobada"
+            )
 
-        .order("created_at", { ascending: false });
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
 
     if (error) {
 
@@ -328,11 +290,13 @@ async function obtenerExpedientes() {
 
         origen: "Regularización SIGVIC",
 
-        folio: `REG-OBR-${String(indice + 1).padStart(3,"0")}`,
+        folio:
+            `REG-OBR-${String(indice + 1).padStart(3, "0")}`,
 
         tipo: "Obra Particular",
 
-        titulo: `Privada ${obra.privada} · Casa ${obra.casa}`,
+        titulo:
+            `Privada ${obra.privada} · Casa ${obra.casa}`,
 
         etapa: "Ejecución",
 
@@ -368,18 +332,6 @@ function destruir() {
 
 }
 
-
-function mostrarDialogoNuevoExpediente() {
-
-    alert(
-`Crear expediente
-
-1. Obra Particular
-2. Proyecto de Inversión
-3. Contratación de Servicio`
-    );
-
-}
 /* ==========================================================
    EXPORTACIÓN
 ========================================================== */
