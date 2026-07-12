@@ -257,7 +257,7 @@ function construirWorkspaceDashboard() {
 
                 <button
                     class="btn btn-primary"
-                    onclick="ListaProcedimientos.render('OBR')">
+                    onclick="Router.mostrarListaProcedimientos('OBR')"
 
                     Abrir expedientes
 
@@ -283,7 +283,7 @@ function construirWorkspaceDashboard() {
 
                 <button
                     class="btn btn-primary"
-                    onclick="ListaProcedimientos.render('INV')">
+                    onclick="Router.mostrarListaProcedimientos('INV')"
 
                     Abrir expedientes
 
@@ -309,7 +309,7 @@ function construirWorkspaceDashboard() {
 
                 <button
                     class="btn btn-primary"
-                    onclick="ListaProcedimientos.render('SER')">
+                    onclick="Router.mostrarListaProcedimientos('SER')"
 
                     Abrir expedientes
 
