@@ -8,7 +8,7 @@
    js/router.js
 
    Versión:
-   4.0.0
+   5.0.0
 
    Responsabilidad:
 
@@ -23,6 +23,8 @@ const Router = {
     mostrarDashboard,
 
     mostrarListaProcedimientos,
+
+    mostrarNuevoExpediente,
 
     mostrarEscritorio,
 
@@ -46,7 +48,6 @@ function inicializarRouter() {
 }
 
 
-
 /* ==========================================================
    CAMBIO DE VISTA
 ========================================================== */
@@ -58,6 +59,7 @@ function cambiarVista(vista) {
     actualizarBotonRegresar();
 
 }
+
 
 /* ==========================================================
    BOTÓN REGRESAR
@@ -71,17 +73,13 @@ function actualizarBotonRegresar() {
     if (!boton)
         return;
 
-    if (Router.vistaActual === "dashboard") {
-
-        boton.style.visibility = "hidden";
-
-    } else {
-
-        boton.style.visibility = "visible";
-
-    }
+    boton.style.visibility =
+        Router.vistaActual === "dashboard"
+            ? "hidden"
+            : "visible";
 
 }
+
 
 /* ==========================================================
    DASHBOARD
@@ -96,16 +94,13 @@ function mostrarDashboard() {
 }
 
 
-
 /* ==========================================================
-   LISTA DE PROCEDIMIENTOS
+   LISTA DE EXPEDIENTES
 ========================================================== */
 
-/* ==========================================================
-   LISTA DE EXPEDIENTES POR PROCEDIMIENTO
-========================================================== */
-
-function mostrarListaProcedimientos(claveProcedimiento = null) {
+function mostrarListaProcedimientos(
+    claveProcedimiento = null
+) {
 
     cambiarVista("procedimientos");
 
@@ -116,34 +111,63 @@ function mostrarListaProcedimientos(claveProcedimiento = null) {
 }
 
 
-
 /* ==========================================================
-   PROCEDIMIENTO
+   NUEVO EXPEDIENTE
 ========================================================== */
 
-async function mostrarEscritorio(idProcedimiento = null) {
+function mostrarNuevoExpediente() {
 
-    cambiarVista("procedimiento");
+    cambiarVista("nuevo-expediente");
 
-    const procedimiento =
-        await Workflow.abrirProcedimiento(
-            idProcedimiento
-        );
+    if (
+        typeof NuevoExpediente !== "undefined"
+    ) {
 
-    SIGE_STATE.expedienteActual =
-        procedimiento;
+        NuevoExpediente.render();
 
-    EscritorioExpediente.render(
-        procedimiento
+        return;
+
+    }
+
+    console.warn(
+        "NuevoExpediente aún no está disponible."
     );
 
 }
+
+
+/* ==========================================================
+   ESCRITORIO DEL EXPEDIENTE
+========================================================== */
+
+async function mostrarEscritorio(
+    idExpediente = null
+) {
+
+    cambiarVista("procedimiento");
+
+    const expediente =
+        await Workflow.abrirProcedimiento(
+            idExpediente
+        );
+
+    SIGE_STATE.expedienteActual =
+        expediente;
+
+    EscritorioExpediente.render(
+        expediente
+    );
+
+}
+
 
 /* ==========================================================
    CENTRO DE TRABAJO
 ========================================================== */
 
-async function mostrarCentroTrabajo(idActuacion = null) {
+async function mostrarCentroTrabajo(
+    idActuacion = null
+) {
 
     cambiarVista("centro-trabajo");
 
@@ -158,13 +182,6 @@ async function mostrarCentroTrabajo(idActuacion = null) {
 
 }
 
-function mostrarNuevoExpediente() {
-
-    cambiarVista("nuevo-expediente");
-
-    NuevoExpediente.render();
-
-}
 
 /* ==========================================================
    MÓDULOS
@@ -210,4 +227,4 @@ function mostrarModulo(nombreModulo) {
 
     `;
 
- 
+}
