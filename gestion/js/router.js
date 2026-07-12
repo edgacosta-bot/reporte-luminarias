@@ -101,11 +101,17 @@ function mostrarDashboard() {
    LISTA DE PROCEDIMIENTOS
 ========================================================== */
 
-function mostrarListaProcedimientos() {
+/* ==========================================================
+   LISTA DE EXPEDIENTES POR PROCEDIMIENTO
+========================================================== */
+
+function mostrarListaProcedimientos(claveProcedimiento = null) {
 
     cambiarVista("procedimientos");
 
-    ListaProcedimientos.render();
+    ListaProcedimientos.render(
+        claveProcedimiento
+    );
 
 }
 
