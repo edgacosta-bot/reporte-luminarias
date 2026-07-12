@@ -2,14 +2,14 @@
 
 /* ==========================================================
    SIGE
-   Sistema Integral de Gestión de Expedientes
+   Sistema Integral de Gestión Institucional
 
    Archivo:
-   components/obras/lista.js
+   components/obras/bandeja.js
 
    Responsabilidad:
 
-   Mostrar el módulo
+   Bandeja del módulo
    Obras Particulares.
 
 ========================================================== */
@@ -17,8 +17,6 @@
 const Obras = {
 
     render,
-
-    renderCard,
 
     actualizar,
 
@@ -35,7 +33,9 @@ async function render() {
     console.log("Obras.render()");
 
     const workspace =
-        document.getElementById("workspace");
+        document.getElementById(
+            "workspace"
+        );
 
     if (!workspace)
         return;
@@ -61,7 +61,7 @@ async function render() {
 
                     <div class="card-subtitle">
 
-                        Administración de obras particulares.
+                        Administración integral de obras particulares.
 
                     </div>
 
@@ -81,13 +81,18 @@ async function render() {
 
         <div
             id="kpiObras"
-            style="margin-top:18px;">
+            style="
+                margin-top:20px;
+                display:grid;
+                grid-template-columns:repeat(4,1fr);
+                gap:16px;
+            ">
 
         </div>
 
         <div
             id="listaObras"
-            style="margin-top:18px;">
+            style="margin-top:20px;">
 
         </div>
 
@@ -99,79 +104,35 @@ async function render() {
         )
         .addEventListener(
             "click",
-            () => {
-
-                console.log(
-                    "Nueva obra"
-                );
-
-                // FRONT-006
-                // Router.mostrarNuevaObra();
-
-            }
+            Router.mostrarNuevaObra
         );
 
-    renderKPIs();
+    await cargarDashboard();
 
-    const contenedor =
-        document.getElementById(
-            "listaObras"
-        );
-
-    const obras =
-        await obtenerObras();
-
-    obras.forEach(obra => {
-
-        contenedor.innerHTML +=
-            renderCard(obra);
-
-    });
+    await cargarObras();
 
 }
 
 /* ==========================================================
-   KPI
+   DASHBOARD
 ========================================================== */
 
-function renderKPIs() {
+async function cargarDashboard() {
 
-    const div =
+    const contenedor =
         document.getElementById(
             "kpiObras"
         );
 
-    div.innerHTML = `
+    contenedor.innerHTML = `
 
-        <div
-            style="
-                display:grid;
-                grid-template-columns:
-                    repeat(4,1fr);
-                gap:16px;
-            ">
+        ${kpi("Aprobación",0)}
 
-            ${kpi(
-                "Aprobación",
-                0
-            )}
+        ${kpi("Ejecución",0)}
 
-            ${kpi(
-                "Ejecución",
-                15
-            )}
+        ${kpi("Terminación",0)}
 
-            ${kpi(
-                "Terminación",
-                0
-            )}
-
-            ${kpi(
-                "Archivo",
-                0
-            )}
-
-        </div>
+        ${kpi("Archivo",0)}
 
     `;
 
@@ -191,8 +152,8 @@ function kpi(
 
             <div
                 style="
-                    font-size:14px;
                     color:var(--texto-secundario);
+                    font-size:13px;
                 ">
 
                 ${titulo}
@@ -218,16 +179,49 @@ function kpi(
 }
 
 /* ==========================================================
+   OBRAS
+========================================================== */
+
+async function cargarObras(){
+
+    const contenedor =
+        document.getElementById(
+            "listaObras"
+        );
+
+    const privadas =
+        await Workflow.obtenerPrivadas();
+
+    contenedor.innerHTML = "";
+
+    privadas.forEach(
+
+        privada => {
+
+            contenedor.innerHTML +=
+                renderPrivada(
+                    privada
+                );
+
+        }
+
+    );
+
+}
+
+/* ==========================================================
    TARJETA
 ========================================================== */
 
-function renderCard(obra){
+function renderPrivada(privada){
 
     return `
 
         <div
             class="card"
-            style="margin-top:18px;">
+            style="
+                margin-bottom:18px;
+            ">
 
             <div
                 style="
@@ -240,35 +234,22 @@ function renderCard(obra){
 
                     <div
                         style="
-                            font-size:13px;
-                            color:var(--texto-secundario);
+                            font-size:20px;
+                            font-weight:700;
+                            color:var(--vino);
                         ">
 
-                        ${obra.folio}
+                        Privada ${privada}
 
                     </div>
 
                     <div
                         style="
                             margin-top:6px;
-                            font-size:20px;
-                            font-weight:700;
+                            color:var(--texto-secundario);
                         ">
 
-                        ${obra.titulo}
-
-                    </div>
-
-                    <div
-                        style="
-                            margin-top:10px;
-                        ">
-
-                        <span class="badge">
-
-                            ${obra.etapa}
-
-                        </span>
+                        Administrar obras de esta privada.
 
                     </div>
 
@@ -276,9 +257,9 @@ function renderCard(obra){
 
                 <button
                     class="btn btn-primary"
-                    onclick="Router.mostrarEscritorio('${obra.id}')">
+                    onclick="Router.mostrarNuevaObra()">
 
-                    Abrir
+                    Nueva obra
 
                 </button>
 
@@ -287,70 +268,6 @@ function renderCard(obra){
         </div>
 
     `;
-
-}
-
-/* ==========================================================
-   DATOS
-========================================================== */
-
-async function obtenerObras(){
-
-    const {
-
-        data,
-
-        error
-
-    } = await supabaseClient
-
-        .from("obras")
-
-        .select(`
-            id,
-            privada,
-            casa,
-            estatus,
-            created_at
-        `)
-
-        .eq(
-            "estatus",
-            "aprobada"
-        )
-
-        .order(
-            "created_at",
-            {
-                ascending:false
-            }
-        );
-
-    if(error){
-
-        console.error(error);
-
-        return [];
-
-    }
-
-    return data.map(
-        (obra, indice)=>({
-
-            id:
-                obra.id,
-
-            folio:
-                `REG-${String(indice+1).padStart(3,"0")}`,
-
-            titulo:
-                `Privada ${obra.privada} · Casa ${obra.casa}`,
-
-            etapa:
-                "Ejecución"
-
-        })
-    );
 
 }
 
@@ -387,4 +304,5 @@ function destruir(){
    EXPORTACIÓN
 ========================================================== */
 
-window.Obras = Obras;
+window.Obras =
+    Obras;
