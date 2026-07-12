@@ -2,90 +2,247 @@
 
 /* ==========================================================
    SIGE
-   Workflow
+   Sistema Integral de Gestión Institucional
 
-   Capa de negocio del Frontend.
+   Archivo:
+   js/workflow.js
 
-   Esta capa será la única autorizada
-   para comunicarse con las RPC del
-   Workflow Engine.
+   Responsabilidad:
+
+   Única capa autorizada para comunicarse
+   con Supabase / RPC.
 
 ========================================================== */
 
 const Workflow = {
 
-    abrirProcedimiento,
+    abrirObra,
 
-    abrirActuacion
+    abrirActuacion,
+
+    obtenerPrivadas,
+
+    obtenerLotes,
+
+    crearObra
 
 };
 
 
 /* ==========================================================
-   PROCEDIMIENTO
+   OBTENER PRIVADAS
 ========================================================== */
 
-async function abrirProcedimiento(idProcedimiento) {
+async function obtenerPrivadas() {
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+
+        .from("lotes")
+
+        .select("privada")
+
+        .order("privada");
+
+    if (error) {
+
+        console.error(error);
+
+        throw error;
+
+    }
+
+    return [
+
+        ...new Set(
+
+            data.map(
+
+                x => x.privada
+
+            )
+
+        )
+
+    ];
+
+}
+
+
+/* ==========================================================
+   OBTENER LOTES
+========================================================== */
+
+async function obtenerLotes(privada) {
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+
+        .from("lotes")
+
+        .select(`
+            id,
+            lote,
+            registrado
+        `)
+
+        .eq(
+            "privada",
+            privada
+        )
+
+        .order(
+            "lote"
+        );
+
+    if (error) {
+
+        console.error(error);
+
+        throw error;
+
+    }
+
+    return data;
+
+}
+
+
+/* ==========================================================
+   ABRIR OBRA
+========================================================== */
+
+async function abrirObra(idExpediente) {
 
     console.log(
-        "Workflow.abrirProcedimiento()",
-        idProcedimiento
+        "Workflow.abrirObra()",
+        idExpediente
     );
 
     const {
         data,
         error
     } = await supabaseClient.rpc(
+
         "obtener_expediente",
+
         {
-            p_expediente_id: idProcedimiento
+
+            p_expediente_id:
+                idExpediente
+
         }
+
     );
 
     if (error) {
+
         console.error(error);
+
         throw error;
+
     }
 
-    console.log("RPC obtener_expediente:", data);
-
     const expediente =
+
         Array.isArray(data)
+
             ? data[0]
+
             : data;
 
     if (!expediente)
-        throw new Error("El expediente no existe.");
+
+        throw new Error(
+
+            "Expediente inexistente."
+
+        );
 
     return {
 
-        id: expediente.id,
+        id:
+            expediente.id,
 
-        numero: expediente.folio,
+        folio:
+            expediente.folio,
 
-        nombre: expediente.titulo,
+        titulo:
+            expediente.titulo,
 
-        estado: expediente.estado,
+        estado:
+            expediente.estado,
 
-        tipo: expediente.tipo,
+        tipo:
+            expediente.tipo,
 
-        clasificacion: expediente.clasificacion,
+        avance:
+            expediente.porcentaje_avance ?? 0,
 
-        avance: 0,
+        etapa:
+            expediente.fase ?? "",
 
-        totalActuaciones: 0,
-
-        actuacionesCompletadas: 0
+        expediente
 
     };
 
 }
 
+
+/* ==========================================================
+   CREAR OBRA
+
+   (Temporal)
+
+========================================================== */
+
+async function crearObra({
+
+    privada,
+
+    lote,
+
+    tipo
+
+}){
+
+    console.log(
+
+        "Nueva obra",
+
+        privada,
+
+        lote,
+
+        tipo
+
+    );
+
+    /*
+       FRONT-006
+
+       Sustituir por:
+
+       rpc(
+          crear_expediente_obra
+       );
+
+    */
+
+    return true;
+
+}
+
+
 /* ==========================================================
    ACTUACIÓN
 ========================================================== */
 
-async function abrirActuacion(idActuacion) {
+async function abrirActuacion(idActuacion){
 
     return Store.obtenerActuacion(
 
@@ -96,4 +253,9 @@ async function abrirActuacion(idActuacion) {
 }
 
 
-window.Workflow = Workflow;
+/* ==========================================================
+   EXPORTACIÓN
+========================================================== */
+
+window.Workflow =
+    Workflow;
