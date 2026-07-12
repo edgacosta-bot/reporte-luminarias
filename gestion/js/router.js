@@ -158,6 +158,14 @@ async function mostrarCentroTrabajo(idActuacion = null) {
 
 }
 
+function mostrarNuevoExpediente() {
+
+    cambiarVista("nuevo-expediente");
+
+    NuevoExpediente.render();
+
+}
+
 /* ==========================================================
    MÓDULOS
 ========================================================== */
@@ -202,4 +210,4 @@ function mostrarModulo(nombreModulo) {
 
     `;
 
-}
+ 
