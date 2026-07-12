@@ -2,17 +2,14 @@
 
 /* ==========================================================
    SIGE
-   Sistema Integral de Gestión de Expedientes
+   Sistema Integral de Gestión Institucional
 
    Archivo:
    js/router.js
 
-   Versión:
-   5.0.0
-
    Responsabilidad:
 
-   Administrar la navegación entre componentes.
+   Administrar la navegación del Front.
 
 ========================================================== */
 
@@ -22,20 +19,17 @@ const Router = {
 
     mostrarDashboard,
 
-    mostrarListaProcedimientos,
+    mostrarBandejaObras,
 
-    mostrarNuevoExpediente,
+    mostrarNuevaObra,
 
     mostrarEscritorio,
 
     mostrarCentroTrabajo,
 
-    mostrarModulo,
-
     actualizarBotonRegresar
 
 };
-
 
 /* ==========================================================
    INICIALIZACIÓN
@@ -46,7 +40,6 @@ function inicializarRouter() {
     console.log("✓ Router inicializado.");
 
 }
-
 
 /* ==========================================================
    CAMBIO DE VISTA
@@ -60,7 +53,6 @@ function cambiarVista(vista) {
 
 }
 
-
 /* ==========================================================
    BOTÓN REGRESAR
 ========================================================== */
@@ -68,7 +60,9 @@ function cambiarVista(vista) {
 function actualizarBotonRegresar() {
 
     const boton =
-        document.getElementById("btnRegresar");
+        document.getElementById(
+            "btnRegresar"
+        );
 
     if (!boton)
         return;
@@ -80,7 +74,6 @@ function actualizarBotonRegresar() {
 
 }
 
-
 /* ==========================================================
    DASHBOARD
 ========================================================== */
@@ -89,77 +82,57 @@ function mostrarDashboard() {
 
     cambiarVista("dashboard");
 
-    construirDashboard();
+    Dashboard.render();
 
 }
 
-
 /* ==========================================================
-   LISTA DE EXPEDIENTES
+   BANDEJA DE OBRAS
 ========================================================== */
 
-function mostrarListaProcedimientos(
-    claveProcedimiento = null
-) {
+function mostrarBandejaObras() {
 
-    cambiarVista("procedimientos");
+    cambiarVista("obras");
 
-    ListaProcedimientos.render(
-        claveProcedimiento
-    );
+    Obras.render();
 
 }
 
-
 /* ==========================================================
-   NUEVO EXPEDIENTE
+   NUEVA OBRA
 ========================================================== */
 
-function mostrarNuevoExpediente() {
+function mostrarNuevaObra() {
 
-    cambiarVista("nuevo-expediente");
+    cambiarVista("nueva-obra");
 
-    if (
-        typeof NuevoExpediente !== "undefined"
-    ) {
-
-        NuevoExpediente.render();
-
-        return;
-
-    }
-
-    console.warn(
-        "NuevoExpediente aún no está disponible."
-    );
+    NuevaObra.render();
 
 }
 
-
 /* ==========================================================
-   ESCRITORIO DEL EXPEDIENTE
+   ESCRITORIO
 ========================================================== */
 
 async function mostrarEscritorio(
     idExpediente = null
 ) {
 
-    cambiarVista("procedimiento");
+    cambiarVista("escritorio");
 
     const expediente =
-        await Workflow.abrirProcedimiento(
+        await Workflow.abrirObra(
             idExpediente
         );
 
     SIGE_STATE.expedienteActual =
         expediente;
 
-    EscritorioExpediente.render(
+    EscritorioObra.render(
         expediente
     );
 
 }
-
 
 /* ==========================================================
    CENTRO DE TRABAJO
@@ -169,7 +142,9 @@ async function mostrarCentroTrabajo(
     idActuacion = null
 ) {
 
-    cambiarVista("centro-trabajo");
+    cambiarVista(
+        "centro-trabajo"
+    );
 
     const actuacion =
         await Workflow.abrirActuacion(
@@ -182,49 +157,8 @@ async function mostrarCentroTrabajo(
 
 }
 
-
 /* ==========================================================
-   MÓDULOS
+   EXPORTACIÓN
 ========================================================== */
 
-function mostrarModulo(nombreModulo) {
-
-    cambiarVista(nombreModulo);
-
-    const workspace =
-        document.getElementById("workspace");
-
-    if (!workspace)
-        return;
-
-    workspace.innerHTML = `
-
-        <div class="card">
-
-            <div class="card-title">
-
-                ${nombreModulo}
-
-            </div>
-
-            <div class="card-subtitle">
-
-                Módulo en construcción.
-
-            </div>
-
-            <br>
-
-            <button
-                class="btn btn-primary"
-                onclick="Router.mostrarDashboard()">
-
-                Regresar
-
-            </button>
-
-        </div>
-
-    `;
-
-}
+window.Router = Router;
