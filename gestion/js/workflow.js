@@ -113,7 +113,7 @@ async function obtenerLotes(privada) {
 
 
 /* ==========================================================
-   ABRIR OBRA
+   ABRIR EXPEDIENTE
 ========================================================== */
 
 async function abrirObra(idExpediente) {
@@ -123,12 +123,20 @@ async function abrirObra(idExpediente) {
         idExpediente
     );
 
+    if (!idExpediente) {
+
+        throw new Error(
+            "No se recibió el identificador del expediente."
+        );
+
+    }
+
     const {
         data,
         error
     } = await supabaseClient.rpc(
 
-        "obtener_expediente",
+        "obtener_escritorio_expediente",
 
         {
 
@@ -147,48 +155,20 @@ async function abrirObra(idExpediente) {
 
     }
 
-    const expediente =
-
-        Array.isArray(data)
-
-            ? data[0]
-
-            : data;
-
-    if (!expediente)
+    if (!data) {
 
         throw new Error(
-
-            "Expediente inexistente."
-
+            "El expediente no existe."
         );
 
-    return {
+    }
 
-        id:
-            expediente.id,
+    console.log(
+        "Expediente recibido:",
+        data
+    );
 
-        folio:
-            expediente.folio,
-
-        titulo:
-            expediente.titulo,
-
-        estado:
-            expediente.estado,
-
-        tipo:
-            expediente.tipo,
-
-        avance:
-            expediente.porcentaje_avance ?? 0,
-
-        etapa:
-            expediente.fase ?? "",
-
-        expediente
-
-    };
+    return data;
 
 }
 
