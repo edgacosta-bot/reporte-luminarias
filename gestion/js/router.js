@@ -21,6 +21,8 @@ const Router = {
 
     mostrarBandejaObras,
 
+    mostrarNuevoExpediente,
+
     mostrarNuevaObra,
 
     mostrarEscritorio,
@@ -95,6 +97,18 @@ function mostrarBandejaObras() {
     cambiarVista("obras");
 
     Obras.render();
+
+}
+
+/* ==========================================================
+   NUEVO EXPEDIENTE
+========================================================== */
+
+function mostrarNuevoExpediente() {
+
+    cambiarVista("nuevo-expediente");
+
+    NuevoExpediente.render();
 
 }
 
