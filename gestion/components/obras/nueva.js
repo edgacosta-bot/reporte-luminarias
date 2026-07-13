@@ -93,56 +93,41 @@ async function render(){
 
                 <div class="form-group">
 
-                  <div class="form-group">
+                    <label>
 
-    <label>
+                        Privada
 
-        Privada
+                    </label>
 
-    </label>
-
-    <select
-        id="cmbPrivada"
-        class="input">
-
-        <option value="">
-
-            Cargando...
-
-        </option>
-
-    </select>
-
-</div>
-
-<div class="form-group">
-
-    <label>
-
-        Lote
-
-    </label>
-
-    <select
-        id="cmbLote"
-        class="input">
-
-        <option value="">
-
-            Seleccione una privada...
-
-        </option>
-
-    </select>
-
-</div>
-                    
-                        
+                    <select
+                        id="cmbPrivada"
                         class="input">
 
                         <option value="">
 
-                            Cargando...
+                            Seleccione...
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+
+                        Lote
+
+                    </label>
+
+                    <select
+                        id="cmbLote"
+                        class="input">
+
+                        <option value="">
+
+                            Seleccione una privada...
 
                         </option>
 
@@ -194,8 +179,7 @@ async function render(){
 
                     <label>
 
-                        Director Responsable
-                        de Obra
+                        Director Responsable de Obra
 
                     </label>
 
@@ -225,8 +209,7 @@ async function render(){
 
                     <label>
 
-                        Fecha estimada
-                        de término
+                        Fecha estimada de término
 
                     </label>
 
@@ -269,40 +252,34 @@ async function render(){
     `;
 
     document
-        .getElementById(
-            "btnCancelarNuevaObra"
-        )
+        .getElementById("btnCancelarNuevaObra")
         .addEventListener(
             "click",
             cancelar
         );
 
     document
-        .getElementById(
-            "btnCancelar2"
-        )
+        .getElementById("btnCancelar2")
         .addEventListener(
             "click",
             cancelar
         );
 
     document
-        .getElementById(
-            "btnGuardarObra"
-        )
+        .getElementById("btnGuardarObra")
         .addEventListener(
             "click",
             guardar
         );
 
-   await cargarPrivadas();
+    await cargarPrivadas();
 
-document
-    .getElementById("cmbPrivada")
-    .addEventListener(
-        "change",
-        cargarLotes
-    );
+    document
+        .getElementById("cmbPrivada")
+        .addEventListener(
+            "change",
+            cargarLotes
+        );
 
 }
 
