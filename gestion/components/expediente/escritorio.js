@@ -50,34 +50,41 @@ const EscritorioExpediente = {
 
 
 
+
 /* ==========================================================
    RENDER PRINCIPAL
 ========================================================== */
 
-function render(expediente = {}) {
+function render(data = {}) {
+
+    console.log(
+        "EscritorioExpediente.render()",
+        data
+    );
 
     const workspace =
-        document.getElementById("workspace");
+        document.getElementById(
+            "workspace"
+        );
 
     if (!workspace)
         return;
 
     workspace.innerHTML = `
 
-        ${renderHeader(expediente)}
+        ${renderHeader(data)}
 
-        ${renderResumen(expediente)}
+        ${renderResumen(data)}
 
-        ${renderActuaciones(expediente)}
+        ${renderActuaciones(data)}
 
-        ${renderBitacora(expediente)}
+        ${renderBitacora(data)}
 
-        ${renderAcciones(expediente)}
+        ${renderAcciones(data)}
 
     `;
 
 }
-
 
 
 /* ==========================================================
@@ -87,23 +94,13 @@ function render(expediente = {}) {
 function renderHeader(data) {
 
     const expediente =
-        data?.expediente ?? {};
+        data.expediente ?? {};
 
     const obra =
-        data?.obra ?? {};
+        data.obra ?? {};
 
-    const fase =
-        expediente.fase_actual_nombre ??
-        expediente.fase ??
-        "Sin fase";
-
-    const titulo =
-        expediente.titulo ??
-        "Sin título";
-
-    const folio =
-        expediente.folio ??
-        "Sin folio";
+    const resumen =
+        data.resumen ?? {};
 
     return `
 
@@ -121,13 +118,13 @@ function renderHeader(data) {
 
                     <div class="card-title">
 
-                        ${folio}
+                        ${expediente.folio ?? "-"}
 
                     </div>
 
                     <div class="card-subtitle">
 
-                        ${titulo}
+                        ${expediente.titulo ?? "-"}
 
                     </div>
 
@@ -137,7 +134,7 @@ function renderHeader(data) {
 
                     <span class="badge badge-warning">
 
-                        ${fase}
+                        ${resumen.fase_actual ?? "-"}
 
                     </span>
 
@@ -147,23 +144,23 @@ function renderHeader(data) {
 
             <div
                 style="
-                    margin-top:20px;
+                    margin-top:22px;
                     display:grid;
-                    grid-template-columns:repeat(3,1fr);
-                    gap:16px;
+                    grid-template-columns:repeat(4,1fr);
+                    gap:18px;
                 ">
 
                 <div>
 
                     <strong>
 
-                        Tipo de obra
+                        Privada
 
                     </strong>
 
                     <br>
 
-                    ${obra.tipo_obra ?? "-"}
+                    ${obra.privada ?? "-"}
 
                 </div>
 
@@ -177,7 +174,7 @@ function renderHeader(data) {
 
                     <br>
 
-                    ${obra.privada ?? "-"}-${obra.lote ?? "-"}
+                    ${obra.lote ?? "-"}
 
                 </div>
 
@@ -185,13 +182,27 @@ function renderHeader(data) {
 
                     <strong>
 
-                        Folio
+                        Tipo
 
                     </strong>
 
                     <br>
 
-                    ${folio}
+                    ${obra.tipo_obra ?? "-"}
+
+                </div>
+
+                <div>
+
+                    <strong>
+
+                        Estado
+
+                    </strong>
+
+                    <br>
+
+                    ${expediente.estado ?? "-"}
 
                 </div>
 
@@ -202,16 +213,22 @@ function renderHeader(data) {
     `;
 
 }
-
 /* ==========================================================
    RESUMEN DEL EXPEDIENTE
 ========================================================== */
 
-function renderResumen(expediente) {
+function renderResumen(data) {
+
+    const resumen =
+        data.resumen ?? {};
 
     return `
 
-        <div class="grid grid-3">
+        <div
+            class="grid grid-4"
+            style="
+                margin-top:20px;
+            ">
 
             <div class="card">
 
@@ -223,13 +240,13 @@ function renderResumen(expediente) {
 
                 <div class="kpi-number">
 
-                    ${expediente.avance ?? "68"}%
+                    ${resumen.porcentaje_avance ?? 0}%
 
                 </div>
 
                 <div class="kpi-label">
 
-                    Procedimiento
+                    del procedimiento
 
                 </div>
 
@@ -245,13 +262,13 @@ function renderResumen(expediente) {
 
                 <div class="kpi-number">
 
-                    ${expediente.totalActuaciones ?? "6"}
+                    ${resumen.actuaciones_totales ?? 0}
 
                 </div>
 
                 <div class="kpi-label">
 
-                    Definidas
+                    Totales
 
                 </div>
 
@@ -261,19 +278,41 @@ function renderResumen(expediente) {
 
                 <div class="card-title">
 
-                    Concluidas
+                    Completadas
 
                 </div>
 
                 <div class="kpi-number">
 
-                    ${expediente.actuacionesCompletadas ?? "3"}
+                    ${resumen.actuaciones_completadas ?? 0}
 
                 </div>
 
                 <div class="kpi-label">
 
-                    Terminadas
+                    Concluidas
+
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-title">
+
+                    Pendientes
+
+                </div>
+
+                <div class="kpi-number">
+
+                    ${resumen.actuaciones_pendientes ?? 0}
+
+                </div>
+
+                <div class="kpi-label">
+
+                    Por atender
 
                 </div>
 
