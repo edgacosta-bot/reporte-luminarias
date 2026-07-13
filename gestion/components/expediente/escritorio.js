@@ -84,35 +84,116 @@ function render(expediente = {}) {
    ENCABEZADO
 ========================================================== */
 
-function renderHeader(expediente) {
+function renderHeader(data) {
+
+    const expediente =
+        data?.expediente ?? {};
+
+    const obra =
+        data?.obra ?? {};
+
+    const fase =
+        expediente.fase_actual_nombre ??
+        expediente.fase ??
+        "Sin fase";
+
+    const titulo =
+        expediente.titulo ??
+        "Sin título";
+
+    const folio =
+        expediente.folio ??
+        "Sin folio";
 
     return `
 
         <div class="card">
 
-            <div class="card-title">
+            <div
+                style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:flex-start;
+                    gap:24px;
+                ">
 
-                Expediente
+                <div>
 
-                ${expediente.numero ?? "O-2026-001"}
+                    <div class="card-title">
+
+                        ${folio}
+
+                    </div>
+
+                    <div class="card-subtitle">
+
+                        ${titulo}
+
+                    </div>
+
+                </div>
+
+                <div>
+
+                    <span class="badge badge-warning">
+
+                        ${fase}
+
+                    </span>
+
+                </div>
 
             </div>
 
-            <div class="card-subtitle">
+            <div
+                style="
+                    margin-top:20px;
+                    display:grid;
+                    grid-template-columns:repeat(3,1fr);
+                    gap:16px;
+                ">
 
-                ${expediente.nombre
-                    ??
-                    "Construcción de vivienda"}
+                <div>
 
-                <br><br>
+                    <strong>
 
-                Estado actual
+                        Tipo de obra
 
-                <span class="badge badge-warning">
+                    </strong>
 
-                    Revisión Mesa Directiva
+                    <br>
 
-                </span>
+                    ${obra.tipo_obra ?? "-"}
+
+                </div>
+
+                <div>
+
+                    <strong>
+
+                        Lote
+
+                    </strong>
+
+                    <br>
+
+                    ${obra.privada ?? "-"}-${obra.lote ?? "-"}
+
+                </div>
+
+                <div>
+
+                    <strong>
+
+                        Folio
+
+                    </strong>
+
+                    <br>
+
+                    ${folio}
+
+                </div>
 
             </div>
 
