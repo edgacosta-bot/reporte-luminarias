@@ -226,13 +226,39 @@ function seleccionarProcedimiento(tipo){
         tipo
     );
 
-    // FRONT-006
-    // Aquí se invocará:
-    //
-    // Workflow.crearExpediente(tipo);
+    switch(tipo){
+
+        case "OBR":
+
+            Router.mostrarNuevaObra();
+
+            break;
+
+        case "INV":
+
+            alert(
+                "El módulo Proyecto de Inversión estará disponible próximamente."
+            );
+
+            break;
+
+        case "CON":
+
+            alert(
+                "El módulo Contratación de Servicios estará disponible próximamente."
+            );
+
+            break;
+
+        default:
+
+            alert(
+                "Procedimiento no implementado."
+            );
+
+    }
 
 }
-
 /* ==========================================================
    EXPORTACIÓN
 ========================================================== */
