@@ -26,6 +26,8 @@ const NuevaObra = {
 
     cancelar,
 
+    cargarPrivadas,
+
     cargarLotes
 
 };
@@ -91,14 +93,51 @@ async function render(){
 
                 <div class="form-group">
 
-                    <label>
+                  <div class="form-group">
 
-                        Lote
+    <label>
 
-                    </label>
+        Privada
 
-                    <select
-                        id="cmbLote"
+    </label>
+
+    <select
+        id="cmbPrivada"
+        class="input">
+
+        <option value="">
+
+            Cargando...
+
+        </option>
+
+    </select>
+
+</div>
+
+<div class="form-group">
+
+    <label>
+
+        Lote
+
+    </label>
+
+    <select
+        id="cmbLote"
+        class="input">
+
+        <option value="">
+
+            Seleccione una privada...
+
+        </option>
+
+    </select>
+
+</div>
+                    
+                        
                         class="input">
 
                         <option value="">
@@ -256,7 +295,76 @@ async function render(){
             guardar
         );
 
-    await cargarLotes();
+   await cargarPrivadas();
+
+document
+    .getElementById("cmbPrivada")
+    .addEventListener(
+        "change",
+        cargarLotes
+    );
+
+}
+
+/* ==========================================================
+   CARGAR PRIVADAS
+========================================================== */
+
+async function cargarPrivadas(){
+
+    const combo =
+        document.getElementById(
+            "cmbPrivada"
+        );
+
+    combo.innerHTML = "";
+
+    const opcion =
+        document.createElement(
+            "option"
+        );
+
+    opcion.value = "";
+
+    opcion.textContent =
+        "Seleccione...";
+
+    combo.appendChild(opcion);
+
+    try{
+
+        const privadas =
+
+            await Workflow.obtenerPrivadas();
+
+        privadas.forEach(
+
+            privada=>{
+
+                const op =
+                    document.createElement(
+                        "option"
+                    );
+
+                op.value =
+                    privada;
+
+                op.textContent =
+                    `Privada ${privada}`;
+
+                combo.appendChild(op);
+
+            }
+
+        );
+
+    }
+
+    catch(ex){
+
+        console.error(ex);
+
+    }
 
 }
 
@@ -266,77 +374,73 @@ async function render(){
 
 async function cargarLotes(){
 
+    const privada =
+        document
+            .getElementById(
+                "cmbPrivada"
+            )
+            .value;
+
     const combo =
-        document.getElementById("cmbLote");
+        document.getElementById(
+            "cmbLote"
+        );
 
     combo.innerHTML = "";
 
     const opcion =
-        document.createElement("option");
+        document.createElement(
+            "option"
+        );
 
-    opcion.value="";
+    opcion.value = "";
 
-    opcion.textContent="Seleccione...";
+    opcion.textContent =
+        privada
+            ? "Seleccione..."
+            : "Seleccione una privada...";
 
     combo.appendChild(opcion);
 
-    const {
-
-        data,
-
-        error
-
-    } = await supabaseClient
-
-        .from("lotes")
-
-        .select(`
-            id,
-            privada,
-            lote,
-            registrado
-        `)
-
-        .eq(
-            "registrado",
-            true
-        )
-
-        .order(
-            "privada"
-        )
-
-        .order(
-            "lote"
-        );
-
-    if(error){
-
-        console.error(error);
-
+    if(!privada)
         return;
+
+    try{
+
+        const lotes =
+
+            await Workflow.obtenerLotes(
+                privada
+            );
+
+        lotes.forEach(
+
+            lote=>{
+
+                const op =
+                    document.createElement(
+                        "option"
+                    );
+
+                op.value =
+                    lote.id;
+
+                op.textContent =
+                    `Lote ${lote.lote}`;
+
+                combo.appendChild(op);
+
+            }
+
+        );
 
     }
 
-    data.forEach(
+    catch(ex){
 
-        lote=>{
+        console.error(ex);
 
-            const op =
-                document.createElement(
-                    "option"
-                );
-
-            op.value=lote.id;
-
-            op.textContent=
-                `Privada ${lote.privada} · Lote ${lote.lote}`;
-
-            combo.appendChild(op);
-
-        }
-
-    );
+    }
 
 }
 
