@@ -99,14 +99,54 @@ function render() {
 
         </div>
 
+        <div
+            class="card"
+            style="
+                margin-top:24px;
+                border:2px dashed #8B0000;
+            ">
+
+            <div class="card-title">
+
+                🛠 Modo Desarrollo
+
+            </div>
+
+            <div class="card-subtitle">
+
+                Accesos temporales para desarrollo.
+
+                <br>
+
+                Eliminar antes de producción.
+
+            </div>
+
+            <div
+                style="
+                    margin-top:20px;
+                ">
+
+                <button
+                    id="btnAbrirExpedienteDemo"
+                    class="btn btn-primary">
+
+                    Abrir expediente de prueba
+
+                </button>
+
+            </div>
+
+        </div>
+
     `;
 
     document
-    .getElementById("modulo-obras")
-    .addEventListener(
-        "click",
-        Router.mostrarNuevoExpediente
-    );
+        .getElementById("modulo-obras")
+        .addEventListener(
+            "click",
+            Router.mostrarNuevoExpediente
+        );
 
     document
         .getElementById("modulo-inversiones")
@@ -129,6 +169,23 @@ function render() {
 
                 mostrarProximamente(
                     "Contratación de Servicios"
+                );
+
+            }
+        );
+
+    document
+        .getElementById(
+            "btnAbrirExpedienteDemo"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                Router.mostrarEscritorio(
+
+                    "dcd84b93-0790-49ab-ada2-13c5d9ef083a"
+
                 );
 
             }
