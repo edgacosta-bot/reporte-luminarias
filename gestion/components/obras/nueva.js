@@ -413,6 +413,9 @@ async function cargarLotes(){
                 privada
             );
 
+         console.log("Privada seleccionada:", privada);
+         console.log("Lotes recibidos:", lotes);
+
         lotes.forEach(
 
             lote=>{
