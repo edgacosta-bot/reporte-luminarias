@@ -12,6 +12,10 @@
    Mostrar la pantalla principal de
    Gestión Institucional.
 
+   Desde esta pantalla el usuario
+   selecciona el proceso administrativo
+   con el que desea trabajar.
+
 ========================================================== */
 
 const Dashboard = {
@@ -48,7 +52,7 @@ function render() {
 
             <div class="card-subtitle">
 
-                Seleccione el módulo con el que desea trabajar.
+                Seleccione el proceso administrativo que desea gestionar.
 
             </div>
 
@@ -67,7 +71,7 @@ function render() {
 
                 "Obras Particulares",
 
-                "Administración integral de obras particulares.",
+                "Administración de expedientes de obras particulares.",
 
                 "obras"
 
@@ -75,11 +79,11 @@ function render() {
 
             ${renderModulo(
 
-                "💰",
+                "🏛",
 
                 "Proyectos de Inversión",
 
-                "Adquisición de bienes e inversión institucional.",
+                "Administración de proyectos de inversión institucional.",
 
                 "inversiones"
 
@@ -87,11 +91,11 @@ function render() {
 
             ${renderModulo(
 
-                "🤝",
+                "📄",
 
                 "Contratación de Servicios",
 
-                "Administración de contratos de prestación de servicios.",
+                "Administración de expedientes para contratación de servicios.",
 
                 "servicios"
 
@@ -99,57 +103,33 @@ function render() {
 
         </div>
 
-        <div
-            class="card"
-            style="
-                margin-top:24px;
-                border:2px dashed #8B0000;
-            ">
-
-            <div class="card-title">
-
-                🛠 Modo Desarrollo
-
-            </div>
-
-            <div class="card-subtitle">
-
-                Accesos temporales para desarrollo.
-
-                <br>
-
-                Eliminar antes de producción.
-
-            </div>
-
-            <div
-                style="
-                    margin-top:20px;
-                ">
-
-                <button
-                    id="btnAbrirExpedienteDemo"
-                    class="btn btn-primary">
-
-                    Abrir expediente de prueba
-
-                </button>
-
-            </div>
-
-        </div>
+        ${renderModoDesarrollo()}
 
     `;
 
+    registrarEventos();
+
+}
+
+/* ==========================================================
+   EVENTOS
+========================================================== */
+
+function registrarEventos() {
+
     document
-        .getElementById("modulo-obras")
+        .getElementById(
+            "modulo-obras"
+        )
         .addEventListener(
             "click",
-            Router.mostrarNuevoExpediente
+            Router.mostrarBandejaObras
         );
 
     document
-        .getElementById("modulo-inversiones")
+        .getElementById(
+            "modulo-inversiones"
+        )
         .addEventListener(
             "click",
             () => {
@@ -162,7 +142,9 @@ function render() {
         );
 
     document
-        .getElementById("modulo-servicios")
+        .getElementById(
+            "modulo-servicios"
+        )
         .addEventListener(
             "click",
             () => {
@@ -174,11 +156,14 @@ function render() {
             }
         );
 
-    document
-        .getElementById(
+    const botonDemo =
+        document.getElementById(
             "btnAbrirExpedienteDemo"
-        )
-        .addEventListener(
+        );
+
+    if (botonDemo) {
+
+        botonDemo.addEventListener(
             "click",
             () => {
 
@@ -191,10 +176,12 @@ function render() {
             }
         );
 
+    }
+
 }
 
 /* ==========================================================
-   TARJETA
+   TARJETA DE PROCESO
 ========================================================== */
 
 function renderModulo(
@@ -207,7 +194,7 @@ function renderModulo(
 
     id
 
-){
+) {
 
     return `
 
@@ -222,15 +209,15 @@ function renderModulo(
             <div
                 style="
                     display:flex;
-                    gap:18px;
                     align-items:center;
+                    gap:18px;
                 ">
 
                 <div
                     style="
-                        font-size:44px;
-                        width:70px;
+                        width:72px;
                         text-align:center;
+                        font-size:44px;
                     ">
 
                     ${icono}
@@ -284,17 +271,70 @@ function renderModulo(
 }
 
 /* ==========================================================
+   MODO DESARROLLO
+
+   Eliminar antes de liberar la versión
+   de producción.
+========================================================== */
+
+function renderModoDesarrollo() {
+
+    return `
+
+        <div
+            class="card"
+            style="
+                margin-top:28px;
+                border:2px dashed #8B0000;
+            ">
+
+            <div class="card-title">
+
+                🛠 Modo Desarrollo
+
+            </div>
+
+            <div class="card-subtitle">
+
+                Accesos temporales para pruebas internas.
+
+            </div>
+
+            <div
+                style="
+                    margin-top:20px;
+                ">
+
+                <button
+                    id="btnAbrirExpedienteDemo"
+                    class="btn btn-primary">
+
+                    Abrir expediente de prueba
+
+                </button>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+/* ==========================================================
    PRÓXIMAMENTE
 ========================================================== */
 
-async function mostrarProximamente(nombre){
+async function mostrarProximamente(
+    nombre
+) {
 
     await mostrarAlerta({
 
         titulo: nombre,
 
         mensaje:
-            "Este módulo será habilitado en una siguiente etapa."
+            "Este proceso administrativo estará disponible en una siguiente etapa."
 
     });
 
