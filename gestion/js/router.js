@@ -19,7 +19,7 @@ const Router = {
 
     mostrarDashboard,
 
-    mostrarListaProcedimientos,
+    mostrarBandejaObras,
 
     mostrarNuevoExpediente,
 
@@ -29,11 +29,10 @@ const Router = {
 
     mostrarCentroTrabajo,
 
-    mostrarModulo,
-
     actualizarBotonRegresar
 
 };
+
 /* ==========================================================
    INICIALIZACIÓN
 ========================================================== */
@@ -125,9 +124,9 @@ async function mostrarEscritorio(
     cambiarVista("escritorio");
 
     const expediente =
-        await Workflow.abrirProcedimiento(
-            idExpediente
-        );
+    await Workflow.abrirObra(
+        idExpediente
+    );
 
     SIGE_STATE.expedienteActual =
         expediente;
