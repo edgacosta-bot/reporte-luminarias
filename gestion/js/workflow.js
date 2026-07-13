@@ -72,32 +72,28 @@ async function obtenerPrivadas() {
 
 
 /* ==========================================================
-   OBTENER LOTES
+   OBTENER LOTES DISPONIBLES
 ========================================================== */
 
 async function obtenerLotes(privada) {
 
     const {
+
         data,
+
         error
-    } = await supabaseClient
 
-        .from("lotes")
+    } = await supabaseClient.rpc(
 
-        .select(`
-            id,
-            lote,
-            registrado
-        `)
+        "obtener_lotes_disponibles",
 
-        .eq(
-            "privada",
-            privada
-        )
+        {
 
-        .order(
-            "lote"
-        );
+            p_privada: privada
+
+        }
+
+    );
 
     if (error) {
 
@@ -110,7 +106,6 @@ async function obtenerLotes(privada) {
     return data;
 
 }
-
 
 /* ==========================================================
    ABRIR EXPEDIENTE
