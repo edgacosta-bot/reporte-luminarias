@@ -21,8 +21,6 @@ const Router = {
 
     mostrarBandejaObras,
 
-    mostrarNuevoExpediente,
-
     mostrarNuevaObra,
 
     mostrarEscritorio,
