@@ -102,11 +102,11 @@ function render() {
     `;
 
     document
-        .getElementById("modulo-obras")
-        .addEventListener(
-            "click",
-            Router.mostrarBandejaObras
-        );
+    .getElementById("modulo-obras")
+    .addEventListener(
+        "click",
+        Router.mostrarNuevoExpediente
+    );
 
     document
         .getElementById("modulo-inversiones")
