@@ -42,17 +42,19 @@ function render() {
 
     workspace.innerHTML = `
 
-        <div class="card">
+        <div
+            style="
+                margin-bottom:24px;
+            ">
 
-            <div class="card-title">
+            <div
+                style="
+                    font-size:30px;
+                    font-weight:700;
+                    color:var(--vino);
+                ">
 
-                Gestión Institucional
-
-            </div>
-
-            <div class="card-subtitle">
-
-                Seleccione el proceso administrativo que desea gestionar.
+                ¿Qué desea gestionar?
 
             </div>
 
@@ -60,7 +62,6 @@ function render() {
 
         <div
             style="
-                margin-top:24px;
                 display:grid;
                 gap:20px;
             ">
@@ -71,7 +72,7 @@ function render() {
 
                 "Obras Particulares",
 
-                "Administración de expedientes de obras particulares.",
+                "Gestionar expedientes.",
 
                 "obras"
 
@@ -83,7 +84,7 @@ function render() {
 
                 "Proyectos de Inversión",
 
-                "Administración de proyectos de inversión institucional.",
+                "Gestionar proyectos.",
 
                 "inversiones"
 
@@ -95,7 +96,7 @@ function render() {
 
                 "Contratación de Servicios",
 
-                "Administración de expedientes para contratación de servicios.",
+                "Gestionar expedientes.",
 
                 "servicios"
 
@@ -110,7 +111,6 @@ function render() {
     registrarEventos();
 
 }
-
 /* ==========================================================
    EVENTOS
 ========================================================== */
