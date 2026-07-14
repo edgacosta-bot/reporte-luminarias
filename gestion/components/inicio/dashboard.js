@@ -111,72 +111,53 @@ function render() {
     registrarEventos();
 
 }
-/* ==========================================================
-   EVENTOS
-========================================================== */
+
 
 function registrarEventos() {
 
-    document
-        .getElementById(
-            "modulo-obras"
-        )
-        .addEventListener(
-            "click",
-            Router.mostrarBandejaObras
+    console.log("=== registrarEventos ===");
+
+    const moduloObras =
+        document.getElementById("modulo-obras");
+
+    console.log("moduloObras:", moduloObras);
+
+    console.log("Router:", Router);
+
+    console.log(
+        "mostrarBandejaObras:",
+        Router?.mostrarBandejaObras
+    );
+
+    if (!moduloObras) {
+
+        console.error(
+            "No existe modulo-obras"
         );
 
-    document
-        .getElementById(
-            "modulo-inversiones"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                mostrarProximamente(
-                    "Proyectos de Inversión"
-                );
-
-            }
-        );
-
-    document
-        .getElementById(
-            "modulo-servicios"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                mostrarProximamente(
-                    "Contratación de Servicios"
-                );
-
-            }
-        );
-
-    const botonDemo =
-        document.getElementById(
-            "btnAbrirExpedienteDemo"
-        );
-
-    if (botonDemo) {
-
-        botonDemo.addEventListener(
-            "click",
-            () => {
-
-                Router.mostrarEscritorio(
-
-                    "dcd84b93-0790-49ab-ada2-13c5d9ef083a"
-
-                );
-
-            }
-        );
+        return;
 
     }
+
+    moduloObras.addEventListener(
+
+        "click",
+
+        () => {
+
+            console.log(
+                "CLICK SOBRE OBRAS"
+            );
+
+            Router.mostrarBandejaObras();
+
+        }
+
+    );
+
+    console.log(
+        "Listener registrado."
+    );
 
 }
 
