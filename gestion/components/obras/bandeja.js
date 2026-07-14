@@ -354,9 +354,6 @@ async function renderListaExpedientes() {
 /* ==========================================================
    REGISTRO DE EXPEDIENTE
 
-   Representación resumida de un
-   expediente dentro de la Bandeja.
-
 ========================================================== */
 
 function renderRegistroExpediente(
@@ -376,9 +373,13 @@ function renderRegistroExpediente(
                     display:flex;
                     justify-content:space-between;
                     align-items:flex-start;
+                    gap:20px;
                 ">
 
-                <div>
+                <div
+                    style="
+                        flex:1;
+                    ">
 
                     <div
                         style="
@@ -386,7 +387,7 @@ function renderRegistroExpediente(
                             color:var(--texto-secundario);
                         ">
 
-                        ${expediente.numero}
+                        ${expediente.folio}
 
                     </div>
 
@@ -398,26 +399,34 @@ function renderRegistroExpediente(
                             color:var(--vino);
                         ">
 
-                        ${expediente.asunto}
+                        ${expediente.titulo}
 
                     </div>
 
                     <div
                         style="
-                            margin-top:12px;
+                            margin-top:14px;
+                            display:flex;
+                            gap:18px;
+                            flex-wrap:wrap;
                             color:var(--texto-secundario);
                         ">
 
-                        Privada ${expediente.privada}
+                        <div>
 
-                    </div>
+                            <strong>Privada:</strong>
 
-                    <div
-                        style="
-                            color:var(--texto-secundario);
-                        ">
+                            ${expediente.privada}
 
-                        Lote ${expediente.lote}
+                        </div>
+
+                        <div>
+
+                            <strong>Lote:</strong>
+
+                            ${expediente.lote}
+
+                        </div>
 
                     </div>
 
@@ -457,41 +466,27 @@ function renderRegistroExpediente(
                 style="
                     margin:18px 0;
                     border:none;
-                    border-top:1px solid #e5e5e5;
+                    border-top:1px solid #E5E5E5;
                 ">
 
             <div
                 style="
                     display:flex;
-                    gap:24px;
+                    justify-content:space-between;
+                    align-items:center;
                     flex-wrap:wrap;
+                    gap:16px;
                 ">
 
-                <div>
+                <div
+                    style="
+                        color:var(--texto-secundario);
+                        font-size:14px;
+                    ">
 
-                    ✔
-                    ${expediente.vistosBuenos}
-                    vistos buenos
-
-                </div>
-
-                <div>
-
-                    ⚠
-                    ${expediente.observaciones}
-                    observaciones
+                    Expediente listo para revisión.
 
                 </div>
-
-            </div>
-
-            <div
-                style="
-                    margin-top:20px;
-                    display:flex;
-                    justify-content:flex-end;
-                    gap:12px;
-                ">
 
                 <button
                     class="btn btn-primary"
@@ -508,7 +503,6 @@ function renderRegistroExpediente(
     `;
 
 }
-
 
 /* ==========================================================
    CONTINÚA EN LA PARTE 3
