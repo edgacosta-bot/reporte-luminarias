@@ -298,13 +298,6 @@ function registrarEventos() {
 /* ==========================================================
    LISTA DE EXPEDIENTES
 
-   En esta versión se utilizan datos
-   temporales para construir la
-   Bandeja.
-
-   En la siguiente versión estos datos
-   serán obtenidos mediante Workflow.
-
 ========================================================== */
 
 async function renderListaExpedientes() {
@@ -317,9 +310,31 @@ async function renderListaExpedientes() {
     if (!contenedor)
         return;
 
-    const expedientes = obtenerExpedientesDemo();
-
     contenedor.innerHTML = "";
+
+    const expedientes =
+        await Workflow.obtenerExpedientes();
+
+    if (!expedientes.length) {
+
+        contenedor.innerHTML = `
+
+            <div
+                class="card"
+                style="
+                    text-align:center;
+                    color:var(--texto-secundario);
+                ">
+
+                No existen expedientes registrados.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
 
     expedientes.forEach(
 
@@ -494,74 +509,6 @@ function renderRegistroExpediente(
 
 }
 
-/* ==========================================================
-   DATOS TEMPORALES
-
-========================================================== */
-
-function obtenerExpedientesDemo() {
-
-    return [
-
-        {
-
-            id:
-                "EXP001",
-
-            numero:
-                "EXP-2026-001",
-
-            asunto:
-                "Construcción de vivienda",
-
-            privada:
-                "3",
-
-            lote:
-                "18",
-
-            etapa:
-                "APROBACIÓN",
-
-            vistosBuenos:
-                "3 de 5",
-
-            observaciones:
-                2
-
-        },
-
-        {
-
-            id:
-                "EXP002",
-
-            numero:
-                "EXP-2026-002",
-
-            asunto:
-                "Ampliación de vivienda",
-
-            privada:
-                "5",
-
-            lote:
-                "12",
-
-            etapa:
-                "EJECUCIÓN",
-
-            vistosBuenos:
-                "5 de 5",
-
-            observaciones:
-                0
-
-        }
-
-    ];
-
-}
 
 /* ==========================================================
    CONTINÚA EN LA PARTE 3
