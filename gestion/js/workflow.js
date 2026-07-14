@@ -24,10 +24,11 @@ const Workflow = {
 
     obtenerLotes,
 
+    obtenerExpedientes,
+
     crearObra
 
 };
-
 
 /* ==========================================================
    OBTENER PRIVADAS
@@ -104,6 +105,36 @@ async function obtenerLotes(privada) {
     }
 
     return data;
+
+}
+
+/* ==========================================================
+   OBTENER EXPEDIENTES
+========================================================== */
+
+async function obtenerExpedientes() {
+
+    const {
+
+        data,
+
+        error
+
+    } = await supabaseClient.rpc(
+
+        "obtener_bandeja_expedientes"
+
+    );
+
+    if (error) {
+
+        console.error(error);
+
+        throw error;
+
+    }
+
+    return data ?? [];
 
 }
 
