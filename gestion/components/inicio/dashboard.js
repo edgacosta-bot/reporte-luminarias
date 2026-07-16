@@ -108,12 +108,12 @@ function render() {
 
     `;
 
-    registrarEventos();
+    registrarEventosDashboard();
 
 }
 
 
-function registrarEventos() {
+function registrarEventosDashboard() {
 
     console.log("=== registrarEventos ===");
 
