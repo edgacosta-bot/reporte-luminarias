@@ -272,20 +272,41 @@ function renderContenido() {
 
 function registrarEventos() {
 
+    console.log("=== registrarEventos() ===");
+
     const boton =
         document.getElementById(
             "btnNuevoExpediente"
         );
 
+    console.log("Botón encontrado:", boton);
+
+    console.log("Router:", Router);
+
+    console.log(
+        "mostrarNuevoExpediente:",
+        Router?.mostrarNuevoExpediente
+    );
+
     if (boton) {
 
         boton.addEventListener(
-
             "click",
+            function () {
 
-            Router.mostrarNuevoExpediente
+                console.log("CLICK EN NUEVO EXPEDIENTE");
 
+                Router.mostrarNuevoExpediente();
+
+            }
         );
+
+        console.log("Listener registrado.");
+
+    }
+    else {
+
+        console.log("No se encontró el botón.");
 
     }
 
