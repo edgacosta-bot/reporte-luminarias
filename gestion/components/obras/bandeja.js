@@ -69,7 +69,7 @@ async function render() {
 
     `;
 
-    registrarEventos();
+    registrarEventosBandeja();
 
     await renderListaExpedientes();
 
@@ -270,7 +270,7 @@ function renderContenido() {
    EVENTOS
 ========================================================== */
 
-function registrarEventos() {
+function registrarEventosBandeja() {
 
     console.log("=== registrarEventos() ===");
 
