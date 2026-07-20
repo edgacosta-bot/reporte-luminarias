@@ -594,32 +594,28 @@ function aplicarFiltros() {
         return;
 
     const privada =
-        cmbPrivada?.value ?? "";
+        cmbPrivada ? cmbPrivada.value.trim() : "";
 
     const lote =
-        cmbLote?.value ?? "";
+        cmbLote ? cmbLote.value.trim() : "";
 
     const etapa =
-        cmbEtapa?.value ?? "";
+        cmbEtapa ? cmbEtapa.value.trim() : "";
 
     const expedientesFiltrados =
         expedientesBandeja.filter(expediente => {
 
-    actualizarContador(
-    expedientesFiltrados.length
-);       
-
             const coincidePrivada =
                 privada === "" ||
-                expediente.privada === privada;
+                String(expediente.privada).trim() === privada;
 
             const coincideLote =
                 lote === "" ||
-                String(expediente.lote) === String(lote);
+                String(expediente.lote).trim() === lote;
 
             const coincideEtapa =
                 etapa === "" ||
-                expediente.etapa === etapa;
+                String(expediente.etapa).trim() === etapa;
 
             return (
                 coincidePrivada &&
@@ -629,9 +625,13 @@ function aplicarFiltros() {
 
         });
 
+    actualizarContador(
+        expedientesFiltrados.length
+    );
+
     lista.innerHTML = "";
 
-    if (!expedientesFiltrados.length) {
+    if (expedientesFiltrados.length === 0) {
 
         lista.innerHTML = `
 
