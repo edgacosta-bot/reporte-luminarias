@@ -420,7 +420,7 @@ function renderRegistroExpediente(
                             color:var(--vino);
                         ">
 
-                        ${expediente.titulo}
+                        Privada ${expediente.privada} - Lote ${expediente.lote}
 
                     </div>
 
