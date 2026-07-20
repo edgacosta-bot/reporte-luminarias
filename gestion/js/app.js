@@ -28,6 +28,8 @@ const SIGE = {
 
     usuario: null,
 
+    contexto: null,
+
     iniciar
 
 };
@@ -52,6 +54,8 @@ async function iniciar() {
     try {
 
         await validarSesion();
+
+       await validarAutorizacion();
 
         inicializarEstado();
 
@@ -118,6 +122,34 @@ async function validarSesion() {
 
 
 /* ==========================================================
+   AUTORIZACIÓN
+========================================================== */
+
+async function validarAutorizacion() {
+
+    const { data, error } = await supabaseClient.rpc(
+        "autorizar_acceso",
+        {
+            p_funcionalidad: "GESTION_INSTITUCIONAL"
+        }
+    );
+
+    if (error)
+        throw error;
+
+    if (!data.autorizado) {
+
+        throw new Error(data.mensaje);
+
+    }
+
+    SIGE.contexto = data;
+
+    actualizarUsuario();
+
+}
+
+/* ==========================================================
    USUARIO
 ========================================================== */
 
@@ -129,10 +161,17 @@ function actualizarUsuario() {
     if (!contenedor)
         return;
 
-    const correo =
-        SIGE.usuario?.email ?? "";
+    if (SIGE.contexto?.cargo?.nombre) {
 
-    contenedor.textContent = correo;
+        contenedor.textContent =
+            SIGE.contexto.cargo.nombre;
+
+        return;
+
+    }
+
+    contenedor.textContent =
+        SIGE.usuario?.email ?? "";
 
 }
 
