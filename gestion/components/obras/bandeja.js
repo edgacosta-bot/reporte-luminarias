@@ -89,34 +89,31 @@ function renderEncabezado() {
 
     return `
 
-        <div class="card">
+        <div
+            style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                margin-bottom:24px;
+            ">
 
-            <div
-                style="
-                    display:flex;
-                    justify-content:space-between;
-                    align-items:center;
-                ">
+            <div>
 
-                <div>
+                <div class="card-title">
 
-                    <div class="card-title">
-
-                        Obras Particulares
-
-                    </div>
-
-                    <div class="card-subtitle">
-
-                        Administración de expedientes.
-
-                    </div>
+                    Expedientes de Obras
 
                 </div>
 
-                ${renderBotonNuevoExpediente()}
+                <div class="card-subtitle">
+
+                    Administrador
+
+                </div>
 
             </div>
+
+            ${renderBotonNuevoExpediente()}
 
         </div>
 
