@@ -455,6 +455,81 @@ function actualizarLotes() {
 
 }
 
+
+function aplicarFiltros() {
+
+    const cmbPrivada =
+        document.getElementById("cmbPrivada");
+
+    const cmbLote =
+        document.getElementById("cmbLote");
+
+    const privada =
+        cmbPrivada?.value ?? "";
+
+    const lote =
+        cmbLote?.value ?? "";
+
+    const expedientes =
+        expedientesBandeja.filter(expediente => {
+
+            const coincidePrivada =
+                privada === "" ||
+                expediente.privada === privada;
+
+            const coincideLote =
+                lote === "" ||
+                String(expediente.lote) === lote;
+
+            return (
+                coincidePrivada &&
+                coincideLote
+            );
+
+        });
+
+    const contenedor =
+        document.getElementById(
+            "listaExpedientes"
+        );
+
+    if (!contenedor)
+        return;
+
+    contenedor.innerHTML = "";
+
+    if (!expedientes.length) {
+
+        contenedor.innerHTML = `
+
+            <div
+                class="card"
+                style="
+                    text-align:center;
+                    color:var(--texto-secundario);
+                ">
+
+                No existen expedientes con ese filtro.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+    expedientes.forEach(expediente => {
+
+        contenedor.innerHTML +=
+            renderRegistroExpediente(
+                expediente
+            );
+
+    });
+
+}
+
 /* ==========================================================
    REGISTRO DE EXPEDIENTE
 
