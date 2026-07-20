@@ -715,33 +715,7 @@ function renderRegistroExpediente(
 
                     </div>
 
-                    <div
-                        style="
-                            margin-top:14px;
-                            display:flex;
-                            gap:18px;
-                            flex-wrap:wrap;
-                            color:var(--texto-secundario);
-                        ">
-
-                        <div>
-
-                            <strong>Privada:</strong>
-
-                            ${expediente.privada}
-
-                        </div>
-
-                        <div>
-
-                            <strong>Lote:</strong>
-
-                            ${expediente.lote}
-
-                        </div>
-
-                    </div>
-
+                   
                 </div>
 
                 <div
