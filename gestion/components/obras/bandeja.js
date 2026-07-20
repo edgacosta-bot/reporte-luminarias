@@ -154,18 +154,7 @@ function renderBotonNuevoExpediente() {
 
 function renderFiltros() {
 
-   <div
-    style="
-        font-size:22px;
-        font-weight:700;
-        margin-bottom:20px;
-    ">
-
-    Buscar obra
-
-</div> 
-   
-   return `
+    return `
 
         <div
             class="card"
@@ -175,31 +164,33 @@ function renderFiltros() {
 
             <div
                 style="
+                    font-size:22px;
+                    font-weight:700;
+                    margin-bottom:20px;
+                ">
+
+                Buscar obra
+
+            </div>
+
+            <div
+                style="
                     display:grid;
-                   grid-template-columns:
-                   1fr
-                   1fr;
+                    grid-template-columns:1fr 1fr;
                     gap:16px;
                     align-items:end;
                 ">
 
-                
                 <div>
 
-                    <label>
-
-                        Privada
-
-                    </label>
+                    <label>Privada</label>
 
                     <select
                         id="cmbPrivada"
                         class="input">
 
                         <option value="">
-
                             Todas
-
                         </option>
 
                     </select>
@@ -208,20 +199,14 @@ function renderFiltros() {
 
                 <div>
 
-                    <label>
-
-                        Lote
-
-                    </label>
+                    <label>Lote</label>
 
                     <select
                         id="cmbLote"
                         class="input">
 
                         <option value="">
-
                             Todos
-
                         </option>
 
                     </select>
@@ -235,7 +220,6 @@ function renderFiltros() {
     `;
 
 }
-
 /* ==========================================================
    CONTENIDO
 ========================================================== */
@@ -542,7 +526,7 @@ function actualizar() {
 
 function destruir() {
 
-    const workspace =e
+    const workspace =
         document.getElementById(
             "workspace"
         );
