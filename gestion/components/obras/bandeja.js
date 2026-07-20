@@ -43,6 +43,12 @@ const Obras = {
 
 };
 
+let expedientesBandeja = [];
+
+let privadaSeleccionada = "";
+
+let loteSeleccionado = "";
+
 /* ==========================================================
    RENDER
 ========================================================== */
@@ -317,8 +323,13 @@ async function renderListaExpedientes() {
 
     contenedor.innerHTML = "";
 
+    expedientesBandeja =
+    await Workflow.obtenerExpedientes();
+
     const expedientes =
-        await Workflow.obtenerExpedientes();
+    expedientesBandeja;
+
+   cargarFiltros(expedientes);
 
     if (!expedientes.length) {
 
@@ -353,6 +364,37 @@ async function renderListaExpedientes() {
         }
 
     );
+
+}
+
+
+function cargarFiltros(expedientes) {
+
+    const cmbPrivada =
+        document.getElementById("cmbPrivada");
+
+    if (!cmbPrivada)
+        return;
+
+    cmbPrivada.innerHTML =
+        `<option value="">Todas</option>`;
+
+    const privadas =
+        [...new Set(
+            expedientes.map(
+                e => e.privada
+            )
+        )].sort();
+
+    privadas.forEach(privada => {
+
+        cmbPrivada.innerHTML += `
+            <option value="${privada}">
+                ${privada}
+            </option>
+        `;
+
+    });
 
 }
 
