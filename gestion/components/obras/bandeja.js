@@ -276,6 +276,17 @@ function renderContenido() {
             ">
 
             <div
+                id="contadorExpedientes"
+                style="
+                    margin-bottom:18px;
+                    color:var(--texto-secundario);
+                    font-size:15px;
+                    font-weight:600;
+                ">
+
+            </div>
+
+            <div
                 id="listaExpedientes">
 
             </div>
@@ -283,6 +294,32 @@ function renderContenido() {
         </div>
 
     `;
+
+}
+
+function actualizarContador(total) {
+
+    const contador =
+        document.getElementById(
+            "contadorExpedientes"
+        );
+
+    if (!contador)
+        return;
+
+    if (total === 0) {
+
+        contador.textContent =
+            "No se encontraron obras.";
+
+        return;
+
+    }
+
+    contador.textContent =
+        total === 1
+            ? "1 obra encontrada"
+            : `${total} obras encontradas`;
 
 }
 
@@ -377,6 +414,10 @@ async function renderListaExpedientes() {
 
     const expedientes =
     expedientesBandeja;
+
+   actualizarContador(
+    expedientes.length
+);
 
    cargarFiltros(expedientes);
 
@@ -563,6 +604,10 @@ function aplicarFiltros() {
 
     const expedientesFiltrados =
         expedientesBandeja.filter(expediente => {
+
+    actualizarContador(
+    expedientesFiltrados.length
+);       
 
             const coincidePrivada =
                 privada === "" ||
