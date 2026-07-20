@@ -154,7 +154,18 @@ function renderBotonNuevoExpediente() {
 
 function renderFiltros() {
 
-    return `
+   <div
+    style="
+        font-size:22px;
+        font-weight:700;
+        margin-bottom:20px;
+    ">
+
+    Buscar obra
+
+</div> 
+   
+   return `
 
         <div
             class="card"
@@ -165,30 +176,14 @@ function renderFiltros() {
             <div
                 style="
                     display:grid;
-                    grid-template-columns:
-                        2fr
-                        1fr
-                        1fr;
+                   grid-template-columns:
+                   1fr
+                   1fr;
                     gap:16px;
                     align-items:end;
                 ">
 
-                <div>
-
-                    <label>
-
-                        Buscar expediente
-
-                    </label>
-
-                    <input
-                        id="txtBuscar"
-                        class="input"
-                        type="text"
-                        placeholder="Número de expediente..." />
-
-                </div>
-
+                
                 <div>
 
                     <label>
