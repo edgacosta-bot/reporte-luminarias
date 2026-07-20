@@ -182,21 +182,27 @@ function renderFiltros() {
             <div
                 style="
                     display:grid;
-                    grid-template-columns:1fr 1fr;
+                    grid-template-columns:1fr 1fr 1fr;
                     gap:16px;
                     align-items:end;
                 ">
 
                 <div>
 
-                    <label>Privada</label>
+                    <label>
+
+                        Privada
+
+                    </label>
 
                     <select
                         id="cmbPrivada"
                         class="input">
 
                         <option value="">
+
                             Todas
+
                         </option>
 
                     </select>
@@ -205,14 +211,42 @@ function renderFiltros() {
 
                 <div>
 
-                    <label>Lote</label>
+                    <label>
+
+                        Lote
+
+                    </label>
 
                     <select
                         id="cmbLote"
                         class="input">
 
                         <option value="">
+
                             Todos
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div>
+
+                    <label>
+
+                        Etapa
+
+                    </label>
+
+                    <select
+                        id="cmbEtapa"
+                        class="input">
+
+                        <option value="">
+
+                            Todas
+
                         </option>
 
                     </select>
@@ -226,6 +260,7 @@ function renderFiltros() {
     `;
 
 }
+
 /* ==========================================================
    CONTENIDO
 ========================================================== */
@@ -287,21 +322,29 @@ function registrarEventosBandeja() {
     const cmbLote =
         document.getElementById("cmbLote");
 
-    if (!cmbPrivada || !cmbLote)
+    const cmbEtapa =
+        document.getElementById("cmbEtapa");
+
+    if (!cmbPrivada || !cmbLote || !cmbEtapa)
         return;
 
     cmbPrivada.addEventListener(
-    "change",
-    () => {
+        "change",
+        () => {
 
-        actualizarLotes();
+            actualizarLotes();
 
-        aplicarFiltros();
+            aplicarFiltros();
 
-    }
-);
+        }
+    );
 
     cmbLote.addEventListener(
+        "change",
+        () => aplicarFiltros()
+    );
+
+    cmbEtapa.addEventListener(
         "change",
         () => aplicarFiltros()
     );
@@ -382,7 +425,10 @@ function cargarFiltros(expedientes) {
     const cmbLote =
         document.getElementById("cmbLote");
 
-    if (!cmbPrivada || !cmbLote)
+    const cmbEtapa =
+        document.getElementById("cmbEtapa");
+
+    if (!cmbPrivada || !cmbLote || !cmbEtapa)
         return;
 
     cmbPrivada.innerHTML =
@@ -390,6 +436,9 @@ function cargarFiltros(expedientes) {
 
     cmbLote.innerHTML =
         `<option value="">Todos</option>`;
+
+    cmbEtapa.innerHTML =
+        `<option value="">Todas</option>`;
 
     const privadas =
         [...new Set(
@@ -401,6 +450,21 @@ function cargarFiltros(expedientes) {
         cmbPrivada.innerHTML += `
             <option value="${privada}">
                 ${privada}
+            </option>
+        `;
+
+    });
+
+    const etapas =
+        [...new Set(
+            expedientes.map(e => e.etapa)
+        )].sort();
+
+    etapas.forEach(etapa => {
+
+        cmbEtapa.innerHTML += `
+            <option value="${etapa}">
+                ${etapa}
             </option>
         `;
 
@@ -479,13 +543,25 @@ function aplicarFiltros() {
     const cmbLote =
         document.getElementById("cmbLote");
 
+    const cmbEtapa =
+        document.getElementById("cmbEtapa");
+
+    const lista =
+        document.getElementById("listaExpedientes");
+
+    if (!lista)
+        return;
+
     const privada =
         cmbPrivada?.value ?? "";
 
     const lote =
         cmbLote?.value ?? "";
 
-    const expedientes =
+    const etapa =
+        cmbEtapa?.value ?? "";
+
+    const expedientesFiltrados =
         expedientesBandeja.filter(expediente => {
 
             const coincidePrivada =
@@ -494,28 +570,25 @@ function aplicarFiltros() {
 
             const coincideLote =
                 lote === "" ||
-                String(expediente.lote) === lote;
+                String(expediente.lote) === String(lote);
+
+            const coincideEtapa =
+                etapa === "" ||
+                expediente.etapa === etapa;
 
             return (
                 coincidePrivada &&
-                coincideLote
+                coincideLote &&
+                coincideEtapa
             );
 
         });
 
-    const contenedor =
-        document.getElementById(
-            "listaExpedientes"
-        );
+    lista.innerHTML = "";
 
-    if (!contenedor)
-        return;
+    if (!expedientesFiltrados.length) {
 
-    contenedor.innerHTML = "";
-
-    if (!expedientes.length) {
-
-        contenedor.innerHTML = `
+        lista.innerHTML = `
 
             <div
                 class="card"
@@ -524,7 +597,7 @@ function aplicarFiltros() {
                     color:var(--texto-secundario);
                 ">
 
-                No existen expedientes con ese filtro.
+                No se encontraron obras.
 
             </div>
 
@@ -534,9 +607,9 @@ function aplicarFiltros() {
 
     }
 
-    expedientes.forEach(expediente => {
+    expedientesFiltrados.forEach(expediente => {
 
-        contenedor.innerHTML +=
+        lista.innerHTML +=
             renderRegistroExpediente(
                 expediente
             );
