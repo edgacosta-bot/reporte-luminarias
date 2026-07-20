@@ -253,41 +253,46 @@ function registrarEventosBandeja() {
 
     console.log("=== registrarEventos() ===");
 
+    // ---------------------------------------------------------
+    // Botón Nuevo Expediente
+    // ---------------------------------------------------------
+
     const boton =
         document.getElementById(
             "btnNuevoExpediente"
         );
 
-    console.log("Botón encontrado:", boton);
-
-    console.log("Router:", Router);
-
-    console.log(
-        "mostrarNuevoExpediente:",
-        Router?.mostrarNuevoExpediente
-    );
-
     if (boton) {
 
         boton.addEventListener(
             "click",
-            function () {
-
-                console.log("CLICK EN NUEVO EXPEDIENTE");
-
-                Router.mostrarNuevoExpediente();
-
-            }
+            () => Router.mostrarNuevoExpediente()
         );
 
-        console.log("Listener registrado.");
-
     }
-    else {
 
-        console.log("No se encontró el botón.");
+    // ---------------------------------------------------------
+    // Filtros
+    // ---------------------------------------------------------
 
-    }
+    const cmbPrivada =
+        document.getElementById("cmbPrivada");
+
+    const cmbLote =
+        document.getElementById("cmbLote");
+
+    if (!cmbPrivada || !cmbLote)
+        return;
+
+    cmbPrivada.addEventListener(
+        "change",
+        () => aplicarFiltros()
+    );
+
+    cmbLote.addEventListener(
+        "change",
+        () => aplicarFiltros()
+    );
 
 }
 
