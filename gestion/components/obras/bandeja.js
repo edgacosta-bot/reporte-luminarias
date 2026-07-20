@@ -422,6 +422,10 @@ function actualizarLotes() {
     const privada =
         cmbPrivada.value;
 
+    // Recordar el lote seleccionado antes de reconstruir el combo
+    const loteAnterior =
+        cmbLote.value;
+
     cmbLote.innerHTML =
         `<option value="">Todos</option>`;
 
@@ -443,7 +447,12 @@ function actualizarLotes() {
         )]
         .sort((a, b) => Number(a) - Number(b));
 
+    let loteExiste = false;
+
     lotes.forEach(lote => {
+
+        if (String(lote) === loteAnterior)
+            loteExiste = true;
 
         cmbLote.innerHTML += `
             <option value="${lote}">
@@ -453,8 +462,14 @@ function actualizarLotes() {
 
     });
 
-}
+    // Si el lote anterior sigue existiendo, conservarlo.
+    // En caso contrario, regresar a "Todos".
+    if (loteExiste)
+        cmbLote.value = loteAnterior;
+    else
+        cmbLote.value = "";
 
+}
 
 function aplicarFiltros() {
 
