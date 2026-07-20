@@ -781,35 +781,22 @@ function renderRegistroExpediente(
                     border-top:1px solid #E5E5E5;
                 ">
 
-            <div
-                style="
-                    display:flex;
-                    justify-content:space-between;
-                    align-items:center;
-                    flex-wrap:wrap;
-                    gap:16px;
-                ">
+           <div
+    style="
+        display:flex;
+        justify-content:flex-end;
+        align-items:center;
+    ">
 
-                <div
-                    style="
-                        color:var(--texto-secundario);
-                        font-size:14px;
-                    ">
+    <button
+        class="btn btn-primary"
+        onclick="Router.mostrarEscritorio('${expediente.id}')">
 
-                    Obra en ejecución.
+        Abrir expediente
 
-                </div>
+    </button>
 
-                <button
-                    class="btn btn-primary"
-                    onclick="Router.mostrarEscritorio('${expediente.id}')">
-
-                    Abrir expediente
-
-                </button>
-
-            </div>
-
+</div>
         </div>
 
     `;
