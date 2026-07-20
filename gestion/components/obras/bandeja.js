@@ -505,7 +505,7 @@ function renderRegistroExpediente(
                         font-size:14px;
                     ">
 
-                    Expediente listo para revisión.
+                    Obra en ejecución.
 
                 </div>
 
