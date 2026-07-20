@@ -291,9 +291,15 @@ function registrarEventosBandeja() {
         return;
 
     cmbPrivada.addEventListener(
-        "change",
-        () => aplicarFiltros()
-    );
+    "change",
+    () => {
+
+        actualizarLotes();
+
+        aplicarFiltros();
+
+    }
+);
 
     cmbLote.addEventListener(
         "change",
@@ -373,17 +379,21 @@ function cargarFiltros(expedientes) {
     const cmbPrivada =
         document.getElementById("cmbPrivada");
 
-    if (!cmbPrivada)
+    const cmbLote =
+        document.getElementById("cmbLote");
+
+    if (!cmbPrivada || !cmbLote)
         return;
 
     cmbPrivada.innerHTML =
         `<option value="">Todas</option>`;
 
+    cmbLote.innerHTML =
+        `<option value="">Todos</option>`;
+
     const privadas =
         [...new Set(
-            expedientes.map(
-                e => e.privada
-            )
+            expedientes.map(e => e.privada)
         )].sort();
 
     privadas.forEach(privada => {
@@ -391,6 +401,53 @@ function cargarFiltros(expedientes) {
         cmbPrivada.innerHTML += `
             <option value="${privada}">
                 ${privada}
+            </option>
+        `;
+
+    });
+
+}
+
+function actualizarLotes() {
+
+    const cmbPrivada =
+        document.getElementById("cmbPrivada");
+
+    const cmbLote =
+        document.getElementById("cmbLote");
+
+    if (!cmbPrivada || !cmbLote)
+        return;
+
+    const privada =
+        cmbPrivada.value;
+
+    cmbLote.innerHTML =
+        `<option value="">Todos</option>`;
+
+    let expedientes =
+        expedientesBandeja;
+
+    if (privada !== "") {
+
+        expedientes =
+            expedientes.filter(
+                e => e.privada === privada
+            );
+
+    }
+
+    const lotes =
+        [...new Set(
+            expedientes.map(e => e.lote)
+        )]
+        .sort((a, b) => Number(a) - Number(b));
+
+    lotes.forEach(lote => {
+
+        cmbLote.innerHTML += `
+            <option value="${lote}">
+                ${lote}
             </option>
         `;
 
