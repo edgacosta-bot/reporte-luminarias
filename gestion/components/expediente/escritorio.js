@@ -125,7 +125,7 @@ function renderHeader(data) {
                             letter-spacing:.08em;
                          ">
 
-                        OBRA PARTICULAR
+                        PRUEBA HEADER
 
                     </div>
 
