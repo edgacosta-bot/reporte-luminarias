@@ -36,14 +36,14 @@ const NuevaObra = {
    RENDER
 ========================================================== */
 
-async function render(){
+async function render() {
 
     console.log("NuevaObra.render()");
 
     const workspace =
         document.getElementById("workspace");
 
-    if(!workspace)
+    if (!workspace)
         return;
 
     workspace.innerHTML = `
@@ -175,51 +175,6 @@ async function render(){
 
                 </div>
 
-                <div class="form-group">
-
-                    <label>
-
-                        Director Responsable de Obra
-
-                    </label>
-
-                    <input
-                        id="txtDro"
-                        class="input"
-                        maxlength="250">
-
-                </div>
-
-                <div class="form-group">
-
-                    <label>
-
-                        Fecha de inicio
-
-                    </label>
-
-                    <input
-                        id="txtFechaInicio"
-                        type="date"
-                        class="input">
-
-                </div>
-
-                <div class="form-group">
-
-                    <label>
-
-                        Fecha estimada de término
-
-                    </label>
-
-                    <input
-                        id="txtFechaFin"
-                        type="date"
-                        class="input">
-
-                </div>
-
             </div>
 
             <div
@@ -282,6 +237,7 @@ async function render(){
         );
 
 }
+
 
 /* ==========================================================
    CARGAR PRIVADAS
