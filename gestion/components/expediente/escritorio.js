@@ -70,7 +70,9 @@ function render(data = {}) {
     if (!workspace)
         return;
 
-    workspace.innerHTML = `
+   console.error("=== RENDER ESCRITORIO EJECUTÁNDOSE ==="); 
+   
+   workspace.innerHTML = `
 
         ${renderHeader(data)}
 
