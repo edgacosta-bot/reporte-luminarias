@@ -72,19 +72,23 @@ function render(data = {}) {
 
    console.error("=== RENDER ESCRITORIO EJECUTÁNDOSE ==="); 
    
-   workspace.innerHTML = `
+   const html = `
 
-        ${renderHeader(data)}
+    ${renderHeader(data)}
 
-        ${renderResumen(data)}
+    ${renderResumen(data)}
 
-        ${renderActuaciones(data)}
+    ${renderActuaciones(data)}
 
-        ${renderBitacora(data)}
+    ${renderBitacora(data)}
 
-        ${renderAcciones(data)}
+    ${renderAcciones(data)}
 
-    `;
+`;
+
+console.log(html);
+
+workspace.innerHTML = html;
 
 }
 
