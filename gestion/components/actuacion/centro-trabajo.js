@@ -73,7 +73,7 @@ function render(actuacion = {}) {
 
     workspace.innerHTML = `
 
-        ${renderHeader(actuacion)}
+        ${renderHeaderCentroTrabajo(actuacion)}
 
         ${renderEstado(actuacion)}
 
@@ -101,7 +101,7 @@ function render(actuacion = {}) {
    ENCABEZADO
 ========================================================== */
 
-function renderHeader(actuacion) {
+function renderHeaderCentroTrabajo(actuacion) {
 
     const expediente =
         actuacion.expediente
