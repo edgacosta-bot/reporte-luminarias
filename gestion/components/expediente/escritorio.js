@@ -96,6 +96,7 @@ function renderHeader(data) {
     const expediente = data.expediente ?? {};
     const obra = data.obra ?? {};
     const resumen = data.resumen ?? {};
+    const workflow = data.workflow ?? {};
 
       return `
 
@@ -139,7 +140,7 @@ function renderHeader(data) {
                             padding:8px 16px;
                           ">
 
-                        ${resumen.fase_actual ?? "APROBACIÓN"}
+                        ${expediente.fase?.nombre ?? workflow.fase_actual ?? "-"}
 
                     </span>
 
