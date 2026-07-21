@@ -104,6 +104,10 @@ function renderHeader(data) {
     const obra = data.obra ?? {};
     const resumen = data.resumen ?? {};
 
+   console.log("EXPEDIENTE:", expediente);
+   console.log("OBRA:", obra);
+   console.log("RESUMEN:", resumen);
+
     return `
 
         <div class="card">
