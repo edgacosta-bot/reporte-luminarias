@@ -153,22 +153,16 @@ async function render() {
 
                         </option>
 
-                        <option value="NUEVA">
-
-                            Obra nueva
-
+                       <option value="OBRA_NUEVA">
+                         Obra nueva
                         </option>
 
                         <option value="AMPLIACION">
-
-                            Ampliación
-
+                         Ampliación
                         </option>
 
                         <option value="REMODELACION">
-
-                            Remodelación
-
+                         Remodelación
                         </option>
 
                     </select>
