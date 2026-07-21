@@ -164,7 +164,8 @@ function actualizarUsuario() {
     if (SIGE.contexto?.cargo?.nombre) {
 
         contenedor.textContent =
-            SIGE.contexto.cargo.nombre;
+    SIGE.contexto.cargo.nombre_largo ??
+    SIGE.contexto.cargo.nombre;
 
         return;
 
