@@ -75,15 +75,15 @@ function render(data = {}) {
    
    const html = `
 
-    ${EscritorioExpediente.renderHeader(data)}
+    ${renderHeader(data)}
 
-    ${EscritorioExpediente.renderResumen(data)}
+    ${renderResumen(data)}
 
-    ${EscritorioExpediente.renderActuaciones(data)}
+    ${renderActuaciones(data)}
 
-    ${EscritorioExpediente.renderBitacora(data)}
+    ${renderBitacora(data)}
 
-    ${EscritorioExpediente.renderAcciones(data)}
+    ${renderAcciones(data)}
 
 `;
 
