@@ -390,6 +390,8 @@ async function cargarLotes(){
 
 async function guardar() {
 
+   console.log("===== NUEVA VERSION DE GUARDAR =====");
+
     const privadaSelect = document.getElementById("cmbPrivada");
     const loteSelect = document.getElementById("cmbLote");
     const tipoObraSelect = document.getElementById("cmbTipoObra");
