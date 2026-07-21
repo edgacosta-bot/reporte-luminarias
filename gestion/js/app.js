@@ -116,8 +116,6 @@ async function validarSesion() {
 
     SIGE.usuario = data.session.user;
 
-    actualizarUsuario();
-
 }
 
 
