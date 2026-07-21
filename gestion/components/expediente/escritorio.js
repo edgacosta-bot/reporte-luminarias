@@ -93,38 +93,39 @@ function render(data = {}) {
 
 function renderHeader(data) {
 
-    const expediente =
-        data.expediente ?? {};
-
-    const obra =
-        data.obra ?? {};
-
-    const resumen =
-        data.resumen ?? {};
+    const expediente = data.expediente ?? {};
+    const obra = data.obra ?? {};
+    const resumen = data.resumen ?? {};
 
     return `
 
         <div class="card">
 
-            <div
-                style="
-                    display:flex;
-                    justify-content:space-between;
-                    align-items:flex-start;
-                    gap:24px;
-                ">
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:flex-start;
+                gap:24px;
+            ">
 
                 <div>
 
-                    <div class="card-title">
+                    <div class="card-title"
+                         style="font-size:1.8rem;">
 
                         ${expediente.folio ?? "-"}
 
                     </div>
 
-                    <div class="card-subtitle">
+                    <div class="card-subtitle"
+                         style="
+                            margin-top:6px;
+                            font-size:1rem;
+                            text-transform:uppercase;
+                            letter-spacing:.08em;
+                         ">
 
-                        ${expediente.titulo ?? "-"}
+                        OBRA PARTICULAR
 
                     </div>
 
@@ -132,9 +133,13 @@ function renderHeader(data) {
 
                 <div>
 
-                    <span class="badge badge-warning">
+                    <span class="badge badge-warning"
+                          style="
+                            font-size:.95rem;
+                            padding:8px 16px;
+                          ">
 
-                        ${resumen.fase_actual ?? "-"}
+                        ${resumen.fase_actual ?? "APROBACIÓN"}
 
                     </span>
 
@@ -142,21 +147,21 @@ function renderHeader(data) {
 
             </div>
 
-            <div
-                style="
-                    margin-top:22px;
-                    display:grid;
-                    grid-template-columns:repeat(4,1fr);
-                    gap:18px;
-                ">
+            <hr style="
+                margin:20px 0;
+                border:none;
+                border-top:1px solid #ddd;
+            ">
+
+            <div style="
+                display:grid;
+                grid-template-columns:repeat(2,1fr);
+                gap:20px;
+            ">
 
                 <div>
 
-                    <strong>
-
-                        Privada
-
-                    </strong>
+                    <strong>Privada</strong>
 
                     <br>
 
@@ -166,43 +171,11 @@ function renderHeader(data) {
 
                 <div>
 
-                    <strong>
-
-                        Lote
-
-                    </strong>
+                    <strong>Lote</strong>
 
                     <br>
 
                     ${obra.lote ?? "-"}
-
-                </div>
-
-                <div>
-
-                    <strong>
-
-                        Tipo
-
-                    </strong>
-
-                    <br>
-
-                    ${obra.tipo_obra ?? "-"}
-
-                </div>
-
-                <div>
-
-                    <strong>
-
-                        Estado
-
-                    </strong>
-
-                    <br>
-
-                    ${expediente.estado ?? "-"}
 
                 </div>
 
@@ -213,6 +186,7 @@ function renderHeader(data) {
     `;
 
 }
+
 /* ==========================================================
    RESUMEN DEL EXPEDIENTE
 ========================================================== */
