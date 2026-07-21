@@ -58,11 +58,7 @@ const EscritorioExpediente = {
 
 function render(data = {}) {
 
-    console.log(
-        "EscritorioExpediente.render()",
-        data
-    );
-
+    
     const workspace =
         document.getElementById(
             "workspace"
@@ -71,8 +67,7 @@ function render(data = {}) {
     if (!workspace)
         return;
 
-   console.error("=== RENDER ESCRITORIO EJECUTÁNDOSE ==="); 
-   
+      
    const html = `
 
     ${renderHeader(data)}
@@ -86,8 +81,6 @@ function render(data = {}) {
     ${renderAcciones(data)}
 
 `;
-
-console.log(html);
 
 workspace.innerHTML = html;
 
@@ -104,11 +97,7 @@ function renderHeader(data) {
     const obra = data.obra ?? {};
     const resumen = data.resumen ?? {};
 
-   console.log("EXPEDIENTE:", expediente);
-   console.log("OBRA:", obra);
-   console.log("RESUMEN:", resumen);
-
-    return `
+      return `
 
         <div class="card">
 
