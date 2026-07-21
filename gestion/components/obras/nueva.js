@@ -390,7 +390,7 @@ async function cargarLotes(){
 
 async function guardar() {
 
-   console.log("===== NUEVA VERSION DE GUARDAR =====");
+    console.log("===== NUEVA VERSION DE GUARDAR =====");
 
     const privadaSelect = document.getElementById("cmbPrivada");
     const loteSelect = document.getElementById("cmbLote");
@@ -416,12 +416,16 @@ async function guardar() {
     }
 
     const boton = document.getElementById("btnGuardarObra");
+
     boton.disabled = true;
     boton.textContent = "Creando expediente...";
 
     try {
 
+        // ---------------------------------------------------------
         // Usuario autenticado
+        // ---------------------------------------------------------
+
         let { data: sessionData } =
             await window.supabaseClient.auth.getSession();
 
@@ -438,7 +442,10 @@ async function guardar() {
         if (!user)
             throw new Error("No existe una sesión autenticada.");
 
-        // Contexto SIGE
+        // ---------------------------------------------------------
+        // Contexto institucional
+        // ---------------------------------------------------------
+
         const {
             data: contexto,
             error: errorContexto
@@ -463,21 +470,45 @@ async function guardar() {
         const titulo =
             `Obra Particular - Privada ${privada} ${loteTexto}`;
 
+        // ---------------------------------------------------------
+        // Parámetros enviados a la RPC
+        // ---------------------------------------------------------
+
+        const parametros = {
+
+            p_tipo_clave: "OBR",
+            p_clasificacion_clave: "PUB",
+            p_titulo: titulo,
+            p_descripcion: null,
+
+            p_lote_id: loteId,
+            p_tipo_obra: tipoObra,
+
+            p_administrador_id: usuario.residente_id,
+            p_solicitante_id: null,
+
+            p_interesado_tipo: null,
+            p_interesado_nombre: null,
+            p_interesado_telefono: null,
+            p_interesado_correo: null,
+            p_documento_representacion: null,
+
+            p_observaciones: null
+
+        };
+
+        console.log("Parámetros crear_expediente:", parametros);
+
+        // ---------------------------------------------------------
+        // RPC
+        // ---------------------------------------------------------
+
         const {
             data: expedienteId,
             error: errorExpediente
         } = await window.supabaseClient.rpc(
             "crear_expediente",
-            {
-                p_tipo_clave: "OBR",
-                p_clasificacion: "PUB",
-                p_titulo: titulo,
-                p_administrador_id: usuario.residente_id,
-                p_interesado_nombre: null,
-                p_interesado_email: null,
-                p_interesado_telefono: null,
-                p_observaciones: null
-            }
+            parametros
         );
 
         if (errorExpediente)
