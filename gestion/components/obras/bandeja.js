@@ -101,15 +101,9 @@ function renderEncabezado() {
 
                 <div class="card-title">
 
-                    Expedientes de Obras
+                Expedientes de Obras
 
-                </div>
-
-                <div class="card-subtitle">
-
-                    Administrador
-
-                </div>
+            </div>
 
             </div>
 
