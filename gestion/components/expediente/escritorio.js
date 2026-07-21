@@ -182,7 +182,7 @@ function renderHeader(data) {
 
                     <br>
 
-                    ${obra.lote ?? "-"}
+                    ${obra.casa ?? "-"}
 
                 </div>
 
