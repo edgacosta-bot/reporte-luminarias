@@ -44,12 +44,13 @@ const EscritorioExpediente = {
 
     renderBitacora,
 
-    renderAcciones
+    renderAcciones,
+
+    actualizar,
+
+    destruir
 
 };
-
-
-
 
 /* ==========================================================
    RENDER PRINCIPAL
