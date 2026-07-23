@@ -83,7 +83,7 @@ async function iniciar() {
 
         console.error("");
 
-        mostrarErrorInicio(error);
+        mostrarResultadoInicio(error);
 
     }
 
@@ -174,13 +174,53 @@ function actualizarUsuario() {
    ERROR DE INICIO
 ========================================================== */
 
-function mostrarErrorInicio(error) {
+function mostrarResultadoInicio(error) {
 
     const workspace =
         document.getElementById("workspace");
 
     if (!workspace)
         return;
+
+    const accesoRestringido =
+        error.message.includes("accesible para la Mesa Directiva") ||
+        error.message.startsWith("SIGE-002");
+
+    if (accesoRestringido) {
+
+        workspace.innerHTML = `
+
+            <div class="card">
+
+                <div class="card-title">
+
+                    Acceso restringido
+
+                </div>
+
+                <div class="card-subtitle">
+
+                    Esta sección está disponible únicamente para la
+                    <strong>Mesa Directiva</strong> y la
+                    <strong>Administración</strong>.
+
+                </div>
+
+                <button
+                    class="btn btn-primary"
+                    onclick="window.location.href='../index.html'">
+
+                    Regresar
+
+                </button>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
 
     workspace.innerHTML = `
 
@@ -211,7 +251,6 @@ function mostrarErrorInicio(error) {
     `;
 
 }
-
 
 /* ==========================================================
    DOM
