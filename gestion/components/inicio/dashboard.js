@@ -42,23 +42,45 @@ function render() {
 
     workspace.innerHTML = `
 
-        <div
-            style="
-                margin-bottom:24px;
-            ">
+       <div
+    style="
+        margin-bottom:32px;
+    ">
 
-            <div
-                style="
-                    font-size:30px;
-                    font-weight:700;
-                    color:var(--vino);
-                ">
+    <div
+        style="
+            font-size:18px;
+            color:var(--texto-secundario);
+            margin-bottom:8px;
+        ">
 
-                ¿Qué desea gestionar?
+        Bienvenido a SIGE
 
-            </div>
+    </div>
 
-        </div>
+    <div
+        style="
+            font-size:32px;
+            font-weight:700;
+            color:var(--vino);
+            margin-bottom:10px;
+        ">
+
+        ${SIGE.contexto.nombre_cargo}
+
+    </div>
+
+    <div
+        style="
+            font-size:18px;
+            color:var(--texto-secundario);
+        ">
+
+        Seleccione el proceso institucional que desea gestionar.
+
+    </div>
+
+</div>
 
         <div
             style="
