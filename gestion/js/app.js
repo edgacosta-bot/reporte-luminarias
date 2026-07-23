@@ -61,9 +61,11 @@ async function iniciar() {
 
         inicializarUI();
 
+        await mostrarBienvenidaInstitucional();
+
         inicializarRouter();
 
-        Router.mostrarDashboard();
+Router.mostrarDashboard();
 
         SIGE.iniciado = true;
 
