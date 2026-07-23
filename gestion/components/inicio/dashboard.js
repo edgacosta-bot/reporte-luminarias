@@ -44,21 +44,23 @@ function render() {
 
        <div
     style="
-        margin-bottom:32px;
+        margin-bottom:24px;
     ">
 
     <div
         style="
-            font-size:18px;
-            color:var(--texto-secundario);
-            margin-bottom:8px;
+            font-size:30px;
+            font-weight:700;
+            color:var(--vino);
         ">
 
-        Bienvenido a SIGE
+        ¿Qué desea gestionar?
 
     </div>
 
-    <div
+</div>
+
+
         style="
             font-size:32px;
             font-weight:700;
