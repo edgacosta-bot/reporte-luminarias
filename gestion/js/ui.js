@@ -336,15 +336,15 @@ async function mostrarBienvenidaInstitucional() {
         overlay.id = "bienvenidaSIGE";
 
         overlay.style.cssText = `
-            position:fixed;
-            inset:0;
-            background:#ffffff;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            z-index:99999;
-            opacity:1;
-            transition:opacity .6s ease;
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(180deg,#fafafa 0%,#ffffff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            opacity: 1;
+            transition: opacity .8s ease;
         `;
 
         overlay.innerHTML = `
@@ -352,27 +352,21 @@ async function mostrarBienvenidaInstitucional() {
             <div
                 style="
                     text-align:center;
-                    max-width:700px;
-                    padding:40px;
-                ">
+                    max-width:720px;
+                    padding:60px;
+                    opacity:0;
+                    transform:translateY(20px);
+                    transition:all .8s ease;
+                "
+                id="bienvenidaContenido">
 
                 <div
                     style="
-                        font-size:22px;
-                        color:#666;
-                        margin-bottom:18px;
-                    ">
-
-                    Bienvenido a
-
-                </div>
-
-                <div
-                    style="
-                        font-size:68px;
-                        font-weight:700;
+                        font-size:18px;
+                        letter-spacing:5px;
                         color:#8B1E3F;
-                        margin-bottom:30px;
+                        font-weight:700;
+                        margin-bottom:18px;
                     ">
 
                     SIGE
@@ -381,9 +375,43 @@ async function mostrarBienvenidaInstitucional() {
 
                 <div
                     style="
-                        font-size:38px;
-                        font-weight:600;
-                        color:#222;
+                        font-size:22px;
+                        color:#666;
+                        margin-bottom:50px;
+                    ">
+
+                    Sistema Integral de Gestión Institucional
+
+                </div>
+
+                <div
+                    style="
+                        width:90px;
+                        height:4px;
+                        background:#8B1E3F;
+                        margin:0 auto 45px auto;
+                        border-radius:4px;
+                    ">
+
+                </div>
+
+                <div
+                    style="
+                        font-size:18px;
+                        color:#777;
+                        margin-bottom:14px;
+                    ">
+
+                    Bienvenido
+
+                </div>
+
+                <div
+                    style="
+                        font-size:36px;
+                        font-weight:700;
+                        color:#8B1E3F;
+                        line-height:1.3;
                     ">
 
                     ${SIGE.contexto.nombre_cargo}
@@ -396,6 +424,16 @@ async function mostrarBienvenidaInstitucional() {
 
         document.body.appendChild(overlay);
 
+        requestAnimationFrame(() => {
+
+            const contenido =
+                document.getElementById("bienvenidaContenido");
+
+            contenido.style.opacity = "1";
+            contenido.style.transform = "translateY(0)";
+
+        });
+
         setTimeout(() => {
 
             overlay.style.opacity = "0";
@@ -406,9 +444,9 @@ async function mostrarBienvenidaInstitucional() {
 
                 resolve();
 
-            }, 600);
+            }, 800);
 
-        }, 2500);
+        }, 2200);
 
     });
 
