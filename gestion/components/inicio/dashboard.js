@@ -102,8 +102,7 @@ function render() {
 
         </div>
 
-        ${renderModoDesarrollo()}
-
+       
     `;
 
     registrarEventosDashboard();
