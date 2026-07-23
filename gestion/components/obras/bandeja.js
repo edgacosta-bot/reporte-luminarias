@@ -90,24 +90,56 @@ function renderEncabezado() {
     return `
 
         <div
+            class="card"
             style="
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
                 margin-bottom:24px;
             ">
 
-            <div>
+            <div
+                style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:flex-start;
+                    gap:24px;
+                    flex-wrap:wrap;
+                ">
 
-                <div class="card-title">
+                <div>
 
-                Expedientes de Obras
+                    <div
+                        style="
+                            font-size:32px;
+                            font-weight:700;
+                            color:var(--vino);
+                        ">
+
+                        Obras Particulares
+
+                    </div>
+
+                    <div
+                        style="
+                            margin-top:10px;
+                            font-size:17px;
+                            color:var(--texto-secundario);
+                            line-height:1.5;
+                        ">
+
+                        Centro de control del procedimiento administrativo
+                        para la integración, revisión, autorización,
+                        ejecución y conclusión de obras particulares.
+
+                    </div>
+
+                </div>
+
+                <div>
+
+                    ${renderBotonNuevoExpediente()}
+
+                </div>
 
             </div>
-
-            </div>
-
-            ${renderBotonNuevoExpediente()}
 
         </div>
 
