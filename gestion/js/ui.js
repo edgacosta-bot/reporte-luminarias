@@ -322,3 +322,94 @@ function construirWorkspaceDashboard() {
     `;
 
 }
+
+/* ==========================================================
+   BIENVENIDA INSTITUCIONAL
+========================================================== */
+
+async function mostrarBienvenidaInstitucional() {
+
+    return new Promise((resolve) => {
+
+        const overlay = document.createElement("div");
+
+        overlay.id = "bienvenidaSIGE";
+
+        overlay.style.cssText = `
+            position:fixed;
+            inset:0;
+            background:#ffffff;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            z-index:99999;
+            opacity:1;
+            transition:opacity .6s ease;
+        `;
+
+        overlay.innerHTML = `
+
+            <div
+                style="
+                    text-align:center;
+                    max-width:700px;
+                    padding:40px;
+                ">
+
+                <div
+                    style="
+                        font-size:22px;
+                        color:#666;
+                        margin-bottom:18px;
+                    ">
+
+                    Bienvenido a
+
+                </div>
+
+                <div
+                    style="
+                        font-size:68px;
+                        font-weight:700;
+                        color:#8B1E3F;
+                        margin-bottom:30px;
+                    ">
+
+                    SIGE
+
+                </div>
+
+                <div
+                    style="
+                        font-size:38px;
+                        font-weight:600;
+                        color:#222;
+                    ">
+
+                    ${SIGE.contexto.nombre_cargo}
+
+                </div>
+
+            </div>
+
+        `;
+
+        document.body.appendChild(overlay);
+
+        setTimeout(() => {
+
+            overlay.style.opacity = "0";
+
+            setTimeout(() => {
+
+                overlay.remove();
+
+                resolve();
+
+            }, 600);
+
+        }, 2500);
+
+    });
+
+}
