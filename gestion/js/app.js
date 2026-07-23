@@ -126,27 +126,33 @@ async function validarSesion() {
 async function validarAutorizacion() {
 
     const { data, error } = await supabaseClient.rpc(
-        "autorizar_acceso",
+        "obtener_contexto_usuario_sige",
         {
-            p_funcionalidad: "GESTION_INSTITUCIONAL"
+            p_user_id: SIGE.usuario.id
         }
     );
 
     if (error)
         throw error;
 
-    if (!data.autorizado) {
+    if (!data || data.length === 0)
+        throw new Error("No fue posible obtener el contexto institucional.");
 
-        throw new Error(data.mensaje);
+    const contexto = data[0];
+
+    if (!contexto.acceso_gestion_institucional) {
+
+        throw new Error(
+            "Esta función solo es accesible para la Mesa Directiva y la Administración."
+        );
 
     }
 
-    SIGE.contexto = data;
+    SIGE.contexto = contexto;
 
     actualizarUsuario();
 
 }
-
 /* ==========================================================
    USUARIO
 ========================================================== */
@@ -159,21 +165,10 @@ function actualizarUsuario() {
     if (!contenedor)
         return;
 
-    if (SIGE.contexto?.cargo?.nombre) {
-
-        contenedor.textContent =
-    SIGE.contexto.cargo.nombre_largo ??
-    SIGE.contexto.cargo.nombre;
-
-        return;
-
-    }
-
     contenedor.textContent =
-        SIGE.usuario?.email ?? "";
+        SIGE.contexto.nombre_cargo;
 
 }
-
 
 /* ==========================================================
    ERROR DE INICIO
