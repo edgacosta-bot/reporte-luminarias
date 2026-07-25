@@ -140,7 +140,7 @@ function renderHeader(data) {
                             padding:8px 16px;
                           ">
 
-                        ${expediente.fase?.nombre ?? workflow.fase_actual ?? "-"}
+                       ${expediente.etapa?.nombre ?? workflow.etapa_actual ?? "-"}
 
                     </span>
 
