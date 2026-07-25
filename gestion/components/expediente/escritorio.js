@@ -126,7 +126,7 @@ function renderHeader(data) {
                             letter-spacing:.08em;
                          ">
 
-                        PRUEBA HEADER
+                        ${expediente.tipo?.nombre ?? "-"}
 
                     </div>
 
