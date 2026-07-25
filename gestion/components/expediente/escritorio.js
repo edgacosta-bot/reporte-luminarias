@@ -166,7 +166,7 @@ function renderHeader(data) {
 
                     <br>
 
-                    ${obra.privada ?? "-"}
+                   ${expediente.privada ?? "-"}
 
                 </div>
 
