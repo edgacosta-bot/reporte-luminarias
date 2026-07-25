@@ -127,6 +127,7 @@ function renderHeader(data) {
                          ">
 
                         ${expediente.tipo?.nombre ?? "-"}
+                        ${expediente.tipo_obra ?? "-"}
 
                     </div>
 
