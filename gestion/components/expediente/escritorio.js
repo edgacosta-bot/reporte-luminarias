@@ -176,7 +176,7 @@ function renderHeader(data) {
 
                     <br>
 
-                    ${obra.casa ?? "-"}
+                    ${expediente.lote ?? "-"}
 
                 </div>
 
