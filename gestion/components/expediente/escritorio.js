@@ -128,6 +128,12 @@ function renderHeader(data) {
                     ${expediente.tipo_obra ?? "-"}
                 </div>
 
+               <div>
+                   <strong>Director Responsable de Obra</strong>
+                   <br>
+                   ${data.obra?.dro_nombre ?? "-"}
+               </div>
+
                 <div>
                     <strong>Folio</strong>
                     <br>
