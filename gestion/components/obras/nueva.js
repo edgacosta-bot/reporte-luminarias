@@ -568,6 +568,7 @@ async function guardar() {
             p_descripcion: null,
 
             p_lote_id: loteId,
+            p_ubicacion_id: ubicacionId,
             p_tipo_obra_id: tipoObraId,
 
             p_administrador_id: usuario.residente_id,
