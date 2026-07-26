@@ -483,6 +483,8 @@ async function guardar() {
     const privada = privadaSelect.value;
     const loteId = Number(loteSelect.value);
     const tipoObraId = Number(tipoObraSelect.value);
+   const calleSelect = document.getElementById("cmbCalle");
+   onst ubicacionId = calleSelect.value ? Number(calleSelect.value) : null;
 
     if (!privada) {
         alert("Seleccione una privada.");
