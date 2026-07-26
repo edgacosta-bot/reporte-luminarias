@@ -46,12 +46,12 @@ async function render() {
     if (!workspace)
         return;
 
-    workspace.innerHTML = `
+   const tiposObra =
+    await Workflow.obtenerTiposObra(); 
+   
+   workspace.innerHTML = `
 
-    const tiposObra =
-    await Workflow.obtenerTiposObra();
-
-        <div class="card">
+   <div class="card">
 
             <div
                 style="
