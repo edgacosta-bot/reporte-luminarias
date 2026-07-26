@@ -147,23 +147,9 @@ async function render() {
                         id="cmbTipoObra"
                         class="input">
 
-                        <option value="">
-
-                            Seleccione...
-
-                        </option>
-
-                       <option value="OBRA_NUEVA">
-                         Obra nueva
-                        </option>
-
-                        <option value="AMPLIACION">
-                         Ampliación
-                        </option>
-
-                        <option value="REMODELACION">
-                         Remodelación
-                        </option>
+                       <option value="">
+    Seleccione...
+</option>
 
                     </select>
 
