@@ -102,86 +102,43 @@ function renderHeader(data) {
 
         <div class="card">
 
-            <div style="
-                display:flex;
-                justify-content:space-between;
-                align-items:flex-start;
-                gap:24px;
-            ">
+           <div style="
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+">
 
-                <div>
+    <div>
 
-                    <div class="card-title"
-                         style="font-size:1.8rem;">
+        <strong>Privada</strong>
 
-                        ${expediente.folio ?? "-"}
+        <br>
 
-                    </div>
+        ${expediente.privada ?? "-"}
 
-                    <div class="card-subtitle"
-                         style="
-                            margin-top:6px;
-                            font-size:1rem;
-                            text-transform:uppercase;
-                            letter-spacing:.08em;
-                         ">
+    </div>
 
-                        ${expediente.tipo?.nombre ?? "-"}
-                        ${expediente.tipo_obra ?? "-"}
+    <div>
 
-                    </div>
+        <strong>Lote</strong>
 
-                </div>
+        <br>
 
-                <div>
+        ${expediente.lote ?? "-"}
 
-                    <span class="badge badge-warning"
-                          style="
-                            font-size:.95rem;
-                            padding:8px 16px;
-                          ">
+    </div>
 
-                       ${expediente.etapa?.nombre ?? workflow.etapa_actual ?? "-"}
+    <div>
 
-                    </span>
+        <strong>Calle</strong>
 
-                </div>
+        <br>
 
-            </div>
+        ${expediente.calle ?? "-"}
 
-            <hr style="
-                margin:20px 0;
-                border:none;
-                border-top:1px solid #ddd;
-            ">
+    </div>
 
-            <div style="
-                display:grid;
-                grid-template-columns:repeat(2,1fr);
-                gap:20px;
-            ">
-
-                <div>
-
-                    <strong>Privada</strong>
-
-                    <br>
-
-                   ${expediente.privada ?? "-"}
-
-                </div>
-
-                <div>
-
-                    <strong>Lote</strong>
-
-                    <br>
-
-                    ${expediente.lote ?? "-"}
-
-                </div>
-
-            </div>
+</div>
 
         </div>
 
