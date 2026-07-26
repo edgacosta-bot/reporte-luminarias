@@ -24,6 +24,8 @@ const Workflow = {
 
     obtenerLotes,
 
+    obtenerCalles,
+
     obtenerExpedientes,
 
     obtenerTiposObra,
@@ -107,6 +109,23 @@ async function obtenerLotes(privada) {
     }
 
     return data;
+
+}
+
+async function obtenerCalles(privada) {
+
+    const { data, error } =
+        await window.supabaseClient.rpc(
+            "obtener_calles_por_privada",
+            {
+                p_privada: privada
+            }
+        );
+
+    if (error)
+        throw error;
+
+    return data ?? [];
 
 }
 
