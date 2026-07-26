@@ -94,29 +94,7 @@ async function render() {
 
             <div class="form-grid">
 
-                <div class="form-group">
-
-    <label>
-
-        Calle
-
-    </label>
-
-    <select
-        id="cmbCalle"
-        class="input">
-
-        <option value="">
-
-            Seleccione una privada...
-
-        </option>
-
-    </select>
-
-</div>
-                
-                
+                                        
                 
                 <div class="form-group">
 
@@ -142,6 +120,29 @@ async function render() {
 
                 <div class="form-group">
 
+    <label>
+
+        Calle
+
+    </label>
+
+    <select
+        id="cmbCalle"
+        class="input">
+
+        <option value="">
+
+            Seleccione una privada...
+
+        </option>
+
+    </select>
+
+</div>
+
+
+                <div class="form-group">
+
                     <label>
 
                         Lote
@@ -154,7 +155,7 @@ async function render() {
 
                         <option value="">
 
-                            Seleccione una privada...
+                            Todas las calles
 
                         </option>
 
@@ -348,7 +349,7 @@ async function cargarCalles(){
 
     opcion.textContent =
         privada
-            ? "Seleccione..."
+            ? "Todas las calles"
             : "Seleccione una privada...";
 
     combo.appendChild(opcion);
