@@ -26,6 +26,8 @@ const Workflow = {
 
     obtenerExpedientes,
 
+    obtenerTiposObra,
+
     crearObra
 
 };
@@ -105,6 +107,24 @@ async function obtenerLotes(privada) {
     }
 
     return data;
+
+}
+
+/* ==========================================================
+   OBTENER Tipos de Obras
+========================================================== */
+
+async function obtenerTiposObra() {
+
+    const { data, error } =
+        await window.supabaseClient.rpc(
+            "obtener_tipos_obra"
+        );
+
+    if (error)
+        throw error;
+
+    return data ?? [];
 
 }
 
