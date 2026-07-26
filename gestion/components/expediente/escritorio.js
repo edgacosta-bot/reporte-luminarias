@@ -94,58 +94,89 @@ workspace.innerHTML = html;
 function renderHeader(data) {
 
     const expediente = data.expediente ?? {};
-    const obra = data.obra ?? {};
-    const resumen = data.resumen ?? {};
-    const workflow = data.workflow ?? {};
 
-      return `
+    const etiquetaResolucion =
+        expediente.tipo_resolucion === "REGULARIZACION"
+            ? "Fecha de regularización"
+            : "Fecha de autorización";
+
+    const fechaResolucion =
+        expediente.fecha_resolucion
+            ? new Date(expediente.fecha_resolucion)
+                .toLocaleDateString("es-MX")
+            : "-";
+
+    return `
 
         <div class="card">
 
-           <div style="
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:20px;
-">
+            <div style="
+                display:grid;
+                grid-template-columns:repeat(3,1fr);
+                gap:20px;
+            ">
 
-    <div>
+                <div>
+                    <strong>Tipo de expediente</strong>
+                    <br>
+                    ${expediente.tipo?.nombre ?? "-"}
+                </div>
 
-        <strong>Privada</strong>
+                <div>
+                    <strong>Tipo de obra</strong>
+                    <br>
+                    ${expediente.tipo_obra ?? "-"}
+                </div>
 
-        <br>
+                <div>
+                    <strong>Folio</strong>
+                    <br>
+                    ${expediente.folio ?? "-"}
+                </div>
 
-        ${expediente.privada ?? "-"}
+                <div>
+                    <strong>Privada</strong>
+                    <br>
+                    ${expediente.privada ?? "-"}
+                </div>
 
-    </div>
+                <div>
+                    <strong>Lote</strong>
+                    <br>
+                    ${expediente.lote ?? "-"}
+                </div>
 
-    <div>
+                <div>
+                    <strong>Calle</strong>
+                    <br>
+                    ${expediente.calle ?? "-"}
+                </div>
 
-        <strong>Lote</strong>
+                <div>
+                    <strong>Estado</strong>
+                    <br>
+                    ${expediente.estado?.nombre ?? "-"}
+                </div>
 
-        <br>
+                <div>
+                    <strong>Etapa</strong>
+                    <br>
+                    ${expediente.etapa?.nombre ?? "-"}
+                </div>
 
-        ${expediente.lote ?? "-"}
+                <div>
+                    <strong>${etiquetaResolucion}</strong>
+                    <br>
+                    ${fechaResolucion}
+                </div>
 
-    </div>
-
-    <div>
-
-        <strong>Calle</strong>
-
-        <br>
-
-        ${expediente.calle ?? "-"}
-
-    </div>
-
-</div>
+            </div>
 
         </div>
 
     `;
 
 }
-
 /* ==========================================================
    RESUMEN DEL EXPEDIENTE
 ========================================================== */
