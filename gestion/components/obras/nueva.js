@@ -48,6 +48,9 @@ async function render() {
 
     workspace.innerHTML = `
 
+    const tiposObra =
+    await Workflow.obtenerTiposObra();
+
         <div class="card">
 
             <div
@@ -144,14 +147,20 @@ async function render() {
                     </label>
 
                     <select
-                        id="cmbTipoObra"
-                        class="input">
+    id="cmbTipoObra"
+    class="input">
 
-                       <option value="">
-    Seleccione...
-</option>
+    <option value="">
+        Seleccione...
+    </option>
 
-                    </select>
+    ${tiposObra.map(tipo => `
+        <option value="${tipo.id}">
+            ${tipo.nombre}
+        </option>
+    `).join("")}
+
+</select>
 
                 </div>
 
@@ -378,7 +387,7 @@ async function guardar() {
 
     const privada = privadaSelect.value;
     const loteId = Number(loteSelect.value);
-    const tipoObra = tipoObraSelect.value;
+    const tipoObraId = Number(tipoObraSelect.value);
 
     if (!privada) {
         alert("Seleccione una privada.");
@@ -390,10 +399,10 @@ async function guardar() {
         return;
     }
 
-    if (!tipoObra) {
-        alert("Seleccione el tipo de obra.");
-        return;
-    }
+   if (!tipoObraId) {
+    alert("Seleccione el tipo de obra.");
+    return;
+}
 
     const boton = document.getElementById("btnGuardarObra");
 
@@ -462,7 +471,7 @@ async function guardar() {
             p_descripcion: null,
 
             p_lote_id: loteId,
-            p_tipo_obra: tipoObra,
+            p_tipo_obra_id: tipoObraId,
 
             p_administrador_id: usuario.residente_id,
             p_solicitante_id: null,
