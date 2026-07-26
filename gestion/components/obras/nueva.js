@@ -498,11 +498,7 @@ async function guardar() {
 } = await Workflow.crearObra(parametros);
 
 
-       console.log("Respuesta Workflow.crearObra()", {
-    expedienteId,
-    errorExpediente
-});
-
+       
         if (errorExpediente)
             throw errorExpediente;
 
