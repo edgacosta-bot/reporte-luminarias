@@ -121,6 +121,9 @@ async function obtenerTiposObra() {
             "obtener_tipos_obra"
         );
 
+    console.log("RPC obtener_tipos_obra");
+    console.log({ data, error });
+
     if (error)
         throw error;
 
