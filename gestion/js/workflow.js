@@ -226,40 +226,12 @@ async function abrirObra(idExpediente) {
 
 ========================================================== */
 
-async function crearObra({
+async function crearObra(parametros) {
 
-    privada,
-
-    lote,
-
-    tipo
-
-}){
-
-    console.log(
-
-        "Nueva obra",
-
-        privada,
-
-        lote,
-
-        tipo
-
-    );
-
-    /*
-       FRONT-006
-
-       Sustituir por:
-
-       rpc(
-          crear_expediente_obra
-       );
-
-    */
-
-    return true;
+    return await window.supabaseClient.rpc(
+    "crear_expediente",
+    parametros
+);
 
 }
 
