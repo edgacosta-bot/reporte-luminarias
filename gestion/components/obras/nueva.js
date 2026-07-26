@@ -96,6 +96,30 @@ async function render() {
 
                 <div class="form-group">
 
+    <label>
+
+        Calle
+
+    </label>
+
+    <select
+        id="cmbCalle"
+        class="input">
+
+        <option value="">
+
+            Seleccione una privada...
+
+        </option>
+
+    </select>
+
+</div>
+                
+                
+                
+                <div class="form-group">
+
                     <label>
 
                         Privada
@@ -219,11 +243,16 @@ async function render() {
     await cargarPrivadas();
 
     document
-        .getElementById("cmbPrivada")
-        .addEventListener(
-            "change",
-            cargarLotes
-        );
+    .getElementById("cmbPrivada")
+    .addEventListener(
+        "change",
+        async () => {
+
+            await cargarCalles();
+            await cargarLotes();
+
+        }
+    );
 
 }
 
@@ -287,6 +316,71 @@ async function cargarPrivadas(){
         console.error(ex);
 
     }
+
+}
+
+/* ==========================================================
+   CARGAR CALLES
+========================================================== */
+
+async function cargarCalles(){
+
+    const privada =
+        document
+            .getElementById(
+                "cmbPrivada"
+            )
+            .value;
+
+    const combo =
+        document.getElementById(
+            "cmbCalle"
+        );
+
+    combo.innerHTML = "";
+
+    const opcion =
+        document.createElement(
+            "option"
+        );
+
+    opcion.value = "";
+
+    opcion.textContent =
+        privada
+            ? "Seleccione..."
+            : "Seleccione una privada...";
+
+    combo.appendChild(opcion);
+
+    if(!privada)
+        return;
+
+    const calles =
+        await Workflow.obtenerCalles(
+            privada
+        );
+
+    calles.forEach(
+
+        calle=>{
+
+            const op =
+                document.createElement(
+                    "option"
+                );
+
+            op.value =
+                calle.id;
+
+            op.textContent =
+                calle.calle;
+
+            combo.appendChild(op);
+
+        }
+
+    );
 
 }
 
