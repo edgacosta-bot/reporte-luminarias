@@ -493,12 +493,15 @@ async function guardar() {
         // ---------------------------------------------------------
 
         const {
-            data: expedienteId,
-            error: errorExpediente
-        } = await window.supabaseClient.rpc(
-            "crear_expediente",
-            parametros
-        );
+    data: expedienteId,
+    error: errorExpediente
+} = await Workflow.crearObra(parametros);
+
+
+       console.log("Respuesta Workflow.crearObra()", {
+    expedienteId,
+    errorExpediente
+});
 
         if (errorExpediente)
             throw errorExpediente;
