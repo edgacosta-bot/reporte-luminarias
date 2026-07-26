@@ -153,16 +153,10 @@ function renderHeader(data) {
                 </div>
 
                 <div>
-                    <strong>Estado</strong>
-                    <br>
-                    ${expediente.estado?.nombre ?? "-"}
-                </div>
-
-                <div>
-                    <strong>Etapa</strong>
-                    <br>
-                    ${expediente.etapa?.nombre ?? "-"}
-                </div>
+                      <strong>Situación actual</strong>
+                      <br>
+                      ${expediente.situacion_actual ?? "-"}
+                 </div>
 
                 <div>
                     <strong>${etiquetaResolucion}</strong>
