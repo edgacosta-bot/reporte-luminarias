@@ -307,9 +307,9 @@ function renderRequisitos(data) {
     const requisitos = data.requisitos ?? [];
 
     const tarjetas = requisitos
-    .map(renderTarjetaRequisito)
-    .join("");
-   
+        .map(renderTarjetaRequisito)
+        .join("");
+
     return `
 
         <div class="card">
@@ -320,31 +320,7 @@ function renderRequisitos(data) {
 
             </div>
 
-            <table class="table">
-
-                <thead>
-
-                    <tr>
-
-                        <th>Estado</th>
-
-                        <th>Requisito</th>
-
-                        <th>Evidencia</th>
-
-                        <th>Acción</th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    ${tarjetas}
-
-                </tbody>
-
-            </table>
+            ${tarjetas}
 
         </div>
 
