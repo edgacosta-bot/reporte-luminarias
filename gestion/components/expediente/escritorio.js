@@ -306,38 +306,10 @@ function renderRequisitos(data) {
 
     const requisitos = data.requisitos ?? [];
 
-    const filas = requisitos.map(r => {
-
-        let estado = "⏳";
-
-        if (r.estado === "CUMPLIDO") {
-            estado = "✅";
-        }
-
-        const evidencia = r.archivo_nombre
-            ? `📄 ${r.archivo_nombre}`
-            : "—";
-
-        const accion = r.archivo_nombre
-            ? "Ver PDF"
-            : "Adjuntar PDF";
-
-        return `
-            <tr>
-                <td>${estado}</td>
-                <td>${r.nombre}</td>
-                <td>${evidencia}</td>
-                <td>
-                    <button
-                        class="btn btn-secondary btn-sm">
-                        ${accion}
-                    </button>
-                </td>
-            </tr>
-        `;
-
-    }).join("");
-
+    const tarjetas = requisitos
+    .map(renderTarjetaRequisito)
+    .join("");
+   
     return `
 
         <div class="card">
@@ -368,7 +340,7 @@ function renderRequisitos(data) {
 
                 <tbody>
 
-                    ${filas}
+                    ${tarjetas}
 
                 </tbody>
 
@@ -378,6 +350,75 @@ function renderRequisitos(data) {
 
     `;
 
+}
+
+/* ==========================================================
+   TARJETA DE REQUISITO
+========================================================== */
+
+function renderTarjetaRequisito(r) {
+
+    const estado =
+        r.estado === "CUMPLIDO"
+            ? "✅"
+            : "⏳";
+
+    const documento =
+        r.archivo_nombre
+            ? `
+                <strong>Documento</strong><br>
+                ${r.archivo_nombre}<br>
+                Versión ${r.version ?? 1}
+            `
+            : `
+                <strong>Documento</strong><br>
+                Sin documento incorporado
+            `;
+
+    const acciones =
+        r.archivo_nombre
+            ? `
+                <button class="btn btn-secondary btn-sm">
+                    Consultar
+                </button>
+
+                <button class="btn btn-primary btn-sm">
+                    Sustituir
+                </button>
+            `
+            : `
+                <button class="btn btn-primary btn-sm">
+                    Incorporar documento
+                </button>
+            `;
+
+    return `
+
+        <div class="card" style="margin-top:16px;">
+
+            <div style="font-size:18px;font-weight:600;">
+                ${estado} ${r.nombre}
+            </div>
+
+            <div style="margin-top:12px;">
+                ${documento}
+            </div>
+
+            <div
+                style="
+                    margin-top:18px;
+                    display:flex;
+                    gap:10px;
+                    flex-wrap:wrap;
+                ">
+
+                ${acciones}
+
+            </div>
+
+        </div>
+
+    `;
 }
 
 /* ==========================================================
