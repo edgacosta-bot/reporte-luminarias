@@ -165,6 +165,12 @@ function renderHeader(data) {
                  </div>
 
                 <div>
+                     <strong>Etapa</strong>
+                     <br>
+                      ${expediente.etapa?.nombre ?? "-"}
+                </div>
+
+                <div>
                     <strong>${etiquetaResolucion}</strong>
                     <br>
                     ${fechaResolucion}
