@@ -40,6 +40,8 @@ const EscritorioExpediente = {
 
     renderResumen,
 
+    renderRequisitos,
+
     renderActuaciones,
 
     renderBitacora,
@@ -73,6 +75,8 @@ function render(data = {}) {
     ${renderHeader(data)}
 
     ${renderResumen(data)}
+
+    ${renderRequisitos(data)}
 
     ${renderActuaciones(data)}
 
@@ -287,6 +291,88 @@ function renderResumen(data) {
                 </div>
 
             </div>
+
+        </div>
+
+    `;
+
+}
+
+/* ==========================================================
+   REQUISITOS DE LA ETAPA
+========================================================== */
+
+function renderRequisitos(data) {
+
+    const requisitos = data.requisitos ?? [];
+
+    const filas = requisitos.map(r => {
+
+        let estado = "⏳";
+
+        if (r.estado === "CUMPLIDO") {
+            estado = "✅";
+        }
+
+        const evidencia = r.archivo_nombre
+            ? `📄 ${r.archivo_nombre}`
+            : "—";
+
+        const accion = r.archivo_nombre
+            ? "Ver PDF"
+            : "Adjuntar PDF";
+
+        return `
+            <tr>
+                <td>${estado}</td>
+                <td>${r.nombre}</td>
+                <td>${evidencia}</td>
+                <td>
+                    <button
+                        class="btn btn-secondary btn-sm">
+                        ${accion}
+                    </button>
+                </td>
+            </tr>
+        `;
+
+    }).join("");
+
+    return `
+
+        <div class="card">
+
+            <div class="card-title">
+
+                Requisitos de la Etapa
+
+            </div>
+
+            <table class="table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Estado</th>
+
+                        <th>Requisito</th>
+
+                        <th>Evidencia</th>
+
+                        <th>Acción</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${filas}
+
+                </tbody>
+
+            </table>
 
         </div>
 
