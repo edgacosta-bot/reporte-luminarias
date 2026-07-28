@@ -9,7 +9,9 @@ const Documentos = {
 
     incorporar,
 
-    consultar
+    consultar,
+
+    sustituir
 
 };
 
@@ -125,9 +127,46 @@ async function consultar(expedienteRequisitoId) {
 
     }
 
+  async function consultar(expedienteRequisitoId) {
+
+    const {
+        data,
+        error
+    } = await Workflow.consultarDocumento(
+        expedienteRequisitoId
+    );
+
+    if (error) {
+
+        console.error(error);
+
+        alert("No fue posible consultar el documento.");
+
+        return;
+
+    }
+
+    if (!data.ok) {
+
+        alert(data.mensaje);
+
+        return;
+
+    }
+
     window.open(
         data.url,
         "_blank"
+    );
+
+}
+
+async function sustituir(
+    expedienteRequisitoId
+) {
+
+    alert(
+        "Función Sustituir en desarrollo."
     );
 
 }
