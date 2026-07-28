@@ -125,8 +125,16 @@ async function consultar(expedienteRequisitoId) {
 
     }
 
+    const {
+        data: urlData
+    } = window.supabaseClient.storage
+        .from(data.bucket)
+        .getPublicUrl(
+            data.ruta_storage
+        );
+
     window.open(
-        data.url,
+        urlData.publicUrl,
         "_blank"
     );
 
