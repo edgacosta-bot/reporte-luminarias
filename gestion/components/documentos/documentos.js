@@ -39,7 +39,7 @@ async function incorporar(expedienteRequisitoId) {
         const nombreArchivo = archivo.name;
         const tamanoBytes = archivo.size;
         const mimeType = archivo.type;
-        const bucket = "documentos";
+        const bucket = "Documentos";
         const rutaStorage =
     crypto.randomUUID() + ".pdf";
 
