@@ -56,11 +56,10 @@ async function incorporar(expedienteRequisitoId) {
 
         console.log("Archivo:", archivo);
 
-        console.log("supabase =", supabase);
-       
-        console.log("supabase.storage =", supabase?.storage);
+        console.log("supabaseClient =", window.supabaseClient);
+         console.log("supabaseClient.storage =", window.supabaseClient?.storage);
 
-       const { error } = await supabase.storage
+         const { error } = await window.supabaseClient.storage
     .from(bucket)
     .upload(
         rutaStorage,
