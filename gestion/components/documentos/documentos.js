@@ -79,21 +79,7 @@ if (error) {
 
 }
 
-   const { data, error: errorRpc } =
-    await window.supabaseClient.rpc(
-        "registrar_documento_requisito",
-        {
-    p_expediente_requisito_id: expedienteRequisitoId,
-    p_bucket: bucket,
-    p_ruta_storage: rutaStorage,
-    p_nombre_archivo: nombreArchivo,
-    p_mime_type: mimeType,
-    p_tamano_bytes: tamanoBytes
-}
-    );
-
-console.log("RPC:", data, errorRpc);    
-
+ 
     };
 
     input.click();
