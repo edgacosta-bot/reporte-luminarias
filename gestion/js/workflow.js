@@ -25,6 +25,7 @@ const Workflow = {
     obtenerTiposObra,
     crearObra,
     registrarDocumentoRequisito,
+    sustituirDocumentoRequisito,
     consultarDocumento
 
 };
