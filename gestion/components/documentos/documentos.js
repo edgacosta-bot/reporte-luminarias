@@ -150,6 +150,6 @@ window.open(
     "_blank"
 );
 
-
+}
 
 window.Documentos = Documentos;
