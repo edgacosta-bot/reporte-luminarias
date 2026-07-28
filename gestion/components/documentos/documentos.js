@@ -161,14 +161,100 @@ async function consultar(expedienteRequisitoId) {
 
 }
 
-async function sustituir(
-    expedienteRequisitoId
-) {
+async function sustituir(expedienteRequisitoId) {
 
-    alert(
-        "Función Sustituir en desarrollo."
-    );
+    const input = document.createElement("input");
+
+    input.type = "file";
+
+    input.accept = "application/pdf";
+
+    input.onchange = async () => {
+
+        const archivo = input.files[0];
+
+        if (!archivo)
+            return;
+
+        const extension =
+            archivo.name
+                .split(".")
+                .pop()
+                .toLowerCase();
+
+        if (extension !== "pdf") {
+
+            alert(
+                "Únicamente se permiten archivos PDF."
+            );
+
+            return;
+
+        }
+
+        const nombreArchivo = archivo.name;
+        const tamanoBytes = archivo.size;
+        const mimeType = archivo.type;
+        const bucket = "Documentos";
+        const rutaStorage =
+            crypto.randomUUID() + ".pdf";
+
+        const { error } =
+            await window.supabaseClient.storage
+                .from(bucket)
+                .upload(
+                    rutaStorage,
+                    archivo,
+                    {
+                        upsert: false
+                    }
+                );
+
+        if (error) {
+
+            console.error(error);
+
+            alert(
+                "No fue posible cargar el documento."
+            );
+
+            return;
+
+        }
+
+        const {
+            data,
+            error: errorRpc
+        } =
+        await Workflow.sustituirDocumentoRequisito(
+            expedienteRequisitoId,
+            bucket,
+            rutaStorage,
+            nombreArchivo,
+            mimeType,
+            tamanoBytes
+        );
+
+        if (errorRpc || !data?.ok) {
+
+            console.error(errorRpc ?? data);
+
+            alert(
+                data?.mensaje ??
+                "No fue posible sustituir el documento."
+            );
+
+            return;
+
+        }
+
+        await Router.mostrarEscritorio(
+            SIGE_STATE.expedienteActual.expediente.id
+        );
+
+    };
+
+    input.click();
 
 }
-
 window.Documentos = Documentos;
