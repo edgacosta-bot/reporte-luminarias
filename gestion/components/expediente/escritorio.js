@@ -108,11 +108,13 @@ function renderHeader(data) {
 
     return `
 
-        <h3 class="bloque-titulo">
-            DATOS GENERALES DEL EXPEDIENTE
-        </h3>
+        <section class="bloque">
 
-        <div class="card">
+            <h2 class="bloque-titulo">
+                DATOS GENERALES DEL EXPEDIENTE
+            </h2>
+
+            <div class="card">
         
 
             <div style="
@@ -183,7 +185,9 @@ function renderHeader(data) {
 
             </div>
 
-        </div>
+                    </div>
+
+        </section>
 
     `;
 
