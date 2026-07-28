@@ -314,13 +314,36 @@ async function consultarDocumento(
         }
     );
 
+    if (
+        error ||
+        !data?.ok
+    ) {
+
+        return {
+            data,
+            error
+        };
+
+    }
+
+    const {
+        data: urlData
+    } = window.supabaseClient.storage
+        .from(data.bucket)
+        .getPublicUrl(
+            data.ruta_storage
+        );
+
     return {
-        data,
-        error
+        data: {
+            ok: true,
+            url: urlData.publicUrl,
+            archivo_nombre: data.archivo_nombre
+        },
+        error: null
     };
 
 }
-
 /* ==========================================================
    EXPORTACIÓN
 ========================================================== */
