@@ -129,30 +129,16 @@ if (error) {
 }
 
 const {
-    data: urlData,
-    error: urlError
-} = await window.supabaseClient.storage
+    data: urlData
+} = window.supabaseClient.storage
     .from(data.bucket)
-    .createSignedUrl(
-        data.ruta_storage,
-        300
-    );
-
-if (urlError) {
-
-    console.error(urlError);
-
-    alert("No fue posible obtener el documento.");
-
-    return;
-
-}
+    .getPublicUrl(data.ruta_storage);
 
 window.open(
-    urlData.signedUrl,
+    urlData.publicUrl,
     "_blank"
 );
-
+   
 }
 
 window.Documentos = Documentos;
