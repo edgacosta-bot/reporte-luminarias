@@ -85,7 +85,6 @@ const {
     tamanoBytes
 );
 
-console.log("RPC:", data, errorRpc);
        
     };
 
