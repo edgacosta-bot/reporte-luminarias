@@ -107,6 +107,9 @@ async function consultar(expedienteRequisitoId) {
     expedienteRequisitoId
 );
 
+   console.log(data);
+   console.log(data.ruta_storage);
+
 if (error) {
 
     console.error(error);
