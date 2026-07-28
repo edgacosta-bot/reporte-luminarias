@@ -36,6 +36,22 @@ function incorporar(expedienteRequisitoId) {
         if (!archivo)
             return;
 
+        const nombreArchivo = archivo.name;
+        const tamanoBytes = archivo.size;
+        const mimeType = archivo.type;
+        const bucket = "documentos";
+        const rutaStorage =
+    crypto.randomUUID() + ".pdf";
+
+        console.log({
+    expedienteRequisitoId,
+    bucket,
+    rutaStorage,
+    nombreArchivo,
+    mimeType,
+    tamanoBytes
+});
+
         console.log("Requisito:", expedienteRequisitoId);
 
         console.log("Archivo:", archivo);
