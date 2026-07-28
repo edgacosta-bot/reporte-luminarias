@@ -11,7 +11,7 @@ const Documentos = {
 
 };
 
-function incorporar(expedienteRequisitoId) {
+async function incorporar(expedienteRequisitoId) {
 
     const input = document.createElement("input");
 
@@ -55,6 +55,26 @@ function incorporar(expedienteRequisitoId) {
         console.log("Requisito:", expedienteRequisitoId);
 
         console.log("Archivo:", archivo);
+
+       const { error } = await supabase.storage
+    .from(bucket)
+    .upload(
+        rutaStorage,
+        archivo,
+        {
+            upsert: false
+        }
+    );
+
+if (error) {
+
+    console.error(error);
+
+    alert("No fue posible cargar el documento.");
+
+    return;
+
+}
 
     };
 
