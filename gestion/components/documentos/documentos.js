@@ -23,6 +23,16 @@ function incorporar(expedienteRequisitoId) {
 
         const archivo = input.files[0];
 
+        const extension = archivo.name.split(".").pop().toLowerCase();
+
+       if (extension !== "pdf") {
+
+    alert("Únicamente se permiten archivos PDF.");
+
+    return;
+
+}
+
         if (!archivo)
             return;
 
