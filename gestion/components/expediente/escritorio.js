@@ -361,9 +361,13 @@ function renderTarjetaRequisito(r) {
                  </button>
 
 
-                <button class="btn btn-primary btn-sm">
-                    Sustituir
-                </button>
+               <button
+                class="btn btn-primary btn-sm"
+                onclick="Documentos.sustituir('${r.id}')">
+
+                Sustituir
+
+               </button>
             `
             : `
                 <button
