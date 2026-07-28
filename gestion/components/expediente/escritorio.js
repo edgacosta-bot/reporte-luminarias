@@ -340,16 +340,16 @@ function renderTarjetaRequisito(r) {
             : "⏳";
 
     const documento =
-        r.archivo_nombre
-            ? `
-                <strong>Documento</strong><br>
-                ${r.archivo_nombre}<br>
-                Versión ${r.version ?? 1}
-            `
-            : `
-                <strong>Documento</strong><br>
-                Sin documento incorporado
-            `;
+    r.archivo_nombre
+        ? `
+            <strong>Documento vigente</strong><br>
+            ${r.archivo_nombre}<br>
+            Versión ${r.version ?? 1}
+        `
+        : `
+            <strong>Documento vigente</strong><br>
+            No existe documento incorporado.
+        `;
 
     const acciones =
         r.archivo_nombre
