@@ -66,22 +66,16 @@ function render(data = {}) {
         return;
 
       
-   const html = `
+  const html = `
 
     ${renderHeader(data)}
 
-    ${renderResumen(data)}
-
     ${renderRequisitos(data)}
-
-    ${renderActuaciones(data)}
 
     ${renderBitacora(data)}
 
-    ${renderAcciones(data)}
-
 `;
-
+   
 workspace.innerHTML = html;
 
 }
