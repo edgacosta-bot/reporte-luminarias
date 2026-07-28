@@ -17,22 +17,15 @@
 const Workflow = {
 
     abrirObra,
-
     abrirActuacion,
-
     obtenerPrivadas,
-
     obtenerLotes,
-
     obtenerCalles,
-
     obtenerExpedientes,
-
     obtenerTiposObra,
-
     crearObra,
-
-    registrarDocumentoRequisito
+    registrarDocumentoRequisito,
+    consultarDocumento
 
 };
 
@@ -303,6 +296,28 @@ return {
     data,
     error: errorRpc
 };
+
+}
+
+async function consultarDocumento(
+    expedienteRequisitoId
+) {
+
+    const {
+        data,
+        error
+    } = await window.supabaseClient.rpc(
+        "consultar_documento_requisito",
+        {
+            p_expediente_requisito_id:
+                expedienteRequisitoId
+        }
+    );
+
+    return {
+        data,
+        error
+    };
 
 }
 
