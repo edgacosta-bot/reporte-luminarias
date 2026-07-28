@@ -298,7 +298,6 @@ async function registrarDocumentoRequisito(
         }
     );
 
-console.log("RPC:", data, errorRpc);
 
 return {
     data,
