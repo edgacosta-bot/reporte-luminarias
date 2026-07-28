@@ -79,7 +79,20 @@ if (error) {
 
 }
 
- 
+const {
+    data,
+    error: errorRpc
+} = await Workflow.registrarDocumentoRequisito(
+    expedienteRequisitoId,
+    bucket,
+    rutaStorage,
+    nombreArchivo,
+    mimeType,
+    tamanoBytes
+);
+
+console.log("RPC:", data, errorRpc);
+       
     };
 
     input.click();
