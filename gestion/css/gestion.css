@@ -465,6 +465,27 @@ body{
 
 }
 
+/* ==========================================================
+   BLOQUES DEL ESCRITORIO
+========================================================== */
+.bloque{
+
+    margin-bottom:40px;
+
+}
+
+.bloque-titulo{
+
+    font-size:22px;
+
+    font-weight:600;
+
+    color:var(--texto);
+
+    margin-bottom:18px;
+
+}
+
 
 /* ==========================================================
    RESPONSIVE
