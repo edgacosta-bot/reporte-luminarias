@@ -101,44 +101,35 @@ const {
 async function consultar(expedienteRequisitoId) {
 
     const {
-    data,
-    error
-} = await Workflow.consultarDocumento(
-    expedienteRequisitoId
-);
+        data,
+        error
+    } = await Workflow.consultarDocumento(
+        expedienteRequisitoId
+    );
 
-   console.log(data);
-   console.log(data.ruta_storage);
+    if (error) {
 
-if (error) {
+        console.error(error);
 
-    console.error(error);
+        alert("No fue posible consultar el documento.");
 
-    alert("No fue posible consultar el documento.");
+        return;
 
-    return;
+    }
 
-}
+    if (!data.ok) {
 
-   if (!data.ok) {
+        alert(data.mensaje);
 
-    alert(data.mensaje);
+        return;
 
-    return;
+    }
 
-}
+    window.open(
+        data.url,
+        "_blank"
+    );
 
-const {
-    data: urlData
-} = window.supabaseClient.storage
-    .from(data.bucket)
-    .getPublicUrl(data.ruta_storage);
-
-window.open(
-    urlData.publicUrl,
-    "_blank"
-);
-   
 }
 
 window.Documentos = Documentos;
