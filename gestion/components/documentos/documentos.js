@@ -19,7 +19,7 @@ async function incorporar(expedienteRequisitoId) {
 
     input.accept = "application/pdf";
 
-    input.onchange = () => {
+    input.onchange = async () => {
 
         const archivo = input.files[0];
 
