@@ -317,17 +317,19 @@ function renderRequisitos(data) {
 
     return `
 
-        <div class="card">
+        <section class="bloque">
 
-            <div class="card-title">
+            <h2 class="bloque-titulo">
+                REQUISITOS PARA APROBACIÓN
+            </h2>
 
-                Requisitos de la Etapa
+            <div class="card">
+
+                ${tarjetas}
 
             </div>
 
-            ${tarjetas}
-
-        </div>
+        </section>
 
     `;
 
