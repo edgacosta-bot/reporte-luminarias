@@ -38,11 +38,7 @@ const EscritorioExpediente = {
 
     renderHeader,
 
-    renderResumen,
-
     renderRequisitos,
-
-    renderActuaciones,
 
     renderBitacora,
 
@@ -112,7 +108,12 @@ function renderHeader(data) {
 
     return `
 
+        <h3 class="bloque-titulo">
+            DATOS GENERALES DEL EXPEDIENTE
+        </h3>
+
         <div class="card">
+        
 
             <div style="
                 display:grid;
