@@ -363,9 +363,14 @@ function renderTarjetaRequisito(r) {
                 </button>
             `
             : `
-                <button class="btn btn-primary btn-sm">
-                    Incorporar documento
-                </button>
+                <button
+                   class="btn btn-primary btn-sm"
+                   onclick="Documentos.incorporar('${r.id}')">
+
+                   Incorporar documento
+
+               </button>
+               
             `;
 
     return `
