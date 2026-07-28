@@ -52,13 +52,7 @@ async function incorporar(expedienteRequisitoId) {
     tamanoBytes
 });
 
-        console.log("Requisito:", expedienteRequisitoId);
-
-        console.log("Archivo:", archivo);
-
-        console.log("supabaseClient =", window.supabaseClient);
-         console.log("supabaseClient.storage =", window.supabaseClient?.storage);
-
+        
          const { error } = await window.supabaseClient.storage
     .from(bucket)
     .upload(
