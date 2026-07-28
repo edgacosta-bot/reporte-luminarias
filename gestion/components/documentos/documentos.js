@@ -7,7 +7,9 @@
 
 const Documentos = {
 
-    incorporar
+    incorporar,
+
+    consultar
 
 };
 
@@ -95,5 +97,26 @@ const {
     input.click();
 
 }
+
+async function consultar(expedienteRequisitoId) {
+
+    const {
+    data,
+    error
+} = await Workflow.consultarDocumento(
+    expedienteRequisitoId
+);
+
+if (error) {
+
+    console.error(error);
+
+    alert("No fue posible consultar el documento.");
+
+    return;
+
+}
+
+console.log(data);
 
 window.Documentos = Documentos;
