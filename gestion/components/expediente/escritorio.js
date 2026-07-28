@@ -354,9 +354,12 @@ function renderTarjetaRequisito(r) {
     const acciones =
         r.archivo_nombre
             ? `
-                <button class="btn btn-secondary btn-sm">
-                    Consultar
-                </button>
+                <button
+                   class="btn btn-secondary btn-sm"
+                   onclick="Documentos.consultar('${r.id}')">
+                   Consultar
+                 </button>
+
 
                 <button class="btn btn-primary btn-sm">
                     Sustituir
