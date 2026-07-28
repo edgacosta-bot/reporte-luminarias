@@ -117,6 +117,39 @@ if (error) {
 
 }
 
-console.log(data);
+   if (!data.ok) {
+
+    alert(data.mensaje);
+
+    return;
+
+}
+
+const {
+    data: urlData,
+    error: urlError
+} = await window.supabaseClient.storage
+    .from(data.bucket)
+    .createSignedUrl(
+        data.ruta_storage,
+        300
+    );
+
+if (urlError) {
+
+    console.error(urlError);
+
+    alert("No fue posible obtener el documento.");
+
+    return;
+
+}
+
+window.open(
+    urlData.signedUrl,
+    "_blank"
+);
+
+
 
 window.Documentos = Documentos;
