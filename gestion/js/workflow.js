@@ -30,7 +30,9 @@ const Workflow = {
 
     obtenerTiposObra,
 
-    crearObra
+    crearObra,
+
+    registrarDocumentoRequisito
 
 };
 
@@ -274,6 +276,29 @@ async function abrirActuacion(idActuacion){
 
 }
 
+async function registrarDocumentoRequisito(
+    expedienteRequisitoId,
+    bucket,
+    rutaStorage,
+    nombreArchivo,
+    mimeType,
+    tamanoBytes
+) {
+
+  const {
+    data,
+    error
+} = await Workflow.registrarDocumentoRequisito(
+    expedienteRequisitoId,
+    bucket,
+    rutaStorage,
+    nombreArchivo,
+    mimeType,
+    tamanoBytes
+);
+
+console.log("RPC:", data, error);
+}
 
 /* ==========================================================
    EXPORTACIÓN
