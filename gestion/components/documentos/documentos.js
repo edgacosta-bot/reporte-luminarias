@@ -85,6 +85,10 @@ const {
     tamanoBytes
 );
 
+       await Router.mostrarEscritorio(
+    SIGE_STATE.expedienteActual.expediente.id
+);
+
        
     };
 
