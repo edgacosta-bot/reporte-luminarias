@@ -259,22 +259,11 @@ async function crearObra(parametros) {
         );
 
     console.log(
-        "RESPUESTA RPC crear_obra:",
+        "Workflow.crearObra respuesta completa:",
         respuesta
     );
 
-    if (respuesta.error) {
-
-        console.error(
-            "ERROR RPC:",
-            respuesta.error
-        );
-
-        throw respuesta.error;
-
-    }
-
-    return respuesta.data;
+    return respuesta;
 
 }
 
