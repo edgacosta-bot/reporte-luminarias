@@ -460,19 +460,22 @@ function renderAccionesDato(r) {
 
     console.log("REQUISITO:", r);
 
+    const requisitoId =
+        r.expediente_requisito_id ?? r.id;
+
     return `
         <div class="acciones-requisito">
 
             <input
                 type="text"
                 class="form-control form-control-sm"
-                data-requisito="${r.id}"
+                data-requisito="${requisitoId}"
                 placeholder="${r.nombre}">
 
             <button
                 class="btn btn-primary btn-sm"
                 data-accion="cumplir-requisito"
-                data-requisito="${r.id}"
+                data-requisito="${requisitoId}">
                 Guardar
             </button>
 
