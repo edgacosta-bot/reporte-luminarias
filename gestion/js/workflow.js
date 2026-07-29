@@ -247,12 +247,28 @@ async function abrirObra(idExpediente) {
 
 async function crearObra(parametros) {
 
-    console.log("Workflow.crearObra()", parametros);
-   
-    return await window.supabaseClient.rpc(
-    "crear_expediente",
-    parametros
-);
+    console.log(
+        "Workflow.crearObra()",
+        parametros
+    );
+
+    const {
+        data,
+        error
+    } = await window.supabaseClient.rpc(
+        "crear_obra",
+        parametros
+    );
+
+    if (error) {
+
+        console.error(error);
+
+        throw error;
+
+    }
+
+    return data;
 
 }
 
