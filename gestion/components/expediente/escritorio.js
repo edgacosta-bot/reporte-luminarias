@@ -466,13 +466,13 @@ function renderAccionesDato(r) {
             <input
                 type="text"
                 class="form-control form-control-sm"
-                data-requisito="${r.expediente_requisito_id}"
+                data-requisito="${r.id}"
                 placeholder="${r.nombre}">
 
             <button
                 class="btn btn-primary btn-sm"
                 data-accion="cumplir-requisito"
-                data-requisito="${r.expediente_requisito_id}">
+                data-requisito="${r.id}"
                 Guardar
             </button>
 
