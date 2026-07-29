@@ -583,9 +583,8 @@ async function guardar() {
         // ---------------------------------------------------------
 
         const {
-    const {
-    data,
-    error: errorExpediente
+          data,
+          error: errorExpediente
       } = await Workflow.crearObra(parametros);
 
 
