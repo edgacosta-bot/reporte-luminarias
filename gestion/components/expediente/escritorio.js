@@ -354,34 +354,7 @@ function renderTarjetaRequisito(r, numero) {
             No existe documento incorporado.
         `;
 
-    const acciones =
-        r.archivo_nombre
-            ? `
-                <button
-                   class="btn btn-secondary btn-sm"
-                   onclick="Documentos.consultar('${r.id}')">
-                   Consultar
-                 </button>
-
-
-               <button
-                class="btn btn-primary btn-sm"
-                onclick="Documentos.sustituir('${r.id}')">
-
-                Sustituir
-
-               </button>
-            `
-            : `
-                <button
-                   class="btn btn-primary btn-sm"
-                   onclick="Documentos.incorporar('${r.id}')">
-
-                   Incorporar documento
-
-               </button>
-               
-            `;
+    const acciones = renderAccionesRequisito(r);
 
     return `
 
@@ -410,6 +383,31 @@ function renderTarjetaRequisito(r, numero) {
         </div>
 
     `;
+}
+
+
+/* ==========================================================
+   ACCIONES DEL REQUISITO
+========================================================== */
+
+function renderAccionesRequisito(r) {
+
+    switch (r.tipo_captura) {
+
+        case "PDF":
+            return "";
+
+        case "TELEFONO":
+            return "";
+
+        case "EMAIL":
+            return "";
+
+        default:
+            return "";
+
+    }
+
 }
 
 /* ==========================================================
