@@ -78,6 +78,8 @@ function render(data = {}) {
    
 workspace.innerHTML = html;
 
+   registrarEventosRequisitos();   
+
 }
 
 
@@ -395,13 +397,13 @@ function renderAccionesRequisito(r) {
     switch (r.tipo_captura) {
 
         case "PDF":
-            return "";
+            return renderAccionesPdf(r);
 
         case "TELEFONO":
-            return "";
+            return renderAccionesDato(r);
 
         case "EMAIL":
-            return "";
+            return renderAccionesDato(r);
 
         default:
             return "";
@@ -410,6 +412,72 @@ function renderAccionesRequisito(r) {
 
 }
 
+function renderAccionesPdf(r) {
+
+    const tieneDocumento = !!r.archivo_nombre;
+
+    if (tieneDocumento) {
+
+        return `
+            <div class="acciones-requisito">
+
+                <button
+                    class="btn btn-outline-primary btn-sm"
+                    data-accion="consultar-documento"
+                    data-requisito="${r.expediente_requisito_id}">
+                    Consultar
+                </button>
+
+                <button
+                    class="btn btn-outline-secondary btn-sm"
+                    data-accion="sustituir-documento"
+                    data-requisito="${r.expediente_requisito_id}">
+                    Sustituir
+                </button>
+
+            </div>
+        `;
+
+    }
+
+    return `
+        <div class="acciones-requisito">
+
+            <button
+                class="btn btn-primary btn-sm"
+                data-accion="incorporar-documento"
+                data-requisito="${r.expediente_requisito_id}">
+                Incorporar documento
+            </button>
+
+        </div>
+    `;
+
+}
+
+
+function renderAccionesDato(r) {
+
+    return `
+        <div class="acciones-requisito">
+
+            <input
+                type="text"
+                class="form-control form-control-sm"
+                data-requisito="${r.expediente_requisito_id}"
+                placeholder="${r.nombre}">
+
+            <button
+                class="btn btn-primary btn-sm"
+                data-accion="cumplir-requisito"
+                data-requisito="${r.expediente_requisito_id}">
+                Guardar
+            </button>
+
+        </div>
+    `;
+
+}
 /* ==========================================================
    ACTUACIONES
 ========================================================== */
@@ -479,6 +547,59 @@ function renderActuaciones(expediente) {
     `;
 
 }
+
+
+function registrarEventosRequisitos() {
+
+    const botones =
+        document.querySelectorAll(
+            "[data-accion='cumplir-requisito']"
+        );
+
+    botones.forEach(
+        boton => {
+
+            boton.addEventListener(
+                "click",
+                async () => {
+
+                    const requisitoId =
+                        boton.dataset.requisito;
+
+                    const input =
+                        document.querySelector(
+                            `[data-requisito="${requisitoId}"]`
+                        );
+
+                    const valor =
+                        input?.value?.trim();
+
+                    console.log({
+                        requisitoId,
+                        valor
+                    });
+
+
+                    const resultado =
+                        await Workflow.cumplirRequisito(
+                            requisitoId,
+                            valor
+                        );
+
+
+                    console.log(
+                        "Resultado RPC:",
+                        resultado
+                    );
+
+                }
+            );
+
+        }
+    );
+
+}
+
 /* ==========================================================
    ACTUACIONES
 ========================================================== */
