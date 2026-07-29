@@ -592,12 +592,22 @@ async function guardar() {
         if (errorExpediente)
             throw errorExpediente;
 
-        if (!data || !data.ok)
+        if (!data) {
+
     throw new Error(
-        data?.mensaje ||
-        "La RPC no devolvió información válida."
+        "La RPC no devolvió información."
     );
 
+}
+
+
+if (!data.ok) {
+
+    throw new Error(
+        data.mensaje
+    );
+
+}
 Router.mostrarEscritorio(
     data.expediente_id
 );
