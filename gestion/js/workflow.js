@@ -268,6 +268,11 @@ async function crearObra(parametros) {
 
     }
 
+   console.log(
+    "Respuesta crear_obra:",
+    data
+);
+
     return data;
 
 }
