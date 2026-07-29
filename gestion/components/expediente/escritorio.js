@@ -56,6 +56,8 @@ const EscritorioExpediente = {
 
 function render(data = {}) {
 
+   console.log("DATOS ESCRITORIO:", data);
+
     
     const workspace =
         document.getElementById(
