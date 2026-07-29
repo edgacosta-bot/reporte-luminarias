@@ -395,6 +395,11 @@ async function cumplirRequisito(
     valor
 ) {
 
+   console.log("RPC cumplir_requisito:", {
+    requisitoId,
+    valor
+});
+
    const { data, error } =
     await window.supabaseClient.rpc(
         "cumplir_requisito",
