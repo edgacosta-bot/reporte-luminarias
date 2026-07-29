@@ -458,6 +458,8 @@ function renderAccionesPdf(r) {
 
 function renderAccionesDato(r) {
 
+    console.log("REQUISITO:", r);
+
     return `
         <div class="acciones-requisito">
 
