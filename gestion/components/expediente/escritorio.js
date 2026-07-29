@@ -471,7 +471,7 @@ function renderAccionesDato(r) {
             <input
                 type="text"
                 class="form-control form-control-sm"
-                data-requisito="${requisitoId}"
+                data-requisito="${r.id}"
                 placeholder="${r.nombre}">
 
             <button
@@ -574,9 +574,9 @@ function registrarEventosRequisitos() {
                         boton.dataset.requisito;
 
                     const input =
-                        document.querySelector(
-                            `[data-requisito="${requisitoId}"]`
-                        );
+                      document.querySelector(
+                          `[data-input-requisito="${requisitoId}"]`
+                      );
 
                     const valor =
                         input?.value?.trim();
