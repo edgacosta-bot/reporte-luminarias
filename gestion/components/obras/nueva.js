@@ -562,27 +562,19 @@ async function guardar() {
 
         const parametros = {
 
-            p_tipo_clave: "OBR",
-            p_clasificacion_clave: "PUB",
-            p_titulo: titulo,
-            p_descripcion: null,
+          p_lote_id: loteId,
+      
+          p_dro_nombre: null,
+      
+          p_fecha_inicio: null,
+      
+          p_fecha_fin: null,
+      
+          p_administrador_id: usuario.residente_id,
+      
+          p_solicitante_id: null
 
-            p_lote_id: loteId,
-            p_ubicacion_id: ubicacionId,
-            p_tipo_obra_id: tipoObraId,
-
-            p_administrador_id: usuario.residente_id,
-            p_solicitante_id: null,
-
-            p_interesado_tipo: null,
-            p_interesado_nombre: null,
-            p_interesado_telefono: null,
-            p_interesado_correo: null,
-            p_documento_representacion: null,
-
-            p_observaciones: null
-
-        };
+};
 
         console.log("Parámetros crear_expediente:", parametros);
 
@@ -591,19 +583,25 @@ async function guardar() {
         // ---------------------------------------------------------
 
         const {
-    data: expedienteId,
+    const {
+    data,
     error: errorExpediente
-} = await Workflow.crearObra(parametros);
+      } = await Workflow.crearObra(parametros);
 
 
        
         if (errorExpediente)
             throw errorExpediente;
 
-        if (!expedienteId)
-            throw new Error("La RPC no devolvió el identificador del expediente.");
+        if (!data || !data.ok)
+    throw new Error(
+        data?.mensaje ||
+        "La RPC no devolvió información válida."
+    );
 
-        Router.mostrarEscritorio(expedienteId);
+Router.mostrarEscritorio(
+    data.expediente_id
+);
 
     }
     catch (ex) {
