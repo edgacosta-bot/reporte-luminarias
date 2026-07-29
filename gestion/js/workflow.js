@@ -26,7 +26,8 @@ const Workflow = {
     crearObra,
     registrarDocumentoRequisito,
     sustituirDocumentoRequisito,
-    consultarDocumento
+    consultarDocumento,
+    cumplirRequisito
 
 };
 
@@ -374,6 +375,28 @@ async function consultarDocumento(
         },
         error: null
     };
+
+}
+
+
+async function cumplirRequisito(
+    requisitoId,
+    valor
+) {
+
+   const { data, error } =
+    await window.supabaseClient.rpc(
+        "cumplir_requisito",
+        {
+            p_requisito_id: requisitoId,
+            p_valor: valor
+        }
+    );
+
+   if (error)
+    throw error;
+
+   return data;
 
 }
 /* ==========================================================
