@@ -252,28 +252,29 @@ async function crearObra(parametros) {
         parametros
     );
 
-    const {
-        data,
-        error
-    } = await window.supabaseClient.rpc(
-        "crear_obra",
-        parametros
+    const respuesta =
+        await window.supabaseClient.rpc(
+            "crear_obra",
+            parametros
+        );
+
+    console.log(
+        "RESPUESTA RPC crear_obra:",
+        respuesta
     );
 
-    if (error) {
+    if (respuesta.error) {
 
-        console.error(error);
+        console.error(
+            "ERROR RPC:",
+            respuesta.error
+        );
 
-        throw error;
+        throw respuesta.error;
 
     }
 
-   console.log(
-    "Respuesta crear_obra:",
-    data
-);
-
-    return data;
+    return respuesta.data;
 
 }
 
