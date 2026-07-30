@@ -50,6 +50,8 @@ const EscritorioExpediente = {
 
 };
 
+let escritorioActual = null;
+
 /* ==========================================================
    RENDER PRINCIPAL
 ========================================================== */
@@ -57,6 +59,8 @@ const EscritorioExpediente = {
 function render(data = {}) {
 
    console.log("DATOS ESCRITORIO:", data);
+
+   escritorioActual = data;
 
     
     const workspace =
