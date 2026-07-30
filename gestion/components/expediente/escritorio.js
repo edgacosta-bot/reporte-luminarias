@@ -60,6 +60,13 @@ function render(data = {}) {
 
    console.log("DATOS ESCRITORIO:", data);
 
+   window.escritorioData = data;
+
+   console.log(
+       "OBRA ACTUAL:",
+       data.obra
+   );
+
    escritorioActual = data;
 
     
