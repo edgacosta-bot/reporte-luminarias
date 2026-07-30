@@ -27,10 +27,10 @@ const Workflow = {
     registrarDocumentoRequisito,
     sustituirDocumentoRequisito,
     consultarDocumento,
-    cumplirRequisito
+    cumplirRequisito,
+    guardarDatosDRO
 
 };
-
 /* ==========================================================
    OBTENER PRIVADAS
 ========================================================== */
@@ -415,6 +415,53 @@ async function cumplirRequisito(
    return data;
 
 }
+
+async function guardarDatosDRO(datos) {
+
+
+    console.log(
+        "Workflow.guardarDatosDRO()",
+        datos
+    );
+
+
+    const {
+        data,
+        error
+    } = await window.supabaseClient.rpc(
+
+        "guardar_datos_dro",
+
+        {
+
+            p_nombre:
+                datos.nombre,
+
+            p_telefono:
+                datos.telefono,
+
+            p_correo_electronico:
+                datos.correo
+
+        }
+
+    );
+
+
+    if (error) {
+
+        console.error(error);
+
+        throw error;
+
+    }
+
+
+    return data;
+
+
+}
+
 /* ==========================================================
    EXPORTACIÓN
 ========================================================== */
