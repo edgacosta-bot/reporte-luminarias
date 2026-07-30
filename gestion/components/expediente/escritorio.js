@@ -407,13 +407,21 @@ function renderAccionesRequisito(r) {
         case "EMAIL":
             return renderAccionesDato(r);
 
+
+        case "DATOS_DRO":
+            return renderAccionesDatosDRO(r);
+
+
+        case "DATOS_PROPIETARIO":
+            return renderAccionesDatosPropietario(r);
+
+
         default:
             return "";
 
     }
 
 }
-
 function renderAccionesPdf(r) {
 
     const tieneDocumento = !!r.archivo_nombre;
@@ -479,6 +487,45 @@ function renderAccionesDato(r) {
                 data-accion="cumplir-requisito"
                 data-requisito="${requisitoId}">
                 Guardar
+            </button>
+
+        </div>
+    `;
+
+}
+
+
+function renderAccionesDatosDRO(r) {
+
+    return `
+        <div class="acciones-requisito">
+
+            <button
+                class="btn btn-primary btn-sm"
+                data-accion="ingresar-datos-dro"
+                data-requisito="${r.expediente_requisito_id ?? r.id}">
+                
+                Ingresar datos
+
+            </button>
+
+        </div>
+    `;
+
+}
+
+function renderAccionesDatosPropietario(r) {
+
+    return `
+        <div class="acciones-requisito">
+
+            <button
+                class="btn btn-primary btn-sm"
+                data-accion="ingresar-datos-propietario"
+                data-requisito="${r.expediente_requisito_id ?? r.id}">
+                
+                Ingresar datos
+
             </button>
 
         </div>
@@ -558,10 +605,19 @@ function renderActuaciones(expediente) {
 
 function registrarEventosRequisitos() {
 
+
+    /*
+    ======================================================
+    REQUISITOS SIMPLES
+    TELEFONO / EMAIL
+    ======================================================
+    */
+
     const botones =
         document.querySelectorAll(
             "[data-accion='cumplir-requisito']"
         );
+
 
     botones.forEach(
         boton => {
@@ -570,21 +626,27 @@ function registrarEventosRequisitos() {
                 "click",
                 async () => {
 
+
                     const requisitoId =
                         boton.dataset.requisito;
 
+
                     const input =
-                      document.querySelector(
-                          `[data-input-requisito="${requisitoId}"]`
-                      );
+                        document.querySelector(
+                            `[data-input-requisito="${requisitoId}"]`
+                        );
+
 
                     const valor =
                         input?.value?.trim();
+
+
 
                     console.log({
                         requisitoId,
                         valor
                     });
+
 
 
                     const resultado =
@@ -599,11 +661,95 @@ function registrarEventosRequisitos() {
                         resultado
                     );
 
+
                 }
             );
 
         }
     );
+
+
+
+    /*
+    ======================================================
+    DATOS DEL DRO
+    ======================================================
+    */
+
+
+    const botonesDRO =
+        document.querySelectorAll(
+            "[data-accion='ingresar-datos-dro']"
+        );
+
+
+    botonesDRO.forEach(
+        boton => {
+
+
+            boton.addEventListener(
+                "click",
+                () => {
+
+
+                    const requisitoId =
+                        boton.dataset.requisito;
+
+
+                    console.log(
+                        "Abrir formulario DRO",
+                        requisitoId
+                    );
+
+
+                }
+            );
+
+
+        }
+    );
+
+
+
+    /*
+    ======================================================
+    DATOS DEL PROPIETARIO
+    ======================================================
+    */
+
+
+    const botonesPropietario =
+        document.querySelectorAll(
+            "[data-accion='ingresar-datos-propietario']"
+        );
+
+
+    botonesPropietario.forEach(
+        boton => {
+
+
+            boton.addEventListener(
+                "click",
+                () => {
+
+
+                    const requisitoId =
+                        boton.dataset.requisito;
+
+
+                    console.log(
+                        "Abrir formulario Propietario",
+                        requisitoId
+                    );
+
+
+                }
+            );
+
+
+        }
+    );
+
 
 }
 
