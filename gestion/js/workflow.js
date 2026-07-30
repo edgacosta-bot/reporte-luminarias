@@ -416,12 +416,18 @@ async function cumplirRequisito(
 
 }
 
-async function guardarDatosDRO(datos) {
+async function guardarDatosDRO(
+    obraId,
+    datos
+) {
 
 
     console.log(
         "Workflow.guardarDatosDRO()",
-        datos
+        {
+            obraId,
+            datos
+        }
     );
 
 
@@ -434,13 +440,16 @@ async function guardarDatosDRO(datos) {
 
         {
 
+            p_obra_id:
+                obraId,
+
             p_nombre:
                 datos.nombre,
 
             p_telefono:
                 datos.telefono,
 
-            p_correo_electronico:
+            p_correo:
                 datos.correo
 
         }
