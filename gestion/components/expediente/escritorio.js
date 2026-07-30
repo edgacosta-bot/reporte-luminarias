@@ -676,7 +676,6 @@ function registrarEventosRequisitos() {
     ======================================================
     */
 
-
     const botonesDRO =
         document.querySelectorAll(
             "[data-accion='ingresar-datos-dro']"
@@ -689,7 +688,7 @@ function registrarEventosRequisitos() {
 
             boton.addEventListener(
                 "click",
-                () => {
+                async () => {
 
 
                     const requisitoId =
@@ -699,6 +698,17 @@ function registrarEventosRequisitos() {
                     console.log(
                         "Abrir formulario DRO",
                         requisitoId
+                    );
+
+
+                    const datos =
+                        await mostrarFormularioDRO();
+
+
+
+                    console.log(
+                        "Datos capturados DRO:",
+                        datos
                     );
 
 
@@ -717,7 +727,6 @@ function registrarEventosRequisitos() {
     ======================================================
     */
 
-
     const botonesPropietario =
         document.querySelectorAll(
             "[data-accion='ingresar-datos-propietario']"
@@ -730,7 +739,7 @@ function registrarEventosRequisitos() {
 
             boton.addEventListener(
                 "click",
-                () => {
+                async () => {
 
 
                     const requisitoId =
