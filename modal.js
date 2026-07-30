@@ -321,11 +321,9 @@ function mostrarSolicitudPin({
     `;
 
 
-
     document.getElementById(
       "sigvic-pin"
     ).focus();
-
 
 
     document.getElementById(
@@ -339,11 +337,9 @@ function mostrarSolicitudPin({
     };
 
 
-
     document.getElementById(
       "sigvic-btn-confirmar"
     ).onclick = ()=>{
-
 
       const valor =
         document.getElementById(
@@ -353,9 +349,7 @@ function mostrarSolicitudPin({
 
       cerrarModal();
 
-
       resolve(valor);
-
 
     };
 
@@ -382,9 +376,11 @@ function mostrarFormularioDRO() {
             "sigvic-modal-mensaje"
         ).innerHTML = `
 
-
-            <div style="display:flex; flex-direction:column; gap:12px;">
-
+            <div style="
+                display:flex;
+                flex-direction:column;
+                gap:12px;
+            ">
 
                 <input
                     id="dro-nombre"
@@ -422,9 +418,7 @@ function mostrarFormularioDRO() {
                     "
                 >
 
-
             </div>
-
 
         `;
 
@@ -432,7 +426,6 @@ function mostrarFormularioDRO() {
         document.getElementById(
             "sigvic-modal-botones"
         ).innerHTML = `
-
 
             <button
                 class="sigvic-btn sigvic-btn-gris"
@@ -450,7 +443,6 @@ function mostrarFormularioDRO() {
                 Guardar
 
             </button>
-
 
         `;
 
@@ -505,9 +497,5 @@ function mostrarFormularioDRO() {
 
 
     });
-
-}
-    
-  });
 
 }
