@@ -712,16 +712,32 @@ function registrarEventosRequisitos() {
                     );
 
 
-                    const datos =
-                        await mostrarFormularioDRO();
-
-
-
-                    console.log(
-                        "Datos capturados DRO:",
-                        datos
-                    );
-
+                                const datos =
+                await mostrarFormularioDRO();
+            
+            
+            if(!datos){
+                return;
+            }
+            
+            
+            console.log(
+                "Datos capturados DRO:",
+                datos
+            );
+            
+            
+            const resultado =
+                await Workflow.guardarDatosDRO(
+                    escritorioData.obra.id,
+                    datos
+                );
+            
+            
+            console.log(
+                "Resultado guardar DRO:",
+                resultado
+            );
 
                 }
             );
