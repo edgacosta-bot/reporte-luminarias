@@ -262,10 +262,12 @@ function mostrarSolicitudPin({
 
     crearModalBase();
 
+
     document.getElementById(
       "sigvic-modal-titulo"
     ).innerHTML =
       titulo;
+
 
     document.getElementById(
       "sigvic-modal-mensaje"
@@ -294,6 +296,7 @@ function mostrarSolicitudPin({
 
     `;
 
+
     document.getElementById(
       "sigvic-modal-botones"
     ).innerHTML = `
@@ -306,6 +309,7 @@ function mostrarSolicitudPin({
 
       </button>
 
+
       <button
         class="sigvic-btn sigvic-btn-verde"
         id="sigvic-btn-confirmar">
@@ -316,9 +320,13 @@ function mostrarSolicitudPin({
 
     `;
 
+
+
     document.getElementById(
       "sigvic-pin"
     ).focus();
+
+
 
     document.getElementById(
       "sigvic-btn-cancelar"
@@ -330,20 +338,31 @@ function mostrarSolicitudPin({
 
     };
 
+
+
     document.getElementById(
       "sigvic-btn-confirmar"
     ).onclick = ()=>{
+
 
       const valor =
         document.getElementById(
           "sigvic-pin"
         ).value.trim();
 
+
       cerrarModal();
+
 
       resolve(valor);
 
+
     };
+
+
+  });
+
+}
 
 function mostrarFormularioDRO() {
 
