@@ -345,6 +345,150 @@ function mostrarSolicitudPin({
 
     };
 
+function mostrarFormularioDRO() {
+
+    return new Promise(resolve => {
+
+
+        crearModalBase();
+
+
+        document.getElementById(
+            "sigvic-modal-titulo"
+        ).innerHTML =
+            "Datos del DRO";
+
+
+        document.getElementById(
+            "sigvic-modal-mensaje"
+        ).innerHTML = `
+
+
+            <div style="display:flex; flex-direction:column; gap:12px;">
+
+
+                <input
+                    id="dro-nombre"
+                    placeholder="Nombre completo"
+                    style="
+                        height:42px;
+                        border-radius:10px;
+                        border:none;
+                        padding:0 12px;
+                    "
+                >
+
+
+                <input
+                    id="dro-telefono"
+                    placeholder="Teléfono"
+                    style="
+                        height:42px;
+                        border-radius:10px;
+                        border:none;
+                        padding:0 12px;
+                    "
+                >
+
+
+                <input
+                    id="dro-correo"
+                    placeholder="Correo electrónico"
+                    type="email"
+                    style="
+                        height:42px;
+                        border-radius:10px;
+                        border:none;
+                        padding:0 12px;
+                    "
+                >
+
+
+            </div>
+
+
+        `;
+
+
+        document.getElementById(
+            "sigvic-modal-botones"
+        ).innerHTML = `
+
+
+            <button
+                class="sigvic-btn sigvic-btn-gris"
+                id="btn-cancelar-dro">
+
+                Cancelar
+
+            </button>
+
+
+            <button
+                class="sigvic-btn sigvic-btn-verde"
+                id="btn-guardar-dro">
+
+                Guardar
+
+            </button>
+
+
+        `;
+
+
+
+        document.getElementById(
+            "btn-cancelar-dro"
+        ).onclick = ()=>{
+
+            cerrarModal();
+
+            resolve(null);
+
+        };
+
+
+
+        document.getElementById(
+            "btn-guardar-dro"
+        ).onclick = ()=>{
+
+
+            const datos = {
+
+                nombre:
+                    document.getElementById(
+                        "dro-nombre"
+                    ).value.trim(),
+
+
+                telefono:
+                    document.getElementById(
+                        "dro-telefono"
+                    ).value.trim(),
+
+
+                correo:
+                    document.getElementById(
+                        "dro-correo"
+                    ).value.trim()
+
+            };
+
+
+            cerrarModal();
+
+
+            resolve(datos);
+
+
+        };
+
+
+    });
+
+}
+    
   });
 
 }
