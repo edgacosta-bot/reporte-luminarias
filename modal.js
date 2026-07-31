@@ -499,3 +499,149 @@ function mostrarFormularioDRO() {
     });
 
 }
+
+
+function mostrarFormularioPropietario() {
+
+    return new Promise(resolve => {
+
+
+        crearModalBase();
+
+
+        document.getElementById(
+            "sigvic-modal-titulo"
+        ).innerHTML =
+            "Datos del Propietario";
+
+
+        document.getElementById(
+            "sigvic-modal-mensaje"
+        ).innerHTML = `
+
+            <div style="
+                display:flex;
+                flex-direction:column;
+                gap:12px;
+            ">
+
+
+                <input
+                    id="propietario-nombre"
+                    placeholder="Nombre completo"
+                    style="
+                        height:42px;
+                        border-radius:10px;
+                        border:none;
+                        padding:0 12px;
+                    "
+                >
+
+
+                <input
+                    id="propietario-telefono"
+                    placeholder="Teléfono"
+                    style="
+                        height:42px;
+                        border-radius:10px;
+                        border:none;
+                        padding:0 12px;
+                    "
+                >
+
+
+                <input
+                    id="propietario-correo"
+                    placeholder="Correo electrónico"
+                    type="email"
+                    style="
+                        height:42px;
+                        border-radius:10px;
+                        border:none;
+                        padding:0 12px;
+                    "
+                >
+
+            </div>
+
+        `;
+
+
+        document.getElementById(
+            "sigvic-modal-botones"
+        ).innerHTML = `
+
+
+            <button
+                class="sigvic-btn sigvic-btn-gris"
+                id="btn-cancelar-propietario">
+
+                Cancelar
+
+            </button>
+
+
+            <button
+                class="sigvic-btn sigvic-btn-verde"
+                id="btn-guardar-propietario">
+
+                Guardar
+
+            </button>
+
+
+        `;
+
+
+
+        document.getElementById(
+            "btn-cancelar-propietario"
+        ).onclick = ()=>{
+
+            cerrarModal();
+
+            resolve(null);
+
+        };
+
+
+
+        document.getElementById(
+            "btn-guardar-propietario"
+        ).onclick = ()=>{
+
+
+            const datos = {
+
+                nombre:
+                    document.getElementById(
+                        "propietario-nombre"
+                    ).value.trim(),
+
+
+                telefono:
+                    document.getElementById(
+                        "propietario-telefono"
+                    ).value.trim(),
+
+
+                correo:
+                    document.getElementById(
+                        "propietario-correo"
+                    ).value.trim()
+
+            };
+
+
+            cerrarModal();
+
+
+            resolve(datos);
+
+
+        };
+
+
+    });
+
+}
