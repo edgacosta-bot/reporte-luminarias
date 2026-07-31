@@ -620,7 +620,7 @@ function registrarEventosRequisitos() {
     /*
     ======================================================
     REQUISITOS SIMPLES
-    TELEFONO / EMAIL
+    TELEFONO / EMAIL / PDF
     ======================================================
     */
 
@@ -637,41 +637,54 @@ function registrarEventosRequisitos() {
                 "click",
                 async () => {
 
+                    try {
 
-                    const requisitoId =
-                        boton.dataset.requisito;
-
-
-                    const input =
-                        document.querySelector(
-                            `[data-input-requisito="${requisitoId}"]`
-                        );
+                        const requisitoId =
+                            boton.dataset.requisito;
 
 
-                    const valor =
-                        input?.value?.trim();
+                        const input =
+                            document.querySelector(
+                                `[data-input-requisito="${requisitoId}"]`
+                            );
 
 
-
-                    console.log({
-                        requisitoId,
-                        valor
-                    });
+                        const valor =
+                            input?.value?.trim();
 
 
-
-                    const resultado =
-                        await Workflow.cumplirRequisito(
+                        console.log({
                             requisitoId,
                             valor
+                        });
+
+
+                        const resultado =
+                            await Workflow.cumplirRequisito(
+                                requisitoId,
+                                valor
+                            );
+
+
+                        console.log(
+                            "Resultado RPC:",
+                            resultado
                         );
 
 
-                    console.log(
-                        "Resultado RPC:",
-                        resultado
-                    );
+                    } catch(error){
 
+                        console.error(
+                            "Error cumplir requisito:",
+                            error
+                        );
+
+                        mostrarAlerta({
+                            titulo:"SIGE",
+                            mensaje:error.message
+                        });
+
+                    }
 
                 }
             );
@@ -701,43 +714,83 @@ function registrarEventosRequisitos() {
                 "click",
                 async () => {
 
-
-                    const requisitoId =
-                        boton.dataset.requisito;
+                    try {
 
 
-                    console.log(
-                        "Abrir formulario DRO",
-                        requisitoId
-                    );
+                        const requisitoId =
+                            boton.dataset.requisito;
 
 
-                                const datos =
-                await mostrarFormularioDRO();
-            
-            
-            if(!datos){
-                return;
-            }
-            
-            
-            console.log(
-                "Datos capturados DRO:",
-                datos
-            );
-            
-            
-            const resultado =
-                await Workflow.guardarDatosDRO(
-                    escritorioData.obra.id,
-                    datos
-                );
-            
-            
-            console.log(
-                "Resultado guardar DRO:",
-                resultado
-            );
+                        console.log(
+                            "Abrir formulario DRO",
+                            requisitoId
+                        );
+
+
+                        const datos =
+                            await mostrarFormularioDRO();
+
+
+                        if(!datos){
+
+                            return;
+
+                        }
+
+
+                        console.log(
+                            "Datos capturados DRO:",
+                            datos
+                        );
+
+
+                        const resultado =
+                            await Workflow.guardarDatosDRO(
+                                escritorioData.obra.id,
+                                datos
+                            );
+
+
+                        console.log(
+                            "Resultado guardar DRO:",
+                            resultado
+                        );
+
+
+                        const actualizado =
+                            await Workflow.cumplirRequisito(
+                                requisitoId,
+                                "DRO registrado"
+                            );
+
+
+                        console.log(
+                            "Requisito DRO cumplido:",
+                            actualizado
+                        );
+
+
+                    } catch(error){
+
+
+                        console.error(
+                            "Error datos DRO:",
+                            error
+                        );
+
+
+                        mostrarAlerta({
+
+                            titulo:"SIGE",
+
+                            mensaje:
+                                error.message
+
+                        });
+
+
+                    }
+
 
                 }
             );
@@ -768,15 +821,82 @@ function registrarEventosRequisitos() {
                 "click",
                 async () => {
 
-
-                    const requisitoId =
-                        boton.dataset.requisito;
+                    try {
 
 
-                    console.log(
-                        "Abrir formulario Propietario",
-                        requisitoId
-                    );
+                        const requisitoId =
+                            boton.dataset.requisito;
+
+
+                        console.log(
+                            "Abrir formulario Propietario",
+                            requisitoId
+                        );
+
+
+                        const datos =
+                            await mostrarFormularioPropietario();
+
+
+                        if(!datos){
+
+                            return;
+
+                        }
+
+
+                        console.log(
+                            "Datos capturados Propietario:",
+                            datos
+                        );
+
+
+                        const resultado =
+                            await Workflow.guardarDatosPropietario(
+                                escritorioData.obra.id,
+                                datos
+                            );
+
+
+                        console.log(
+                            "Resultado guardar Propietario:",
+                            resultado
+                        );
+
+
+                        const actualizado =
+                            await Workflow.cumplirRequisito(
+                                requisitoId,
+                                "Propietario registrado"
+                            );
+
+
+                        console.log(
+                            "Requisito Propietario cumplido:",
+                            actualizado
+                        );
+
+
+                    } catch(error){
+
+
+                        console.error(
+                            "Error datos Propietario:",
+                            error
+                        );
+
+
+                        mostrarAlerta({
+
+                            titulo:"SIGE",
+
+                            mensaje:
+                                error.message
+
+                        });
+
+
+                    }
 
 
                 }
@@ -788,7 +908,6 @@ function registrarEventosRequisitos() {
 
 
 }
-
 /* ==========================================================
    ACTUACIONES
 ========================================================== */
