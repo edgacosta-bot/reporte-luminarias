@@ -28,7 +28,7 @@ const Workflow = {
     sustituirDocumentoRequisito,
     consultarDocumento,
     cumplirRequisito,
-    guardarDatosDRO
+    guardarDatosPropietario
 
 };
 /* ==========================================================
@@ -437,6 +437,61 @@ async function guardarDatosDRO(
     } = await window.supabaseClient.rpc(
 
         "guardar_datos_dro",
+
+        {
+
+            p_obra_id:
+                obraId,
+
+            p_nombre:
+                datos.nombre,
+
+            p_telefono:
+                datos.telefono,
+
+            p_correo:
+                datos.correo
+
+        }
+
+    );
+
+
+    if (error) {
+
+        console.error(error);
+
+        throw error;
+
+    }
+
+
+    return data;
+
+
+}
+
+async function guardarDatosPropietario(
+    obraId,
+    datos
+) {
+
+
+    console.log(
+        "Workflow.guardarDatosPropietario()",
+        {
+            obraId,
+            datos
+        }
+    );
+
+
+    const {
+        data,
+        error
+    } = await window.supabaseClient.rpc(
+
+        "guardar_datos_propietario",
 
         {
 
