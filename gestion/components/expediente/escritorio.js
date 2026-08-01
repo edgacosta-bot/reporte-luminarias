@@ -639,7 +639,7 @@ function registrarEventosRequisitos() {
     /*
     ======================================================
     REQUISITOS SIMPLES
-    TELEFONO / EMAIL / PDF
+    TELEFONO / EMAIL
     ======================================================
     */
 
@@ -691,12 +691,13 @@ function registrarEventosRequisitos() {
                         );
 
 
-                    } catch(error){
+                    } catch(error) {
 
                         console.error(
                             "Error cumplir requisito:",
                             error
                         );
+
 
                         mostrarAlerta({
                             titulo:"SIGE",
@@ -750,11 +751,8 @@ function registrarEventosRequisitos() {
                             await mostrarFormularioDRO();
 
 
-                        if(!datos){
-
+                        if(!datos)
                             return;
-
-                        }
 
 
                         console.log(
@@ -789,7 +787,7 @@ function registrarEventosRequisitos() {
                         );
 
 
-                    } catch(error){
+                    } catch(error) {
 
 
                         console.error(
@@ -799,12 +797,8 @@ function registrarEventosRequisitos() {
 
 
                         mostrarAlerta({
-
                             titulo:"SIGE",
-
-                            mensaje:
-                                error.message
-
+                            mensaje:error.message
                         });
 
 
@@ -857,11 +851,8 @@ function registrarEventosRequisitos() {
                             await mostrarFormularioPropietario();
 
 
-                        if(!datos){
-
+                        if(!datos)
                             return;
-
-                        }
 
 
                         console.log(
@@ -896,7 +887,7 @@ function registrarEventosRequisitos() {
                         );
 
 
-                    } catch(error){
+                    } catch(error) {
 
 
                         console.error(
@@ -906,12 +897,74 @@ function registrarEventosRequisitos() {
 
 
                         mostrarAlerta({
-
                             titulo:"SIGE",
+                            mensaje:error.message
+                        });
 
-                            mensaje:
-                                error.message
 
+                    }
+
+
+                }
+            );
+
+
+        }
+    );
+
+
+
+    /*
+    ======================================================
+    INCORPORAR DOCUMENTO PDF
+    ======================================================
+    */
+
+    const botonesDocumento =
+        document.querySelectorAll(
+            "[data-accion='incorporar-documento']"
+        );
+
+
+    botonesDocumento.forEach(
+        boton => {
+
+
+            boton.addEventListener(
+                "click",
+                async () => {
+
+
+                    try {
+
+
+                        const requisitoId =
+                            boton.dataset.requisito;
+
+
+                        console.log(
+                            "Incorporar documento:",
+                            requisitoId
+                        );
+
+
+                        await Documentos.incorporar(
+                            requisitoId
+                        );
+
+
+                    } catch(error) {
+
+
+                        console.error(
+                            "Error incorporar documento:",
+                            error
+                        );
+
+
+                        mostrarAlerta({
+                            titulo:"SIGE",
+                            mensaje:error.message
                         });
 
 
@@ -1008,7 +1061,51 @@ function renderActuacion(
 
     `;
 
+    /*
+    ======================================================
+    INCORPORAR DOCUMENTO PDF
+    ======================================================
+    */
+
+    const botonesDocumento =
+        document.querySelectorAll(
+            "[data-accion='incorporar-documento']"
+        );
+
+
+    botonesDocumento.forEach(
+        boton => {
+
+
+            boton.addEventListener(
+                "click",
+                async () => {
+
+
+                    const requisitoId =
+                        boton.dataset.requisito;
+
+
+                    console.log(
+                        "Incorporar documento:",
+                        requisitoId
+                    );
+
+
+                    await Documentos.incorporar(
+                        requisitoId
+                    );
+
+
+                }
+            );
+
+
+        }
+    );
+   
 }
+
 
 
 /* ==========================================================
