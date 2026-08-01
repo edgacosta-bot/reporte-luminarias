@@ -17,86 +17,212 @@ const Documentos = {
 
 async function incorporar(expedienteRequisitoId) {
 
-    const input = document.createElement("input");
+    const input =
+        document.createElement("input");
+
 
     input.type = "file";
 
     input.accept = "application/pdf";
 
+
     input.onchange = async () => {
 
-        const archivo = input.files[0];
+        try {
 
-        const extension = archivo.name.split(".").pop().toLowerCase();
 
-       if (extension !== "pdf") {
+            const archivo =
+                input.files[0];
 
-    alert("Únicamente se permiten archivos PDF.");
 
-    return;
+            if (!archivo)
+                return;
 
-}
 
-        if (!archivo)
-            return;
 
-        const nombreArchivo = archivo.name;
-        const tamanoBytes = archivo.size;
-        const mimeType = archivo.type;
-        const bucket = "Documentos";
-        const rutaStorage =
-    crypto.randomUUID() + ".pdf";
+            const extension =
+                archivo.name
+                    .split(".")
+                    .pop()
+                    .toLowerCase();
 
-        console.log({
-    expedienteRequisitoId,
-    bucket,
-    rutaStorage,
-    nombreArchivo,
-    mimeType,
-    tamanoBytes
-});
 
-        
-         const { error } = await window.supabaseClient.storage
-    .from(bucket)
-    .upload(
-        rutaStorage,
-        archivo,
-        {
-            upsert: false
+
+            if (extension !== "pdf") {
+
+                mostrarAlerta({
+
+                    titulo:"SIGE",
+
+                    mensaje:
+                        "Únicamente se permiten archivos PDF."
+
+                });
+
+                return;
+
+            }
+
+
+
+            const nombreArchivo =
+                archivo.name;
+
+
+            const tamanoBytes =
+                archivo.size;
+
+
+            const mimeType =
+                archivo.type;
+
+
+            const bucket =
+                "Documentos";
+
+
+            const rutaStorage =
+                crypto.randomUUID()
+                + ".pdf";
+
+
+
+            console.log(
+                "Preparando documento:",
+                {
+                    expedienteRequisitoId,
+                    bucket,
+                    rutaStorage,
+                    nombreArchivo,
+                    mimeType,
+                    tamanoBytes
+                }
+            );
+
+
+
+            const {
+                error: errorStorage
+            } =
+            await window.supabaseClient.storage
+
+                .from(bucket)
+
+                .upload(
+                    rutaStorage,
+                    archivo,
+                    {
+                        upsert:false
+                    }
+                );
+
+
+
+            if(errorStorage){
+
+
+                console.error(
+                    errorStorage
+                );
+
+
+                throw new Error(
+                    "No fue posible cargar el documento."
+                );
+
+            }
+
+
+
+            const {
+                data,
+                error:errorRpc
+            } =
+            await Workflow.registrarDocumentoRequisito(
+
+                expedienteRequisitoId,
+
+                bucket,
+
+                rutaStorage,
+
+                nombreArchivo,
+
+                mimeType,
+
+                tamanoBytes
+
+            );
+
+
+
+            if(errorRpc){
+
+                throw errorRpc;
+
+            }
+
+
+
+            console.log(
+                "Documento registrado:",
+                data
+            );
+
+
+
+            const actualizado =
+                await Workflow.cumplirRequisito(
+
+                    expedienteRequisitoId,
+
+                    "Documento incorporado"
+
+                );
+
+
+
+            console.log(
+                "Requisito cumplido:",
+                actualizado
+            );
+
+
+
+            await Router.mostrarEscritorio(
+
+                SIGE_STATE.expedienteActual.expediente.id
+
+            );
+
+
+
+        } catch(error){
+
+
+            console.error(
+                "Error incorporar documento:",
+                error
+            );
+
+
+            mostrarAlerta({
+
+                titulo:"SIGE",
+
+                mensaje:error.message
+
+            });
+
+
         }
-    );
 
-if (error) {
 
-    console.error(error);
-
-    alert("No fue posible cargar el documento.");
-
-    return;
-
-}
-
-const {
-    data,
-    error: errorRpc
-} = await Workflow.registrarDocumentoRequisito(
-    expedienteRequisitoId,
-    bucket,
-    rutaStorage,
-    nombreArchivo,
-    mimeType,
-    tamanoBytes
-);
-
-       await Router.mostrarEscritorio(
-    SIGE_STATE.expedienteActual.expediente.id
-);
-
-       
     };
 
+
     input.click();
+
 
 }
 
