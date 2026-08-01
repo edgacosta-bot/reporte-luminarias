@@ -435,43 +435,62 @@ function renderAccionesRequisito(r) {
 }
 function renderAccionesPdf(r) {
 
-    const tieneDocumento = !!r.archivo_nombre;
+    const tieneDocumento =
+        !!r.archivo_nombre;
+
 
     if (tieneDocumento) {
 
+
         return `
+
             <div class="acciones-requisito">
+
 
                 <button
                     class="btn btn-outline-primary btn-sm"
                     data-accion="consultar-documento"
-                    data-requisito="${r.expediente_requisito_id}">
+                    data-requisito="${r.id}">
+
                     Consultar
+
                 </button>
+
 
                 <button
                     class="btn btn-outline-secondary btn-sm"
                     data-accion="sustituir-documento"
-                    data-requisito="${r.expediente_requisito_id}">
+                    data-requisito="${r.id}">
+
                     Sustituir
+
                 </button>
 
+
             </div>
+
         `;
 
     }
 
+
     return `
+
         <div class="acciones-requisito">
+
 
             <button
                 class="btn btn-primary btn-sm"
                 data-accion="incorporar-documento"
-                data-requisito="${r.expediente_requisito_id}">
+                data-requisito="${r.id}">
+
                 Incorporar documento
+
             </button>
 
+
         </div>
+
     `;
 
 }
