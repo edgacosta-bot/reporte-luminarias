@@ -357,17 +357,26 @@ function renderTarjetaRequisito(r, numero) {
             ? "✅"
             : "⏳";
 
-    const documento =
-    r.archivo_nombre
-        ? `
-            <strong>Documento vigente</strong><br>
-            ${r.archivo_nombre}<br>
-            Versión ${r.version ?? 1}
-        `
-        : `
-            <strong>Documento vigente</strong><br>
-            No existe documento incorporado.
-        `;
+    let documento = "";
+
+
+         if (r.tipo_captura === "PDF") {
+         
+         
+             documento =
+                 r.archivo_nombre
+                     ? `
+                         <strong>Documento vigente</strong><br>
+                         ${r.archivo_nombre}<br>
+                         Versión ${r.version ?? 1}
+                     `
+                     : `
+                         <strong>Documento vigente</strong><br>
+                         No existe documento incorporado.
+                     `;
+         
+         
+         }
 
     const acciones = renderAccionesRequisito(r);
 
