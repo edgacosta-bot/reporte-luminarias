@@ -978,8 +978,77 @@ function registrarEventosRequisitos() {
         }
     );
 
+       /*
+    ======================================================
+    SUSTITUIR DOCUMENTO PDF
+    ======================================================
+    */
+
+    const botonesSustituir =
+        document.querySelectorAll(
+            "[data-accion='sustituir-documento']"
+        );
+
+
+    botonesSustituir.forEach(
+        boton => {
+
+
+            boton.addEventListener(
+                "click",
+                async () => {
+
+
+                    try {
+
+
+                        const requisitoId =
+                            boton.dataset.requisito;
+
+
+                        console.log(
+                            "Sustituir documento:",
+                            requisitoId
+                        );
+
+
+                        await Documentos.sustituir(
+                            requisitoId
+                        );
+
+
+                    } catch(error) {
+
+
+                        console.error(
+                            "Error sustituir documento:",
+                            error
+                        );
+
+
+                        mostrarAlerta({
+
+                            titulo:"SIGE",
+
+                            mensaje:
+                                error.message
+
+                        });
+
+
+                    }
+
+
+                }
+            );
+
+
+        }
+    );
 
 }
+
+
 /* ==========================================================
    ACTUACIONES
 ========================================================== */
