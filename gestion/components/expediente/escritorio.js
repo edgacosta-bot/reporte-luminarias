@@ -453,10 +453,15 @@ function renderAccionesPdf(r) {
 
         return `
 
-            <div class="acciones-requisito">
+           <div 
+    class="acciones-requisito"
+    style="
+        margin-top:18px;
+    "
+>
 
 
-                <button
+    <button
                     class="btn btn-outline-primary btn-sm"
                     data-accion="consultar-documento"
                     data-requisito="${r.id}">
@@ -485,10 +490,15 @@ function renderAccionesPdf(r) {
 
     return `
 
-        <div class="acciones-requisito">
+        <div 
+    class="acciones-requisito"
+    style="
+        margin-top:18px;
+    "
+>
 
 
-            <button
+    <button
                 class="btn btn-primary btn-sm"
                 data-accion="incorporar-documento"
                 data-requisito="${r.id}">
