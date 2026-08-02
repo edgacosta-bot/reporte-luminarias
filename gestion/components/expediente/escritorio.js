@@ -1046,6 +1046,74 @@ function registrarEventosRequisitos() {
         }
     );
 
+    /*
+    ======================================================
+    CONSULTAR DOCUMENTO PDF
+    ======================================================
+    */
+
+    const botonesConsultar =
+        document.querySelectorAll(
+            "[data-accion='consultar-documento']"
+        );
+
+
+    botonesConsultar.forEach(
+        boton => {
+
+
+            boton.addEventListener(
+                "click",
+                async () => {
+
+
+                    try {
+
+
+                        const requisitoId =
+                            boton.dataset.requisito;
+
+
+                        console.log(
+                            "Consultar documento:",
+                            requisitoId
+                        );
+
+
+                        await Documentos.consultar(
+                            requisitoId
+                        );
+
+
+                    } catch(error) {
+
+
+                        console.error(
+                            "Error consultar documento:",
+                            error
+                        );
+
+
+                        mostrarAlerta({
+
+                            titulo:"SIGE",
+
+                            mensaje:
+                                error.message
+
+                        });
+
+
+                    }
+
+
+                }
+            );
+
+
+        }
+    );
+   
 }
 
 
