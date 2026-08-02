@@ -632,22 +632,112 @@ function renderAccionesDatosDRO(r) {
 
 
 }
+
+
 function renderAccionesDatosPropietario(r) {
 
+
+    const obra =
+        escritorioData?.obra ?? {};
+
+
+
+    const tienePropietario =
+        !!obra.propietario_id;
+
+
+
+    if (tienePropietario) {
+
+
+        return `
+
+            <div class="datos-requisito">
+
+                <div class="dato-bloque">
+
+
+                    <strong>
+                        Propietario
+                    </strong>
+
+                    <br>
+
+
+                    Nombre:
+                    ${obra.propietario_nombre ?? "No registrado"}
+
+                    <br>
+
+
+                    Teléfono:
+                    ${obra.propietario_telefono ?? "No registrado"}
+
+                    <br>
+
+
+                    Correo:
+                    ${obra.propietario_correo ?? "No registrado"}
+
+
+                </div>
+
+
+
+                <div class="acciones-requisito">
+
+
+                    <button
+
+                        class="btn btn-outline-primary btn-sm"
+
+                        data-accion="ingresar-datos-propietario"
+
+                        data-requisito="${r.expediente_requisito_id ?? r.id}"
+
+                    >
+
+                        Actualizar datos
+
+                    </button>
+
+
+                </div>
+
+
+            </div>
+
+        `;
+
+
+    }
+
+
+
     return `
+
         <div class="acciones-requisito">
 
+
             <button
+
                 class="btn btn-primary btn-sm"
+
                 data-accion="ingresar-datos-propietario"
-                data-requisito="${r.expediente_requisito_id ?? r.id}">
-                
+
+                data-requisito="${r.expediente_requisito_id ?? r.id}"
+
+            >
+
                 Ingresar datos
 
             </button>
 
+
         </div>
+
     `;
+
 
 }
 /* ==========================================================
