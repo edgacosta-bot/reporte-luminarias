@@ -527,23 +527,102 @@ function renderAccionesDato(r) {
 
 function renderAccionesDatosDRO(r) {
 
+
+    const obra =
+        escritorioData?.obra ?? {};
+
+
+
+    const tieneDRO =
+        !!obra.dro_id;
+
+
+
+    if (tieneDRO) {
+
+
+        return `
+
+            <div class="datos-requisito">
+
+                <div class="dato-bloque">
+
+                    <strong>
+                        Director Responsable de Obra
+                    </strong>
+
+                    <br>
+
+                    Nombre:
+                    ${obra.dro_nombre ?? "No registrado"}
+
+                    <br>
+
+                    Teléfono:
+                    ${obra.dro_telefono ?? "No registrado"}
+
+                    <br>
+
+                    Correo:
+                    ${obra.dro_correo ?? "No registrado"}
+
+                </div>
+
+
+                <div class="acciones-requisito">
+
+                    <button
+
+                        class="btn btn-outline-primary btn-sm"
+
+                        data-accion="ingresar-datos-dro"
+
+                        data-requisito="${r.expediente_requisito_id ?? r.id}"
+
+                    >
+
+                        Actualizar datos
+
+                    </button>
+
+                </div>
+
+
+            </div>
+
+        `;
+
+
+    }
+
+
+
     return `
+
         <div class="acciones-requisito">
 
+
             <button
+
                 class="btn btn-primary btn-sm"
+
                 data-accion="ingresar-datos-dro"
-                data-requisito="${r.expediente_requisito_id ?? r.id}">
-                
+
+                data-requisito="${r.expediente_requisito_id ?? r.id}"
+
+            >
+
                 Ingresar datos
 
             </button>
 
+
         </div>
+
     `;
 
-}
 
+}
 function renderAccionesDatosPropietario(r) {
 
     return `
