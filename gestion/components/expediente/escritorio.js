@@ -388,9 +388,11 @@ function renderTarjetaRequisito(r, numero) {
              ${numero}. ${estado} ${r.nombre}
             </div>
 
-            <div style="margin-top:12px;">
-                ${documento}
-            </div>
+            ${documento ? `
+<div style="margin-top:12px;">
+    ${documento}
+</div>
+` : ""}   
 
             <div
                 style="
@@ -588,9 +590,14 @@ function renderAccionesDatosDRO(r) {
                 </div>
 
 
-                <div class="acciones-requisito">
+               <div 
+    class="acciones-requisito"
+    style="
+        margin-top:18px;
+    "
+>
 
-                    <button
+    <button
 
                         class="btn btn-outline-primary btn-sm"
 
@@ -694,10 +701,14 @@ function renderAccionesDatosPropietario(r) {
 
 
 
-                <div class="acciones-requisito">
+                <div 
+    class="acciones-requisito"
+    style="
+        margin-top:18px;
+    "
+>
 
-
-                    <button
+    <button
 
                         class="btn btn-outline-primary btn-sm"
 
