@@ -318,7 +318,11 @@ function renderResumen(data) {
 
 function renderRequisitos(data) {
 
-    const requisitos = data.requisitos ?? [];
+    const requisitos =
+    (data.requisitos ?? [])
+    .filter(
+        r => r.estado !== "CANCELADO"
+    );
 
     const tarjetas = requisitos
     .map((r, indice) =>
