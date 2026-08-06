@@ -85,8 +85,7 @@ function render(data = {}) {
 
     ${renderRequisitos(data)}
 
-    ${renderBitacora(data)}
-
+    ${renderEstadoExpediente(data)}
 `;
    
 workspace.innerHTML = html;
@@ -347,6 +346,84 @@ function renderRequisitos(data) {
         </section>
 
     `;
+
+}
+
+
+function renderEstadoExpediente(data) {
+
+    const requisitos = data.requisitos ?? [];
+
+    const obligatorios =
+        requisitos.filter(
+            r => r.obligatorio === true
+        );
+
+    const completos =
+        obligatorios.filter(
+            r => r.estado === "CUMPLIDO"
+        );
+
+    const listo =
+        obligatorios.length > 0 &&
+        completos.length === obligatorios.length;
+
+
+    return `
+
+<section class="bloque">
+
+<h2 class="bloque-titulo">
+ESTADO DEL EXPEDIENTE
+</h2>
+
+
+<div class="card">
+
+<div style="
+font-size:18px;
+font-weight:600;
+">
+
+Integración documental
+
+</div>
+
+
+<div style="
+margin-top:10px;
+">
+
+${completos.length}
+de
+${obligatorios.length}
+requisitos completos
+
+</div>
+
+
+<div style="
+margin-top:20px;
+">
+
+
+<button
+class="btn btn-primary"
+${listo ? "" : "disabled"}
+>
+
+Turnar expediente a Mesa Directiva
+
+</button>
+
+
+</div>
+
+</div>
+
+</section>
+
+`;
 
 }
 
