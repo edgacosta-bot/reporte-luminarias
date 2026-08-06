@@ -141,7 +141,7 @@ function renderHeader(data) {
                 <div>
                     <strong>Tipo de obra</strong>
                     <br>
-                    ${expediente.tipo_obra ?? "-"}
+                   ${data.obra?.tipo_obra ?? "-"}
                 </div>
 
                <div>
