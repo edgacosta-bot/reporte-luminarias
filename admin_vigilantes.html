@@ -447,77 +447,96 @@ function cerrarModalNuevo() {
   document.getElementById("modalNuevo").style.display = "none";
 }
 
+let creandoVigilante = false;
+
 async function crearVigilante() {
 
-  try {
+    if (creandoVigilante) {
+        return;
+    }
 
-  const nombre = document.getElementById("nombreNuevo").value;
-  const pin = document.getElementById("pinNuevo").value;
+    creandoVigilante = true;
 
-  if (!nombre || !pin || pin.length !== 4) {
-    mostrarToast("Datos inválidos", "warn");
-    return;
-  }
+    try {
 
-  const { data: existe } = await supabaseClient
-    .from("residentes")
-    .select("id")
-    .eq("pin_vigilante", pin)
-    .maybeSingle();
+        const nombre = document.getElementById("nombreNuevo").value;
+        const pin = document.getElementById("pinNuevo").value;
 
-  if (existe) {
-    mostrarToast("PIN ya existe", "error");
-    return;
-  }
+        if (!nombre || !pin || pin.length !== 4) {
+            mostrarToast("Datos inválidos", "warn");
+            return;
+        }
 
-// 🔢 OBTENER SIGUIENTE NÚMERO OPERATIVO
+        const { data: existe } = await supabaseClient
+            .from("residentes")
+            .select("id")
+            .eq("pin_vigilante", pin)
+            .maybeSingle();
 
-const { data: ultimo } = await supabaseClient
-  .from("residentes")
-  .select("casa")
-  .eq("tipo", "vigilante")
-  .eq("privada", "SEG")
-  .order("created_at", { ascending: false })
-  .limit(1)
-  .maybeSingle();
+        if (existe) {
+            mostrarToast("PIN ya existe", "error");
+            return;
+        }
 
-let siguienteNumero = 1;
+        // 🔢 Obtener siguiente número operativo
 
-if (ultimo?.casa && !isNaN(parseInt(ultimo.casa))) {
-  siguienteNumero = parseInt(ultimo.casa) + 1;
-}
-    
- const { error } = await supabaseClient
-  .from("residentes")
-  .insert([{
-    nombre,
-    tipo: "vigilante",
-    privada: "SEG",
-    casa: String(siguienteNumero),
-    pin_vigilante: pin,
-    activo: true,
-    created_at: new Date().toISOString()
-  }]);
+        const { data: ultimo } = await supabaseClient
+            .from("residentes")
+            .select("casa")
+            .eq("tipo", "vigilante")
+            .eq("privada", "SEG")
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
 
-    console.log("INSERT TERMINÓ");
-    console.log(error);
+        let siguienteNumero = 1;
 
-if (error) {
-  console.error(error);
-  alert(error.message);
-  return;
-}
+        if (ultimo?.casa && !isNaN(parseInt(ultimo.casa))) {
+            siguienteNumero = parseInt(ultimo.casa) + 1;
+        }
 
- cerrarModalNuevo();
-mostrarToast("Vigilante creado");
+        const { error } = await supabaseClient
+            .from("residentes")
+            .insert([{
+                nombre,
+                tipo: "vigilante",
+                privada: "SEG",
+                casa: String(siguienteNumero),
+                pin_vigilante: pin,
+                activo: true,
+                created_at: new Date().toISOString()
+            }]);
 
-cargar();
+        console.log("INSERT TERMINÓ");
+        console.log(error);
 
-} catch(err) {
-  console.error(err);
-  alert(err.message);
-}
-    
+        if (error) {
+            console.error(error);
+            alert(error.message);
+            return;
+        }
+
+        cerrarModalNuevo();
+
+        mostrarToast("Vigilante creado");
+
+        cargar();
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert(err.message);
+
+    } finally {
+
+        // 🔓 Libera siempre el candado,
+        // haya éxito o error.
+
+        creandoVigilante = false;
+
+    }
+
 }
 
 </script>
