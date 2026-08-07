@@ -251,6 +251,7 @@ function filtro30dias() {
 }
   
 // 🔍 CONSULTA
+// 🔍 CONSULTA
 async function consultar() {
 
     const desde = document.getElementById("desde").value;
@@ -260,164 +261,148 @@ async function consultar() {
     contenedor.innerHTML = "Consultando...";
 
     const { data, error } = await supabaseClient.rpc(
-
         "consultar_historial_accesos",
-
         {
             p_residente_id: residenteIdGlobal,
             p_desde: desde,
             p_hasta: hasta
         }
-
     );
 
     if (error) {
-
         console.error(error);
-
         contenedor.innerHTML =
             "<div class='vacio'>Error al consultar.</div>";
-
         return;
-
     }
 
     if (!data.ok) {
-
         contenedor.innerHTML =
             `<div class="vacio">${data.mensaje}</div>`;
-
         return;
-
     }
 
     const total = data.datos.total_visitas;
-
     const historial = data.datos.historial;
 
     if (total === 0) {
 
         contenedor.innerHTML = `
-
             <div class="vacio">
-
                 📭
-
                 <br><br>
-
                 ${data.mensaje}
-
             </div>
-
         `;
 
         return;
-
     }
 
+    // Resumen
     contenedor.innerHTML = `
+        <div class="item" style="text-align:center;">
+            <div style="font-size:42px;font-weight:700;">
+                ${total}
+            </div>
 
-        <div class="item">
-
-            <b>${total}</b><br>
-
-            visitas encontradas
-
+            <div style="
+                font-size:18px;
+                color:#CBD5E1;
+                margin-top:6px;
+            ">
+                Visitas recibidas
+            </div>
         </div>
-
     `;
 
     historial.forEach(item => {
 
-        let icono = "🟢";
+        const entrada = formatMXDate(item.fecha_entrada);
 
-        if (item.tipo_tarjeta === "ABIERTO")
-            icono = "🔵";
+        const conclusion = item.fecha_conclusion
+            ? formatMXDate(item.fecha_conclusion)
+            : "";
 
-        if (item.tipo_tarjeta === "AUTOMATICO")
-            icono = "⚠";
+        let contenido = "";
 
-        const entrada =
-            formatMXDate(item.fecha_entrada);
+        switch (item.estado) {
 
-        const conclusion =
-            item.fecha_conclusion
-                ? formatMXDate(item.fecha_conclusion)
-                : "";
+            case "DENTRO":
+
+                contenido = `
+                    <div style="margin-top:18px;">
+                        🔵 <b>Visitante dentro</b>
+                        <br>
+                        ${item.mensaje}
+                    </div>
+                `;
+
+                break;
+
+            case "CIERRE_AUTOMATICO":
+
+                contenido = `
+                    <div style="margin-top:18px;">
+                        🔴 <b>Acceso concluido</b>
+                    </div>
+
+                    <div style="
+                        margin-top:14px;
+                        color:#FBBF24;
+                        line-height:1.45;
+                    ">
+                        ⚠ ${item.mensaje}
+                    </div>
+                `;
+
+                break;
+
+            default:
+
+                contenido = `
+                    <div style="margin-top:18px;">
+                        🔴 <b>Acceso concluido</b>
+                        <br>
+                        ${conclusion}
+                    </div>
+
+                    <div style="
+                        margin-top:14px;
+                        color:#D1D5DB;
+                    ">
+                        ✔ ${item.mensaje}
+                    </div>
+                `;
+
+        }
 
         contenedor.innerHTML += `
 
-<div class="item">
+            <div class="item">
 
-    <div style="font-size:18px;font-weight:bold;margin-bottom:10px;">
+                <div style="
+                    font-size:22px;
+                    font-weight:600;
+                    margin-bottom:18px;
+                ">
+                    ${item.visitante}
+                </div>
 
-        ${icono} ${item.visitante}
+                <div>
 
-    </div>
+                    🟢 <b>Ingresó</b>
 
-    <div>
+                    <br>
 
-        🟢 <b>Ingresó</b>
+                    ${entrada}
 
-        <br>
+                </div>
 
-        ${entrada}
+                ${contenido}
 
-    </div>
+            </div>
 
-    ${
-
-        item.estado === "DENTRO"
-
-        ?
-
-        `
-
-        <div style="margin-top:14px;">
-
-            🔵 <b>${item.titulo}</b>
-
-            <br>
-
-            ${item.mensaje}
-
-        </div>
-
-        `
-
-        :
-
-        `
-
-       <div style="margin-top:14px;">
-
-    🔴 <b>Acceso concluido</b>
-
-</div>
-
-<div style="margin-top:14px;">
-
-    ⚠ ${item.mensaje}
-
-</div>
-
-        <div style="margin-top:14px;">
-
-            ${icono} <b>${item.titulo}</b>
-
-            <br>
-
-            ${item.mensaje}
-
-        </div>
-
-        `
-
-    }
-
-</div>
-
-`;
+        `;
 
     });
 
