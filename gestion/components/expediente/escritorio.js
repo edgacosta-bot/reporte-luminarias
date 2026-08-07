@@ -355,9 +355,11 @@ function renderEstadoExpediente(data) {
     const requisitos = data.requisitos ?? [];
 
     const obligatorios =
-        requisitos.filter(
-            r => r.obligatorio === true
-        );
+    requisitos.filter(
+        r =>
+            r.obligatorio === true &&
+            r.estado !== "CANCELADO"
+    );
 
     const completos =
         obligatorios.filter(
