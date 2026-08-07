@@ -347,47 +347,75 @@ async function consultar() {
 
         contenedor.innerHTML += `
 
-            <div class="item">
+<div class="item">
 
-                <b>${item.visitante}</b>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:10px;">
 
-                <br><br>
+        ${icono} ${item.visitante}
 
-                🟢 Ingresó
+    </div>
 
-                <br>
+    <div>
 
-                ${entrada}
+        🟢 <b>Ingresó</b>
 
-                ${
+        <br>
 
-                    item.estado === "DENTRO"
+        ${entrada}
 
-                    ?
+    </div>
 
-                    `<br><br>
+    ${
 
-                    ${icono} ${item.mensaje}`
+        item.estado === "DENTRO"
 
-                    :
+        ?
 
-                    `<br><br>
+        `
 
-                    🔴 Acceso concluido
+        <div style="margin-top:14px;">
 
-                    <br>
+            🔵 <b>${item.titulo}</b>
 
-                    ${conclusion}
+            <br>
 
-                    <br><br>
+            ${item.mensaje}
 
-                    ${icono} ${item.mensaje}`
+        </div>
 
-                }
+        `
 
-            </div>
+        :
 
-        `;
+        `
+
+        <div style="margin-top:14px;">
+
+            🔴 <b>Acceso concluido</b>
+
+            <br>
+
+            ${conclusion}
+
+        </div>
+
+        <div style="margin-top:14px;">
+
+            ${icono} <b>${item.titulo}</b>
+
+            <br>
+
+            ${item.mensaje}
+
+        </div>
+
+        `
+
+    }
+
+</div>
+
+`;
 
     });
 
