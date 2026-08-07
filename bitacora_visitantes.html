@@ -253,71 +253,145 @@ function filtro30dias() {
 // 🔍 CONSULTA
 async function consultar() {
 
-  const desde = document.getElementById("desde").value;
-  const hasta = document.getElementById("hasta").value;
-  const contenedor = document.getElementById("resultado");
+    const desde = document.getElementById("desde").value;
+    const hasta = document.getElementById("hasta").value;
+    const contenedor = document.getElementById("resultado");
 
-  contenedor.innerHTML = "Consultando...";
+    contenedor.innerHTML = "Consultando...";
 
-  let query = supabaseClient
-    .from('accesos_visitas')
-    .select(`
-      id,
-      fecha_hora_entrada,
-      fecha_hora_salida,
-      visitas_qr (
-        nombre_visitante,
-        privada,
-        casa,
-        residente_id
-      )
-    `)
-    .not('fecha_hora_entrada', 'is', null)
-    .order('fecha_hora_entrada', { ascending: false });
+    const { data, error } = await supabaseClient.rpc(
 
-  if (rolGlobal !== "admin") {
-    query = query.eq('visitas_qr.residente_id', residenteIdGlobal);
-  }
+        "consultar_historial_accesos",
 
-  if (desde) query = query.gte('fecha_hora_entrada', toUTC(desde));
-  if (hasta) query = query.lte('fecha_hora_entrada', toUTC(hasta, true));
+        {
+            p_residente_id: residenteIdGlobal,
+            p_desde: desde,
+            p_hasta: hasta
+        }
 
-  const { data, error } = await query;
+    );
 
-  if (error) {
-    console.error(error);
-    contenedor.innerHTML = "<div class='vacio'>Error al consultar</div>";
-    return;
-  }
+    if (error) {
 
-  if (!data || data.length === 0) {
-    contenedor.innerHTML = "<div class='vacio'>Sin registros</div>";
-    return;
-  }
+        console.error(error);
 
-  contenedor.innerHTML = "";
+        contenedor.innerHTML =
+            "<div class='vacio'>Error al consultar.</div>";
 
-  data.forEach(v => {
+        return;
 
-    if (!v.visitas_qr) return;
+    }
 
-    const visita = v.visitas_qr;
+    if (!data.ok) {
 
-    const entrada = formatMXDate(v.fecha_hora_entrada);
-    const salida = v.fecha_hora_salida
-      ? formatMXDate(v.fecha_hora_salida)
-      : "Dentro";
+        contenedor.innerHTML =
+            `<div class="vacio">${data.mensaje}</div>`;
 
-    contenedor.innerHTML += `
-      <div class="item">
-        <b>${visita.nombre_visitante}</b><br>
-        🟢 Entrada: ${entrada}<br>
-        🔴 Salida: ${salida}<br>
-      </div>
+        return;
+
+    }
+
+    const total = data.datos.total_visitas;
+
+    const historial = data.datos.historial;
+
+    if (total === 0) {
+
+        contenedor.innerHTML = `
+
+            <div class="vacio">
+
+                📭
+
+                <br><br>
+
+                ${data.mensaje}
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+    contenedor.innerHTML = `
+
+        <div class="item">
+
+            <b>${total}</b><br>
+
+            visitas encontradas
+
+        </div>
+
     `;
-  });
-}
 
+    historial.forEach(item => {
+
+        let icono = "🟢";
+
+        if (item.tipo_tarjeta === "ABIERTO")
+            icono = "🔵";
+
+        if (item.tipo_tarjeta === "AUTOMATICO")
+            icono = "⚠";
+
+        const entrada =
+            formatMXDate(item.fecha_entrada);
+
+        const conclusion =
+            item.fecha_conclusion
+                ? formatMXDate(item.fecha_conclusion)
+                : "";
+
+        contenedor.innerHTML += `
+
+            <div class="item">
+
+                <b>${item.visitante}</b>
+
+                <br><br>
+
+                🟢 Ingresó
+
+                <br>
+
+                ${entrada}
+
+                ${
+
+                    item.estado === "DENTRO"
+
+                    ?
+
+                    `<br><br>
+
+                    ${icono} ${item.mensaje}`
+
+                    :
+
+                    `<br><br>
+
+                    🔴 Acceso concluido
+
+                    <br>
+
+                    ${conclusion}
+
+                    <br><br>
+
+                    ${icono} ${item.mensaje}`
+
+                }
+
+            </div>
+
+        `;
+
+    });
+
+}
 function volverInicio() {
   window.location.href = "index.html";
 }
