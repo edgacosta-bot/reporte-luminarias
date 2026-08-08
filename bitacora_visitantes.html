@@ -348,12 +348,21 @@ async function consultar() {
 
                     <div style="
                         margin-top:14px;
-                        color:#FBBF24;
-                        line-height:1.45;
+                        padding:10px 12px;
+                        background:rgba(245,158,11,.08);
+                        border-left:3px solid #F59E0B;
+                        border-radius:6px;
+                        color:#D1D5DB;
+                        font-size:13px;
+                        line-height:1.5;
                     ">
-                        ⚠ ${item.mensaje}
-                    </div>
-                `;
+                    
+                        <span style="color:#FBBF24;">⚠ Observación</span><br>
+                    
+                        ${item.mensaje}
+                    
+                    </div>              
+`;
 
                 break;
 
