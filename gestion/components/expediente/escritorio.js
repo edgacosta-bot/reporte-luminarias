@@ -549,12 +549,16 @@ function renderEstadoExpediente(data) {
 
 
 
-    const estado =
-        data.expediente?.estado?.clave
-        ??
-        data.expediente?.estado_clave
-        ??
-        "";
+    const situacion =
+    data.expediente?.situacion_actual
+    ??
+    "";
+
+
+const etapa =
+    data.expediente?.etapa?.clave
+    ??
+    "";
 
 
 
@@ -562,10 +566,12 @@ function renderEstadoExpediente(data) {
 
 
 
-    if (
-        estado === "INT" &&
-        listo
-    ) {
+   if (
+    situacion === "Integración de documentación" &&
+    listo
+)
+    
+    {
 
 
         accion = `
@@ -582,9 +588,11 @@ function renderEstadoExpediente(data) {
 
 
     }
-    else if (
-        estado === "TUR"
-    ) {
+   else if (
+    situacion === "En aprobación de Mesa Directiva"
+)
+    
+    {
 
 
         accion = `
