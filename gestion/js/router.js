@@ -144,8 +144,11 @@ async function mostrarEscritorio(
         expediente;
 
     EscritorioExpediente.render(
-        expediente
-    );
+    expediente,
+    {
+        rol: "ADMIN"
+    }
+);
 
 }
 
