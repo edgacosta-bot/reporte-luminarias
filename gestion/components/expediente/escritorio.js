@@ -341,6 +341,11 @@ function renderRequisitos(data) {
 )
 .join("");
 
+   const titulo =
+    contextoActual.rol === "ADMIN"
+        ? "REQUISITOS PARA APROBACIÓN"
+        : "DOCUMENTACIÓN DEL EXPEDIENTE";
+
     return `
 
         <section class="bloque">
