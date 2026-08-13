@@ -95,7 +95,7 @@ contextoActual = contexto;
 
     ${renderEstadoExpediente(data)}
 
-    ${renderVobos(data)}
+    ${renderVobos(data, contexto)}
 `;
    
 workspace.innerHTML = html;
