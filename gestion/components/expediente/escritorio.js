@@ -369,11 +369,17 @@ function renderRequisitos(data) {
 }
 
 
-function renderVobos(data) {
+function renderVobos(
+    data,
+    contexto = {}
+) {
 
 
     const vobos =
         data.vobos ?? [];
+
+   const cargoUsuario =
+    contexto.cargo_id;
 
 
     if (!vobos.length) {
@@ -387,6 +393,9 @@ function renderVobos(data) {
     const filas =
         vobos.map(v => {
 
+           const esMiVobo =
+    v.cargo_id === cargoUsuario;
+
 
             const estado =
                 v.estado === "APROBADO"
@@ -399,6 +408,19 @@ function renderVobos(data) {
                     ? new Date(v.fecha)
                         .toLocaleString("es-MX")
                     : "-";
+
+           const accion =
+    esMiVobo && v.estado === "PENDIENTE"
+        ? `
+            <button
+                class="btn btn-primary"
+                onclick="
+                    emitirVoboExpediente('${v.id}')
+                ">
+                Emitir VoBo
+            </button>
+          `
+        : "";
 
 
 
@@ -417,8 +439,12 @@ function renderVobos(data) {
 
 
                 <td>
-                    ${fecha}
-                </td>
+    ${fecha}
+</td>
+
+<td>
+    ${accion}
+</td>
 
 
             </tr>
@@ -1921,7 +1947,65 @@ function destruir() {
 
 }
 
+async function emitirVoboExpediente(voboId) {
 
+    const confirmado =
+        confirm(
+            "¿Desea emitir el VoBo del expediente?"
+        );
+
+
+    if (!confirmado) {
+        return;
+    }
+
+
+    const { data: usuarioData } =
+        await supabaseClient.auth.getUser();
+
+
+    const usuario =
+        usuarioData.user;
+
+
+    const resultado =
+        await supabaseClient.rpc(
+            "emitir_vobo_expediente",
+            {
+                p_expediente_id:
+                    escritorioActual.expediente.id,
+
+                p_usuario_id:
+                    usuario.id
+            }
+        );
+
+
+    if (resultado.error) {
+
+        console.error(
+            resultado.error
+        );
+
+        alert(
+            resultado.error.message
+        );
+
+        return;
+
+    }
+
+
+    alert(
+        "VoBo emitido correctamente."
+    );
+
+
+    await Router.mostrarEscritorio(
+        escritorioActual.expediente.id
+    );
+
+}
 
 /* ==========================================================
    EXPORTACIÓN
