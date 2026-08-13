@@ -332,10 +332,14 @@ function renderRequisitos(data) {
     );
 
     const tarjetas = requisitos
-    .map((r, indice) =>
-        renderTarjetaRequisito(r, indice + 1)
+.map((r, indice) =>
+    renderTarjetaRequisito(
+        r,
+        indice + 1,
+        contextoActual
     )
-    .join("");
+)
+.join("");
 
     return `
 
@@ -441,7 +445,11 @@ Turnar expediente a Mesa Directiva
    TARJETA DE REQUISITO
 ========================================================== */
 
-function renderTarjetaRequisito(r, numero) {
+function renderTarjetaRequisito(
+    r,
+    numero,
+    contexto = {}
+) {
 
     const estado =
         r.estado === "CUMPLIDO"
@@ -469,7 +477,10 @@ function renderTarjetaRequisito(r, numero) {
          
          }
 
-    const acciones = renderAccionesRequisito(r);
+   const acciones = renderAccionesRequisito(
+    r,
+    contexto
+);
 
     return `
 
@@ -507,7 +518,19 @@ function renderTarjetaRequisito(r, numero) {
    ACCIONES DEL REQUISITO
 ========================================================== */
 
-function renderAccionesRequisito(r) {
+function renderAccionesRequisito(
+    r,
+    contexto = {}
+) {
+
+       if (
+        contexto.rol === "MESA_DIRECTIVA" ||
+        contexto.rol === "PRESIDENTE"
+    ) {
+
+        return renderAccionesConsulta(r);
+
+    }
 
     switch (r.tipo_captura) {
 
@@ -535,6 +558,50 @@ function renderAccionesRequisito(r) {
     }
 
 }
+
+
+function renderAccionesConsulta(r) {
+
+
+    if (
+        r.tipo_captura === "PDF" &&
+        r.archivo_nombre
+    ) {
+
+        return `
+
+            <button
+                class="btn btn-secondary"
+                onclick="
+                    consultarDocumentoRequisito('${r.id}')
+                ">
+
+                📄 Ver documento
+
+            </button>
+
+        `;
+
+    }
+
+
+    return `
+
+        <span
+            style="
+                color:var(--texto-secundario);
+                font-size:14px;
+            ">
+
+            Sin acciones disponibles
+
+        </span>
+
+    `;
+
+}
+
+
 function renderAccionesPdf(r) {
 
     const tieneDocumento =
