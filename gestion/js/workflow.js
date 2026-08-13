@@ -37,8 +37,8 @@ async function transicionarExpediente(
         p_expediente_id:
             expedienteId,
 
-        p_etapa_destino_clave:
-            etapaDestino,
+        p_estado_destino_clave:
+    etapaDestino,
 
         p_usuario_id:
             (await supabaseClient.auth.getUser())
