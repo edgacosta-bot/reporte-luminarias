@@ -581,8 +581,9 @@ margin-top:20px;
 
 
 <button
-class="btn btn-primary"
-${listo ? "" : "disabled"}
+    id="btnTurnarMesaDirectiva"
+    class="btn btn-primary"
+    ${listo ? "" : "disabled"}
 >
 
 Turnar expediente a Mesa Directiva
@@ -1225,6 +1226,52 @@ function registrarEventosRequisitos() {
                 }
             );
 
+
+    const btnTurnar =
+        document.getElementById(
+            "btnTurnarMesaDirectiva"
+        );
+
+
+    if (btnTurnar) {
+
+        btnTurnar.addEventListener(
+            "click",
+            async () => {
+
+                try {
+
+                    await Workflow.transicionarExpediente(
+                        escritorioActual.expediente.id,
+                        "TUR"
+                    );
+
+
+                    await Router.mostrarEscritorio(
+                        escritorioActual.expediente.id
+                    );
+
+
+                } catch(error) {
+
+                    console.error(
+                        "Error turnar expediente:",
+                        error
+                    );
+
+
+                    mostrarAlerta({
+                        titulo:"SIGE",
+                        mensaje:error.message
+                    });
+
+                }
+
+            }
+        );
+
+    }
+           
         }
     );
 
@@ -1636,11 +1683,7 @@ function registrarEventosRequisitos() {
 
 
         }
-    );
    
-}
-
-
 /* ==========================================================
    ACTUACIONES
 ========================================================== */
