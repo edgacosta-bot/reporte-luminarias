@@ -1189,12 +1189,6 @@ function registrarEventosRequisitos() {
                             input?.value?.trim();
 
 
-                        console.log({
-                            requisitoId,
-                            valor
-                        });
-
-
                         const resultado =
                             await Workflow.cumplirRequisito(
                                 requisitoId,
@@ -1203,12 +1197,18 @@ function registrarEventosRequisitos() {
 
 
                         console.log(
-                            "Resultado RPC:",
+                            "Resultado requisito:",
                             resultado
                         );
 
 
+                        await Router.mostrarEscritorio(
+                            escritorioActual.expediente.id
+                        );
+
+
                     } catch(error) {
+
 
                         console.error(
                             "Error cumplir requisito:",
@@ -1226,6 +1226,17 @@ function registrarEventosRequisitos() {
                 }
             );
 
+        }
+    );
+
+
+
+    /*
+    ======================================================
+    TURNAR EXPEDIENTE A MESA DIRECTIVA
+    ======================================================
+    */
+
 
     const btnTurnar =
         document.getElementById(
@@ -1235,11 +1246,14 @@ function registrarEventosRequisitos() {
 
     if (btnTurnar) {
 
+
         btnTurnar.addEventListener(
             "click",
             async () => {
 
+
                 try {
+
 
                     await Workflow.transicionarExpediente(
                         escritorioActual.expediente.id,
@@ -1253,6 +1267,7 @@ function registrarEventosRequisitos() {
 
 
                 } catch(error) {
+
 
                     console.error(
                         "Error turnar expediente:",
@@ -1270,14 +1285,16 @@ function registrarEventosRequisitos() {
             }
         );
 
-       }
+    }
+
 
 
     /*
-     ======================================================
-     DATOS DEL DRO
-     ======================================================
+    ======================================================
+    DATOS DEL DRO
+    ======================================================
     */
+
 
     const botonesDRO =
         document.querySelectorAll(
@@ -1293,17 +1310,12 @@ function registrarEventosRequisitos() {
                 "click",
                 async () => {
 
+
                     try {
 
 
                         const requisitoId =
                             boton.dataset.requisito;
-
-
-                        console.log(
-                            "Abrir formulario DRO",
-                            requisitoId
-                        );
 
 
                         const datos =
@@ -1314,40 +1326,25 @@ function registrarEventosRequisitos() {
                             return;
 
 
-                        console.log(
-                            "Datos capturados DRO:",
+
+                        await Workflow.guardarDatosDRO(
+                            escritorioData.obra.id,
                             datos
                         );
 
 
-                        const resultado =
-                            await Workflow.guardarDatosDRO(
-                                escritorioData.obra.id,
-                                datos
-                            );
 
-
-                        console.log(
-                            "Resultado guardar DRO:",
-                            resultado
+                        await Workflow.cumplirRequisito(
+                            requisitoId,
+                            "DRO registrado"
                         );
 
 
-                        const actualizado =
-                            await Workflow.cumplirRequisito(
-                                requisitoId,
-                                "DRO registrado"
-                            );
 
-
-                        console.log(
-                            "Requisito DRO cumplido:",
-                            actualizado
+                        await Router.mostrarEscritorio(
+                            escritorioData.expediente.id
                         );
 
-                       await Router.mostrarEscritorio(
-    escritorioData.expediente.id
-);
 
 
                     } catch(error) {
@@ -1364,9 +1361,7 @@ function registrarEventosRequisitos() {
                             mensaje:error.message
                         });
 
-
                     }
-
 
                 }
             );
@@ -1383,6 +1378,7 @@ function registrarEventosRequisitos() {
     ======================================================
     */
 
+
     const botonesPropietario =
         document.querySelectorAll(
             "[data-accion='ingresar-datos-propietario']"
@@ -1397,17 +1393,12 @@ function registrarEventosRequisitos() {
                 "click",
                 async () => {
 
+
                     try {
 
 
                         const requisitoId =
                             boton.dataset.requisito;
-
-
-                        console.log(
-                            "Abrir formulario Propietario",
-                            requisitoId
-                        );
 
 
                         const datos =
@@ -1418,40 +1409,25 @@ function registrarEventosRequisitos() {
                             return;
 
 
-                        console.log(
-                            "Datos capturados Propietario:",
+
+                        await Workflow.guardarDatosPropietario(
+                            escritorioData.obra.id,
                             datos
                         );
 
 
-                        const resultado =
-                            await Workflow.guardarDatosPropietario(
-                                escritorioData.obra.id,
-                                datos
-                            );
 
-
-                        console.log(
-                            "Resultado guardar Propietario:",
-                            resultado
+                        await Workflow.cumplirRequisito(
+                            requisitoId,
+                            "Propietario registrado"
                         );
 
 
-                        const actualizado =
-                            await Workflow.cumplirRequisito(
-                                requisitoId,
-                                "Propietario registrado"
-                            );
 
-
-                        console.log(
-                            "Requisito Propietario cumplido:",
-                            actualizado
+                        await Router.mostrarEscritorio(
+                            escritorioData.expediente.id
                         );
 
-                       await Router.mostrarEscritorio(
-                         escritorioData.expediente.id
-                        );
 
 
                     } catch(error) {
@@ -1468,9 +1444,7 @@ function registrarEventosRequisitos() {
                             mensaje:error.message
                         });
 
-
                     }
-
 
                 }
             );
@@ -1483,9 +1457,11 @@ function registrarEventosRequisitos() {
 
     /*
     ======================================================
-    INCORPORAR DOCUMENTO PDF
+    DOCUMENTOS PDF
+    INCORPORAR
     ======================================================
     */
+
 
     const botonesDocumento =
         document.querySelectorAll(
@@ -1509,12 +1485,6 @@ function registrarEventosRequisitos() {
                             boton.dataset.requisito;
 
 
-                        console.log(
-                            "Incorporar documento:",
-                            requisitoId
-                        );
-
-
                         await Documentos.incorporar(
                             requisitoId
                         );
@@ -1534,9 +1504,7 @@ function registrarEventosRequisitos() {
                             mensaje:error.message
                         });
 
-
                     }
-
 
                 }
             );
@@ -1545,11 +1513,15 @@ function registrarEventosRequisitos() {
         }
     );
 
-       /*
+
+
+    /*
     ======================================================
-    SUSTITUIR DOCUMENTO PDF
+    DOCUMENTOS PDF
+    SUSTITUIR
     ======================================================
     */
+
 
     const botonesSustituir =
         document.querySelectorAll(
@@ -1573,12 +1545,6 @@ function registrarEventosRequisitos() {
                             boton.dataset.requisito;
 
 
-                        console.log(
-                            "Sustituir documento:",
-                            requisitoId
-                        );
-
-
                         await Documentos.sustituir(
                             requisitoId
                         );
@@ -1594,17 +1560,11 @@ function registrarEventosRequisitos() {
 
 
                         mostrarAlerta({
-
                             titulo:"SIGE",
-
-                            mensaje:
-                                error.message
-
+                            mensaje:error.message
                         });
 
-
                     }
-
 
                 }
             );
@@ -1613,11 +1573,15 @@ function registrarEventosRequisitos() {
         }
     );
 
+
+
     /*
     ======================================================
-    CONSULTAR DOCUMENTO PDF
+    DOCUMENTOS PDF
+    CONSULTAR
     ======================================================
     */
+
 
     const botonesConsultar =
         document.querySelectorAll(
@@ -1641,12 +1605,6 @@ function registrarEventosRequisitos() {
                             boton.dataset.requisito;
 
 
-                        console.log(
-                            "Consultar documento:",
-                            requisitoId
-                        );
-
-
                         await Documentos.consultar(
                             requisitoId
                         );
@@ -1662,23 +1620,21 @@ function registrarEventosRequisitos() {
 
 
                         mostrarAlerta({
-
                             titulo:"SIGE",
-
-                            mensaje:
-                                error.message
-
+                            mensaje:error.message
                         });
 
-
                     }
-
 
                 }
             );
 
 
         }
+    );
+
+
+}
    
 /* ==========================================================
    ACTUACIONES
