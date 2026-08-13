@@ -406,9 +406,9 @@ function renderVobos(data) {
 
             <tr>
 
-                <td>
-                    ${v.nombre_largo}
-                </td>
+               <td>
+                   ${v.cargo}
+               </td>
 
 
                 <td>
