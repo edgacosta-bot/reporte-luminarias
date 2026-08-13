@@ -51,23 +51,31 @@ const EscritorioExpediente = {
 };
 
 let escritorioActual = null;
+let contextoActual = {};
 
 /* ==========================================================
    RENDER PRINCIPAL
 ========================================================== */
 
-function render(data = {}) {
+function render(
+    data = {},
+    contexto = {}
+) {
 
    console.log("DATOS ESCRITORIO:", data);
 
-   window.escritorioData = data;
+console.log("CONTEXTO ESCRITORIO:", contexto);
 
-   console.log(
-       "OBRA ACTUAL:",
-       data.obra
-   );
+window.escritorioData = data;
 
-   escritorioActual = data;
+console.log(
+    "OBRA ACTUAL:",
+    data.obra
+);
+
+escritorioActual = data;
+
+contextoActual = contexto;
 
     
     const workspace =
