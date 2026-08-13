@@ -523,84 +523,127 @@ function renderVobos(
 
 function renderEstadoExpediente(data) {
 
-    const requisitos = data.requisitos ?? [];
+
+    const requisitos =
+        data.requisitos ?? [];
+
 
     const obligatorios =
-    requisitos.filter(
-        r =>
-            r.obligatorio === true &&
-            r.estado !== "CANCELADO"
-    );
+        requisitos.filter(
+            r =>
+                r.obligatorio === true &&
+                r.estado !== "CANCELADO"
+        );
+
 
     const completos =
         obligatorios.filter(
-            r => r.estado === "CUMPLIDO"
+            r =>
+                r.estado === "CUMPLIDO"
         );
+
 
     const listo =
         obligatorios.length > 0 &&
         completos.length === obligatorios.length;
 
 
+
+    const estado =
+        data.expediente?.estado?.clave
+        ??
+        data.expediente?.estado_clave
+        ??
+        "";
+
+
+
+    let accion = "";
+
+
+
+    if (
+        estado === "INT" &&
+        listo
+    ) {
+
+
+        accion = `
+
+            <button
+                id="btnTurnarMesaDirectiva"
+                class="btn btn-primary">
+
+                Turnar expediente a Mesa Directiva
+
+            </button>
+
+        `;
+
+
+    }
+    else if (
+        estado === "TUR"
+    ) {
+
+
+        accion = `
+
+            <div
+                class="alerta-exito">
+
+                Expediente turnado a Mesa Directiva
+
+            </div>
+
+        `;
+
+
+    }
+
+
+
     return `
 
-<section class="bloque">
+    <section class="bloque">
 
-<h2 class="bloque-titulo">
-ESTADO DEL EXPEDIENTE
-</h2>
+        <h2 class="bloque-titulo">
 
+            ESTADO DEL EXPEDIENTE
 
-<div class="card">
-
-<div style="
-font-size:18px;
-font-weight:600;
-">
-
-Integración documental
-
-</div>
+        </h2>
 
 
-<div style="
-margin-top:10px;
-">
+        <div class="card">
 
-${completos.length}
-de
-${obligatorios.length}
-requisitos completos
+            <p>
 
-</div>
+                Integración documental
+
+            </p>
 
 
-<div style="
-margin-top:20px;
-">
+            <p>
+
+                ${completos.length}
+                de
+                ${obligatorios.length}
+                requisitos completos
+
+            </p>
 
 
-<button
-    id="btnTurnarMesaDirectiva"
-    class="btn btn-primary"
-    ${listo ? "" : "disabled"}
->
-
-Turnar expediente a Mesa Directiva
-
-</button>
+            ${accion}
 
 
-</div>
+        </div>
 
-</div>
 
-</section>
+    </section>
 
-`;
+    `;
 
 }
-
 /* ==========================================================
    TARJETA DE REQUISITO
 ========================================================== */
