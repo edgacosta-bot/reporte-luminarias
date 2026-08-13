@@ -14,6 +14,49 @@
 
 ========================================================== */
 
+async function transicionarExpediente(
+    expedienteId,
+    etapaDestino
+) {
+
+    console.log(
+        "Workflow.transicionarExpediente()",
+        {
+            expedienteId,
+            etapaDestino
+        }
+    );
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "transicionar_expediente",
+        {
+            p_expediente_id:
+                expedienteId,
+
+            p_etapa_destino:
+                etapaDestino
+        }
+    );
+
+
+    if (error) {
+
+        console.error(error);
+
+        throw error;
+
+    }
+
+
+    return data;
+
+}
+
+
 const Workflow = {
 
     abrirObra,
@@ -29,7 +72,8 @@ const Workflow = {
     consultarDocumento,
     cumplirRequisito,
     guardarDatosPropietario,
-    guardarDatosDRO
+    guardarDatosDRO,
+    transicionarExpediente
 
 };
 /* ==========================================================
