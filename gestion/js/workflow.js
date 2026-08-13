@@ -32,15 +32,21 @@ async function transicionarExpediente(
         data,
         error
     } = await supabaseClient.rpc(
-        "transicionar_expediente",
-        {
-            p_expediente_id:
-                expedienteId,
+    "transicionar_expediente",
+    {
+        p_expediente_id:
+            expedienteId,
 
-            p_etapa_destino:
-                etapaDestino
-        }
-    );
+        p_etapa_destino_clave:
+            etapaDestino,
+
+        p_usuario_id:
+            (await supabaseClient.auth.getUser())
+                .data
+                .user
+                .id
+    }
+);
 
 
     if (error) {
