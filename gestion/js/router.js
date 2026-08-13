@@ -125,6 +125,54 @@ function mostrarNuevaObra() {
 }
 
 
+function determinarModoSIGE(contexto) {
+
+
+    if (!contexto)
+        return "CONSULTA";
+
+
+    const cargo =
+        contexto.nombre_cargo
+            ?.toLowerCase()
+            .trim();
+
+
+
+    if (
+        cargo === "administrador general"
+    ) {
+
+        return "ADMIN";
+
+    }
+
+
+
+    if (
+        cargo === "presidente de la mesa directiva"
+    ) {
+
+        return "PRESIDENTE";
+
+    }
+
+
+
+    if (
+        cargo.includes("mesa directiva")
+    ) {
+
+        return "MESA_DIRECTIVA";
+
+    }
+
+
+
+    return "CONSULTA";
+
+}
+
 /* ==========================================================
    ESCRITORIO
 ========================================================== */
@@ -143,10 +191,20 @@ async function mostrarEscritorio(
     SIGE_STATE.expedienteActual =
         expediente;
 
-    EscritorioExpediente.render(
+   const contextoSIGE =
+    await obtenerContextoSIGE();
+
+
+const modo =
+    determinarModoSIGE(
+        contextoSIGE
+    );
+
+   EscritorioExpediente.render(
     expediente,
     {
-        rol: "ADMIN"
+        rol: modo,
+        contexto: contextoSIGE
     }
 );
 
