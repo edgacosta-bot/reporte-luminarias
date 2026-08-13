@@ -28,7 +28,8 @@ const Workflow = {
     sustituirDocumentoRequisito,
     consultarDocumento,
     cumplirRequisito,
-    guardarDatosPropietario
+    guardarDatosPropietario,
+    guardarDatosDRO
 
 };
 /* ==========================================================
