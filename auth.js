@@ -58,6 +58,57 @@ async function protegerPagina(rolesPermitidos) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// 🔥 CONTEXTO SIGE
+////////////////////////////////////////////////////////////////////////////////
+
+async function obtenerContextoSIGE() {
+
+
+    const { data: sessionData } =
+        await supabaseClient.auth.getSession();
+
+
+    const user =
+        sessionData?.session?.user;
+
+
+    if (!user) {
+
+        return null;
+
+    }
+
+
+
+    const { data, error } =
+        await supabaseClient.rpc(
+            "obtener_contexto_usuario_sige",
+            {
+                p_user_id: user.id
+            }
+        );
+
+
+    if (error) {
+
+        console.error(
+            "Error obteniendo contexto SIGE:",
+            error
+        );
+
+        return null;
+
+    }
+
+
+    return data?.[0] ?? null;
+
+}
+
+window.obtenerContextoSIGE =
+    obtenerContextoSIGE;
+
+////////////////////////////////////////////////////////////////////////////////
 // 🔥 UTILIDADES DE FECHA (ESTANDARIZADAS)
 ////////////////////////////////////////////////////////////////////////////////
 
