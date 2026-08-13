@@ -1302,6 +1302,10 @@ function registrarEventosRequisitos() {
                             actualizado
                         );
 
+                       await Router.mostrarEscritorio(
+    escritorioData.expediente.id
+);
+
 
                     } catch(error) {
 
@@ -1400,6 +1404,10 @@ function registrarEventosRequisitos() {
                         console.log(
                             "Requisito Propietario cumplido:",
                             actualizado
+                        );
+
+                       await Router.mostrarEscritorio(
+                         escritorioData.expediente.id
                         );
 
 
