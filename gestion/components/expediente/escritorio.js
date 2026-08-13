@@ -94,6 +94,8 @@ contextoActual = contexto;
     ${renderRequisitos(data)}
 
     ${renderEstadoExpediente(data)}
+
+    ${renderVobos(data)}
 `;
    
 workspace.innerHTML = html;
@@ -361,6 +363,132 @@ function renderRequisitos(data) {
             </div>
 
         </section>
+
+    `;
+
+}
+
+
+function renderVobos(data) {
+
+
+    const vobos =
+        data.vobos ?? [];
+
+
+    if (!vobos.length) {
+
+        return "";
+
+    }
+
+
+
+    const filas =
+        vobos.map(v => {
+
+
+            const estado =
+                v.estado === "APROBADO"
+                    ? "🟢 APROBADO"
+                    : "🟡 PENDIENTE";
+
+
+            const fecha =
+                v.fecha
+                    ? new Date(v.fecha)
+                        .toLocaleString("es-MX")
+                    : "-";
+
+
+
+            return `
+
+            <tr>
+
+                <td>
+                    ${v.nombre_largo}
+                </td>
+
+
+                <td>
+                    ${estado}
+                </td>
+
+
+                <td>
+                    ${fecha}
+                </td>
+
+
+            </tr>
+
+            `;
+
+
+        }).join("");
+
+
+
+    return `
+
+    <section class="bloque">
+
+
+        <h2 class="bloque-titulo">
+
+            VISTOS BUENOS DE MESA DIRECTIVA
+
+        </h2>
+
+
+
+        <div class="card">
+
+
+            <table
+                style="
+                    width:100%;
+                    border-collapse:collapse;
+                ">
+
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Cargo
+                        </th>
+
+                        <th>
+                            Estado
+                        </th>
+
+                        <th>
+                            Fecha
+                        </th>
+
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    ${filas}
+
+                </tbody>
+
+
+            </table>
+
+
+        </div>
+
+
+    </section>
 
     `;
 
