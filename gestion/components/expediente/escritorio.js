@@ -351,8 +351,8 @@ function renderRequisitos(data) {
         <section class="bloque">
 
             <h2 class="bloque-titulo">
-                REQUISITOS PARA APROBACIÓN
-            </h2>
+    ${titulo}
+</h2>
 
             <div class="card">
 
