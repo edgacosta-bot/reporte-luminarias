@@ -560,16 +560,7 @@ async function guardar() {
         // Parámetros enviados a la RPC
         // ---------------------------------------------------------
 
-        const parametros = {
-
-          p_lote_id: loteId,
-      
-          p_dro_nombre: null,
-      
-          p_fecha_inicio: null,
-      
-          p_fecha_fin: null,
-      
+             
          const parametros = {
 
     p_lote_id: loteId,
