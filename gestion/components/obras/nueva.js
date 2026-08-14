@@ -570,9 +570,21 @@ async function guardar() {
       
           p_fecha_fin: null,
       
-          p_administrador_id: usuario.residente_id,
-      
-          p_solicitante_id: null
+         const parametros = {
+
+    p_lote_id: loteId,
+
+    p_ubicacion_id: ubicacionId,
+
+    p_dro_nombre: null,
+
+    p_fecha_inicio: null,
+
+    p_fecha_fin: null,
+
+    p_administrador_id: usuario.residente_id,
+
+    p_solicitante_id: null
 
 };
 
