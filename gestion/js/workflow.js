@@ -79,9 +79,49 @@ const Workflow = {
     cumplirRequisito,
     guardarDatosPropietario,
     guardarDatosDRO,
-    transicionarExpediente
+    transicionarExpediente,
+    aprobarObraPresidente
 
 };
+
+async function aprobarObraPresidente(
+    expedienteId
+) {
+
+    console.log(
+        "Workflow.aprobarObraPresidente()",
+        expedienteId
+    );
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "aprobar_obra_presidente",
+        {
+            p_expediente_id:
+                expedienteId,
+
+            p_usuario_id:
+                (
+                    await supabaseClient
+                        .auth
+                        .getUser()
+                ).data.user.id
+        }
+    );
+
+    if (error) {
+
+        console.error(error);
+
+        throw error;
+
+    }
+
+    return data;
+
+}
 /* ==========================================================
    OBTENER PRIVADAS
 ========================================================== */
