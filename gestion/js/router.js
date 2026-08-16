@@ -127,7 +127,7 @@ function mostrarNuevaObra() {
 
 function determinarModoSIGE(contexto) {
 
-    return "PRESIDENTE";
+    return "ADMIN";
 
 }
 /* ==========================================================
