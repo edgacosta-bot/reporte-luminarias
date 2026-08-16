@@ -96,7 +96,10 @@ function mostrarBandejaObras() {
 
     cambiarVista("obras");
 
-    switch (contextoActual.rol) {
+    const modo =
+    determinarModoSIGE();
+
+switch (modo) {
 
         case "ADMIN":
 
