@@ -71,6 +71,7 @@ const Workflow = {
     obtenerLotes,
     obtenerCalles,
     obtenerExpedientes,
+    obtenerPendientesMesaDirectiva,
     obtenerTiposObra,
     crearObra,
     registrarDocumentoRequisito,
@@ -253,6 +254,36 @@ async function obtenerExpedientes() {
     } = await supabaseClient.rpc(
 
         "obtener_bandeja_expedientes"
+
+    );
+
+    if (error) {
+
+        console.error(error);
+
+        throw error;
+
+    }
+
+    return data ?? [];
+
+}
+
+/* ==========================================================
+   OBTENER BANDEJA MESA DIRECTIVA
+========================================================== */
+
+async function obtenerPendientesMesaDirectiva() {
+
+    const {
+
+        data,
+
+        error
+
+    } = await supabaseClient.rpc(
+
+        "obtener_bandeja_mesa_directiva"
 
     );
 
