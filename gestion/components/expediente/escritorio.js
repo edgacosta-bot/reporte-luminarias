@@ -374,13 +374,22 @@ function renderVobos(
     contexto = {}
 ) {
 
+    //----------------------------------------------------------
+    // El Administrador no participa en los VoBos
+    //----------------------------------------------------------
+
+    if (contextoActual.rol === "ADMIN") {
+
+        return "";
+
+    }
+
 
     const vobos =
         data.vobos ?? [];
 
-   const cargoUsuario =
-    contexto.cargo_id;
-
+    const cargoUsuario =
+        contexto.cargo_id;
 
     if (!vobos.length) {
 
@@ -389,12 +398,11 @@ function renderVobos(
     }
 
 
-
     const filas =
         vobos.map(v => {
 
-           const esMiVobo =
-    v.cargo_id === cargoUsuario;
+            const esMiVobo =
+                v.cargo_id === cargoUsuario;
 
 
             const estado =
@@ -409,114 +417,98 @@ function renderVobos(
                         .toLocaleString("es-MX")
                     : "-";
 
-           const accion =
-    esMiVobo && v.estado === "PENDIENTE"
-        ? `
-            <button
-                class="btn btn-primary"
-                onclick="
-                    emitirVoboExpediente('${v.id}')
-                ">
-                Emitir VoBo
-            </button>
-          `
-        : "";
 
+            const accion =
+                esMiVobo &&
+                v.estado === "PENDIENTE"
+
+                    ? `
+                        <button
+                            class="btn btn-primary"
+                            onclick="
+                                emitirVoboExpediente('${v.id}')
+                            ">
+                            Emitir VoBo
+                        </button>
+                    `
+
+                    : "";
 
 
             return `
 
-            <tr>
+                <tr>
 
-               <td>
-                   ${v.cargo}
-               </td>
+                    <td>
+                        ${v.cargo}
+                    </td>
 
+                    <td>
+                        ${estado}
+                    </td>
 
-                <td>
-                    ${estado}
-                </td>
+                    <td>
+                        ${fecha}
+                    </td>
 
-
-                <td>
-    ${fecha}
-</td>
-
-<td>
-    ${accion}
-</td>
-
-
-            </tr>
+                </tr>
 
             `;
-
 
         }).join("");
 
 
-
     return `
 
-    <section class="bloque">
+<section class="bloque">
 
+    <h2 class="bloque-titulo">
 
-        <h2 class="bloque-titulo">
+        VISTOS BUENOS DE MESA DIRECTIVA
 
-            VISTOS BUENOS DE MESA DIRECTIVA
+    </h2>
 
-        </h2>
+    <div class="card">
 
+        <table
+            style="
+                width:100%;
+                border-collapse:collapse;
+            ">
 
+            <thead>
 
-        <div class="card">
+                <tr>
 
+                    <th>
+                        Cargo
+                    </th>
 
-            <table
-                style="
-                    width:100%;
-                    border-collapse:collapse;
-                ">
+                    <th>
+                        Estado
+                    </th>
 
+                    <th>
+                        Fecha
+                    </th>
 
-                <thead>
+                </tr>
 
-                    <tr>
+            </thead>
 
-                        <th>
-                            Cargo
-                        </th>
+            <tbody>
 
-                        <th>
-                            Estado
-                        </th>
+                ${filas}
 
-                        <th>
-                            Fecha
-                        </th>
+            </tbody>
 
+        </table>
 
-                    </tr>
+    </div>
 
-                </thead>
+</section>
 
-
-                <tbody>
-
-                    ${filas}
-
-                </tbody>
-
-
-            </table>
-
-
-        </div>
-
-
-    </section>
-
-    `;
+`;
 
 }
 
