@@ -96,7 +96,26 @@ function mostrarBandejaObras() {
 
     cambiarVista("obras");
 
-    Obras.render();
+    switch (contextoActual.rol) {
+
+        case "ADMIN":
+
+            Obras.render();
+            break;
+
+        case "PRESIDENTE":
+
+        case "MESA_DIRECTIVA":
+
+            MesaDirectiva.render();
+            break;
+
+        default:
+
+            Obras.render();
+            break;
+
+    }
 
 }
 
