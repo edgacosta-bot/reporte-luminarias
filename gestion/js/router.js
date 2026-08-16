@@ -127,52 +127,9 @@ function mostrarNuevaObra() {
 
 function determinarModoSIGE(contexto) {
 
-
-    if (!contexto)
-        return "CONSULTA";
-
-
-    const cargo =
-        contexto.nombre_cargo
-            ?.toLowerCase()
-            .trim();
-
-
-
-    if (
-        cargo === "administrador general"
-    ) {
-
-        return "ADMIN";
-
-    }
-
-
-
-    if (
-        cargo === "presidente de la mesa directiva"
-    ) {
-
-        return "PRESIDENTE";
-
-    }
-
-
-
-    if (
-        cargo.includes("mesa directiva")
-    ) {
-
-        return "MESA_DIRECTIVA";
-
-    }
-
-
-
-    return "CONSULTA";
+    return "PRESIDENTE";
 
 }
-
 /* ==========================================================
    ESCRITORIO
 ========================================================== */
