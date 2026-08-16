@@ -560,6 +560,18 @@ const etapa =
     ??
     "";
 
+   const vobos =
+    data.vobos ?? [];
+
+const todosVobosAprobados =
+    vobos.length > 0 &&
+    vobos.every(
+        v => v.estado === "APROBADO"
+    );
+
+const esPresidente =
+    contextoActual.rol === "PRESIDENTE";
+
 
 
     let accion = "";
@@ -609,7 +621,17 @@ const etapa =
 
     }
 
-
+const botonAutorizar =
+    esPresidente &&
+    todosVobosAprobados
+        ? `
+            <button
+                class="btn btn-success"
+                id="btnAutorizarExpediente">
+                Autorizar expediente
+            </button>
+          `
+        : "";
 
     return `
 
@@ -642,6 +664,8 @@ const etapa =
 
 
             ${accion}
+
+            ${botonAutorizar}
 
 
         </div>
@@ -1283,61 +1307,97 @@ function registrarEventosRequisitos() {
 
 
     /*
-    ======================================================
-    TURNAR EXPEDIENTE A MESA DIRECTIVA
-    ======================================================
-    */
+   /* ======================================================
+   TURNAR EXPEDIENTE A MESA DIRECTIVA
+====================================================== */
 
+const btnTurnar =
+    document.getElementById(
+        "btnTurnarMesaDirectiva"
+    );
 
-    const btnTurnar =
-        document.getElementById(
-            "btnTurnarMesaDirectiva"
-        );
+if (btnTurnar) {
 
+    btnTurnar.addEventListener(
+        "click",
+        async () => {
 
-    if (btnTurnar) {
+            try {
 
+                await Workflow.transicionarExpediente(
+                    escritorioActual.expediente.id,
+                    "TUR"
+                );
 
-        btnTurnar.addEventListener(
-            "click",
-            async () => {
-
-
-                try {
-
-
-                    await Workflow.transicionarExpediente(
-                        escritorioActual.expediente.id,
-                        "TUR"
-                    );
-
-
-                    await Router.mostrarEscritorio(
-                        escritorioActual.expediente.id
-                    );
-
-
-                } catch(error) {
-
-
-                    console.error(
-                        "Error turnar expediente:",
-                        error
-                    );
-
-
-                    mostrarAlerta({
-                        titulo:"SIGE",
-                        mensaje:error.message
-                    });
-
-                }
+                await Router.mostrarEscritorio(
+                    escritorioActual.expediente.id
+                );
 
             }
-        );
+            catch (error) {
 
-    }
+                console.error(
+                    "Error turnar expediente:",
+                    error
+                );
 
+                mostrarAlerta({
+                    titulo: "SIGE",
+                    mensaje: error.message
+                });
+
+            }
+
+        }
+    );
+
+}
+
+
+/* ======================================================
+   AUTORIZAR EXPEDIENTE (PRESIDENTE)
+====================================================== */
+
+const btnAutorizar =
+    document.getElementById(
+        "btnAutorizarExpediente"
+    );
+
+if (btnAutorizar) {
+
+    btnAutorizar.addEventListener(
+        "click",
+        async () => {
+
+            try {
+
+                await Workflow.aprobarObraPresidente(
+                    escritorioActual.expediente.id
+                );
+
+                await Router.mostrarEscritorio(
+                    escritorioActual.expediente.id
+                );
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Error autorizar expediente:",
+                    error
+                );
+
+                mostrarAlerta({
+                    titulo: "SIGE",
+                    mensaje: error.message
+                });
+
+            }
+
+        }
+    );
+
+}
 
 
     /*
