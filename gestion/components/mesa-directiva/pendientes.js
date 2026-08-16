@@ -67,7 +67,7 @@ async function render() {
 
     const expedientes =
         (
-            await Workflow.obtenerExpedientes()
+            await Workflow.obtenerPendientesMesaDirectiva()
         ).filter(
 
             e => e.etapa ===
