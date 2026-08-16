@@ -140,6 +140,59 @@ async function render() {
 
                     </div>
 
+
+                    <div
+    style="
+        margin-top:22px;
+        padding-top:14px;
+        border-top:1px solid #E5E7EB;
+    ">
+
+    <div
+        style="
+            font-weight:700;
+            color:var(--vino);
+            margin-bottom:12px;
+        ">
+
+        VISTOS BUENOS
+
+    </div>
+
+    ${e.vobos.map(v => `
+
+        <div
+            style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                margin-bottom:8px;
+            ">
+
+            <span>
+
+                ${v.cargo}
+
+            </span>
+
+            <span>
+
+                ${v.estado === "APROBADO"
+
+                    ? "🟢 Aprobado"
+
+                    : "🟡 Pendiente"
+
+                }
+
+            </span>
+
+        </div>
+
+    `).join("")}
+
+</div>
+
                     <div
                         style="
                             margin-top:22px;
