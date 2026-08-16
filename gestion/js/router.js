@@ -146,7 +146,7 @@ function mostrarNuevaObra() {
 
 function determinarModoSIGE(contexto) {
 
-    return "ADMIN";
+    return "MESA_DIRECTIVA";
 
 }
 /* ==========================================================
