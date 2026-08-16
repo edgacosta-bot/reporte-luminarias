@@ -41,7 +41,17 @@ async function render() {
                     color:var(--vino);
                 ">
 
-                Expedientes pendientes de revisión
+                Expedientes en revisión
+
+            </div>
+
+            <div
+                style="
+                    margin-top:8px;
+                    color:var(--texto-secundario);
+                ">
+
+                Seleccione un expediente para revisar su documentación.
 
             </div>
 
@@ -65,15 +75,9 @@ async function render() {
             "listaPendientes"
         );
 
+
     const expedientes =
-        (
-            await Workflow.obtenerPendientesMesaDirectiva()
-        ).filter(
-
-            e => e.etapa ===
-                "APROBACIÓN"
-
-        );
+        await Workflow.obtenerPendientesMesaDirectiva();
 
 
     if (!expedientes.length) {
@@ -82,7 +86,7 @@ async function render() {
 
             <div class="card">
 
-                No existen expedientes pendientes.
+                No existen expedientes en revisión.
 
             </div>
 
@@ -101,7 +105,7 @@ async function render() {
                 <div
                     class="card"
                     style="
-                        margin-top:18px;
+                        margin-bottom:20px;
                     ">
 
                     <div
@@ -117,20 +121,28 @@ async function render() {
 
                     <div
                         style="
-                            margin-top:8px;
+                            margin-top:14px;
+                            line-height:1.8;
                         ">
 
-                        Privada ${e.privada}
+                        <strong>Privada:</strong>
+                        ${e.privada}
 
-                        ·
+                        <br>
 
-                        Lote ${e.lote}
+                        <strong>Lote:</strong>
+                        ${e.lote}
+
+                        <br>
+
+                        <strong>Propietario:</strong>
+                        ${e.propietario ?? "-"}
 
                     </div>
 
                     <div
                         style="
-                            margin-top:18px;
+                            margin-top:22px;
                             text-align:right;
                         ">
 
