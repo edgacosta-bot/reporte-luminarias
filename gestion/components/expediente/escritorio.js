@@ -2090,7 +2090,7 @@ async function emitirVoboExpediente(voboId) {
                 "emitir_vobo_expediente",
                 {
                     p_expediente_id:
-                        escritorioActual.expediente.id,
+                   SIGE_STATE.expedienteActual.expediente.id
 
                     p_usuario_id:
                         usuario.id
