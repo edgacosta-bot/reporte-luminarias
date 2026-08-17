@@ -657,6 +657,32 @@ async function guardarDatosPropietario(
 
 }
 
+async function emitirVobo(
+    idExpediente
+) {
+
+    const { data: usuarioData, error } =
+        await supabaseClient.auth.getUser();
+
+    if (error)
+        throw error;
+
+    const resultado =
+        await supabaseClient.rpc(
+            "emitir_vobo_expediente",
+            {
+                p_expediente_id: idExpediente,
+                p_usuario_id: usuarioData.user.id
+            }
+        );
+
+    if (resultado.error)
+        throw resultado.error;
+
+    return resultado.data;
+
+}
+
 /* ==========================================================
    EXPORTACIÓN
 ========================================================== */
