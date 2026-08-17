@@ -599,6 +599,9 @@ const etapa =
    const puedeAutorizar =
     data.mesa_directiva?.puede_autorizar ?? false;
 
+   console.log("=== ESTADO EXPEDIENTE ===");
+console.log(data.mesa_directiva);
+console.log("puedeAutorizar:", puedeAutorizar);
 
 
     let accion = "";
