@@ -833,9 +833,8 @@ function renderAccionesConsulta(r) {
 
             <button
                 class="btn btn-secondary"
-                onclick="
-                    consultarDocumentoRequisito('${r.id}')
-                ">
+                data-accion="consultar-documento"
+                data-requisito="${r.id}">
 
                 📄 Ver documento
 
