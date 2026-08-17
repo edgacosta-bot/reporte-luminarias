@@ -189,6 +189,8 @@ const modo =
         contextoSIGE
     );
 
+console.log("ANTES DE EscritorioExpediente.render");
+   
    EscritorioExpediente.render(
     expediente,
     {
