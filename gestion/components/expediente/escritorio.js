@@ -785,13 +785,27 @@ function renderAccionesRequisito(
 ) {
 
        if (
-        contexto.rol === "MESA_DIRECTIVA" ||
-        contexto.rol === "PRESIDENTE"
-    ) {
+    contexto.rol === "MESA_DIRECTIVA" ||
+    contexto.rol === "PRESIDENTE"
+) {
 
-        return renderAccionesConsulta(r);
+    switch (r.tipo_captura) {
+
+        case "PDF":
+            return renderAccionesConsulta(r);
+
+        case "DATOS_DRO":
+            return renderAccionesDatosDRO(r);
+
+        case "DATOS_PROPIETARIO":
+            return renderAccionesDatosPropietario(r);
+
+        default:
+            return "";
 
     }
+
+}
 
     switch (r.tipo_captura) {
 
