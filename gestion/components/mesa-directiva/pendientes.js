@@ -219,7 +219,7 @@ async function render() {
             <button
                 class="btn btn-primary"
 
-                onclick="console.log('Emitir VoBo:', '${v.id}')">
+                onclick="emitirVoboExpediente('${v.id}')"
 
                 Emitir VoBo
 
