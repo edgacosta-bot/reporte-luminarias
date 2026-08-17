@@ -483,23 +483,27 @@ function renderVobos(
 
             <thead>
 
-                <tr>
+    <tr>
 
-                    <th>
-                        Cargo
-                    </th>
+        <th>
+            Cargo
+        </th>
 
-                    <th>
-                        Estado
-                    </th>
+        <th>
+            Estado
+        </th>
 
-                    <th>
-                        Fecha
-                    </th>
+        <th>
+            Fecha
+        </th>
 
-                </tr>
+        <th>
+            Acción
+        </th>
 
-            </thead>
+    </tr>
+
+</thead>
 
             <tbody>
 
