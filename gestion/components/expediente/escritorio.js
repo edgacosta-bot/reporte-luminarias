@@ -66,6 +66,25 @@ function render(
 
 console.log("CONTEXTO ESCRITORIO:", contexto);
 
+console.log(
+    "contexto.contexto:",
+    contexto.contexto
+);
+
+console.log(
+    "Claves de contexto:",
+    Object.keys(contexto)
+);
+
+if (contexto.contexto) {
+
+    console.log(
+        "Claves de contexto.contexto:",
+        Object.keys(contexto.contexto)
+    );
+
+}   
+
 window.escritorioData = data;
 
 console.log(
