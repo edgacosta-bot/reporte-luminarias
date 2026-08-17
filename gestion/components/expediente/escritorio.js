@@ -1226,6 +1226,8 @@ function renderActuaciones(expediente) {
 
 function registrarEventosRequisitos() {
 
+   console.log("registrarEventosRequisitos()");
+
     /*
     ======================================================
     REQUISITOS SIMPLES
