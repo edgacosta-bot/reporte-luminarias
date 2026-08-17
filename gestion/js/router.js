@@ -170,6 +170,16 @@ async function mostrarEscritorio(
     SIGE_STATE.expedienteActual =
         expediente;
 
+   console.log(
+    "SIGE_STATE después de asignar:",
+    SIGE_STATE
+);
+
+console.log(
+    "Expediente actual:",
+    SIGE_STATE.expedienteActual
+);
+
    const contextoSIGE =
     await obtenerContextoSIGE();
 
