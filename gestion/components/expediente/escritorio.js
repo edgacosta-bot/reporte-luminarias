@@ -2051,64 +2051,88 @@ function destruir() {
 
 async function emitirVoboExpediente(voboId) {
 
+    console.log("1. Entró a emitirVoboExpediente");
+    console.log("VoBo recibido:", voboId);
+
     const confirmado =
         confirm(
             "¿Desea emitir el VoBo del expediente?"
         );
 
+    console.log("2. Confirmado:", confirmado);
 
     if (!confirmado) {
+        console.log("Proceso cancelado por el usuario.");
         return;
     }
 
+    try {
 
-    const { data: usuarioData } =
-        await supabaseClient.auth.getUser();
+        console.log("3. Obteniendo usuario...");
 
+        const { data: usuarioData, error: usuarioError } =
+            await supabaseClient.auth.getUser();
 
-    const usuario =
-        usuarioData.user;
+        console.log("4. UsuarioData:", usuarioData);
+        console.log("5. UsuarioError:", usuarioError);
 
+        if (usuarioError)
+            throw usuarioError;
 
-    const resultado =
-        await supabaseClient.rpc(
-            "emitir_vobo_expediente",
-            {
-                p_expediente_id:
-                    escritorioActual.expediente.id,
+        const usuario = usuarioData.user;
 
-                p_usuario_id:
-                    usuario.id
-            }
-        );
+        console.log("6. Usuario:", usuario);
 
-   console.log("RPC RESULTADO:", resultado.data);
-   console.log("RPC ERROR:", resultado.error);
+        console.log("7. Antes de llamar RPC");
 
+        const resultado =
+            await supabaseClient.rpc(
+                "emitir_vobo_expediente",
+                {
+                    p_expediente_id:
+                        escritorioActual.expediente.id,
 
-    if (resultado.error) {
+                    p_usuario_id:
+                        usuario.id
+                }
+            );
 
-        console.error(
-            resultado.error
-        );
+        console.log("8. Después de RPC");
+        console.log("RPC RESULTADO:", resultado.data);
+        console.log("RPC ERROR:", resultado.error);
+
+        if (resultado.error) {
+
+            console.error("9. Error RPC:", resultado.error);
+
+            alert(resultado.error.message);
+
+            return;
+
+        }
+
+        console.log("10. RPC ejecutada correctamente.");
 
         alert(
-            resultado.error.message
+            "VoBo emitido correctamente."
         );
 
-        return;
+        console.log("11. Recargando escritorio...");
+
+        await Router.mostrarEscritorio(
+            escritorioActual.expediente.id
+        );
+
+        console.log("12. Escritorio recargado.");
 
     }
+    catch (error) {
 
+        console.error("ERROR GENERAL emitirVoboExpediente:", error);
 
-    alert(
-        "VoBo emitido correctamente."
-    );
+        alert(error.message);
 
-
-    await Router.mostrarEscritorio(
-        escritorioActual.expediente.id
-    );
+    }
 
 }
 
