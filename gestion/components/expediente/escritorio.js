@@ -427,9 +427,8 @@ function renderVobos(
                     ? `
                         <button
                             class="btn btn-primary"
-                            onclick="
-                                emitirVoboExpediente('${v.id}')
-                            ">
+                            data-accion="emitir-vobo"
+                            data-vobo="${v.id}">
                             Emitir VoBo
                         </button>
                     `
@@ -1215,7 +1214,6 @@ function renderActuaciones(expediente) {
 
 function registrarEventosRequisitos() {
 
-
     /*
     ======================================================
     REQUISITOS SIMPLES
@@ -1227,7 +1225,6 @@ function registrarEventosRequisitos() {
         document.querySelectorAll(
             "[data-accion='cumplir-requisito']"
         );
-
 
     botones.forEach(
         boton => {
@@ -1241,16 +1238,13 @@ function registrarEventosRequisitos() {
                         const requisitoId =
                             boton.dataset.requisito;
 
-
                         const input =
                             document.querySelector(
                                 `[data-input-requisito="${requisitoId}"]`
                             );
 
-
                         const valor =
                             input?.value?.trim();
-
 
                         const resultado =
                             await Workflow.cumplirRequisito(
@@ -1258,30 +1252,25 @@ function registrarEventosRequisitos() {
                                 valor
                             );
 
-
                         console.log(
                             "Resultado requisito:",
                             resultado
                         );
 
-
                         await Router.mostrarEscritorio(
                             escritorioActual.expediente.id
                         );
 
-
-                    } catch(error) {
-
+                    } catch (error) {
 
                         console.error(
                             "Error cumplir requisito:",
                             error
                         );
 
-
                         mostrarAlerta({
-                            titulo:"SIGE",
-                            mensaje:error.message
+                            titulo: "SIGE",
+                            mensaje: error.message
                         });
 
                     }
@@ -1292,101 +1281,100 @@ function registrarEventosRequisitos() {
         }
     );
 
+    /*
+    ======================================================
+    TURNAR EXPEDIENTE A MESA DIRECTIVA
+    ======================================================
+    */
 
+    const btnTurnar =
+        document.getElementById(
+            "btnTurnarMesaDirectiva"
+        );
+
+    if (btnTurnar) {
+
+        btnTurnar.addEventListener(
+            "click",
+            async () => {
+
+                try {
+
+                    await Workflow.transicionarExpediente(
+                        escritorioActual.expediente.id,
+                        "TUR"
+                    );
+
+                    await Router.mostrarEscritorio(
+                        escritorioActual.expediente.id
+                    );
+
+                }
+                catch (error) {
+
+                    console.error(
+                        "Error turnar expediente:",
+                        error
+                    );
+
+                    mostrarAlerta({
+                        titulo: "SIGE",
+                        mensaje: error.message
+                    });
+
+                }
+
+            }
+        );
+
+    }
 
     /*
-   /* ======================================================
-   TURNAR EXPEDIENTE A MESA DIRECTIVA
-====================================================== */
+    ======================================================
+    AUTORIZAR EXPEDIENTE (PRESIDENTE)
+    ======================================================
+    */
 
-const btnTurnar =
-    document.getElementById(
-        "btnTurnarMesaDirectiva"
-    );
+    const btnAutorizar =
+        document.getElementById(
+            "btnAutorizarExpediente"
+        );
 
-if (btnTurnar) {
+    if (btnAutorizar) {
 
-    btnTurnar.addEventListener(
-        "click",
-        async () => {
+        btnAutorizar.addEventListener(
+            "click",
+            async () => {
 
-            try {
+                try {
 
-                await Workflow.transicionarExpediente(
-                    escritorioActual.expediente.id,
-                    "TUR"
-                );
+                    await Workflow.aprobarObraPresidente(
+                        escritorioActual.expediente.id
+                    );
 
-                await Router.mostrarEscritorio(
-                    escritorioActual.expediente.id
-                );
+                    await Router.mostrarEscritorio(
+                        escritorioActual.expediente.id
+                    );
 
-            }
-            catch (error) {
+                }
+                catch (error) {
 
-                console.error(
-                    "Error turnar expediente:",
-                    error
-                );
+                    console.error(
+                        "Error autorizar expediente:",
+                        error
+                    );
 
-                mostrarAlerta({
-                    titulo: "SIGE",
-                    mensaje: error.message
-                });
+                    mostrarAlerta({
+                        titulo: "SIGE",
+                        mensaje: error.message
+                    });
 
-            }
-
-        }
-    );
-
-}
-
-
-/* ======================================================
-   AUTORIZAR EXPEDIENTE (PRESIDENTE)
-====================================================== */
-
-const btnAutorizar =
-    document.getElementById(
-        "btnAutorizarExpediente"
-    );
-
-if (btnAutorizar) {
-
-    btnAutorizar.addEventListener(
-        "click",
-        async () => {
-
-            try {
-
-                await Workflow.aprobarObraPresidente(
-                    escritorioActual.expediente.id
-                );
-
-                await Router.mostrarEscritorio(
-                    escritorioActual.expediente.id
-                );
+                }
 
             }
-            catch (error) {
+        );
 
-                console.error(
-                    "Error autorizar expediente:",
-                    error
-                );
-
-                mostrarAlerta({
-                    titulo: "SIGE",
-                    mensaje: error.message
-                });
-
-            }
-
-        }
-    );
-
-}
-
+    }
 
     /*
     ======================================================
@@ -1394,70 +1382,53 @@ if (btnAutorizar) {
     ======================================================
     */
 
-
     const botonesDRO =
         document.querySelectorAll(
             "[data-accion='ingresar-datos-dro']"
         );
 
-
     botonesDRO.forEach(
         boton => {
-
 
             boton.addEventListener(
                 "click",
                 async () => {
 
-
                     try {
-
 
                         const requisitoId =
                             boton.dataset.requisito;
 
-
                         const datos =
                             await mostrarFormularioDRO();
 
-
-                        if(!datos)
+                        if (!datos)
                             return;
-
-
 
                         await Workflow.guardarDatosDRO(
                             escritorioData.obra.id,
                             datos
                         );
 
-
-
                         await Workflow.cumplirRequisito(
                             requisitoId,
                             "DRO registrado"
                         );
 
-
-
                         await Router.mostrarEscritorio(
                             escritorioData.expediente.id
                         );
 
-
-
-                    } catch(error) {
-
+                    } catch (error) {
 
                         console.error(
                             "Error datos DRO:",
                             error
                         );
 
-
                         mostrarAlerta({
-                            titulo:"SIGE",
-                            mensaje:error.message
+                            titulo: "SIGE",
+                            mensaje: error.message
                         });
 
                     }
@@ -1465,11 +1436,8 @@ if (btnAutorizar) {
                 }
             );
 
-
         }
     );
-
-
 
     /*
     ======================================================
@@ -1477,70 +1445,53 @@ if (btnAutorizar) {
     ======================================================
     */
 
-
     const botonesPropietario =
         document.querySelectorAll(
             "[data-accion='ingresar-datos-propietario']"
         );
 
-
     botonesPropietario.forEach(
         boton => {
-
 
             boton.addEventListener(
                 "click",
                 async () => {
 
-
                     try {
-
 
                         const requisitoId =
                             boton.dataset.requisito;
 
-
                         const datos =
                             await mostrarFormularioPropietario();
 
-
-                        if(!datos)
+                        if (!datos)
                             return;
-
-
 
                         await Workflow.guardarDatosPropietario(
                             escritorioData.obra.id,
                             datos
                         );
 
-
-
                         await Workflow.cumplirRequisito(
                             requisitoId,
                             "Propietario registrado"
                         );
 
-
-
                         await Router.mostrarEscritorio(
                             escritorioData.expediente.id
                         );
 
-
-
-                    } catch(error) {
-
+                    } catch (error) {
 
                         console.error(
                             "Error datos Propietario:",
                             error
                         );
 
-
                         mostrarAlerta({
-                            titulo:"SIGE",
-                            mensaje:error.message
+                            titulo: "SIGE",
+                            mensaje: error.message
                         });
 
                     }
@@ -1548,59 +1499,46 @@ if (btnAutorizar) {
                 }
             );
 
-
         }
     );
 
-
-
     /*
     ======================================================
-    DOCUMENTOS PDF
-    INCORPORAR
+    DOCUMENTOS PDF - INCORPORAR
     ======================================================
     */
-
 
     const botonesDocumento =
         document.querySelectorAll(
             "[data-accion='incorporar-documento']"
         );
 
-
     botonesDocumento.forEach(
         boton => {
-
 
             boton.addEventListener(
                 "click",
                 async () => {
 
-
                     try {
-
 
                         const requisitoId =
                             boton.dataset.requisito;
-
 
                         await Documentos.incorporar(
                             requisitoId
                         );
 
-
-                    } catch(error) {
-
+                    } catch (error) {
 
                         console.error(
                             "Error incorporar documento:",
                             error
                         );
 
-
                         mostrarAlerta({
-                            titulo:"SIGE",
-                            mensaje:error.message
+                            titulo: "SIGE",
+                            mensaje: error.message
                         });
 
                     }
@@ -1608,59 +1546,46 @@ if (btnAutorizar) {
                 }
             );
 
-
         }
     );
 
-
-
     /*
     ======================================================
-    DOCUMENTOS PDF
-    SUSTITUIR
+    DOCUMENTOS PDF - SUSTITUIR
     ======================================================
     */
-
 
     const botonesSustituir =
         document.querySelectorAll(
             "[data-accion='sustituir-documento']"
         );
 
-
     botonesSustituir.forEach(
         boton => {
-
 
             boton.addEventListener(
                 "click",
                 async () => {
 
-
                     try {
-
 
                         const requisitoId =
                             boton.dataset.requisito;
-
 
                         await Documentos.sustituir(
                             requisitoId
                         );
 
-
-                    } catch(error) {
-
+                    } catch (error) {
 
                         console.error(
                             "Error sustituir documento:",
                             error
                         );
 
-
                         mostrarAlerta({
-                            titulo:"SIGE",
-                            mensaje:error.message
+                            titulo: "SIGE",
+                            mensaje: error.message
                         });
 
                     }
@@ -1668,59 +1593,46 @@ if (btnAutorizar) {
                 }
             );
 
-
         }
     );
 
-
-
     /*
     ======================================================
-    DOCUMENTOS PDF
-    CONSULTAR
+    DOCUMENTOS PDF - CONSULTAR
     ======================================================
     */
-
 
     const botonesConsultar =
         document.querySelectorAll(
             "[data-accion='consultar-documento']"
         );
 
-
     botonesConsultar.forEach(
         boton => {
-
 
             boton.addEventListener(
                 "click",
                 async () => {
 
-
                     try {
-
 
                         const requisitoId =
                             boton.dataset.requisito;
-
 
                         await Documentos.consultar(
                             requisitoId
                         );
 
-
-                    } catch(error) {
-
+                    } catch (error) {
 
                         console.error(
                             "Error consultar documento:",
                             error
                         );
 
-
                         mostrarAlerta({
-                            titulo:"SIGE",
-                            mensaje:error.message
+                            titulo: "SIGE",
+                            mensaje: error.message
                         });
 
                     }
@@ -1728,10 +1640,52 @@ if (btnAutorizar) {
                 }
             );
 
-
         }
     );
 
+    /*
+    ======================================================
+    EMITIR VOBO
+    ======================================================
+    */
+
+    const botonesVobo =
+        document.querySelectorAll(
+            "[data-accion='emitir-vobo']"
+        );
+
+    botonesVobo.forEach(
+        boton => {
+
+            boton.addEventListener(
+                "click",
+                async () => {
+
+                    try {
+
+                        await emitirVoboExpediente(
+                            boton.dataset.vobo
+                        );
+
+                    } catch (error) {
+
+                        console.error(
+                            "Error emitir VoBo:",
+                            error
+                        );
+
+                        mostrarAlerta({
+                            titulo: "SIGE",
+                            mensaje: error.message
+                        });
+
+                    }
+
+                }
+            );
+
+        }
+    );
 
 }
    
@@ -2143,5 +2097,3 @@ async function emitirVoboExpediente(voboId) {
 window.EscritorioExpediente =
     EscritorioExpediente;
 
-window.emitirVoboExpediente =
-    emitirVoboExpediente;
