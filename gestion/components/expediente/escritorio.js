@@ -2082,6 +2082,9 @@ async function emitirVoboExpediente(voboId) {
             }
         );
 
+   console.log("RPC RESULTADO:", resultado.data);
+   console.log("RPC ERROR:", resultado.error);
+
 
     if (resultado.error) {
 
