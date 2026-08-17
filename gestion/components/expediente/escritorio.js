@@ -404,6 +404,14 @@ function renderVobos(
             const esMiVobo =
                 v.cargo_id === cargoUsuario;
 
+           console.log({
+    cargo: v.cargo,
+    esMiVobo,
+    puedeEmitir: data.mesa_directiva?.puede_emitir_vobo,
+    cargoUsuario,
+    cargoVobo: v.cargo_id
+});
+
 
             const estado =
                 v.estado === "APROBADO"
