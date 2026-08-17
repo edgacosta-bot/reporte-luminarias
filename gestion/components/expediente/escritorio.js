@@ -2142,3 +2142,6 @@ async function emitirVoboExpediente(voboId) {
 
 window.EscritorioExpediente =
     EscritorioExpediente;
+
+window.emitirVoboExpediente =
+    emitirVoboExpediente;
