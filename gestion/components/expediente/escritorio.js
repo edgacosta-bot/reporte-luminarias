@@ -51,7 +51,7 @@ const EscritorioExpediente = {
 };
 
 let escritorioActual = null;
-let contextoActual = {};
+let contextoActual = window.contextoActual;
 
 /* ==========================================================
    RENDER PRINCIPAL
