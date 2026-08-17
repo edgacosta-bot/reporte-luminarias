@@ -79,9 +79,10 @@ const Workflow = {
     consultarDocumento,
     cumplirRequisito,
     guardarDatosPropietario,
-    guardarDatosDRO,
-    transicionarExpediente,
-    aprobarObraPresidente
+   guardarDatosDRO,
+   transicionarExpediente,
+   aprobarObraPresidente,
+   emitirVobo
 
 };
 
