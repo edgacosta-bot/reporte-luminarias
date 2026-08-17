@@ -160,6 +160,9 @@ async function mostrarEscritorio(
     idExpediente = null
 ) {
 
+console.log("ENTRÓ A Router.mostrarEscritorio", idExpediente);
+
+   
     cambiarVista("escritorio");
 
     const expediente =
