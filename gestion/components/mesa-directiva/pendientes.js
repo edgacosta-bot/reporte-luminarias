@@ -159,7 +159,15 @@ async function render() {
 
     </div>
 
-    ${e.vobos.map(v => `
+    ${e.vobos.map(v => {
+
+    const esMiVobo =
+        v.cargo_id === window.contextoActual.cargo_id;
+
+    const pendiente =
+        v.estado === "PENDIENTE";
+
+    return `
 
         <div
             style="
@@ -178,18 +186,32 @@ async function render() {
             <span>
 
                 ${v.estado === "APROBADO"
-
                     ? "🟢 Aprobado"
+                    : "🟡 Pendiente"}
 
-                    : "🟡 Pendiente"
+                ${
+                    esMiVobo && pendiente
+                        ? `
+                        <button
+                            class="btn btn-primary"
+                            style="margin-left:12px;"
 
+                            onclick="console.log('Emitir VoBo:', '${v.id}')">
+
+                            Emitir VoBo
+
+                        </button>
+                        `
+                        : ""
                 }
 
             </span>
 
         </div>
 
-    `).join("")}
+    `;
+
+}).join("")}
 
 </div>
 
