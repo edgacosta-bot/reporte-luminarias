@@ -169,46 +169,73 @@ async function render() {
 
     return `
 
-        <div
-            style="
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-                margin-bottom:8px;
-            ">
+       <div
+    style="
+        padding:12px 0;
+        border-bottom:1px solid #ECECEC;
+    ">
 
-            <span>
+    <div
+        style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        ">
 
-                ${v.cargo}
+        <div>
 
-            </span>
-
-            <span>
-
-                ${v.estado === "APROBADO"
-                    ? "🟢 Aprobado"
-                    : "🟡 Pendiente"}
-
-                ${
-                    esMiVobo && pendiente
-                        ? `
-                        <button
-                            class="btn btn-primary"
-                            style="margin-left:12px;"
-
-                            onclick="console.log('Emitir VoBo:', '${v.id}')">
-
-                            Emitir VoBo
-
-                        </button>
-                        `
-                        : ""
-                }
-
-            </span>
+            ${v.cargo}
 
         </div>
 
+        <div>
+
+            ${v.estado === "APROBADO"
+
+                ? "🟢 Aprobado"
+
+                : "🟡 Pendiente"
+
+            }
+
+        </div>
+
+    </div>
+
+    ${
+
+        esMiVobo && pendiente
+
+        ?
+
+        `
+
+        <div
+            style="
+                margin-top:12px;
+                text-align:right;
+            ">
+
+            <button
+                class="btn btn-primary"
+
+                onclick="console.log('Emitir VoBo:', '${v.id}')">
+
+                Emitir VoBo
+
+            </button>
+
+        </div>
+
+        `
+
+        :
+
+        ""
+
+    }
+
+</div>
     `;
 
 }).join("")}
