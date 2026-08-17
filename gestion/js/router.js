@@ -149,9 +149,28 @@ function mostrarNuevaObra() {
 
 function determinarModoSIGE(contexto) {
 
-    return "MESA_DIRECTIVA";
+    if (!contexto) {
+        return "INVITADO";
+    }
+
+    switch (contexto.clave_cargo) {
+
+        case "PRES":
+            return "PRESIDENTE";
+
+        case "SECR":
+        case "TESO":
+        case "VOC1":
+        case "VOC2":
+            return "MESA_DIRECTIVA";
+
+        default:
+            return "ADMIN";
+
+    }
 
 }
+
 /* ==========================================================
    ESCRITORIO
 ========================================================== */
