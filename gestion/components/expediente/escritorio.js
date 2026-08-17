@@ -2037,7 +2037,11 @@ async function emitirVoboExpediente(voboId) {
 
         console.log("6. Usuario:", usuario);
 
-        console.log("7. Antes de llamar RPC");
+       console.log("SIGE_STATE:", SIGE_STATE);
+console.log("SIGE_STATE.expedienteActual:", SIGE_STATE.expedienteActual);
+console.log("escritorioActual:", escritorioActual);
+console.log("window.escritorioData:", window.escritorioData); 
+       console.log("7. Antes de llamar RPC");
 
         const resultado =
             await supabaseClient.rpc(
