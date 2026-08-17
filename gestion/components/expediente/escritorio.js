@@ -389,7 +389,7 @@ function renderVobos(
         data.vobos ?? [];
 
     const cargoUsuario =
-        contexto.cargo_id;
+    contexto.contexto?.cargo_id;
 
     if (!vobos.length) {
 
