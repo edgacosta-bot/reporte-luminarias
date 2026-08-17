@@ -418,48 +418,60 @@ function renderVobos(
                     : "-";
 
 
-            const accion =
-             esMiVobo &&
-             data.mesa_directiva?.puede_emitir_vobo
+           const accion =
+    esMiVobo &&
+    data.mesa_directiva?.puede_emitir_vobo
 
-           
+        ? `
 
-                    ? `
-                        <button
-                            class="btn btn-primary"
-                            data-accion="emitir-vobo"
-                            data-vobo="${v.id}">
-                            Emitir VoBo
-                        </button>
-                    `
+            <div
+                style="
+                    margin-top:12px;
+                    text-align:right;
+                ">
 
-                    : "";
+                <button
+                    class="btn btn-primary"
+                    data-accion="emitir-vobo"
+                    data-vobo="${v.id}">
+
+                    Emitir VoBo
+
+                </button>
+
+            </div>
+
+        `
+        : "";
 
 
             return `
 
-                <tr>
+<tr>
 
-                    <td>
-                        ${v.cargo}
-                    </td>
+    <td>
 
-                    <td>
-                        ${estado}
-                    </td>
+        ${v.cargo}
 
-                    <td>
-                         ${fecha}
-                     </td>
-                     
-                     <td>
-                         ${accion}
-                     </td>
+        ${accion}
 
-         </tr>
+    </td>
 
-            `;
+    <td>
 
+        ${estado}
+
+    </td>
+
+    <td>
+
+        ${fecha}
+
+    </td>
+
+</tr>
+
+`;
         }).join("");
 
 
@@ -495,10 +507,6 @@ function renderVobos(
 
         <th>
             Fecha
-        </th>
-
-        <th>
-            Acción
         </th>
 
     </tr>
