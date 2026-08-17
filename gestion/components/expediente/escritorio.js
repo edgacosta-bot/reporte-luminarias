@@ -419,8 +419,10 @@ function renderVobos(
 
 
             const accion =
-                esMiVobo &&
-                v.estado === "PENDIENTE"
+             esMiVobo &&
+             data.mesa_directiva?.puede_emitir_vobo
+
+           
 
                     ? `
                         <button
@@ -448,10 +450,14 @@ function renderVobos(
                     </td>
 
                     <td>
-                        ${fecha}
-                    </td>
+                         ${fecha}
+                     </td>
+                     
+                     <td>
+                         ${accion}
+                     </td>
 
-                </tr>
+         </tr>
 
             `;
 
@@ -552,17 +558,8 @@ const etapa =
     ??
     "";
 
-   const vobos =
-    data.vobos ?? [];
-
-const todosVobosAprobados =
-    vobos.length > 0 &&
-    vobos.every(
-        v => v.estado === "APROBADO"
-    );
-
-const esPresidente =
-    contextoActual.rol === "PRESIDENTE";
+   const puedeAutorizar =
+    data.mesa_directiva?.puede_autorizar ?? false;
 
 
 
@@ -613,9 +610,8 @@ const esPresidente =
 
     }
 
-const botonAutorizar =
-    esPresidente &&
-    todosVobosAprobados
+  const botonAutorizar =
+    puedeAutorizar
         ? `
             <button
                 class="btn btn-success"
