@@ -150,9 +150,25 @@ async function validarAutorizacion() {
 
     }
 
-    SIGE.contexto = contexto;
+   SIGE.contexto = contexto;
 
-    actualizarUsuario();
+/* ============================================
+   Contexto global de la aplicación
+============================================ */
+
+window.contextoActual = {
+
+    rol: contexto.clave_cargo,
+
+    cargo_id: contexto.cargo_id,
+
+    usuario_id: contexto.usuario_id,
+
+    contexto
+
+};
+
+actualizarUsuario();
 
 }
 /* ==========================================================
