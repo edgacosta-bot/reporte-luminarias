@@ -2025,16 +2025,9 @@ console.log("window.escritorioData:", window.escritorioData);
        console.log("7. Antes de llamar RPC");
 
         const resultado =
-            await supabaseClient.rpc(
-                "emitir_vobo_expediente",
-                {
-                    p_expediente_id:
-                   SIGE_STATE.expedienteActual.expediente.id,
-
-                    p_usuario_id:
-                        usuario.id
-                }
-            );
+    await Workflow.emitirVobo(
+        SIGE_STATE.expedienteActual.expediente.id
+    );
 
         console.log("8. Después de RPC");
         console.log("RPC RESULTADO:", resultado.data);
