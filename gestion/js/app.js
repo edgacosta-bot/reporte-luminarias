@@ -162,7 +162,7 @@ window.contextoActual = {
 
     cargo_id: contexto.cargo_id,
 
-    usuario_id: contexto.usuario_id,
+    residente_id: contexto.residente_id,
 
     contexto
 
