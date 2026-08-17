@@ -1240,6 +1240,11 @@ function registrarEventosRequisitos() {
             "[data-accion='cumplir-requisito']"
         );
 
+   console.log(
+    "Botones VoBo encontrados:",
+    botonesVobo.length
+);
+
     botones.forEach(
         boton => {
 
