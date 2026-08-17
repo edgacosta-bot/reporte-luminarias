@@ -220,7 +220,8 @@ async function render() {
                 class="btn btn-primary"
 
                 data-accion="emitir-vobo"
-               data-vobo="${v.id}"
+
+               data-vobo="${v.id}">
 
                 Emitir VoBo
 
