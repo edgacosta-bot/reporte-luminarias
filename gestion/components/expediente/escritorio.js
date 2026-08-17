@@ -116,6 +116,8 @@ contextoActual = contexto;
 
     ${renderVobos(data, contexto)}
 `;
+
+console.log(html);
    
 workspace.innerHTML = html;
 
