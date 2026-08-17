@@ -980,19 +980,13 @@ function renderAccionesDato(r) {
 
 function renderAccionesDatosDRO(r) {
 
-
     const obra =
         escritorioData?.obra ?? {};
-
-
 
     const tieneDRO =
         !!obra.dro_id;
 
-
-
     if (tieneDRO) {
-
 
         return `
 
@@ -1021,44 +1015,15 @@ function renderAccionesDatosDRO(r) {
 
                 </div>
 
-
-               <div 
-    class="acciones-requisito"
-    style="
-        margin-top:18px;
-    "
->
-
-    <button
-
-                        class="btn btn-outline-primary btn-sm"
-
-                        data-accion="ingresar-datos-dro"
-
-                        data-requisito="${r.expediente_requisito_id ?? r.id}"
-
-                    >
-
-                        Actualizar datos
-
-                    </button>
-
-                </div>
-
-
             </div>
 
         `;
 
-
     }
-
-
 
     return `
 
         <div class="acciones-requisito">
-
 
             <button
 
@@ -1074,11 +1039,9 @@ function renderAccionesDatosDRO(r) {
 
             </button>
 
-
         </div>
 
     `;
-
 
 }
 
