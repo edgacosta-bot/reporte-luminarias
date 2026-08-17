@@ -2013,6 +2013,8 @@ function destruir() {
     if (!workspace)
         return;
 
+   console.log("ANTES DE CONSTRUIR HTML");
+
     workspace.innerHTML = "";
 
 }
