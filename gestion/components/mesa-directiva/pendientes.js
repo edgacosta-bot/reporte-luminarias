@@ -219,7 +219,8 @@ async function render() {
             <button
                 class="btn btn-primary"
 
-                onclick="emitirVoboExpediente('${v.id}')"
+                data-accion="emitir-vobo"
+               data-vobo="${v.id}"
 
                 Emitir VoBo
 
