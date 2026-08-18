@@ -1926,9 +1926,18 @@ function registrarEventoSolicitarTerminacion() {
             if (!datos)
                 return;
 
-            console.log(
-                "Solicitud de terminación:",
-                datos
+            await Workflow.solicitarTerminacion(
+
+                escritorioActual.expediente.id,
+
+                datos.observaciones
+
+            );
+
+            await Router.mostrarEscritorio(
+
+                escritorioActual.expediente.id
+
             );
 
         }
