@@ -1789,6 +1789,7 @@ if (btnSuspender) {
 REANUDAR OBRA
 ======================================================
 */
+console.log("BLOQUE REANUDAR");
 
 const btnReanudar =
     document.getElementById(
