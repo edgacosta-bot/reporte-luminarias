@@ -1783,6 +1783,32 @@ if (btnSuspender) {
 }
 
 }
+
+/*
+======================================================
+REANUDAR OBRA
+======================================================
+*/
+
+const btnReanudar =
+    document.getElementById(
+        "btnReanudarObra"
+    );
+
+if (btnReanudar) {
+
+    btnReanudar.addEventListener(
+        "click",
+        async () => {
+
+            console.log(
+                "Reanudar obra"
+            );
+
+        }
+    );
+
+}
    
 /* ==========================================================
    ACTUACIONES
