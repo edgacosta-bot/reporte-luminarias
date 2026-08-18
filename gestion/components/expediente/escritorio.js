@@ -1275,21 +1275,79 @@ function renderActuaciones(expediente) {
 
 function registrarEventosRequisitos() {
 
-   console.log("registrarEventosRequisitos()");
+    console.log("registrarEventosRequisitos()");
 
-    /*
-    ======================================================
-    REQUISITOS SIMPLES
-    TELEFONO / EMAIL
-    ======================================================
-    */
+    registrarEventosRequisitosSimples();
+
+    registrarEventoTurnarMesa();
+
+    registrarEventoAutorizar();
+
+    registrarEventosDRO();
+
+    registrarEventosPropietario();
+
+    registrarEventosDocumentos();
+
+    registrarEventosVobos();
+
+    registrarEventosSuspension();
+
+    registrarEventosReanudacion();
+
+    registrarEventoSolicitarTerminacion();
+
+}
+
+
+/* ======================================================
+   HELPER
+====================================================== */
+
+function registrarClick(id, callback) {
+
+    const elemento =
+        document.getElementById(id);
+
+    if (!elemento)
+        return;
+
+    elemento.addEventListener(
+        "click",
+        async () => {
+
+            try {
+
+                await callback();
+
+            } catch (error) {
+
+                console.error(error);
+
+                mostrarAlerta({
+                    titulo: "SIGE",
+                    mensaje: error.message
+                });
+
+            }
+
+        }
+    );
+
+}
+
+
+/* ======================================================
+   REQUISITOS SIMPLES
+====================================================== */
+
+function registrarEventosRequisitosSimples() {
 
     const botones =
         document.querySelectorAll(
             "[data-accion='cumplir-requisito']"
         );
 
-   
     botones.forEach(
         boton => {
 
@@ -1310,15 +1368,9 @@ function registrarEventosRequisitos() {
                         const valor =
                             input?.value?.trim();
 
-                        const resultado =
-                            await Workflow.cumplirRequisito(
-                                requisitoId,
-                                valor
-                            );
-
-                        console.log(
-                            "Resultado requisito:",
-                            resultado
+                        await Workflow.cumplirRequisito(
+                            requisitoId,
+                            valor
                         );
 
                         await Router.mostrarEscritorio(
@@ -1327,10 +1379,7 @@ function registrarEventosRequisitos() {
 
                     } catch (error) {
 
-                        console.error(
-                            "Error cumplir requisito:",
-                            error
-                        );
+                        console.error(error);
 
                         mostrarAlerta({
                             titulo: "SIGE",
@@ -1345,117 +1394,92 @@ function registrarEventosRequisitos() {
         }
     );
 
-    /*
-    ======================================================
-    TURNAR EXPEDIENTE A MESA DIRECTIVA
-    ======================================================
-    */
+}
 
-    const btnTurnar =
-        document.getElementById(
-            "btnTurnarMesaDirectiva"
-        );
 
-    if (btnTurnar) {
 
-        btnTurnar.addEventListener(
-            "click",
-            async () => {
+/* ======================================================
+   TURNAR A MESA DIRECTIVA
+====================================================== */
 
-                try {
+function registrarEventoTurnarMesa() {
 
-                    await Workflow.transicionarExpediente(
-                        escritorioActual.expediente.id,
-                        "TUR"
-                    );
+    registrarClick(
 
-                    await Router.mostrarEscritorio(
-                        escritorioActual.expediente.id
-                    );
+        "btnTurnarMesaDirectiva",
 
-                }
-                catch (error) {
+        async () => {
 
-                    console.error(
-                        "Error turnar expediente:",
-                        error
-                    );
+            await Workflow.transicionarExpediente(
 
-                    mostrarAlerta({
-                        titulo: "SIGE",
-                        mensaje: error.message
-                    });
+                escritorioActual.expediente.id,
 
-                }
+                "TUR"
 
-            }
-        );
+            );
 
-    }
+            await Router.mostrarEscritorio(
 
-    /*
-    ======================================================
-    AUTORIZAR EXPEDIENTE (PRESIDENTE)
-    ======================================================
-    */
+                escritorioActual.expediente.id
 
-    const btnAutorizar =
-        document.getElementById(
-            "btnAutorizarExpediente"
-        );
+            );
 
-    if (btnAutorizar) {
+        }
 
-        btnAutorizar.addEventListener(
-            "click",
-            async () => {
+    );
 
-                try {
+}
 
-                    await Workflow.aprobarObraPresidente(
-                        escritorioActual.expediente.id
-                    );
+/* ======================================================
+   AUTORIZAR EXPEDIENTE
+====================================================== */
 
-                    await Router.mostrarEscritorio(
-                        escritorioActual.expediente.id
-                    );
+function registrarEventoAutorizar() {
 
-                }
-                catch (error) {
+    registrarClick(
 
-                    console.error(
-                        "Error autorizar expediente:",
-                        error
-                    );
+        "btnAutorizarExpediente",
 
-                    mostrarAlerta({
-                        titulo: "SIGE",
-                        mensaje: error.message
-                    });
+        async () => {
 
-                }
+            await Workflow.aprobarObraPresidente(
 
-            }
-        );
+                escritorioActual.expediente.id
 
-    }
+            );
 
-    /*
-    ======================================================
-    DATOS DEL DRO
-    ======================================================
-    */
+            await Router.mostrarEscritorio(
 
-    const botonesDRO =
+                escritorioActual.expediente.id
+
+            );
+
+        }
+
+    );
+
+}
+
+
+/* ======================================================
+   DATOS DEL DRO
+====================================================== */
+
+function registrarEventosDRO() {
+
+    const botones =
         document.querySelectorAll(
             "[data-accion='ingresar-datos-dro']"
         );
 
-    botonesDRO.forEach(
+    botones.forEach(
+
         boton => {
 
             boton.addEventListener(
+
                 "click",
+
                 async () => {
 
                     try {
@@ -1470,55 +1494,71 @@ function registrarEventosRequisitos() {
                             return;
 
                         await Workflow.guardarDatosDRO(
+
                             escritorioData.obra.id,
+
                             datos
+
                         );
 
                         await Workflow.cumplirRequisito(
+
                             requisitoId,
+
                             "DRO registrado"
+
                         );
 
                         await Router.mostrarEscritorio(
-                            escritorioData.expediente.id
+
+                            escritorioActual.expediente.id
+
                         );
 
                     } catch (error) {
 
-                        console.error(
-                            "Error datos DRO:",
-                            error
-                        );
+                        console.error(error);
 
                         mostrarAlerta({
+
                             titulo: "SIGE",
+
                             mensaje: error.message
+
                         });
 
                     }
 
                 }
+
             );
 
         }
+
     );
 
-    /*
-    ======================================================
-    DATOS DEL PROPIETARIO
-    ======================================================
-    */
+}
 
-    const botonesPropietario =
+
+/* ======================================================
+   DATOS DEL PROPIETARIO
+====================================================== */
+
+function registrarEventosPropietario() {
+
+    const botones =
         document.querySelectorAll(
             "[data-accion='ingresar-datos-propietario']"
         );
 
-    botonesPropietario.forEach(
+    botones.forEach(
+
         boton => {
 
             boton.addEventListener(
+
                 "click",
+
                 async () => {
 
                     try {
@@ -1533,283 +1573,347 @@ function registrarEventosRequisitos() {
                             return;
 
                         await Workflow.guardarDatosPropietario(
+
                             escritorioData.obra.id,
+
                             datos
+
                         );
 
                         await Workflow.cumplirRequisito(
+
                             requisitoId,
+
                             "Propietario registrado"
+
                         );
 
                         await Router.mostrarEscritorio(
-                            escritorioData.expediente.id
+
+                            escritorioActual.expediente.id
+
                         );
 
                     } catch (error) {
 
-                        console.error(
-                            "Error datos Propietario:",
-                            error
-                        );
+                        console.error(error);
 
                         mostrarAlerta({
+
                             titulo: "SIGE",
+
                             mensaje: error.message
+
                         });
 
                     }
 
                 }
+
             );
 
         }
+
     );
 
+}
+
+
+/* ======================================================
+   DOCUMENTOS
+====================================================== */
+
+function registrarEventosDocumentos() {
+
     /*
-    ======================================================
-    DOCUMENTOS PDF - INCORPORAR
-    ======================================================
+    ------------------------------------------------------
+    INCORPORAR
+    ------------------------------------------------------
     */
 
-    const botonesDocumento =
-        document.querySelectorAll(
+    document
+        .querySelectorAll(
             "[data-accion='incorporar-documento']"
-        );
+        )
+        .forEach(
 
-    botonesDocumento.forEach(
-        boton => {
+            boton => {
 
-            boton.addEventListener(
-                "click",
-                async () => {
+                boton.addEventListener(
 
-                    try {
+                    "click",
 
-                        const requisitoId =
-                            boton.dataset.requisito;
+                    async () => {
 
-                        await Documentos.incorporar(
-                            requisitoId
-                        );
+                        try {
 
-                    } catch (error) {
+                            await Documentos.incorporar(
 
-                        console.error(
-                            "Error incorporar documento:",
-                            error
-                        );
+                                boton.dataset.requisito
 
-                        mostrarAlerta({
-                            titulo: "SIGE",
-                            mensaje: error.message
-                        });
+                            );
+
+                        } catch (error) {
+
+                            console.error(error);
+
+                            mostrarAlerta({
+
+                                titulo: "SIGE",
+
+                                mensaje: error.message
+
+                            });
+
+                        }
 
                     }
 
-                }
-            );
+                );
 
-        }
-    );
+            }
+
+        );
 
     /*
-    ======================================================
-    DOCUMENTOS PDF - SUSTITUIR
-    ======================================================
+    ------------------------------------------------------
+    SUSTITUIR
+    ------------------------------------------------------
     */
 
-    const botonesSustituir =
-        document.querySelectorAll(
+    document
+        .querySelectorAll(
             "[data-accion='sustituir-documento']"
-        );
+        )
+        .forEach(
 
-    botonesSustituir.forEach(
-        boton => {
+            boton => {
 
-            boton.addEventListener(
-                "click",
-                async () => {
+                boton.addEventListener(
 
-                    try {
+                    "click",
 
-                        const requisitoId =
-                            boton.dataset.requisito;
+                    async () => {
 
-                        await Documentos.sustituir(
-                            requisitoId
-                        );
+                        try {
 
-                    } catch (error) {
+                            await Documentos.sustituir(
 
-                        console.error(
-                            "Error sustituir documento:",
-                            error
-                        );
+                                boton.dataset.requisito
 
-                        mostrarAlerta({
-                            titulo: "SIGE",
-                            mensaje: error.message
-                        });
+                            );
+
+                        } catch (error) {
+
+                            console.error(error);
+
+                            mostrarAlerta({
+
+                                titulo: "SIGE",
+
+                                mensaje: error.message
+
+                            });
+
+                        }
 
                     }
 
-                }
-            );
+                );
 
-        }
-    );
+            }
+
+        );
 
     /*
-    ======================================================
-    DOCUMENTOS PDF - CONSULTAR
-    ======================================================
+    ------------------------------------------------------
+    CONSULTAR
+    ------------------------------------------------------
     */
 
-    const botonesConsultar =
-        document.querySelectorAll(
+    document
+        .querySelectorAll(
             "[data-accion='consultar-documento']"
-        );
+        )
+        .forEach(
 
-    botonesConsultar.forEach(
-        boton => {
+            boton => {
 
-            boton.addEventListener(
-                "click",
-                async () => {
+                boton.addEventListener(
 
-                    try {
+                    "click",
 
-                        const requisitoId =
-                            boton.dataset.requisito;
+                    async () => {
 
-                        await Documentos.consultar(
-                            requisitoId
-                        );
+                        try {
 
-                    } catch (error) {
+                            await Documentos.consultar(
 
-                        console.error(
-                            "Error consultar documento:",
-                            error
-                        );
+                                boton.dataset.requisito
 
-                        mostrarAlerta({
-                            titulo: "SIGE",
-                            mensaje: error.message
-                        });
+                            );
+
+                        } catch (error) {
+
+                            console.error(error);
+
+                            mostrarAlerta({
+
+                                titulo: "SIGE",
+
+                                mensaje: error.message
+
+                            });
+
+                        }
 
                     }
 
-                }
-            );
+                );
 
-        }
-    );
+            }
 
-    /*
-    ======================================================
-    EMITIR VOBO
-    ======================================================
-    */
+        );
 
-    const botonesVobo =
+}
+
+
+/* ======================================================
+   VOBOS
+====================================================== */
+
+function registrarEventosVobos() {
+
+    const botones =
         document.querySelectorAll(
             "[data-accion='emitir-vobo']"
         );
 
-   console.log(
-    "Botones VoBo encontrados:",
-    botonesVobo.length
-);
+    console.log(
+        "Botones VoBo encontrados:",
+        botones.length
+    );
 
-    botonesVobo.forEach(
+    botones.forEach(
+
         boton => {
 
             boton.addEventListener(
+
                 "click",
+
                 async () => {
 
                     try {
 
                         await emitirVoboExpediente(
+
                             boton.dataset.vobo
+
                         );
 
                     } catch (error) {
 
-                        console.error(
-                            "Error emitir VoBo:",
-                            error
-                        );
+                        console.error(error);
 
                         mostrarAlerta({
+
                             titulo: "SIGE",
+
                             mensaje: error.message
+
                         });
 
                     }
 
                 }
+
             );
 
         }
+
     );
 
-   /*
-======================================================
-SUSPENDER OBRA
-======================================================
-*/
+}
 
-const btnSuspender =
-    document.getElementById(
-        "btnSuspenderObra"
-    );
 
-if (btnSuspender) {
+/* ======================================================
+   SUSPENSIÓN
+====================================================== */
 
-    btnSuspender.addEventListener(
-        "click",
+function registrarEventosSuspension() {
+
+    registrarClick(
+
+        "btnSuspenderObra",
+
         async () => {
 
             console.log(
                 "Suspender obra"
             );
 
+            // Aquí llamaremos posteriormente
+            // a Workflow.suspenderObra()
+
         }
+
     );
 
 }
 
-}
 
-/*
-======================================================
-REANUDAR OBRA
-======================================================
-*/
-console.log("BLOQUE REANUDAR");
+/* ======================================================
+   REANUDACIÓN
+====================================================== */
 
-const btnReanudar =
-    document.getElementById(
-        "btnReanudarObra"
-    );
+function registrarEventosReanudacion() {
 
-if (btnReanudar) {
+    registrarClick(
 
-    btnReanudar.addEventListener(
-        "click",
+        "btnReanudarObra",
+
         async () => {
 
             console.log(
                 "Reanudar obra"
             );
 
+            // Aquí llamaremos posteriormente
+            // a Workflow.reanudarObra()
+
         }
+
     );
 
 }
+
+
+/* ======================================================
+   SOLICITAR TERMINACIÓN
+====================================================== */
+
+function registrarEventoSolicitarTerminacion() {
+
+    registrarClick(
+
+        "btnSolicitarTerminacion",
+
+        async () => {
+
+            console.log(
+                "Solicitar terminación"
+            );
+
+            // Aquí llamaremos posteriormente
+            // a Workflow.solicitarTerminacion()
+
+        }
+
+    );
+
+}
+
    
 /* ==========================================================
    ACTUACIONES
