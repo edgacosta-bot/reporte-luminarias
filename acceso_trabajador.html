@@ -173,7 +173,7 @@ else if (
   dia >= 1 &&
   dia <= 5 &&
   (
-    minutosActuales < 470   // 07:50
+    minutosActuales < 465   // 07:45
     ||
     minutosActuales > 1050  // 17:30
   )
@@ -185,7 +185,7 @@ else if (
 else if (
   dia === 6 &&
   (
-    minutosActuales < 530   // 08:50
+    minutosActuales < 525   // 08:45
     ||
     minutosActuales > 810   // 13:30
   )
@@ -238,19 +238,19 @@ if (dia === 0) {
   fueraHorario = true;
 }
 
-// 🔥 Sábado → reporte desde 14:11
+// 🔥 Sábado → reporte desde 14:16
 else if (
   dia === 6 &&
-  minutosActuales >= 851
+  minutosActuales >= 856
 ) {
   fueraHorario = true;
 }
 
-// 🔥 Lunes a viernes → reporte desde 18:11
+// 🔥 Lunes a viernes → reporte desde 18:16
 else if (
   dia >= 1 &&
   dia <= 5 &&
-  minutosActuales >= 1091
+  minutosActuales >= 1096
 ) {
   fueraHorario = true;
 }
