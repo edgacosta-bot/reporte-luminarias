@@ -1849,13 +1849,19 @@ function registrarEventosSuspension() {
 
         async () => {
 
+            const datos =
+                await mostrarFormularioSuspensionObra();
+
+            if (!datos)
+                return;
+
             await Workflow.suspenderObra(
 
                 escritorioActual.expediente.id,
 
-                "PROP",
+                datos.motivo,
 
-                "Suspendida desde SIGE"
+                datos.observaciones
 
             );
 
