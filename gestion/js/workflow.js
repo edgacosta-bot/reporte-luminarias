@@ -82,6 +82,9 @@ const Workflow = {
    guardarDatosDRO,
    transicionarExpediente,
    aprobarObraPresidente,
+   suspenderObra,
+   reanudarObra,
+   solicitarTerminacion,
    emitirVobo
 
 };
@@ -124,6 +127,68 @@ async function aprobarObraPresidente(
     return data;
 
 }
+
+async function suspenderObra(
+    expedienteId,
+    motivo,
+    observaciones
+) {
+
+    const {
+        data: usuarioData,
+        error: usuarioError
+    } = await supabaseClient.auth.getUser();
+
+    if (usuarioError)
+        throw usuarioError;
+
+    const { data, error } =
+        await supabaseClient.rpc(
+            "suspender_obra",
+            {
+                p_expediente_id: expedienteId,
+                p_motivo: motivo,
+                p_observaciones: observaciones,
+                p_usuario_id: usuarioData.user.id
+            }
+        );
+
+    if (error)
+        throw error;
+
+    return data;
+
+}
+
+
+async function reanudarObra(
+    expedienteId
+) {
+
+    const {
+        data: usuarioData,
+        error: usuarioError
+    } = await supabaseClient.auth.getUser();
+
+    if (usuarioError)
+        throw usuarioError;
+
+    const { data, error } =
+        await supabaseClient.rpc(
+            "reanudar_obra",
+            {
+                p_expediente_id: expedienteId,
+                p_usuario_id: usuarioData.user.id
+            }
+        );
+
+    if (error)
+        throw error;
+
+    return data;
+
+}
+
 /* ==========================================================
    OBTENER PRIVADAS
 ========================================================== */
