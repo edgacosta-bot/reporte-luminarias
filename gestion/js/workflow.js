@@ -84,7 +84,6 @@ const Workflow = {
    aprobarObraPresidente,
    suspenderObra,
    reanudarObra,
-   solicitarTerminacion,
    emitirVobo
 
 };
