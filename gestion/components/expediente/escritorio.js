@@ -108,13 +108,16 @@ contextoActual = contexto;
       
   const html = `
 
-    ${renderHeader(data)}
+${renderHeader(data)}
 
-    ${renderRequisitos(data)}
+${renderRequisitos(data)}
 
-    ${renderEstadoExpediente(data)}
+${renderEstadoExpediente(data)}
 
-    ${renderVobos(data, contexto)}
+${renderEjecucion(data)}
+
+${renderVobos(data, contexto)}
+
 `;
 
 console.log(html);
@@ -711,6 +714,84 @@ console.log("puedeAutorizar:", puedeAutorizar);
     `;
 
 }
+
+function renderEjecucion(data) {
+
+    const etapa =
+        data.expediente?.etapa?.clave ?? "";
+
+    if (etapa !== "EJE")
+        return "";
+
+    const suspendida =
+        data.ejecucion?.suspendida ?? false;
+
+    const estado =
+        suspendida
+            ? "🟠 Obra suspendida"
+            : "🟢 Obra en ejecución";
+
+   return `
+
+<section class="bloque">
+
+    <h2 class="bloque-titulo">
+
+        EJECUCIÓN DE LA OBRA
+
+    </h2>
+
+    <div class="card">
+
+        <p>
+
+            ${estado}
+
+        </p>
+
+       <div
+    id="accionesEjecucion">
+
+    ${
+        !suspendida
+        ? `
+            <button
+                id="btnSuspenderObra"
+                class="btn btn-warning">
+
+                Suspender obra
+
+            </button>
+
+            <button
+                id="btnSolicitarTerminacion"
+                class="btn btn-primary">
+
+                Solicitar terminación
+
+            </button>
+        `
+        : `
+            <button
+                id="btnReanudarObra"
+                class="btn btn-success">
+
+                Reanudar obra
+
+            </button>
+        `
+    }
+
+</div>
+
+    </div>
+
+</section>
+
+`;
+
+}
+
 /* ==========================================================
    TARJETA DE REQUISITO
 ========================================================== */
