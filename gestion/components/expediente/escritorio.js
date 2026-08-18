@@ -731,6 +731,12 @@ function renderEjecucion(data) {
             ? "🟠 Obra suspendida"
             : "🟢 Obra en ejecución";
 
+    const estadoExpediente =
+    data.expediente?.estado?.clave ?? "";
+
+    const terminacionSolicitada =
+    estadoExpediente === "TUR_TER";
+
    return `
 
 <section class="bloque">
@@ -752,35 +758,50 @@ function renderEjecucion(data) {
        <div
     id="accionesEjecucion">
 
-    ${
-        !suspendida
-        ? `
-            <button
-                id="btnSuspenderObra"
-                class="btn btn-warning">
+   ${
+    suspendida
+    ? `
+        <button
+            id="btnReanudarObra"
+            class="btn btn-success">
 
-                Suspender obra
+            Reanudar obra
 
-            </button>
+        </button>
+    `
+    : `
+        <button
+            id="btnSuspenderObra"
+            class="btn btn-warning">
 
-            <button
-                id="btnSolicitarTerminacion"
-                class="btn btn-primary">
+            Suspender obra
 
-                Solicitar terminación
+        </button>
 
-            </button>
-        `
-        : `
-            <button
-                id="btnReanudarObra"
-                class="btn btn-success">
+        ${
+            !terminacionSolicitada
+            ? `
+                <button
+                    id="btnSolicitarTerminacion"
+                    class="btn btn-primary">
 
-                Reanudar obra
+                    Solicitar terminación
 
-            </button>
-        `
-    }
+                </button>
+            `
+            : `
+                <div
+                    class="alerta-exito"
+                    style="margin-top:12px;">
+
+                    Terminación solicitada.
+                    Pendiente de revisión por la Mesa Directiva.
+
+                </div>
+            `
+        }
+    `
+}
 
 </div>
 
