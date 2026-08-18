@@ -1875,12 +1875,17 @@ function registrarEventosReanudacion() {
 
         async () => {
 
-            console.log(
-                "Reanudar obra"
+            await Workflow.reanudarObra(
+
+                escritorioActual.expediente.id
+
             );
 
-            // Aquí llamaremos posteriormente
-            // a Workflow.reanudarObra()
+            await Router.mostrarEscritorio(
+
+                escritorioActual.expediente.id
+
+            );
 
         }
 
