@@ -1920,19 +1920,22 @@ function registrarEventoSolicitarTerminacion() {
 
         async () => {
 
-            console.log(
-                "Solicitar terminación"
-            );
+            const datos =
+                await mostrarFormularioTerminacionObra();
 
-            // Aquí llamaremos posteriormente
-            // a Workflow.solicitarTerminacion()
+            if (!datos)
+                return;
+
+            console.log(
+                "Solicitud de terminación:",
+                datos
+            );
 
         }
 
     );
 
 }
-
    
 /* ==========================================================
    ACTUACIONES
