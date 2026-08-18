@@ -83,6 +83,7 @@ const Workflow = {
    transicionarExpediente,
    aprobarObraPresidente,
    suspenderObra,
+   solicitarTerminacion,
    reanudarObra,
    emitirVobo
 
@@ -147,6 +148,36 @@ async function suspenderObra(
             {
                 p_expediente_id: expedienteId,
                 p_motivo: motivo,
+                p_observaciones: observaciones,
+                p_usuario_id: usuarioData.user.id
+            }
+        );
+
+    if (error)
+        throw error;
+
+    return data;
+
+}
+
+async function solicitarTerminacion(
+    expedienteId,
+    observaciones
+) {
+
+    const {
+        data: usuarioData,
+        error: usuarioError
+    } = await supabaseClient.auth.getUser();
+
+    if (usuarioError)
+        throw usuarioError;
+
+    const { data, error } =
+        await supabaseClient.rpc(
+            "solicitar_terminacion_obra",
+            {
+                p_expediente_id: expedienteId,
                 p_observaciones: observaciones,
                 p_usuario_id: usuarioData.user.id
             }
