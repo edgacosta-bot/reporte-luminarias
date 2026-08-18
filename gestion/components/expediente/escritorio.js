@@ -1849,19 +1849,27 @@ function registrarEventosSuspension() {
 
         async () => {
 
-            console.log(
-                "Suspender obra"
+            await Workflow.suspenderObra(
+
+                escritorioActual.expediente.id,
+
+                "PROP",
+
+                "Suspendida desde SIGE"
+
             );
 
-            // Aquí llamaremos posteriormente
-            // a Workflow.suspenderObra()
+            await Router.mostrarEscritorio(
+
+                escritorioActual.expediente.id
+
+            );
 
         }
 
     );
 
 }
-
 
 /* ======================================================
    REANUDACIÓN
