@@ -598,8 +598,12 @@ const etapa =
     ??
     "";
 
-   const puedeAutorizar =
-    data.mesa_directiva?.puede_autorizar ?? false;
+   const estadoActual =
+    data.expediente?.estado?.clave ?? "";
+
+const puedeAutorizar =
+    estadoActual === "APR" &&
+    (data.mesa_directiva?.puede_autorizar ?? false);
 
    console.log("=== ESTADO EXPEDIENTE ===");
 console.log(data.mesa_directiva);
