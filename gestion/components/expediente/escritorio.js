@@ -1756,6 +1756,32 @@ function registrarEventosRequisitos() {
         }
     );
 
+   /*
+======================================================
+SUSPENDER OBRA
+======================================================
+*/
+
+const btnSuspender =
+    document.getElementById(
+        "btnSuspenderObra"
+    );
+
+if (btnSuspender) {
+
+    btnSuspender.addEventListener(
+        "click",
+        async () => {
+
+            console.log(
+                "Suspender obra"
+            );
+
+        }
+    );
+
+}
+
 }
    
 /* ==========================================================
