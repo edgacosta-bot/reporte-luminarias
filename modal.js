@@ -645,3 +645,133 @@ function mostrarFormularioPropietario() {
     });
 
 }
+
+
+function mostrarFormularioSuspensionObra() {
+
+    return new Promise(resolve => {
+
+        crearModalBase();
+
+        document.getElementById(
+            "sigvic-modal-titulo"
+        ).innerHTML =
+            "Suspender obra";
+
+        document.getElementById(
+            "sigvic-modal-mensaje"
+        ).innerHTML = `
+
+            <div style="
+                display:flex;
+                flex-direction:column;
+                gap:12px;
+            ">
+
+                <label>Motivo de la suspensión</label>
+
+                <select
+                    id="suspension-motivo"
+                    style="
+                        height:42px;
+                        border-radius:10px;
+                        border:none;
+                        padding:0 12px;
+                    "
+                >
+
+                    <option value="PAGO">
+                        Falta de pago
+                    </option>
+
+                    <option value="COND">
+                        Conducta inapropiada de trabajadores
+                    </option>
+
+                    <option value="PROY">
+                        Alteración del proyecto aprobado
+                    </option>
+
+                    <option value="PROP">
+                        Solicitud del propietario
+                    </option>
+
+                </select>
+
+                <textarea
+                    id="suspension-observaciones"
+                    placeholder="Observaciones (opcional)"
+                    style="
+                        min-height:90px;
+                        border-radius:10px;
+                        border:none;
+                        padding:12px;
+                        resize:vertical;
+                    "
+                ></textarea>
+
+            </div>
+
+        `;
+
+        document.getElementById(
+            "sigvic-modal-botones"
+        ).innerHTML = `
+
+            <button
+                class="sigvic-btn sigvic-btn-gris"
+                id="btn-cancelar-suspension">
+
+                Cancelar
+
+            </button>
+
+            <button
+                class="sigvic-btn sigvic-btn-verde"
+                id="btn-guardar-suspension">
+
+                Suspender
+
+            </button>
+
+        `;
+
+        document.getElementById(
+            "btn-cancelar-suspension"
+        ).onclick = () => {
+
+            cerrarModal();
+
+            resolve(null);
+
+        };
+
+        document.getElementById(
+            "btn-guardar-suspension"
+        ).onclick = () => {
+
+            const datos = {
+
+                motivo:
+
+                    document.getElementById(
+                        "suspension-motivo"
+                    ).value,
+
+                observaciones:
+
+                    document.getElementById(
+                        "suspension-observaciones"
+                    ).value.trim()
+
+            };
+
+            cerrarModal();
+
+            resolve(datos);
+
+        };
+
+    });
+
+}
