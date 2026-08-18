@@ -775,3 +775,100 @@ function mostrarFormularioSuspensionObra() {
     });
 
 }
+
+function mostrarFormularioTerminacionObra() {
+
+    return new Promise(resolve => {
+
+        crearModalBase();
+
+        document.getElementById(
+            "sigvic-modal-titulo"
+        ).innerHTML =
+            "Solicitar terminación";
+
+        document.getElementById(
+            "sigvic-modal-mensaje"
+        ).innerHTML = `
+
+            <div style="
+                display:flex;
+                flex-direction:column;
+                gap:12px;
+            ">
+
+                <label>
+                    Observaciones
+                </label>
+
+                <textarea
+                    id="terminacion-observaciones"
+                    placeholder="Observaciones (opcional)"
+                    style="
+                        min-height:120px;
+                        border-radius:10px;
+                        border:none;
+                        padding:12px;
+                        resize:vertical;
+                    "
+                ></textarea>
+
+            </div>
+
+        `;
+
+        document.getElementById(
+            "sigvic-modal-botones"
+        ).innerHTML = `
+
+            <button
+                class="sigvic-btn sigvic-btn-gris"
+                id="btn-cancelar-terminacion">
+
+                Cancelar
+
+            </button>
+
+            <button
+                class="sigvic-btn sigvic-btn-verde"
+                id="btn-confirmar-terminacion">
+
+                Solicitar terminación
+
+            </button>
+
+        `;
+
+        document.getElementById(
+            "btn-cancelar-terminacion"
+        ).onclick = () => {
+
+            cerrarModal();
+
+            resolve(null);
+
+        };
+
+        document.getElementById(
+            "btn-confirmar-terminacion"
+        ).onclick = () => {
+
+            const datos = {
+
+                observaciones:
+
+                    document.getElementById(
+                        "terminacion-observaciones"
+                    ).value.trim()
+
+            };
+
+            cerrarModal();
+
+            resolve(datos);
+
+        };
+
+    });
+
+}
