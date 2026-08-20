@@ -349,7 +349,7 @@ async function obtenerExpedientes() {
 
     } = await supabaseClient.rpc(
 
-        "obtener_bandeja_expedientes"
+        "obtener_obras_construccion"
 
     );
 
