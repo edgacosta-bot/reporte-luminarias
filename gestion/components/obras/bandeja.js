@@ -153,15 +153,14 @@ function renderEncabezado() {
 
 function renderBotonNuevoExpediente() {
 
-    /*
-        En una siguiente versión
-        este método verificará
-        el rol del usuario.
+    const rol =
+        window.contextoActual?.rol;
 
-        Temporalmente permanece
-        visible para facilitar
-        el desarrollo.
-    */
+    if (rol !== "ADMIN") {
+
+        return "";
+
+    }
 
     return `
 
@@ -176,7 +175,6 @@ function renderBotonNuevoExpediente() {
     `;
 
 }
-
 /* ==========================================================
    FILTROS
 ========================================================== */
