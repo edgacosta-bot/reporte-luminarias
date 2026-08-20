@@ -252,50 +252,55 @@ function renderCard(procedimiento) {
 async function obtenerExpedientes() {
 
     const { data, error } =
-        await supabaseClient.rpc(
-            "obtener_obras_construccion"
-        );
+        await supabaseClient
+
+            .from("obras")
+
+            .select(`
+                id,
+                privada,
+                casa,
+                estatus,
+                created_at
+            `)
+
+            .eq(
+                "estatus",
+                "aprobada"
+            )
+
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
 
     if (error) {
 
-        console.error(
-            "Error al obtener obras:",
-            error
-        );
+        console.error(error);
 
         return [];
 
     }
 
-    return data.map(obra => ({
+    return data.map((obra, indice) => ({
 
-        id: obra.expediente_id,
+        id: obra.id,
 
         origen: "Regularización SIGVIC",
 
-        folio: obra.folio,
+        folio:
+            `REG-OBR-${String(indice + 1).padStart(3, "0")}`,
 
         tipo: "Obra Particular",
 
-        titulo: obra.titulo,
+        titulo:
+            `Privada ${obra.privada} · Casa ${obra.casa}`,
 
-        etapa:
-            obra.etapa_clave === "APR"
-                ? "Aprobación"
-                : obra.etapa_clave === "EJE"
-                    ? "Ejecución"
-                    : obra.etapa_clave || "Sin etapa",
+        etapa: "Ejecución",
 
-        estado:
-            obra.estado_clave || "Sin estado",
-
-        privada: obra.privada,
-
-        casa: obra.casa,
-
-        dro_nombre: obra.dro_nombre,
-
-        obra_id: obra.obra_id
+        estado: "Regularización SIGVIC"
 
     }));
 
