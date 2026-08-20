@@ -480,7 +480,6 @@ async function renderListaExpedientes() {
 
 }
 
-
 function cargarFiltros(expedientes) {
 
     const cmbPrivada =
