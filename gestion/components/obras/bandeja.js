@@ -733,11 +733,10 @@ function renderRegistroExpediente(
                             color:var(--vino);
                         ">
 
-                        Privada ${expediente.privada} - Lote ${expediente.lote}
+                        Privada ${expediente.privada} - Lote ${expediente.casa}
 
                     </div>
 
-                   
                 </div>
 
                 <div
@@ -762,7 +761,7 @@ function renderRegistroExpediente(
                             color:var(--vino);
                         ">
 
-                        ${expediente.etapa}
+                        ${expediente.etapa_clave ?? "SIN ETAPA"}
 
                     </div>
 
@@ -777,22 +776,23 @@ function renderRegistroExpediente(
                     border-top:1px solid #E5E5E5;
                 ">
 
-           <div
-    style="
-        display:flex;
-        justify-content:flex-end;
-        align-items:center;
-    ">
+            <div
+                style="
+                    display:flex;
+                    justify-content:flex-end;
+                    align-items:center;
+                ">
 
-    <button
-        class="btn btn-primary"
-        onclick="Router.mostrarEscritorio('${expediente.id}')">
+                <button
+                    class="btn btn-primary"
+                    onclick="Router.mostrarEscritorio('${expediente.expediente_id}')">
 
-        Abrir expediente
+                    Abrir expediente
 
-    </button>
+                </button>
 
-</div>
+            </div>
+
         </div>
 
     `;
