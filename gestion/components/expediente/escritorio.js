@@ -351,6 +351,19 @@ function renderResumen(data) {
 
 function renderRequisitos(data) {
 
+    /*
+     * Los expedientes REGULARIZACION corresponden
+     * a expedientes históricos migrados desde SIGVIC.
+     *
+     * No tienen documentación/requisitos SIGE que
+     * mostrar en esta etapa.
+     */
+    if (
+        data.expediente?.tipo_resolucion === "REGULARIZACION"
+    ) {
+        return "";
+    }
+
     const requisitos =
     (data.requisitos ?? [])
     .filter(
@@ -564,10 +577,21 @@ function renderVobos(
 
 function renderEstadoExpediente(data) {
 
+    /*
+     * Los expedientes REGULARIZACION corresponden
+     * a expedientes históricos migrados desde SIGVIC.
+     *
+     * No tienen flujo documental SIGE de aprobación.
+     * Por ello no se muestra este bloque.
+     */
+    if (
+        data.expediente?.tipo_resolucion === "REGULARIZACION"
+    ) {
+        return "";
+    }
 
     const requisitos =
         data.requisitos ?? [];
-
 
     const obligatorios =
         requisitos.filter(
