@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Trabajadores suspendidos</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
+<style>
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.container {
+  max-width: 650px;
+  margin: auto;
+  padding: 22px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.encabezado {
+  background: #1e293b;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.total {
+  font-size: 34px;
+  font-weight: bold;
+  margin-top: 6px;
+}
+
+.card {
+  background: #1e293b;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.nombre {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.ubicacion {
+  margin-top: 5px;
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.suspension {
+  margin-top: 12px;
+  padding: 11px;
+  border-radius: 9px;
+  background: #451a03;
+  color: #fde68a;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.sin-datos {
+  text-align: center;
+  color: #94a3b8;
+  padding: 25px;
+}
+
+.error {
+  background: #450a0a;
+  color: #fecaca;
+  padding: 14px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <h2>🚫 Trabajadores suspendidos</h2>
+
+  <div class="encabezado">
+
+    <div>
+      Suspensiones vigentes
+    </div>
+
+    <div
+      class="total"
+      id="total">
+      0
+    </div>
+
+  </div>
+
+  <div id="lista">
+    Cargando...
+  </div>
+
+</div>
+
+
+<script>
+
+// ==========================================================
+// INICIO
+// ==========================================================
+
+window.addEventListener(
+  "DOMContentLoaded",
+  async () => {
+
+    if (
+      typeof protegerPagina === "function"
+    ) {
+
+      await protegerPagina([
+        "admin",
+        "administracion",
+        "vigilante"
+      ]);
+
+    }
+
+    await cargar();
+
+  }
+);
+
+
+// ==========================================================
+// CARGAR SUSPENDIDOS
+// ==========================================================
+
+async function cargar() {
+
+  const lista =
+    document.getElementById("lista");
+
+  lista.innerHTML =
+    "Cargando...";
+
+  const { data, error } =
+    await supabaseClient
+      .rpc(
+        "obtener_trabajadores_suspendidos"
+      );
+
+  if (error) {
+
+    console.error(
+      "ERROR:",
+      error
+    );
+
+    lista.innerHTML = `
+      <div class="error">
+        No fue posible consultar
+        los trabajadores suspendidos.
+      </div>
+    `;
+
+    return;
+  }
+
+  const trabajadores =
+    data || [];
+
+  document.getElementById("total")
+    .innerText =
+    trabajadores.length;
+
+
+  // ========================================================
+  // SIN REGISTROS
+  // ========================================================
+
+  if (trabajadores.length === 0) {
+
+    lista.innerHTML = `
+      <div class="sin-datos">
+        No hay trabajadores suspendidos
+        actualmente.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  // ========================================================
+  // LISTADO
+  // ========================================================
+
+  lista.innerHTML = "";
+
+  trabajadores.forEach(
+    trabajador => {
+
+      const card =
+        document.createElement("div");
+
+      card.className =
+        "card";
+
+
+      let motivo =
+        "Motivo no disponible.";
+
+
+      if (
+        trabajador.motivo_suspension
+      ) {
+
+        motivo =
+          trabajador.motivo_suspension;
+
+      }
+      else if (
+        trabajador.fecha_omision
+      ) {
+
+        motivo =
+          `Omisión en el registro de salida del ${formatearFecha(
+            trabajador.fecha_omision
+          )}.`;
+
+      }
+
+
+      card.innerHTML = `
+
+        <div class="nombre">
+          ${trabajador.nombre}
+        </div>
+
+        <div class="ubicacion">
+          Privada ${trabajador.privada}
+          · Lote ${trabajador.casa}
+        </div>
+
+        <div class="suspension">
+
+          <div>
+            <b>Acceso suspendido hasta:</b>
+            ${formatearFecha(
+              trabajador.suspendido_hasta
+            )}
+          </div>
+
+          <div style="margin-top:6px;">
+            <b>Motivo:</b>
+            ${motivo}
+          </div>
+
+        </div>
+
+      `;
+
+      lista.appendChild(card);
+
+    }
+  );
+
+}
+
+
+// ==========================================================
+// FECHA
+// ==========================================================
+
+function formatearFecha(
+  fecha
+) {
+
+  if (!fecha) {
+
+    return "No disponible";
+
+  }
+
+  const partes =
+    fecha.split("-");
+
+  if (
+    partes.length !== 3
+  ) {
+
+    return fecha;
+
+  }
+
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
+
+}
+
+</script>
+
+</body>
+
+</html>
