@@ -414,31 +414,16 @@ async function abrirObra(idExpediente) {
 
     }
 
-    const { data: usuarioData } =
-    await supabaseClient.auth.getUser();
-
-const usuario =
-    usuarioData.user;
-
-const {
+   const {
     data,
     error
 } = await supabaseClient.rpc(
-
     "obtener_escritorio_expediente",
-
     {
-
         p_expediente_id:
-            idExpediente,
-
-        p_usuario_id:
-            usuario.id
-
+            idExpediente
     }
-
 );
-
     if (error) {
 
         console.error(error);
