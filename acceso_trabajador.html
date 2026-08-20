@@ -63,7 +63,9 @@ input {
   letter-spacing: 2px;
 }
 
-.hidden { display:none; }
+.hidden {
+  display: none;
+}
 </style>
 
 </head>
@@ -75,18 +77,31 @@ input {
 <h2 id="titulo">🚧 Acceso obra</h2>
 
 <h1 id="estado">Validando...</h1>
+
 <div id="detalle"></div>
 
-<input type="password" id="pin" placeholder="Ingrese PIN del vigilante">
-<button id="btnValidar">Validar</button>
+<input
+  type="password"
+  id="pin"
+  placeholder="Ingrese PIN del vigilante">
 
-<button id="btnRegistrar" class="hidden">Registrar</button>
+<button id="btnValidar">
+  Validar
+</button>
+
+<button
+  id="btnRegistrar"
+  class="hidden">
+  Registrar
+</button>
 
 </div>
 
 <script>
 
-const qr = new URLSearchParams(window.location.search).get("qr");
+const qr =
+  new URLSearchParams(window.location.search)
+    .get("qr");
 
 let trabajador = null;
 let vigilante = null;
@@ -95,294 +110,685 @@ let tipoAccion = "";
 
 init();
 
+
+// ==========================================================
+// INICIO
+// ==========================================================
+
 async function init(){
 
   if (!qr){
-    pintar("QR inválido","error");
+
+    pintar(
+      "QR inválido",
+      "error"
+    );
+
     return;
   }
 
-  const { data, error } = await supabaseClient
-    .rpc("validar_acceso_trabajador_obra", { p_qr: qr })
+  const { data, error } =
+    await supabaseClient
+      .rpc(
+        "validar_acceso_trabajador_obra",
+        {
+          p_qr: qr
+        }
+      );
 
   if (error){
+
     console.error(error);
-    pintar(error.message || "Acceso no permitido","error");
+
+    pintar(
+      error.message || "Acceso no permitido",
+      "error"
+    );
+
     return;
   }
 
   if (!data || data.length === 0){
-    pintar("Acceso no permitido","error");
+
+    pintar(
+      "Acceso no permitido",
+      "error"
+    );
+
     return;
   }
 
   trabajador = data[0];
 
-  if (!trabajador.obra_aprobada){
-    pintar("Obra no aprobada","error");
-    return;
-  }
 
-  if (!trabajador.activo){
-    pintar("Trabajador inactivo","error");
-    return;
-  }
+  // ========================================================
+  // SUSPENSIÓN TEMPORAL
+  // ========================================================
 
-  const hoy = new Date().toISOString().split("T")[0];
-
-  if (
-    (trabajador.fecha_inicio && trabajador.fecha_inicio > hoy) ||
-    (trabajador.fecha_fin && trabajador.fecha_fin < hoy)
-  ){
-    pintar("Fuera de vigencia","error");
-    return;
-  }
-
- accesoAbierto = trabajador.acceso_abierto_id;
-tipoAccion = accesoAbierto ? "salida" : "entrada";
-
-renderDetalle();
-
- // 🔥 VALIDAR HORARIO DE INGRESO
-if (tipoAccion === "entrada") {
-
-  const ahora = new Date();
-
-  const fechaMX = new Date(
-    ahora.toLocaleString("en-US", {
-      timeZone: "America/Mexico_City"
-    })
-  );
-
-  const dia = fechaMX.getDay();
-
-  let fueraHorarioEntrada = false;
-
- const minutosActuales =
-  (fechaMX.getHours() * 60)
-  +
-  fechaMX.getMinutes();
-
-// 🚫 Domingo
-if (dia === 0) {
-  fueraHorarioEntrada = true;
-}
-
-// 🚫 Lunes a viernes
-else if (
-  dia >= 1 &&
-  dia <= 5 &&
-  (
-    minutosActuales < 465   // 07:45
-    ||
-    minutosActuales > 1050  // 17:30
-  )
-) {
-  fueraHorarioEntrada = true;
-}
-
-// 🚫 Sábado
-else if (
-  dia === 6 &&
-  (
-    minutosActuales < 525   // 08:45
-    ||
-    minutosActuales > 810   // 13:30
-  )
-) {
-  fueraHorarioEntrada = true;
-}
-
-  if (fueraHorarioEntrada) {
+  if (trabajador.acceso_suspendido === true){
 
     document.body.className = "error";
 
-titulo.innerText =
-  "🚫 Acceso denegado";
+    titulo.innerText =
+      "🚫 Acceso suspendido";
 
-estado.innerText =
-  "Fuera de horario permitido";
+    estado.innerText =
+      "No es posible autorizar el acceso";
 
     detalle.innerHTML = `
-      <p><b>${trabajador.nombre}</b></p>
+
+      <p>
+        <b>${trabajador.nombre}</b>
+      </p>
+
+      <p>
+
+        <b>Motivo:</b><br>
+
+        ${
+          trabajador.motivo_suspension
+          ||
+          (
+            trabajador.fecha_omision
+              ? `Omisión en el registro de salida del ${formatearFecha(trabajador.fecha_omision)}.`
+              : "Omisión en el registro de salida."
+          )
+        }
+
+      </p>
+
+      <p>
+
+        <b>Acceso suspendido hasta:</b><br>
+
+        ${formatearFecha(trabajador.suspendido_hasta)}
+
+      </p>
+
+      <p>
+        El acceso se restablecerá automáticamente
+        al concluir la fecha indicada.
+      </p>
+
     `;
 
     ocultarValidacion();
 
     return;
   }
-} 
 
-// 🔥 evaluar horario
-let fueraHorario = false;
-  
-if (tipoAccion === "salida") {
 
-  const ahora = new Date();
+  // ========================================================
+  // OBRA
+  // ========================================================
 
-  const fechaMX = new Date(
-    ahora.toLocaleString("en-US", {
-      timeZone: "America/Mexico_City"
-    })
-  );
+  if (!trabajador.obra_aprobada){
 
-  const dia = fechaMX.getDay();
+    pintar(
+      "Obra no aprobada",
+      "error"
+    );
 
-const minutosActuales =
-  (fechaMX.getHours() * 60)
-  +
-  fechaMX.getMinutes();
+    return;
+  }
 
-// 🔥 Domingo
-if (dia === 0) {
-  fueraHorario = true;
-}
 
-// 🔥 Sábado → reporte desde 14:16
-else if (
-  dia === 6 &&
-  minutosActuales >= 856
-) {
-  fueraHorario = true;
-}
+  // ========================================================
+  // TRABAJADOR
+  // ========================================================
 
-// 🔥 Lunes a viernes → reporte desde 18:16
-else if (
-  dia >= 1 &&
-  dia <= 5 &&
-  minutosActuales >= 1096
-) {
-  fueraHorario = true;
-}
+  if (!trabajador.activo){
 
-  if (fueraHorario) {
-    document.body.className = "warn";
+    pintar(
+      "Trabajador inactivo",
+      "error"
+    );
+
+    return;
+  }
+
+
+  // ========================================================
+  // VIGENCIA
+  // ========================================================
+
+  const hoy =
+    new Date().toLocaleDateString(
+      "sv-SE",
+      {
+        timeZone: "America/Mexico_City"
+      }
+    );
+
+  if (
+    (trabajador.fecha_inicio &&
+     trabajador.fecha_inicio > hoy)
+    ||
+    (trabajador.fecha_fin &&
+     trabajador.fecha_fin < hoy)
+  ){
+
+    pintar(
+      "Fuera de vigencia",
+      "error"
+    );
+
+    return;
+  }
+
+
+  // ========================================================
+  // DETERMINAR ACCIÓN
+  // ========================================================
+
+  accesoAbierto =
+    trabajador.acceso_abierto_id;
+
+  tipoAccion =
+    accesoAbierto
+      ? "salida"
+      : "entrada";
+
+
+  renderDetalle();
+
+
+  // ========================================================
+  // VALIDAR HORARIO DE ENTRADA
+  // ========================================================
+
+  if (tipoAccion === "entrada"){
+
+    const ahora = new Date();
+
+    const fechaMX =
+      new Date(
+        ahora.toLocaleString(
+          "en-US",
+          {
+            timeZone:
+              "America/Mexico_City"
+          }
+        )
+      );
+
+    const dia =
+      fechaMX.getDay();
+
+    let fueraHorarioEntrada =
+      false;
+
+    const minutosActuales =
+      (fechaMX.getHours() * 60)
+      +
+      fechaMX.getMinutes();
+
+
+    // Domingo
+    if (dia === 0){
+
+      fueraHorarioEntrada =
+        true;
+    }
+
+
+    // Lunes a viernes
+    else if (
+      dia >= 1 &&
+      dia <= 5 &&
+      (
+        minutosActuales < 465
+        ||
+        minutosActuales > 1050
+      )
+    ){
+
+      fueraHorarioEntrada =
+        true;
+    }
+
+
+    // Sábado
+    else if (
+      dia === 6 &&
+      (
+        minutosActuales < 525
+        ||
+        minutosActuales > 810
+      )
+    ){
+
+      fueraHorarioEntrada =
+        true;
+    }
+
+
+    if (fueraHorarioEntrada){
+
+      document.body.className =
+        "error";
+
+      titulo.innerText =
+        "🚫 Acceso denegado";
+
+      estado.innerText =
+        "Fuera de horario permitido";
+
+      detalle.innerHTML = `
+
+        <p>
+          <b>${trabajador.nombre}</b>
+        </p>
+
+      `;
+
+      ocultarValidacion();
+
+      return;
+    }
+  }
+
+
+  // ========================================================
+  // VALIDAR HORARIO DE SALIDA
+  // ========================================================
+
+  let fueraHorario =
+    false;
+
+  if (tipoAccion === "salida"){
+
+    const ahora =
+      new Date();
+
+    const fechaMX =
+      new Date(
+        ahora.toLocaleString(
+          "en-US",
+          {
+            timeZone:
+              "America/Mexico_City"
+          }
+        )
+      );
+
+    const dia =
+      fechaMX.getDay();
+
+    const minutosActuales =
+      (fechaMX.getHours() * 60)
+      +
+      fechaMX.getMinutes();
+
+
+    // Domingo
+    if (dia === 0){
+
+      fueraHorario =
+        true;
+    }
+
+
+    // Sábado → reporte desde 14:16
+    else if (
+      dia === 6 &&
+      minutosActuales >= 856
+    ){
+
+      fueraHorario =
+        true;
+    }
+
+
+    // Lunes a viernes → reporte desde 18:16
+    else if (
+      dia >= 1 &&
+      dia <= 5 &&
+      minutosActuales >= 1096
+    ){
+
+      fueraHorario =
+        true;
+    }
+
+
+    if (fueraHorario){
+
+      document.body.className =
+        "warn";
+
+      estado.innerText =
+        "⚠️ Se realizará un reporte automático debido a que el trabajador sale fuera del horario permitido";
+    }
+  }
+
+
+  // ========================================================
+  // MENSAJE NORMAL
+  // ========================================================
+
+  if (
+    !(tipoAccion === "salida" && fueraHorario)
+  ){
 
     estado.innerText =
-      "⚠️ Se realizará un reporte automático debido a que el trabajador sale fuera del horario permitido";
+      tipoAccion === "salida"
+        ? "Validar salida"
+        : "Validar acceso";
   }
-}
-// 🔥 mensaje normal (solo si no es fuera de horario)
-if (!(tipoAccion === "salida" && fueraHorario)) {
-  estado.innerText = tipoAccion === "salida"
-    ? "Validar salida"
-    : "Validar acceso";
-}
 
-  titulo.innerText = tipoAccion === "salida"
-    ? "🚧 Salida trabajador"
-    : "🚧 Acceso obra";
 
-  btnRegistrar.classList.add("hidden");
+  titulo.innerText =
+    tipoAccion === "salida"
+      ? "🚧 Salida trabajador"
+      : "🚧 Acceso obra";
+
+  btnRegistrar.classList.add(
+    "hidden"
+  );
+
 }
 
+
+// ==========================================================
 // VALIDAR PIN
+// ==========================================================
+
 btnValidar.onclick = async () => {
 
-  const pin = document.getElementById("pin").value.trim();
+  const pin =
+    document
+      .getElementById("pin")
+      .value
+      .trim();
 
-  if(!pin){
-    ui.warn("Ingrese PIN");
+  if (!pin){
+
+    ui.warn(
+      "Ingrese PIN"
+    );
+
     return;
   }
 
-  const { data, error } = await supabaseClient
-    .rpc("validar_pin_vigilante", { pin_input: pin });
+  const { data, error } =
+    await supabaseClient
+      .rpc(
+        "validar_pin_vigilante",
+        {
+          pin_input: pin
+        }
+      );
 
-  if (error || !data || data.length === 0){
-    ui.error("PIN incorrecto");
+  if (
+    error ||
+    !data ||
+    data.length === 0
+  ){
+
+    ui.error(
+      "PIN incorrecto"
+    );
+
     return;
   }
 
-  vigilante = data[0];
+  vigilante =
+    data[0];
 
   ocultarValidacion();
 
-  if(tipoAccion === "salida"){
 
-    document.body.className = "warn";
-    estado.innerText = "Autorizar salida";
+  // ========================================================
+  // SALIDA
+  // ========================================================
 
-    btnRegistrar.innerText = "Registrar salida";
-    btnRegistrar.classList.remove("hidden");
+  if (tipoAccion === "salida"){
+
+    document.body.className =
+      "warn";
+
+    estado.innerText =
+      "Autorizar salida";
+
+    btnRegistrar.innerText =
+      "Registrar salida";
+
+    btnRegistrar.classList.remove(
+      "hidden"
+    );
 
     return;
   }
 
-  document.body.className = "ok";
-  estado.innerText = "Acceso permitido";
 
-  btnRegistrar.innerText = "Registrar entrada";
-  btnRegistrar.classList.remove("hidden");
+  // ========================================================
+  // ENTRADA
+  // ========================================================
+
+  document.body.className =
+    "ok";
+
+  estado.innerText =
+    "Acceso permitido";
+
+  btnRegistrar.innerText =
+    "Registrar entrada";
+
+  btnRegistrar.classList.remove(
+    "hidden"
+  );
+
 };
 
+
+// ==========================================================
 // REGISTRAR
+// ==========================================================
+
 btnRegistrar.onclick = async () => {
 
-  btnRegistrar.disabled = true;
-  btnRegistrar.innerText = "Procesando...";
+  btnRegistrar.disabled =
+    true;
 
-  // 🔴 SALIDA
-  if(tipoAccion === "salida"){
+  btnRegistrar.innerText =
+    "Procesando...";
 
-    const { error } = await supabaseClient.rpc("registrar_salida_trabajador_obra", {
-      p_acceso_id: accesoAbierto,
-      p_vigilante_id: vigilante.id
-    });
+
+  // ========================================================
+  // SALIDA
+  // ========================================================
+
+  if (tipoAccion === "salida"){
+
+    const { error } =
+      await supabaseClient
+        .rpc(
+          "registrar_salida_trabajador_obra",
+          {
+            p_acceso_id:
+              accesoAbierto,
+
+            p_vigilante_id:
+              vigilante.id
+          }
+        );
 
     if (error){
-      console.error("ERROR SALIDA:", error);
-      ui.error("Error al registrar salida");
-      btnRegistrar.disabled = false;
-      btnRegistrar.innerText = "Registrar salida";
+
+      console.error(
+        "ERROR SALIDA:",
+        error
+      );
+
+      ui.error(
+        "Error al registrar salida"
+      );
+
+      btnRegistrar.disabled =
+        false;
+
+      btnRegistrar.innerText =
+        "Registrar salida";
+
       return;
     }
 
-    document.body.className = "ok";
-    estado.innerText = "Salida registrada correctamente";
-    detalle.innerHTML = `<p><b>${trabajador.nombre}</b></p><p>Salida registrada</p>`;
-    btnRegistrar.classList.add("hidden");
+    document.body.className =
+      "ok";
 
-    return; // 🔥 NO HACER NADA MÁS
+    estado.innerText =
+      "Salida registrada correctamente";
 
-  }
+    detalle.innerHTML = `
 
-  // 🟢 ENTRADA
-  const { error } = await supabaseClient.rpc("entrada_trabajador", {
-    trabajador: trabajador.trabajador_id,
-    vigilante: vigilante.id
-  });
+      <p>
+        <b>${trabajador.nombre}</b>
+      </p>
 
-  if (error){
-    console.error("ERROR ENTRADA:", error);
-    ui.error(error.message || "Error al registrar entrada");
-    btnRegistrar.disabled = false;
-    btnRegistrar.innerText = "Registrar entrada";
+      <p>
+        Salida registrada
+      </p>
+
+    `;
+
+    btnRegistrar.classList.add(
+      "hidden"
+    );
+
     return;
   }
 
-  document.body.className = "ok";
-  estado.innerText = "Acceso registrado correctamente";
-  detalle.innerHTML = `<p><b>${trabajador.nombre}</b></p><p>Entrada registrada</p>`;
-  btnRegistrar.classList.add("hidden");
 
-  return; // 🔥 NO CAMBIAR PANTALLA
+  // ========================================================
+  // ENTRADA
+  // ========================================================
+
+  const { error } =
+    await supabaseClient
+      .rpc(
+        "entrada_trabajador",
+        {
+          trabajador:
+            trabajador.trabajador_id,
+
+          vigilante:
+            vigilante.id
+        }
+      );
+
+  if (error){
+
+    console.error(
+      "ERROR ENTRADA:",
+      error
+    );
+
+    ui.error(
+      error.message ||
+      "Error al registrar entrada"
+    );
+
+    btnRegistrar.disabled =
+      false;
+
+    btnRegistrar.innerText =
+      "Registrar entrada";
+
+    return;
+  }
+
+  document.body.className =
+    "ok";
+
+  estado.innerText =
+    "Acceso registrado correctamente";
+
+  detalle.innerHTML = `
+
+    <p>
+      <b>${trabajador.nombre}</b>
+    </p>
+
+    <p>
+      Entrada registrada
+    </p>
+
+  `;
+
+  btnRegistrar.classList.add(
+    "hidden"
+  );
+
 };
 
+
+// ==========================================================
 // UI
+// ==========================================================
+
 function renderDetalle(){
-  detalle.innerHTML = `<p><b>${trabajador.nombre}</b></p>`;
+
+  detalle.innerHTML = `
+
+    <p>
+      <b>${trabajador.nombre}</b>
+    </p>
+
+  `;
 }
 
-function pintar(texto, color){
-  document.body.className = color;
-  estado.innerText = texto;
+
+function formatearFecha(
+  fecha
+){
+
+  if (!fecha){
+
+    return "No disponible";
+  }
+
+  const partes =
+    fecha.split("-");
+
+  if (
+    partes.length !== 3
+  ){
+
+    return fecha;
+  }
+
+  return `
+    ${partes[2]}/
+    ${partes[1]}/
+    ${partes[0]}
+  `.replace(/\s+/g, "");
+
+}
+
+
+function pintar(
+  texto,
+  color
+){
+
+  document.body.className =
+    color;
+
+  estado.innerText =
+    texto;
+
   ocultarValidacion();
 }
 
+
 function ocultarValidacion(){
-  pin.style.display = "none";
-  btnValidar.style.display = "none";
+
+  pin.style.display =
+    "none";
+
+  btnValidar.style.display =
+    "none";
 }
 
 </script>
