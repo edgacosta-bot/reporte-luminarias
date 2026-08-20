@@ -303,6 +303,19 @@ body {
   <span id="kpiAbastecimientos">0</span>
 
 </div> 
+
+    <!-- KPI TRABAJADORES SUSPENDIDOS -->
+  <div
+    class="kpi"
+    id="kpiSuspendidos"
+    onclick="abrirTrabajadoresSuspendidos()"
+    style="cursor:pointer; display:none;">
+
+    🚫 Trabajadores suspendidos <br>
+
+    <span id="kpiSuspendidosNumero">0</span>
+
+  </div>
   
 </div>
 
@@ -721,7 +734,12 @@ REACTIVAR AL LIBERAR EL MÓDULO.
 
 <script>
 
-let rolActual = "";  
+let rolActual = "";
+
+// 🔒 KPI DE TRABAJADORES SUSPENDIDOS
+// false = preparado pero NO visible en producción
+// true  = habilitado
+const KPI_SUSPENDIDOS_ACTIVO = false; 
 
 function toggleMenu(id){
 
@@ -892,17 +910,28 @@ async function cargarKPIs() {
 
   try {
 
-    const { data, error } = await supabaseClient.rpc(
-      "obtener_dashboard_index",
-      {
-        p_rol: rolActual
-      }
-    );
+    const { data, error } =
+      await supabaseClient.rpc(
+        "obtener_dashboard_index",
+        {
+          p_rol: rolActual
+        }
+      );
 
     if (error) {
-      console.error("Error al obtener dashboard:", error);
+
+      console.error(
+        "Error al obtener dashboard:",
+        error
+      );
+
       return;
     }
+
+
+    // ======================================================
+    // KPIs EXISTENTES
+    // ======================================================
 
     document.getElementById("kpiReportes").innerText =
       data?.reportes_hoy ?? 0;
@@ -919,6 +948,41 @@ async function cargarKPIs() {
     document.getElementById("kpiAbastecimientos").innerText =
       data?.abastecimientos_dentro ?? 0;
 
+
+    // ======================================================
+    // KPI TRABAJADORES SUSPENDIDOS
+    // ======================================================
+
+    const kpiSuspendidos =
+      document.getElementById(
+        "kpiSuspendidos"
+      );
+
+    const numeroSuspendidos =
+      document.getElementById(
+        "kpiSuspendidosNumero"
+      );
+
+
+    if (
+      KPI_SUSPENDIDOS_ACTIVO === true
+    ) {
+
+      numeroSuspendidos.innerText =
+        data?.trabajadores_suspendidos ?? 0;
+
+      kpiSuspendidos.style.display =
+        "block";
+
+    } else {
+
+      // 🔒 Preparado pero oculto
+      kpiSuspendidos.style.display =
+        "none";
+
+    }
+
+
   } catch (e) {
 
     console.error(
@@ -928,6 +992,22 @@ async function cargarKPIs() {
 
   }
 
+}
+
+  // ==========================================================
+// TRABAJADORES SUSPENDIDOS
+// ==========================================================
+
+function abrirTrabajadoresSuspendidos() {
+
+  if (
+    KPI_SUSPENDIDOS_ACTIVO !== true
+  ) {
+    return;
+  }
+
+  window.location.href =
+    "trabajadores_suspendidos.html";
 }
 
 </script>
