@@ -756,85 +756,98 @@ function renderEjecucion(data) {
             : "🟢 Obra en ejecución";
 
     const estadoExpediente =
-    data.expediente?.estado?.clave ?? "";
+        data.expediente?.estado?.clave ?? "";
 
     const terminacionSolicitada =
-    estadoExpediente === "TUR_TER";
+        estadoExpediente === "TUR_TER";
 
-   return `
+    const rol =
+        SIGE_STATE?.contexto?.rol ?? "";
+
+    const esAdministrador =
+        rol === "ADMIN";
+
+    return `
 
 <section class="bloque">
 
     <h2 class="bloque-titulo">
-
         EJECUCIÓN DE LA OBRA
-
     </h2>
 
     <div class="card">
 
         <p>
-
             ${estado}
-
         </p>
 
-       <div
-    id="accionesEjecucion">
-
-   ${
-    suspendida
-    ? `
-        <button
-            id="btnReanudarObra"
-            class="btn btn-success">
-
-            Reanudar obra
-
-        </button>
-    `
-    : `
-        <button
-            id="btnSuspenderObra"
-            class="btn btn-warning">
-
-            Suspender obra
-
-        </button>
+        <div id="accionesEjecucion">
 
         ${
-            !terminacionSolicitada
-            ? `
-                <button
-                    id="btnSolicitarTerminacion"
-                    class="btn btn-primary">
+            suspendida
 
-                    Solicitar terminación
+            ? `
+
+                <button
+                    id="btnReanudarObra"
+                    class="btn btn-success">
+
+                    Reanudar obra
 
                 </button>
+
             `
+
             : `
-                <div
-                    class="alerta-exito"
-                    style="margin-top:12px;">
 
-                    Terminación solicitada.
-                    Pendiente de revisión por la Mesa Directiva.
+                <button
+                    id="btnSuspenderObra"
+                    class="btn btn-warning">
 
-                </div>
+                    Suspender obra
+
+                </button>
+
+                ${
+                    !terminacionSolicitada
+
+                    ? `
+
+                        <button
+                            id="btnSolicitarTerminacion"
+                            class="btn btn-primary"
+                            data-admin-only="true">
+
+                            Solicitar terminación
+
+                        </button>
+
+                    `
+
+                    : `
+
+                        <div
+                            class="alerta-exito"
+                            style="margin-top:12px;">
+
+                            Terminación solicitada.
+                            Pendiente de revisión por la Mesa Directiva.
+
+                        </div>
+
+                    `
+                }
+
             `
         }
-    `
-}
 
-</div>
+        </div>
 
     </div>
 
 </section>
 
 `;
-
 }
 
 /* ==========================================================
@@ -1965,6 +1978,28 @@ function registrarEventoSolicitarTerminacion() {
 
         async () => {
 
+            const contexto =
+                await obtenerContextoSIGE();
+
+            const rol =
+                contexto?.clave_cargo ?? "";
+
+            const esAdministrador =
+                rol === "ADMIN";
+
+            /*
+             * La opción permanece visible para todos,
+             * pero únicamente el Administrador puede
+             * ejecutar la solicitud de terminación.
+             */
+
+            if (!esAdministrador) {
+
+                mostrarAvisoFuncionExclusiva();
+
+                return;
+            }
+
             const datos =
                 await mostrarFormularioTerminacionObra();
 
@@ -1988,6 +2023,83 @@ function registrarEventoSolicitarTerminacion() {
         }
 
     );
+
+}
+
+
+function mostrarAvisoFuncionExclusiva() {
+
+    const existente =
+        document.getElementById(
+            "modalFuncionExclusiva"
+        );
+
+    if (existente)
+        existente.remove();
+
+    const modal =
+        document.createElement("div");
+
+    modal.id =
+        "modalFuncionExclusiva";
+
+    modal.innerHTML = `
+
+        <div
+            style="
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,.45);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+                padding: 20px;
+            "
+        >
+
+            <div
+                style="
+                    background: white;
+                    width: min(420px, 100%);
+                    border-radius: 10px;
+                    padding: 24px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+                    text-align: center;
+                "
+            >
+
+                <h3 style="margin-top:0;">
+                    Función exclusiva
+                </h3>
+
+                <p>
+                    Esta función es exclusiva para el administrador.
+                </p>
+
+                <button
+                    id="btnEntendidoFuncionExclusiva"
+                    class="btn btn-primary"
+                >
+                    Entendido
+                </button>
+
+            </div>
+
+        </div>
+
+    `;
+
+    document.body.appendChild(modal);
+
+    document
+        .getElementById(
+            "btnEntendidoFuncionExclusiva"
+        )
+        .addEventListener(
+            "click",
+            () => modal.remove()
+        );
 
 }
    
