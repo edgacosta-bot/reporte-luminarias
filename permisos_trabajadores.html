@@ -770,9 +770,30 @@ async function cargar() {
 
       }
 
-    });
-
+       });
+  
 }
+
+
+/* =========================================================
+   FORMATEAR FECHA
+========================================================= */
+
+function formatearFecha(fecha) {
+
+  if (!fecha) {
+    return "No disponible";
+  }
+
+  const partes = fecha.split("-");
+
+  if (partes.length !== 3) {
+    return fecha;
+  }
+
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
+
 
 async function renovar(id) {
 
