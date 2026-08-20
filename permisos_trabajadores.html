@@ -305,27 +305,47 @@ function toast(msg, tipo="ok") {
 
 async function cargar() {
 
- const { data, error } = await supabaseClient
-    .from("trabajadores_obra")
-    .select("*")
-    .eq("visible", true)
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabaseClient
+    .rpc("obtener_permisos_trabajadores");
 
   if (error) {
-    console.log("ERROR:", error);
-    document.getElementById("lista").innerHTML = "Error al cargar";
+    console.error("ERROR:", error);
+
+    document.getElementById("lista").innerHTML =
+      "Error al cargar";
+
     return;
   }
 
   if (!data || data.length === 0) {
-    document.getElementById("lista").innerHTML = "Sin registros";
+
+    document.getElementById("lista").innerHTML =
+      "Sin registros";
+
     return;
   }
 
-    // 🔥 CARGAR OBRAS
-  const { data: obrasData } = await supabaseClient
-    .from("obras")
-    .select("privada,casa,estatus");
+  // =========================================================
+  // CARGAR OBRAS
+  // =========================================================
+
+  const { data: obrasData, error: errorObras } =
+    await supabaseClient
+      .from("obras")
+      .select("privada,casa,estatus");
+
+  if (errorObras) {
+
+    console.error(
+      "ERROR CARGANDO OBRAS:",
+      errorObras
+    );
+
+    document.getElementById("lista").innerHTML =
+      "Error al cargar";
+
+    return;
+  }
 
   const mapaObras = {};
 
@@ -334,186 +354,425 @@ async function cargar() {
     const clave =
       `${o.privada}-${o.casa}`;
 
-    mapaObras[clave] = o.estatus;
+    mapaObras[clave] =
+      o.estatus;
+
   });
 
-  const lista = document.getElementById("lista");
+
+  // =========================================================
+  // PREPARAR LISTADO
+  // =========================================================
+
+  const lista =
+    document.getElementById("lista");
+
   lista.innerHTML = "";
 
-  const hoy = new Date().toLocaleDateString('sv-SE');
+  const hoy =
+    new Date().toLocaleDateString(
+      "sv-SE"
+    );
+
   const grupos = {};
 
-  data.forEach(t => {
-    const privada = t.privada || "SIN_PRIVADA";
-    const casa = t.casa || "SIN_CASA";
-    const clave = `${privada}-${casa}`;
 
-    if (!grupos[clave]) grupos[clave] = [];
+  data.forEach(t => {
+
+    const privada =
+      t.privada || "SIN_PRIVADA";
+
+    const casa =
+      t.casa || "SIN_CASA";
+
+    const clave =
+      `${privada}-${casa}`;
+
+    if (!grupos[clave]) {
+
+      grupos[clave] = [];
+
+    }
+
     grupos[clave].push(t);
+
   });
+
+
+  // =========================================================
+  // ORDENAR PRIVADAS Y LOTES
+  // =========================================================
 
   Object.keys(grupos)
 
-.sort((a, b) => {
+    .sort((a, b) => {
 
-  const [privadaA, casaA] = a.split("-");
-  const [privadaB, casaB] = b.split("-");
+      const [privadaA, casaA] =
+        a.split("-");
 
-  // 🔥 ORDEN PRIVADAS
-  const ordenPrivadas = {
-    "I": 1,
-    "II": 2,
-    "III": 3,
-    "IV": 4
-  };
+      const [privadaB, casaB] =
+        b.split("-");
 
-  const privadaDiff =
-    (ordenPrivadas[privadaA] || 999)
-    -
-    (ordenPrivadas[privadaB] || 999);
+      const ordenPrivadas = {
+        "I": 1,
+        "II": 2,
+        "III": 3,
+        "IV": 4
+      };
 
-  if (privadaDiff !== 0) return privadaDiff;
+      const privadaDiff =
+        (ordenPrivadas[privadaA] || 999)
+        -
+        (ordenPrivadas[privadaB] || 999);
 
-  // 🔥 ORDEN LOTES
-  return Number(casaA) - Number(casaB);
+      if (privadaDiff !== 0)
+        return privadaDiff;
 
-})
+      return Number(casaA) - Number(casaB);
 
-.forEach(clave => {
+    })
 
-    const [privada, casa] = clave.split("-");
+    .forEach(clave => {
 
-    const bloque = document.createElement("div");
-bloque.className = "obra";
+      const [privada, casa] =
+        clave.split("-");
 
-const contenidoId = `contenido_${privada}_${casa}`;
+      const bloque =
+        document.createElement("div");
 
-bloque.innerHTML = `
-  <div class="obra-header" onclick="toggleObra('${contenidoId}', this)">
-    <span>🏗 Privada ${privada} - Lote ${casa} (${grupos[clave].length})</span>
-   <span class="flecha">▼</span>
-  </div>
+      bloque.className =
+        "obra";
 
-  <div class="obra-contenido" id="${contenidoId}">
-  </div>
-`;
+      const contenidoId =
+        `contenido_${privada}_${casa}`;
 
-    grupos[clave].forEach(t => {
+      bloque.innerHTML = `
 
-      let estado = "🟢 Vigente";
-      const claveObra =
-  `${t.privada}-${t.casa}`;
+        <div
+          class="obra-header"
+          onclick="toggleObra(
+            '${contenidoId}',
+            this
+          )">
 
-const obraSuspendida =
-  mapaObras[claveObra] === "suspendida";
-      
-      let clase = "estado-verde";
+          <span>
+            🏗 Privada ${privada}
+            - Lote ${casa}
+            (${grupos[clave].length})
+          </span>
 
-     if (obraSuspendida) {
+          <span class="flecha">
+            ▼
+          </span>
 
-  estado = "⛔ Obra suspendida";
-  clase = "estado-rojo";
+        </div>
 
-}
-else if (!t.activo) {
+        <div
+          class="obra-contenido"
+          id="${contenidoId}">
+        </div>
 
-  estado = "⛔ Cancelado";
-  clase = "estado-rojo";
-
-}
-else if (t.fecha_inicio && hoy < t.fecha_inicio) {
-
-  estado = "🟡 Aún no inicia";
-  clase = "estado-amarillo";
-
-}
-else if (t.fecha_fin && hoy > t.fecha_fin) {
-
-  estado = "🔴 Vencido";
-  clase = "estado-rojo";
-}
-
-      const card = document.createElement("div");
-      card.className = "card";
-
-      const botonesBloqueados = obraSuspendida;
-      card.innerHTML = `
-        <div class="nombre">${t.nombre}</div>
-        <div class="estado ${clase}">${estado}</div>
-
-      <div class="fecha-input">
-
- <input
-  type="date"
-  id="inicio_${t.id}"
-  value="${t.fecha_inicio || ""}"
-  ${botonesBloqueados ? "disabled" : ""}>
-       
-        
-      <input
-  type="date"
-  id="fin_${t.id}"
-  value="${t.fecha_fin || ""}"
-  onpointerdown="ui.abrirCalendario(this)"
-  ${botonesBloqueados ? "disabled" : ""}>
-
-        
-               <button
-  class="btn-renovar"
-  ${botonesBloqueados ? "disabled" : ""} onclick="renovar('${t.id}')">🔄 Guardar</button>
-
-        ${
-  t.activo
-  ? `
-<button
-class="btn-cancelar"
-${botonesBloqueados ? "disabled" : ""} onclick="cancelar('${t.id}')">
-⛔ Cancelar
-</button>
-
-<button
-class="btn-archivar"
-${botonesBloqueados ? "disabled" : ""} onclick="archivar('${t.id}')">
-🗑 Archivar
-</button>
-`
-  : `
-<button
-class="btn-reactivar"
-${botonesBloqueados ? "disabled" : ""} onclick="reactivar('${t.id}')">
-🟢 Reactivar
-</button>
-
-<button
-class="btn-archivar"
-${botonesBloqueados ? "disabled" : ""} onclick="archivar('${t.id}')">
-🗑 Archivar
-</button>
-`
-}
       `;
 
-      bloque.querySelector(".obra-contenido").appendChild(card);
+
+      // =======================================================
+      // TRABAJADORES
+      // =======================================================
+
+      grupos[clave].forEach(t => {
+
+        let estado =
+          "🟢 Vigente";
+
+        let clase =
+          "estado-verde";
+
+
+        const claveObra =
+          `${t.privada}-${t.casa}`;
+
+        const obraSuspendida =
+          mapaObras[claveObra] === "suspendida";
+
+
+        // =====================================================
+        // SUSPENSIÓN TEMPORAL
+        // =====================================================
+
+        if (
+          t.suspendido_hasta &&
+          t.suspendido_hasta >= hoy
+        ) {
+
+          estado =
+            `
+            ⚠️ Acceso suspendido
+            hasta ${formatearFecha(t.suspendido_hasta)}
+            `;
+
+          clase =
+            "estado-amarillo";
+
+        }
+
+        // =====================================================
+        // ESTADO DE OBRA
+        // =====================================================
+
+        else if (obraSuspendida) {
+
+          estado =
+            "⛔ Obra suspendida";
+
+          clase =
+            "estado-rojo";
+
+        }
+
+        // =====================================================
+        // TRABAJADOR CANCELADO
+        // =====================================================
+
+        else if (!t.activo) {
+
+          estado =
+            "⛔ Cancelado";
+
+          clase =
+            "estado-rojo";
+
+        }
+
+        // =====================================================
+        // AÚN NO INICIA
+        // =====================================================
+
+        else if (
+          t.fecha_inicio &&
+          hoy < t.fecha_inicio
+        ) {
+
+          estado =
+            "🟡 Aún no inicia";
+
+          clase =
+            "estado-amarillo";
+
+        }
+
+        // =====================================================
+        // VENCIDO
+        // =====================================================
+
+        else if (
+          t.fecha_fin &&
+          hoy > t.fecha_fin
+        ) {
+
+          estado =
+            "🔴 Vencido";
+
+          clase =
+            "estado-rojo";
+
+        }
+
+
+        // =====================================================
+        // TARJETA
+        // =====================================================
+
+        const card =
+          document.createElement("div");
+
+        card.className =
+          "card";
+
+
+        const botonesBloqueados =
+          obraSuspendida;
+
+
+        // =====================================================
+        // INFORMACIÓN DE SUSPENSIÓN
+        // =====================================================
+
+        let infoSuspension = "";
+
+        if (
+          t.suspendido_hasta &&
+          t.suspendido_hasta >= hoy
+        ) {
+
+          infoSuspension = `
+
+            <div style="
+              margin-top:8px;
+              padding:10px;
+              border-radius:8px;
+              background:#451a03;
+              color:#fde68a;
+              font-size:13px;
+              line-height:1.4;
+            ">
+
+              <div style="
+                font-weight:bold;
+                margin-bottom:4px;
+              ">
+                Acceso temporalmente suspendido
+              </div>
+
+              <div>
+                <b>Hasta:</b>
+                ${formatearFecha(t.suspendido_hasta)}
+              </div>
+
+              <div>
+                <b>Motivo:</b>
+                ${
+                  t.motivo_suspension
+                  ||
+                  (
+                    t.fecha_omision
+                    ? `Omisión en el registro de salida del ${formatearFecha(t.fecha_omision)}.`
+                    : "Omisión en el registro de salida."
+                  )
+                }
+              </div>
+
+            </div>
+
+          `;
+        }
+
+
+        // =====================================================
+        // CONTENIDO CARD
+        // =====================================================
+
+        card.innerHTML = `
+
+          <div class="nombre">
+            ${t.nombre}
+          </div>
+
+          <div class="estado ${clase}">
+            ${estado}
+          </div>
+
+          ${infoSuspension}
+
+          <div class="fecha-input">
+
+            <input
+              type="date"
+              id="inicio_${t.id}"
+              value="${t.fecha_inicio || ""}"
+              ${botonesBloqueados ? "disabled" : ""}>
+
+            <input
+              type="date"
+              id="fin_${t.id}"
+              value="${t.fecha_fin || ""}"
+              onpointerdown="ui.abrirCalendario(this)"
+              ${botonesBloqueados ? "disabled" : ""}>
+
+            <button
+              class="btn-renovar"
+              ${botonesBloqueados ? "disabled" : ""}
+              onclick="renovar('${t.id}')">
+
+              🔄 Guardar
+
+            </button>
+
+          </div>
+
+          ${
+            t.activo
+              ? `
+
+                <button
+                  class="btn-cancelar"
+                  ${botonesBloqueados ? "disabled" : ""}
+                  onclick="cancelar('${t.id}')">
+
+                  ⛔ Cancelar
+
+                </button>
+
+                <button
+                  class="btn-archivar"
+                  ${botonesBloqueados ? "disabled" : ""}
+                  onclick="archivar('${t.id}')">
+
+                  🗑 Archivar
+
+                </button>
+
+              `
+              : `
+
+                <button
+                  class="btn-reactivar"
+                  ${botonesBloqueados ? "disabled" : ""}
+                  onclick="reactivar('${t.id}')">
+
+                  🟢 Reactivar
+
+                </button>
+
+                <button
+                  class="btn-archivar"
+                  ${botonesBloqueados ? "disabled" : ""}
+                  onclick="archivar('${t.id}')">
+
+                  🗑 Archivar
+
+                </button>
+
+              `
+          }
+
+        `;
+
+
+        bloque
+          .querySelector(".obra-contenido")
+          .appendChild(card);
+
+      });
+
+
+      lista.appendChild(bloque);
+
+
+      // ======================================================
+      // RESTAURAR ACORDEÓN
+      // ======================================================
+
+      if (
+        obrasAbiertas.has(contenidoId)
+      ) {
+
+        const contenido =
+          document.getElementById(
+            contenidoId
+          );
+
+        contenido.style.display =
+          "block";
+
+        bloque
+          .querySelector(".flecha")
+          .innerText = "▲";
+
+      }
+
     });
 
-    lista.appendChild(bloque);
-
-    // 🔥 Restaurar acordeones abiertos
-
-if (obrasAbiertas.has(contenidoId)) {
-
-  const contenido = document.getElementById(contenidoId);
-
-  contenido.style.display = "block";
-
-  bloque.querySelector(".flecha").innerText = "▲";
-
 }
-  
-  });
-}
-
-// 🔄 RENOVAR
 
 async function renovar(id) {
 
