@@ -185,23 +185,12 @@ async function cargarObra() {
 
   const { data: obra, error } = await supabaseClient
     .from("obras_v2")
-    .select(`
-      *,
-      propietario:propietario_id (
-        nombre
-      ),
-      dro:dro_id (
-        nombre
-      ),
-      tipo_obra:tipo_obra_id (
-        nombre
-      )
-    `)
+    .select("*")
     .eq("id", obraId)
     .maybeSingle();
 
   if (error) {
-    console.error(error);
+    console.error("Error obra:", error);
     mostrarError("Error al consultar la obra.");
     return;
   }
@@ -211,9 +200,54 @@ async function cargarObra() {
     return;
   }
 
+  // Propietario
+  let propietario = null;
+
+  if (obra.propietario_id) {
+
+    const { data } = await supabaseClient
+      .from("propietarios")
+      .select("id, nombre")
+      .eq("id", obra.propietario_id)
+      .maybeSingle();
+
+    propietario = data;
+  }
+
+  // DRO
+  let dro = null;
+
+  if (obra.dro_id) {
+
+    const { data } = await supabaseClient
+      .from("directores_responsables_obra")
+      .select("id, nombre")
+      .eq("id", obra.dro_id)
+      .maybeSingle();
+
+    dro = data;
+  }
+
+  // Tipo de obra
+  let tipoObra = null;
+
+  if (obra.tipo_obra_id) {
+
+    const { data } = await supabaseClient
+      .from("catalogo_tipos_obra")
+      .select("id, nombre")
+      .eq("id", obra.tipo_obra_id)
+      .maybeSingle();
+
+    tipoObra = data;
+  }
+
+  obra.propietario = propietario;
+  obra.dro = dro;
+  obra.tipo_obra = tipoObra;
+
   await cargarVobos(obra);
 }
-
 
 /* =========================================================
    CARGAR VOBOS
