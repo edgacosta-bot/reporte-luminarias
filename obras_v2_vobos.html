@@ -206,7 +206,7 @@ async function cargarObra() {
   if (obra.propietario_id) {
 
     const { data } = await supabaseClient
-      .from("propietarios")
+      .from("propietarios_obra")
       .select("id, nombre")
       .eq("id", obra.propietario_id)
       .maybeSingle();
