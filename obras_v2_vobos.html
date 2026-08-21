@@ -523,7 +523,7 @@ function pintarObra(obra, vobos, residente) {
    REGISTRAR DECISIÓN
 ========================================================= */
 
-async function registrarDecision(aprobado) {
+async function registrarDecision() {
 
   if (!voboActual) {
 
@@ -535,45 +535,22 @@ async function registrarDecision(aprobado) {
     return;
   }
 
+  const confirmar = confirm(
+    "¿Confirmas que deseas otorgar tu VoBo a esta obra?"
+  );
 
-  let observaciones = null;
-
-
-  if (!aprobado) {
-
-    observaciones = prompt(
-      "Indica brevemente por qué no otorgas tu VoBo:"
-    );
-
-    if (observaciones === null) {
-      return;
-    }
-
-    observaciones = observaciones.trim();
-
-    if (!observaciones) {
-
-      mostrarToast(
-        "Debes indicar una observación.",
-        true
-      );
-
-      return;
-    }
-
+  if (!confirmar) {
+    return;
   }
-
 
   const { data, error } =
     await supabaseClient.rpc(
       "registrar_vobo_obra_v2",
       {
         p_obra_id: obraId,
-        p_aprobado: aprobado,
-        p_observaciones: observaciones
+        p_observaciones: null
       }
     );
-
 
   if (error) {
 
@@ -587,7 +564,6 @@ async function registrarDecision(aprobado) {
     return;
   }
 
-
   if (!data?.ok) {
 
     mostrarToast(
@@ -598,13 +574,9 @@ async function registrarDecision(aprobado) {
     return;
   }
 
-
   mostrarToast(
-    aprobado
-      ? "VoBo registrado correctamente."
-      : "Se registró que no otorgas tu VoBo."
+    "VoBo registrado correctamente."
   );
-
 
   await cargarObra();
 
