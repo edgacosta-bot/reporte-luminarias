@@ -346,7 +346,9 @@ let { data: obras } = await queryObras;
     titulo: TITULOS_REPORTE_OBRA[i.tipo] || "🏗️ Reporte de obra",
     
     descripcion:i.descripcion,
-    hora:i.fecha_reporte,
+    hora: i.tipo === "omision_registro_salida"
+  ? null
+  : i.fecha_reporte,
 
     reporta: `${i.privada}-${i.casa}`,
 
@@ -444,7 +446,7 @@ let { data: luminarias } = await queryLuminarias;
     datos.forEach(r=>{
       html += `<div class="item ${r.tipo}">
         <b>${r.titulo}</b>
-        <div class="hora">${formatMXDate(r.hora)}</div>
+        ${r.hora ? `<div class="hora">${formatMXDate(r.hora)}</div>` : ""}
 
         ${r.reporta && r.rol_creador?.toUpperCase() !== "SISTEMA"
         ? `<div class="extra">🏠 Reporta: ${r.reporta}</div>`
