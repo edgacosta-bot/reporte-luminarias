@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Aprobación Mesa Directiva</title>
+
+<style>
+
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+}
+
+.container {
+  padding: 20px;
+  max-width: 700px;
+  margin: auto;
+}
+
+.logo {
+  width: 100px;
+  margin: 10px auto 20px;
+  display: block;
+}
+
+h2 {
+  text-align: center;
+}
+
+.card {
+  background: #1e293b;
+  padding: 18px;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.vobo {
+  background: #334155;
+  padding: 14px;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.vobo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.estado {
+  font-weight: bold;
+}
+
+.pendiente {
+  color: #facc15;
+}
+
+.aprobado {
+  color: #22c55e;
+}
+
+.no-aprobado {
+  color: #ef4444;
+}
+
+button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 11px;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+}
+
+.btn-vobo {
+  background: #22c55e;
+}
+
+.btn-no-vobo {
+  background: #ef4444;
+}
+
+.btn-cancelar {
+  background: #64748b;
+}
+
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  resize: vertical;
+}
+
+#toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #22c55e;
+  padding: 12px 20px;
+  border-radius: 8px;
+  display: none;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<img src="/icono-512.png" class="logo">
+
+<h2>Aprobación Mesa Directiva</h2>
+
+<div id="obra" class="card">
+  Cargando obra...
+</div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+
+let obraId = null;
+let usuarioActual = null;
+let voboActual = null;
+
+
+/* =========================================================
+   INICIO
+========================================================= */
+
+window.addEventListener("DOMContentLoaded", async () => {
+
+  await protegerPagina([
+    "admin",
+    "administracion",
+    "residente"
+  ]);
+
+  const params = new URLSearchParams(window.location.search);
+
+  obraId = params.get("obra");
+
+  if (!obraId) {
+    mostrarError("No se recibió el identificador de la obra.");
+    return;
+  }
+
+  const { data: userData, error: userError } =
+    await supabaseClient.auth.getUser();
+
+  if (userError || !userData?.user) {
+    mostrarError("No fue posible identificar al usuario.");
+    return;
+  }
+
+  usuarioActual = userData.user;
+
+  await cargarObra();
+
+});
+
+
+/* =========================================================
+   CARGAR OBRA
+========================================================= */
+
+async function cargarObra() {
+
+  const { data: obra, error } = await supabaseClient
+    .from("obras_v2")
+    .select(`
+      *,
+      propietario:propietario_id (
+        nombre
+      ),
+      dro:dro_id (
+        nombre
+      ),
+      tipo_obra:tipo_obra_id (
+        nombre
+      )
+    `)
+    .eq("id", obraId)
+    .maybeSingle();
+
+  if (error) {
+    console.error(error);
+    mostrarError("Error al consultar la obra.");
+    return;
+  }
+
+  if (!obra) {
+    mostrarError("La obra no existe.");
+    return;
+  }
+
+  await cargarVobos(obra);
+}
+
+
+/* =========================================================
+   CARGAR VOBOS
+========================================================= */
+
+async function cargarVobos(obra) {
+
+  const { data: vobos, error } = await supabaseClient
+    .from("obras_v2_vobos")
+    .select(`
+      id,
+      cargo_id,
+      usuario_id,
+      estado,
+      fecha_vobo,
+      observaciones,
+      catalogo_cargos (
+        clave,
+        nombre
+      )
+    `)
+    .eq("obra_id", obraId)
+    .order("cargo_id");
+
+  if (error) {
+
+    console.error(error);
+
+    mostrarError("Error al consultar los Vistos Buenos.");
+
+    return;
+  }
+
+  if (!vobos || vobos.length === 0) {
+
+    mostrarError(
+      "Esta obra todavía no tiene Vistos Buenos inicializados."
+    );
+
+    return;
+  }
+
+  /* Buscar el VoBo correspondiente al usuario actual */
+
+  const { data: residente, error: residenteError } =
+    await supabaseClient
+      .from("residentes")
+      .select(`
+        id,
+        id_cargo,
+        nombre,
+        es_mesa_directiva,
+        activo
+      `)
+      .eq("user_id", usuarioActual.id)
+      .eq("es_mesa_directiva", true)
+      .eq("activo", true)
+      .maybeSingle();
+
+  if (residenteError) {
+
+    console.error(residenteError);
+
+    mostrarError("No fue posible identificar al integrante de Mesa Directiva.");
+
+    return;
+  }
+
+  if (!residente) {
+
+    mostrarError(
+      "El usuario actual no pertenece a la Mesa Directiva."
+    );
+
+    return;
+  }
+
+  voboActual = vobos.find(
+    v => v.cargo_id === residente.id_cargo
+  );
+
+  pintarObra(
+    obra,
+    vobos,
+    residente
+  );
+
+}
+
+
+/* =========================================================
+   PINTAR
+========================================================= */
+
+function pintarObra(obra, vobos, residente) {
+
+  const aprobados =
+    vobos.filter(v => v.estado === "APROBADO").length;
+
+  const total =
+    vobos.length;
+
+  const todosAprobados =
+    aprobados === total;
+
+  let html = `
+
+    <div>
+      <b>Privada:</b> ${obra.privada}
+    </div>
+
+    <div>
+      <b>Lote:</b> ${obra.casa}
+    </div>
+
+    <div>
+      <b>Tipo de obra:</b>
+      ${obra.tipo_obra?.nombre || "—"}
+    </div>
+
+    <div>
+      <b>Propietario:</b>
+      ${obra.propietario?.nombre || "—"}
+    </div>
+
+    <div>
+      <b>DRO:</b>
+      ${obra.dro?.nombre || "—"}
+    </div>
+
+    <div style="margin-top:10px;">
+      <b>Vistos Buenos:</b>
+      ${aprobados} de ${total}
+    </div>
+
+    <hr style="margin:18px 0;border-color:#475569;">
+
+    <h3>Integrantes de la Mesa Directiva</h3>
+
+  `;
+
+
+  vobos.forEach(v => {
+
+    let clase = "pendiente";
+
+    if (v.estado === "APROBADO") {
+      clase = "aprobado";
+    }
+
+    if (v.estado === "NO_APROBADO") {
+      clase = "no-aprobado";
+    }
+
+    html += `
+
+      <div class="vobo">
+
+        <div class="vobo-header">
+
+          <b>
+            ${v.catalogo_cargos?.nombre || "Cargo"}
+          </b>
+
+          <span class="estado ${clase}">
+            ${v.estado}
+          </span>
+
+        </div>
+
+        ${
+          v.fecha_vobo
+            ? `<div style="margin-top:6px;font-size:13px;">
+                 ${formatearFecha(v.fecha_vobo)}
+               </div>`
+            : ""
+        }
+
+        ${
+          v.observaciones
+            ? `<div style="margin-top:8px;">
+                 <b>Observaciones:</b>
+                 ${v.observaciones}
+               </div>`
+            : ""
+        }
+
+        ${
+          v.id === voboActual?.id &&
+          v.estado === "PENDIENTE"
+
+          ? `
+
+            <button
+              class="btn-vobo"
+              onclick="registrarDecision(true)">
+              ✓ Dar VoBo
+            </button>
+
+            <button
+              class="btn-no-vobo"
+              onclick="registrarDecision(false)">
+              No dar VoBo
+            </button>
+
+          `
+
+          : ""
+        }
+
+      </div>
+
+    `;
+
+  });
+
+
+  if (todosAprobados) {
+
+    html += `
+
+      <div
+        style="
+          margin-top:18px;
+          padding:14px;
+          border-radius:10px;
+          background:#14532d;
+        "
+      >
+
+        ✓ Todos los Vistos Buenos han sido otorgados.
+
+      </div>
+
+    `;
+
+  }
+
+
+  document.getElementById("obra").innerHTML = html;
+
+}
+
+
+/* =========================================================
+   REGISTRAR DECISIÓN
+========================================================= */
+
+async function registrarDecision(aprobado) {
+
+  if (!voboActual) {
+
+    mostrarToast(
+      "No se encontró tu VoBo.",
+      true
+    );
+
+    return;
+  }
+
+
+  let observaciones = null;
+
+
+  if (!aprobado) {
+
+    observaciones = prompt(
+      "Indica brevemente por qué no otorgas tu VoBo:"
+    );
+
+    if (observaciones === null) {
+      return;
+    }
+
+    observaciones = observaciones.trim();
+
+    if (!observaciones) {
+
+      mostrarToast(
+        "Debes indicar una observación.",
+        true
+      );
+
+      return;
+    }
+
+  }
+
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "registrar_vobo_obra_v2",
+      {
+        p_obra_id: obraId,
+        p_aprobado: aprobado,
+        p_observaciones: observaciones
+      }
+    );
+
+
+  if (error) {
+
+    console.error(error);
+
+    mostrarToast(
+      error.message || "No fue posible registrar el VoBo.",
+      true
+    );
+
+    return;
+  }
+
+
+  if (!data?.ok) {
+
+    mostrarToast(
+      "La operación no pudo completarse.",
+      true
+    );
+
+    return;
+  }
+
+
+  mostrarToast(
+    aprobado
+      ? "VoBo registrado correctamente."
+      : "Se registró que no otorgas tu VoBo."
+  );
+
+
+  await cargarObra();
+
+}
+
+
+/* =========================================================
+   UTILIDADES
+========================================================= */
+
+function formatearFecha(fecha) {
+
+  if (!fecha) return "";
+
+  return new Date(fecha).toLocaleString(
+    "es-MX",
+    {
+      dateStyle: "short",
+      timeStyle: "short"
+    }
+  );
+
+}
+
+
+function mostrarError(mensaje) {
+
+  document.getElementById("obra").innerHTML = `
+
+    <div
+      style="
+        background:#7f1d1d;
+        padding:15px;
+        border-radius:10px;
+      "
+    >
+
+      ${mensaje}
+
+    </div>
+
+  `;
+
+}
+
+
+function mostrarToast(msg, error = false) {
+
+  const toast =
+    document.getElementById("toast");
+
+  toast.innerText = msg;
+
+  toast.style.background =
+    error ? "#ef4444" : "#22c55e";
+
+  toast.style.display = "block";
+
+  setTimeout(() => {
+
+    toast.style.display = "none";
+
+  }, 3000);
+
+}
+
+</script>
+
+</body>
+</html>
