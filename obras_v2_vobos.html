@@ -393,7 +393,22 @@ function pintarObra(obra, vobos, residente) {
   `;
 
 
-  vobos.forEach(v => {
+  const ordenCargos = {
+  PRES: 1,
+  SECR: 2,
+  TESO: 3,
+  VOC1: 4,
+  VOC2: 5
+};
+
+vobos.sort((a, b) => {
+  return (
+    (ordenCargos[a.cargo?.clave] || 99) -
+    (ordenCargos[b.cargo?.clave] || 99)
+  );
+});
+
+vobos.forEach(v => {
 
     let clase = "pendiente";
 
