@@ -291,24 +291,218 @@ function renderContenido() {
     return `
 
         <div
-            id="contenidoBandeja"
             style="
+                display:grid;
+                grid-template-columns:
+                    repeat(auto-fit, minmax(280px, 1fr));
+                gap:20px;
                 margin-top:24px;
             ">
 
+            <!-- APROBACIÓN -->
+
             <div
-                id="contadorExpedientes"
+                id="etapaAprobacion"
+                class="card"
                 style="
-                    margin-bottom:18px;
-                    color:var(--texto-secundario);
-                    font-size:15px;
-                    font-weight:600;
+                    cursor:pointer;
+                    transition:transform .15s ease;
                 ">
+
+                <div
+                    style="
+                        display:flex;
+                        align-items:center;
+                        gap:16px;
+                    ">
+
+                    <div style="font-size:42px;">
+                        🟡
+                    </div>
+
+                    <div>
+
+                        <div
+                            style="
+                                font-size:22px;
+                                font-weight:700;
+                                color:var(--vino);
+                            ">
+
+                            Obras en aprobación
+
+                        </div>
+
+                        <div
+                            id="contadorAprobacion"
+                            style="
+                                margin-top:8px;
+                                color:var(--texto-secundario);
+                            ">
+
+                            Cargando...
+
+                        </div>
+
+                    </div>
+
+                </div>
 
             </div>
 
+
+            <!-- EJECUCIÓN -->
+
             <div
-                id="listaExpedientes">
+                id="etapaEjecucion"
+                class="card"
+                style="
+                    cursor:pointer;
+                    transition:transform .15s ease;
+                ">
+
+                <div
+                    style="
+                        display:flex;
+                        align-items:center;
+                        gap:16px;
+                    ">
+
+                    <div style="font-size:42px;">
+                        🔵
+                    </div>
+
+                    <div>
+
+                        <div
+                            style="
+                                font-size:22px;
+                                font-weight:700;
+                                color:var(--vino);
+                            ">
+
+                            Obras en ejecución
+
+                        </div>
+
+                        <div
+                            id="contadorEjecucion"
+                            style="
+                                margin-top:8px;
+                                color:var(--texto-secundario);
+                            ">
+
+                            Cargando...
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- TERMINACIÓN -->
+
+            <div
+                id="etapaTerminacion"
+                class="card"
+                style="
+                    cursor:pointer;
+                    transition:transform .15s ease;
+                ">
+
+                <div
+                    style="
+                        display:flex;
+                        align-items:center;
+                        gap:16px;
+                    ">
+
+                    <div style="font-size:42px;">
+                        🟠
+                    </div>
+
+                    <div>
+
+                        <div
+                            style="
+                                font-size:22px;
+                                font-weight:700;
+                                color:var(--vino);
+                            ">
+
+                            Obras en terminación
+
+                        </div>
+
+                        <div
+                            id="contadorTerminacion"
+                            style="
+                                margin-top:8px;
+                                color:var(--texto-secundario);
+                            ">
+
+                            Cargando...
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ARCHIVO -->
+
+            <div
+                id="etapaArchivo"
+                class="card"
+                style="
+                    cursor:pointer;
+                    transition:transform .15s ease;
+                ">
+
+                <div
+                    style="
+                        display:flex;
+                        align-items:center;
+                        gap:16px;
+                    ">
+
+                    <div style="font-size:42px;">
+                        ⚫
+                    </div>
+
+                    <div>
+
+                        <div
+                            style="
+                                font-size:22px;
+                                font-weight:700;
+                                color:var(--vino);
+                            ">
+
+                            Obras archivadas
+
+                        </div>
+
+                        <div
+                            id="contadorArchivo"
+                            style="
+                                margin-top:8px;
+                                color:var(--texto-secundario);
+                            ">
+
+                            Cargando...
+
+                        </div>
+
+                    </div>
+
+                </div>
 
             </div>
 
