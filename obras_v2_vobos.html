@@ -263,35 +263,63 @@ async function cargarVobos(obra) {
       usuario_id,
       estado,
       fecha_vobo,
-      observaciones,
-      catalogo_cargos (
-        clave,
-        nombre
-      )
+      observaciones
     `)
     .eq("obra_id", obraId)
     .order("cargo_id");
 
   if (error) {
-
-    console.error(error);
-
+    console.error("Error Vobos:", error);
     mostrarError("Error al consultar los Vistos Buenos.");
-
     return;
   }
 
   if (!vobos || vobos.length === 0) {
-
     mostrarError(
       "Esta obra todavía no tiene Vistos Buenos inicializados."
     );
-
     return;
   }
 
-  /* Buscar el VoBo correspondiente al usuario actual */
+  /*
+   * Obtener los cargos correspondientes
+   */
+  const cargoIds = [...new Set(
+    vobos
+      .map(v => v.cargo_id)
+      .filter(Boolean)
+  )];
 
+  const { data: cargos, error: cargosError } =
+    await supabaseClient
+      .from("catalogo_cargos")
+      .select("id, clave, nombre")
+      .in("id", cargoIds);
+
+  if (cargosError) {
+    console.error("Error cargos:", cargosError);
+    mostrarError("No fue posible consultar los cargos.");
+    return;
+  }
+
+  const cargosMap = new Map(
+    (cargos || []).map(c => [c.id, c])
+  );
+
+  /*
+   * Incorporar información del cargo a cada VoBo
+   */
+  vobos.forEach(v => {
+    const cargo = cargosMap.get(v.cargo_id);
+
+    v.cargo = cargo || null;
+    v.cargo_clave = cargo?.clave || "";
+    v.cargo_nombre = cargo?.nombre || "";
+  });
+
+  /*
+   * Buscar al integrante actual de la Mesa Directiva
+   */
   const { data: residente, error: residenteError } =
     await supabaseClient
       .from("residentes")
@@ -308,33 +336,32 @@ async function cargarVobos(obra) {
       .maybeSingle();
 
   if (residenteError) {
-
-    console.error(residenteError);
-
-    mostrarError("No fue posible identificar al integrante de Mesa Directiva.");
-
+    console.error("Error residente:", residenteError);
+    mostrarError(
+      "No fue posible identificar al integrante de Mesa Directiva."
+    );
     return;
   }
 
   if (!residente) {
-
     mostrarError(
       "El usuario actual no pertenece a la Mesa Directiva."
     );
-
     return;
   }
 
+  /*
+   * VoBo que corresponde al usuario actual
+   */
   voboActual = vobos.find(
     v => v.cargo_id === residente.id_cargo
-  );
+  ) || null;
 
   pintarObra(
     obra,
     vobos,
     residente
   );
-
 }
 
 
