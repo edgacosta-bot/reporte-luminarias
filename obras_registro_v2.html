@@ -1,0 +1,2663 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Registro de Obra | SIGVIC</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
+<style>
+
+/* ==========================================================
+   BASE
+========================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+
+    margin: 0;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:
+        linear-gradient(
+            180deg,
+            #fafafa 0%,
+            #ffffff 100%
+        );
+
+    color: #333;
+
+    min-height: 100vh;
+}
+
+
+/* ==========================================================
+   HEADER
+========================================================== */
+
+.header {
+
+    height: 76px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 0 30px;
+
+    border-bottom: 1px solid #e5e7eb;
+
+    background: #ffffff;
+}
+
+.header-left {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 18px;
+}
+
+.btn-regresar {
+
+    width: 42px;
+    height: 42px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: #f3f4f6;
+
+    color: #555;
+
+    font-size: 22px;
+
+    cursor: pointer;
+}
+
+.btn-regresar:hover {
+
+    background: #e5e7eb;
+}
+
+.header-title {
+
+    font-size: 21px;
+
+    font-weight: 700;
+
+    color: #8B1E3F;
+}
+
+.header-subtitle {
+
+    font-size: 12px;
+
+    color: #777;
+
+    margin-top: 3px;
+}
+
+.header-user {
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    color: #555;
+}
+
+
+/* ==========================================================
+   CONTENEDOR
+========================================================== */
+
+.container {
+
+    width: 100%;
+
+    max-width: 900px;
+
+    margin: 0 auto;
+
+    padding: 40px 24px 70px;
+}
+
+
+/* ==========================================================
+   CABECERA DE PÁGINA
+========================================================== */
+
+.page-intro {
+
+    margin-bottom: 30px;
+}
+
+.page-intro .eyebrow {
+
+    font-size: 14px;
+
+    letter-spacing: 3px;
+
+    font-weight: 700;
+
+    color: #8B1E3F;
+
+    margin-bottom: 10px;
+}
+
+.page-intro h1 {
+
+    margin: 0;
+
+    font-size: 32px;
+
+    color: #333;
+}
+
+.page-intro p {
+
+    margin-top: 10px;
+
+    color: #777;
+
+    line-height: 1.5;
+}
+
+
+/* ==========================================================
+   CARD
+========================================================== */
+
+.card {
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 14px;
+
+    padding: 28px;
+
+    margin-bottom: 22px;
+
+    box-shadow:
+        0 3px 12px rgba(0,0,0,.04);
+}
+
+.card-title {
+
+    font-size: 18px;
+
+    font-weight: 700;
+
+    color: #333;
+
+    margin-bottom: 5px;
+}
+
+.card-subtitle {
+
+    font-size: 13px;
+
+    color: #777;
+
+    margin-bottom: 24px;
+
+    line-height: 1.5;
+}
+
+
+/* ==========================================================
+   FORMULARIO
+========================================================== */
+
+.form-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 20px;
+}
+
+.field {
+
+    display: flex;
+
+    flex-direction: column;
+}
+
+.field.full {
+
+    grid-column: 1 / -1;
+}
+
+label {
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    color: #555;
+
+    margin-bottom: 7px;
+}
+
+select,
+input {
+
+    width: 100%;
+
+    height: 46px;
+
+    padding: 0 13px;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 9px;
+
+    background: #ffffff;
+
+    color: #333;
+
+    font-size: 14px;
+
+    outline: none;
+}
+
+select:focus,
+input:focus {
+
+    border-color: #8B1E3F;
+
+    box-shadow:
+        0 0 0 3px rgba(139,30,63,.08);
+}
+
+select:disabled {
+
+    background: #f5f5f5;
+
+    color: #999;
+}
+
+
+/* ==========================================================
+   PERSONAS
+========================================================== */
+
+.persona-card {
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 11px;
+
+    padding: 18px;
+
+    background: #fafafa;
+}
+
+.persona-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+}
+
+.persona-title {
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    color: #444;
+}
+
+.persona-status {
+
+    font-size: 12px;
+
+    color: #999;
+}
+
+.persona-data {
+
+    margin-top: 12px;
+
+    line-height: 1.55;
+
+    font-size: 14px;
+
+    color: #555;
+}
+
+.persona-empty {
+
+    color: #999;
+
+    font-style: italic;
+}
+
+
+/* ==========================================================
+   BOTONES
+========================================================== */
+
+.btn {
+
+    border: none;
+
+    border-radius: 9px;
+
+    padding: 11px 18px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.btn-primary {
+
+    background: #8B1E3F;
+
+    color: white;
+}
+
+.btn-primary:hover {
+
+    background: #741832;
+}
+
+.btn-secondary {
+
+    background: #f3f4f6;
+
+    color: #555;
+}
+
+.btn-secondary:hover {
+
+    background: #e5e7eb;
+}
+
+.btn-small {
+
+    padding: 8px 13px;
+
+    font-size: 12px;
+}
+
+
+/* ==========================================================
+   ACCIONES
+========================================================== */
+
+.actions {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 28px;
+}
+
+
+/* ==========================================================
+   RESUMEN
+========================================================== */
+
+.resumen {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 14px;
+}
+
+.resumen-item {
+
+    padding: 15px;
+
+    border-radius: 9px;
+
+    background: #f8f8f8;
+}
+
+.resumen-label {
+
+    font-size: 11px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1px;
+
+    color: #999;
+
+    margin-bottom: 5px;
+}
+
+.resumen-value {
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    color: #444;
+}
+
+
+/* ==========================================================
+   MODAL
+========================================================== */
+
+.modal-overlay {
+
+    position: fixed;
+
+    inset: 0;
+
+    background:
+        rgba(0,0,0,.45);
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 20px;
+
+    z-index: 9999;
+}
+
+.modal-overlay.visible {
+
+    display: flex;
+}
+
+.modal {
+
+    width: 100%;
+
+    max-width: 520px;
+
+    background: white;
+
+    border-radius: 15px;
+
+    box-shadow:
+        0 20px 50px rgba(0,0,0,.2);
+
+    overflow: hidden;
+}
+
+.modal-header {
+
+    padding: 22px 24px;
+
+    border-bottom: 1px solid #eee;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+}
+
+.modal-title {
+
+    font-size: 18px;
+
+    font-weight: 700;
+
+    color: #333;
+}
+
+.modal-close {
+
+    border: none;
+
+    background: transparent;
+
+    font-size: 22px;
+
+    color: #888;
+
+    cursor: pointer;
+}
+
+.modal-body {
+
+    padding: 24px;
+}
+
+.modal-footer {
+
+    padding: 18px 24px;
+
+    border-top: 1px solid #eee;
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+}
+
+.modal-field {
+
+    margin-bottom: 17px;
+}
+
+.modal-field:last-child {
+
+    margin-bottom: 0;
+}
+
+
+/* ==========================================================
+   MENSAJES
+========================================================== */
+
+.msg {
+
+    display: none;
+
+    margin-bottom: 20px;
+
+    padding: 13px 15px;
+
+    border-radius: 9px;
+
+    font-size: 13px;
+
+    line-height: 1.4;
+}
+
+.msg.visible {
+
+    display: block;
+}
+
+.msg.error {
+
+    background: #fef2f2;
+
+    color: #991b1b;
+
+    border: 1px solid #fecaca;
+}
+
+.msg.info {
+
+    background: #f8f4f6;
+
+    color: #6b1734;
+
+    border: 1px solid #ead4dc;
+}
+
+
+/* ==========================================================
+   BIENVENIDA
+========================================================== */
+
+#bienvenidaSIGVIC {
+
+    position: fixed;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            180deg,
+            #fafafa 0%,
+            #ffffff 100%
+        );
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    z-index: 99999;
+
+    opacity: 1;
+
+    transition:
+        opacity .8s ease;
+}
+
+#bienvenidaContenido {
+
+    text-align: center;
+
+    max-width: 720px;
+
+    padding: 60px;
+
+    opacity: 0;
+
+    transform:
+        translateY(20px);
+
+    transition:
+        all .8s ease;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media (max-width: 700px) {
+
+    .header {
+
+        padding: 0 16px;
+    }
+
+    .header-user {
+
+        display: none;
+    }
+
+    .container {
+
+        padding:
+            28px 16px 50px;
+    }
+
+    .form-grid,
+    .resumen {
+
+        grid-template-columns: 1fr;
+    }
+
+    .field.full {
+
+        grid-column: auto;
+    }
+
+    .card {
+
+        padding: 21px;
+    }
+
+    .actions {
+
+        flex-direction: column-reverse;
+    }
+
+    .actions .btn {
+
+        width: 100%;
+    }
+
+}
+
+
+/* ==========================================================
+   SPINNER
+========================================================== */
+
+.spinner {
+
+    display: inline-block;
+
+    width: 14px;
+    height: 14px;
+
+    border:
+        2px solid rgba(255,255,255,.4);
+
+    border-top-color: white;
+
+    border-radius: 50%;
+
+    animation:
+        girar .7s linear infinite;
+
+    vertical-align: -2px;
+
+    margin-right: 7px;
+}
+
+@keyframes girar {
+
+    to {
+        transform: rotate(360deg);
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- ==========================================================
+     HEADER
+========================================================== -->
+
+<header class="header">
+
+    <div class="header-left">
+
+        <button
+            id="btnRegresar"
+            class="btn-regresar"
+            title="Regresar">
+
+            ←
+
+        </button>
+
+        <div>
+
+            <div class="header-title">
+
+                SIGVIC
+
+            </div>
+
+            <div class="header-subtitle">
+
+                Gestión de Obras
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div
+        id="usuarioActual"
+        class="header-user">
+
+        Administración
+
+    </div>
+
+</header>
+
+
+
+<!-- ==========================================================
+     CONTENIDO
+========================================================== -->
+
+<main class="container">
+
+
+    <div class="page-intro">
+
+        <div class="eyebrow">
+
+            OBRAS
+
+        </div>
+
+        <h1>
+
+            Registro de obra
+
+        </h1>
+
+        <p>
+
+            Capture la información necesaria para
+            generar una nueva obra en SIGVIC.
+
+        </p>
+
+    </div>
+
+
+
+    <!-- ======================================================
+         MENSAJE
+    ======================================================= -->
+
+    <div
+        id="mensaje"
+        class="msg">
+    </div>
+
+
+
+    <!-- ======================================================
+         DATOS DE LA OBRA
+    ======================================================= -->
+
+    <section class="card">
+
+        <div class="card-title">
+
+            Datos de la obra
+
+        </div>
+
+        <div class="card-subtitle">
+
+            Seleccione la privada, el lote y el tipo
+            de obra que será registrado.
+
+        </div>
+
+
+        <div class="form-grid">
+
+
+            <!-- PRIVADA -->
+
+            <div class="field">
+
+                <label for="privada">
+
+                    Privada
+
+                </label>
+
+                <select id="privada">
+
+                    <option value="">
+
+                        Cargando privadas...
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- LOTE -->
+
+            <div class="field">
+
+                <label for="lote">
+
+                    Lote
+
+                </label>
+
+                <select id="lote" disabled>
+
+                    <option value="">
+
+                        Seleccione primero una privada
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- TIPO DE OBRA -->
+
+            <div class="field full">
+
+                <label for="tipoObra">
+
+                    Tipo de obra
+
+                </label>
+
+                <select id="tipoObra">
+
+                    <option value="">
+
+                        Cargando tipos de obra...
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ======================================================
+         PROPIETARIO
+    ======================================================= -->
+
+    <section class="card">
+
+        <div class="card-title">
+
+            Propietario
+
+        </div>
+
+        <div class="card-subtitle">
+
+            Capture los datos del propietario de la obra.
+
+        </div>
+
+
+        <div class="persona-card">
+
+            <div class="persona-header">
+
+                <div>
+
+                    <div class="persona-title">
+
+                        Datos del propietario
+
+                    </div>
+
+                    <div
+                        id="propietarioEstado"
+                        class="persona-status">
+
+                        No capturado
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    id="btnPropietario"
+                    class="btn btn-primary btn-small">
+
+                    Capturar propietario
+
+                </button>
+
+            </div>
+
+
+            <div
+                id="propietarioDatos"
+                class="persona-data">
+
+                <span class="persona-empty">
+
+                    Aún no se han capturado los datos.
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ======================================================
+         DRO
+    ======================================================= -->
+
+    <section class="card">
+
+        <div class="card-title">
+
+            Director Responsable de Obra
+
+        </div>
+
+        <div class="card-subtitle">
+
+            Capture los datos del Director Responsable
+            de Obra (DRO).
+
+        </div>
+
+
+        <div class="persona-card">
+
+            <div class="persona-header">
+
+                <div>
+
+                    <div class="persona-title">
+
+                        Datos del DRO
+
+                    </div>
+
+                    <div
+                        id="droEstado"
+                        class="persona-status">
+
+                        No capturado
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    id="btnDRO"
+                    class="btn btn-primary btn-small">
+
+                    Capturar DRO
+
+                </button>
+
+            </div>
+
+
+            <div
+                id="droDatos"
+                class="persona-data">
+
+                <span class="persona-empty">
+
+                    Aún no se han capturado los datos.
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ======================================================
+         RESUMEN
+    ======================================================= -->
+
+    <section class="card">
+
+        <div class="card-title">
+
+            Resumen
+
+        </div>
+
+        <div class="card-subtitle">
+
+            Revise la información antes de generar la obra.
+
+        </div>
+
+
+        <div class="resumen">
+
+
+            <div class="resumen-item">
+
+                <div class="resumen-label">
+
+                    Privada
+
+                </div>
+
+                <div
+                    id="resumenPrivada"
+                    class="resumen-value">
+
+                    —
+
+                </div>
+
+            </div>
+
+
+            <div class="resumen-item">
+
+                <div class="resumen-label">
+
+                    Lote
+
+                </div>
+
+                <div
+                    id="resumenLote"
+                    class="resumen-value">
+
+                    —
+
+                </div>
+
+            </div>
+
+
+            <div class="resumen-item">
+
+                <div class="resumen-label">
+
+                    Tipo de obra
+
+                </div>
+
+                <div
+                    id="resumenTipo"
+                    class="resumen-value">
+
+                    —
+
+                </div>
+
+            </div>
+
+
+            <div class="resumen-item">
+
+                <div class="resumen-label">
+
+                    Propietario
+
+                </div>
+
+                <div
+                    id="resumenPropietario"
+                    class="resumen-value">
+
+                    —
+
+                </div>
+
+            </div>
+
+
+            <div class="resumen-item">
+
+                <div class="resumen-label">
+
+                    DRO
+
+                </div>
+
+                <div
+                    id="resumenDRO"
+                    class="resumen-value">
+
+                    —
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <div class="actions">
+
+            <button
+                id="btnCancelar"
+                class="btn btn-secondary">
+
+                Cancelar
+
+            </button>
+
+
+            <button
+                id="btnGenerar"
+                class="btn btn-primary">
+
+                Generar obra
+
+            </button>
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+
+<!-- ==========================================================
+     MODAL PROPIETARIO
+========================================================== -->
+
+<div
+    id="modalPropietario"
+    class="modal-overlay">
+
+
+    <div class="modal">
+
+
+        <div class="modal-header">
+
+            <div class="modal-title">
+
+                Datos del propietario
+
+            </div>
+
+            <button
+                class="modal-close"
+                id="cerrarModalPropietario">
+
+                ×
+
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+
+            <div class="modal-field">
+
+                <label for="propietarioNombre">
+
+                    Nombre completo
+
+                </label>
+
+                <input
+                    id="propietarioNombre"
+                    type="text"
+                    autocomplete="off">
+
+            </div>
+
+
+            <div class="modal-field">
+
+                <label for="propietarioTelefono">
+
+                    Teléfono
+
+                </label>
+
+                <input
+                    id="propietarioTelefono"
+                    type="tel"
+                    autocomplete="off">
+
+            </div>
+
+
+            <div class="modal-field">
+
+                <label for="propietarioCorreo">
+
+                    Correo electrónico
+
+                </label>
+
+                <input
+                    id="propietarioCorreo"
+                    type="email"
+                    autocomplete="off">
+
+            </div>
+
+
+        </div>
+
+
+        <div class="modal-footer">
+
+            <button
+                id="cancelarPropietario"
+                class="btn btn-secondary">
+
+                Cancelar
+
+            </button>
+
+
+            <button
+                id="guardarPropietario"
+                class="btn btn-primary">
+
+                Guardar datos
+
+            </button>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+<!-- ==========================================================
+     MODAL DRO
+========================================================== -->
+
+<div
+    id="modalDRO"
+    class="modal-overlay">
+
+
+    <div class="modal">
+
+
+        <div class="modal-header">
+
+            <div class="modal-title">
+
+                Datos del Director Responsable de Obra
+
+            </div>
+
+            <button
+                class="modal-close"
+                id="cerrarModalDRO">
+
+                ×
+
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+
+            <div class="modal-field">
+
+                <label for="droNombre">
+
+                    Nombre completo
+
+                </label>
+
+                <input
+                    id="droNombre"
+                    type="text"
+                    autocomplete="off">
+
+            </div>
+
+
+            <div class="modal-field">
+
+                <label for="droTelefono">
+
+                    Teléfono
+
+                </label>
+
+                <input
+                    id="droTelefono"
+                    type="tel"
+                    autocomplete="off">
+
+            </div>
+
+
+            <div class="modal-field">
+
+                <label for="droCorreo">
+
+                    Correo electrónico
+
+                </label>
+
+                <input
+                    id="droCorreo"
+                    type="email"
+                    autocomplete="off">
+
+            </div>
+
+
+        </div>
+
+
+        <div class="modal-footer">
+
+            <button
+                id="cancelarDRO"
+                class="btn btn-secondary">
+
+                Cancelar
+
+            </button>
+
+
+            <button
+                id="guardarDRO"
+                class="btn btn-primary">
+
+                Guardar datos
+
+            </button>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+<!-- ==========================================================
+     BIENVENIDA
+========================================================== -->
+
+<div id="bienvenidaSIGVIC">
+
+    <div id="bienvenidaContenido">
+
+        <div
+            style="
+                font-size:18px;
+                letter-spacing:5px;
+                color:#8B1E3F;
+                font-weight:700;
+                margin-bottom:18px;
+            ">
+
+            SIGVIC
+
+        </div>
+
+
+        <div
+            style="
+                font-size:22px;
+                color:#666;
+                margin-bottom:50px;
+            ">
+
+            Sistema Integral de Gestión de Villas de la Concepción
+
+        </div>
+
+
+        <div
+            style="
+                width:90px;
+                height:4px;
+                background:#8B1E3F;
+                margin:0 auto 45px auto;
+                border-radius:4px;
+            ">
+        </div>
+
+
+        <div
+            style="
+                font-size:18px;
+                color:#777;
+                margin-bottom:14px;
+            ">
+
+            Bienvenido
+
+        </div>
+
+
+        <div
+            id="bienvenidaCargo"
+            style="
+                font-size:36px;
+                font-weight:700;
+                color:#8B1E3F;
+                line-height:1.3;
+            ">
+
+            Administración
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+/* ==========================================================
+   ESTADO TEMPORAL
+========================================================== */
+
+let propietarioTemporal = null;
+let droTemporal = null;
+
+let loteSeleccionado = null;
+
+
+/* ==========================================================
+   INICIO
+========================================================== */
+
+window.addEventListener(
+    "DOMContentLoaded",
+    iniciar
+);
+
+
+async function iniciar() {
+
+    try {
+
+        await protegerPagina([
+            "admin",
+            "administracion"
+        ]);
+
+        await cargarPrivadas();
+
+        await cargarTiposObra();
+
+        configurarEventos();
+
+        actualizarResumen();
+
+        mostrarBienvenida();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Error al iniciar:",
+            error
+        );
+
+        mostrarMensaje(
+            error.message ||
+            "No fue posible iniciar la pantalla.",
+            "error"
+        );
+
+    }
+
+}
+
+
+/* ==========================================================
+   PRIVADAS
+========================================================== */
+
+async function cargarPrivadas() {
+
+    const select =
+        document.getElementById("privada");
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+
+        .from("lotes")
+
+        .select("privada")
+
+        .neq("privada", "ADMIN")
+
+        .neq("privada", "SEG");
+
+    if (error)
+        throw error;
+
+
+    const privadas = [
+        ...new Set(
+            data
+                .map(x => x.privada)
+                .filter(Boolean)
+        )
+    ].sort();
+
+
+    select.innerHTML = `
+        <option value="">
+            Seleccione una privada
+        </option>
+    `;
+
+
+    privadas.forEach(privada => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = privada;
+
+        option.textContent = privada;
+
+        select.appendChild(option);
+
+    });
+
+}
+
+
+/* ==========================================================
+   LOTES
+========================================================== */
+
+async function cargarLotes(privada) {
+
+    const select =
+        document.getElementById("lote");
+
+    loteSeleccionado = null;
+
+    select.disabled = true;
+
+    select.innerHTML = `
+        <option value="">
+            Cargando lotes...
+        </option>
+    `;
+
+
+    if (!privada) {
+
+        select.innerHTML = `
+            <option value="">
+                Seleccione primero una privada
+            </option>
+        `;
+
+        actualizarResumen();
+
+        return;
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+
+        .from("lotes")
+
+        .select("id, lote")
+
+        .eq("privada", privada);
+
+
+    if (error)
+        throw error;
+
+
+    data.sort(
+        (a, b) =>
+            Number(a.lote) -
+            Number(b.lote)
+    );
+
+
+    select.innerHTML = `
+        <option value="">
+            Seleccione un lote
+        </option>
+    `;
+
+
+    data.forEach(lote => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = lote.id;
+
+        option.textContent =
+            `Lote ${lote.lote}`;
+
+        option.dataset.lote =
+            lote.lote;
+
+        select.appendChild(option);
+
+    });
+
+
+    select.disabled = false;
+
+}
+
+
+/* ==========================================================
+   TIPOS DE OBRA
+========================================================== */
+
+async function cargarTiposObra() {
+
+    const select =
+        document.getElementById("tipoObra");
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+
+        .from("catalogo_tipos_obra")
+
+        .select(
+            "id, clave, nombre"
+        )
+
+        .eq("activo", true)
+
+        .order(
+            "orden",
+            {
+                ascending: true
+            }
+        );
+
+
+    if (error)
+        throw error;
+
+
+    select.innerHTML = `
+        <option value="">
+            Seleccione el tipo de obra
+        </option>
+    `;
+
+
+    data.forEach(tipo => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = tipo.id;
+
+        option.textContent =
+            tipo.nombre;
+
+        option.dataset.clave =
+            tipo.clave;
+
+        select.appendChild(option);
+
+    });
+
+}
+
+
+/* ==========================================================
+   EVENTOS
+========================================================== */
+
+function configurarEventos() {
+
+
+    document
+        .getElementById("privada")
+        .addEventListener(
+            "change",
+            async function() {
+
+                try {
+
+                    await cargarLotes(
+                        this.value
+                    );
+
+                    actualizarResumen();
+
+                }
+
+                catch (error) {
+
+                    console.error(error);
+
+                    mostrarMensaje(
+                        "No fue posible cargar los lotes.",
+                        "error"
+                    );
+
+                }
+
+            }
+        );
+
+
+    document
+        .getElementById("lote")
+        .addEventListener(
+            "change",
+            function() {
+
+                const option =
+                    this.options[
+                        this.selectedIndex
+                    ];
+
+                if (!option || !option.value) {
+
+                    loteSeleccionado = null;
+
+                }
+
+                else {
+
+                    loteSeleccionado = {
+
+                        id:
+                            option.value,
+
+                        lote:
+                            option.dataset.lote
+
+                    };
+
+                }
+
+                actualizarResumen();
+
+            }
+        );
+
+
+    document
+        .getElementById("tipoObra")
+        .addEventListener(
+            "change",
+            actualizarResumen
+        );
+
+
+    document
+        .getElementById("btnPropietario")
+        .addEventListener(
+            "click",
+            abrirModalPropietario
+        );
+
+
+    document
+        .getElementById("btnDRO")
+        .addEventListener(
+            "click",
+            abrirModalDRO
+        );
+
+
+    document
+        .getElementById("cerrarModalPropietario")
+        .addEventListener(
+            "click",
+            cerrarModalPropietario
+        );
+
+
+    document
+        .getElementById("cancelarPropietario")
+        .addEventListener(
+            "click",
+            cerrarModalPropietario
+        );
+
+
+    document
+        .getElementById("guardarPropietario")
+        .addEventListener(
+            "click",
+            guardarPropietarioTemporal
+        );
+
+
+    document
+        .getElementById("cerrarModalDRO")
+        .addEventListener(
+            "click",
+            cerrarModalDRO
+        );
+
+
+    document
+        .getElementById("cancelarDRO")
+        .addEventListener(
+            "click",
+            cerrarModalDRO
+        );
+
+
+    document
+        .getElementById("guardarDRO")
+        .addEventListener(
+            "click",
+            guardarDROTemporal
+        );
+
+
+    document
+        .getElementById("btnGenerar")
+        .addEventListener(
+            "click",
+            generarObra
+        );
+
+
+    document
+        .getElementById("btnCancelar")
+        .addEventListener(
+            "click",
+            function() {
+
+                window.history.back();
+
+            }
+        );
+
+}
+
+
+/* ==========================================================
+   MODAL PROPIETARIO
+========================================================== */
+
+function abrirModalPropietario() {
+
+    const modal =
+        document.getElementById(
+            "modalPropietario"
+        );
+
+
+    document.getElementById(
+        "propietarioNombre"
+    ).value =
+        propietarioTemporal?.nombre || "";
+
+
+    document.getElementById(
+        "propietarioTelefono"
+    ).value =
+        propietarioTemporal?.telefono || "";
+
+
+    document.getElementById(
+        "propietarioCorreo"
+    ).value =
+        propietarioTemporal?.correo_electronico || "";
+
+
+    modal.classList.add(
+        "visible"
+    );
+
+
+    setTimeout(() => {
+
+        document
+            .getElementById(
+                "propietarioNombre"
+            )
+            .focus();
+
+    }, 50);
+
+}
+
+
+function cerrarModalPropietario() {
+
+    document
+        .getElementById(
+            "modalPropietario"
+        )
+        .classList.remove(
+            "visible"
+        );
+
+}
+
+
+function guardarPropietarioTemporal() {
+
+    const nombre =
+        document
+            .getElementById(
+                "propietarioNombre"
+            )
+            .value
+            .trim();
+
+
+    const telefono =
+        document
+            .getElementById(
+                "propietarioTelefono"
+            )
+            .value
+            .trim();
+
+
+    const correo =
+        document
+            .getElementById(
+                "propietarioCorreo"
+            )
+            .value
+            .trim();
+
+
+    if (!nombre) {
+
+        alert(
+            "Debes indicar el nombre del propietario."
+        );
+
+        return;
+
+    }
+
+
+    propietarioTemporal = {
+
+        nombre,
+
+        telefono,
+
+        correo_electronico:
+            correo
+
+    };
+
+
+    cerrarModalPropietario();
+
+    pintarPropietario();
+
+    actualizarResumen();
+
+}
+
+
+/* ==========================================================
+   PINTAR PROPIETARIO
+========================================================== */
+
+function pintarPropietario() {
+
+    const estado =
+        document.getElementById(
+            "propietarioEstado"
+        );
+
+    const datos =
+        document.getElementById(
+            "propietarioDatos"
+        );
+
+    const boton =
+        document.getElementById(
+            "btnPropietario"
+        );
+
+
+    if (!propietarioTemporal) {
+
+        estado.textContent =
+            "No capturado";
+
+        datos.innerHTML = `
+            <span class="persona-empty">
+                Aún no se han capturado los datos.
+            </span>
+        `;
+
+        boton.textContent =
+            "Capturar propietario";
+
+        return;
+
+    }
+
+
+    estado.textContent =
+        "Capturado";
+
+    datos.innerHTML = `
+
+        <strong>
+            ${escaparHTML(
+                propietarioTemporal.nombre
+            )}
+        </strong>
+
+        <br>
+
+        Teléfono:
+        ${propietarioTemporal.telefono
+            ? escaparHTML(
+                propietarioTemporal.telefono
+              )
+            : "—"}
+
+        <br>
+
+        Correo:
+        ${propietarioTemporal.correo_electronico
+            ? escaparHTML(
+                propietarioTemporal.correo_electronico
+              )
+            : "—"}
+
+    `;
+
+
+    boton.textContent =
+        "Editar propietario";
+
+}
+
+
+/* ==========================================================
+   MODAL DRO
+========================================================== */
+
+function abrirModalDRO() {
+
+    const modal =
+        document.getElementById(
+            "modalDRO"
+        );
+
+
+    document.getElementById(
+        "droNombre"
+    ).value =
+        droTemporal?.nombre || "";
+
+
+    document.getElementById(
+        "droTelefono"
+    ).value =
+        droTemporal?.telefono || "";
+
+
+    document.getElementById(
+        "droCorreo"
+    ).value =
+        droTemporal?.correo_electronico || "";
+
+
+    modal.classList.add(
+        "visible"
+    );
+
+
+    setTimeout(() => {
+
+        document
+            .getElementById(
+                "droNombre"
+            )
+            .focus();
+
+    }, 50);
+
+}
+
+
+function cerrarModalDRO() {
+
+    document
+        .getElementById(
+            "modalDRO"
+        )
+        .classList.remove(
+            "visible"
+        );
+
+}
+
+
+function guardarDROTemporal() {
+
+    const nombre =
+        document
+            .getElementById(
+                "droNombre"
+            )
+            .value
+            .trim();
+
+
+    const telefono =
+        document
+            .getElementById(
+                "droTelefono"
+            )
+            .value
+            .trim();
+
+
+    const correo =
+        document
+            .getElementById(
+                "droCorreo"
+            )
+            .value
+            .trim();
+
+
+    if (!nombre) {
+
+        alert(
+            "Debes indicar el nombre del DRO."
+        );
+
+        return;
+
+    }
+
+
+    droTemporal = {
+
+        nombre,
+
+        telefono,
+
+        correo_electronico:
+            correo
+
+    };
+
+
+    cerrarModalDRO();
+
+    pintarDRO();
+
+    actualizarResumen();
+
+}
+
+
+/* ==========================================================
+   PINTAR DRO
+========================================================== */
+
+function pintarDRO() {
+
+    const estado =
+        document.getElementById(
+            "droEstado"
+        );
+
+    const datos =
+        document.getElementById(
+            "droDatos"
+        );
+
+    const boton =
+        document.getElementById(
+            "btnDRO"
+        );
+
+
+    if (!droTemporal) {
+
+        estado.textContent =
+            "No capturado";
+
+        datos.innerHTML = `
+            <span class="persona-empty">
+                Aún no se han capturado los datos.
+            </span>
+        `;
+
+        boton.textContent =
+            "Capturar DRO";
+
+        return;
+
+    }
+
+
+    estado.textContent =
+        "Capturado";
+
+    datos.innerHTML = `
+
+        <strong>
+            ${escaparHTML(
+                droTemporal.nombre
+            )}
+        </strong>
+
+        <br>
+
+        Teléfono:
+        ${droTemporal.telefono
+            ? escaparHTML(
+                droTemporal.telefono
+              )
+            : "—"}
+
+        <br>
+
+        Correo:
+        ${droTemporal.correo_electronico
+            ? escaparHTML(
+                droTemporal.correo_electronico
+              )
+            : "—"}
+
+    `;
+
+
+    boton.textContent =
+        "Editar DRO";
+
+}
+
+
+/* ==========================================================
+   RESUMEN
+========================================================== */
+
+function actualizarResumen() {
+
+    const privada =
+        document.getElementById(
+            "privada"
+        );
+
+
+    const lote =
+        document.getElementById(
+            "lote"
+        );
+
+
+    const tipo =
+        document.getElementById(
+            "tipoObra"
+        );
+
+
+    document.getElementById(
+        "resumenPrivada"
+    ).textContent =
+        privada.value ||
+        "—";
+
+
+    document.getElementById(
+        "resumenLote"
+    ).textContent =
+        loteSeleccionado?.lote
+        ? `Lote ${loteSeleccionado.lote}`
+        : "—";
+
+
+    document.getElementById(
+        "resumenTipo"
+    ).textContent =
+        tipo.value
+        ? tipo.options[
+            tipo.selectedIndex
+          ].textContent
+        : "—";
+
+
+    document.getElementById(
+        "resumenPropietario"
+    ).textContent =
+        propietarioTemporal?.nombre ||
+        "—";
+
+
+    document.getElementById(
+        "resumenDRO"
+    ).textContent =
+        droTemporal?.nombre ||
+        "—";
+
+}
+
+
+/* ==========================================================
+   GENERAR OBRA
+========================================================== */
+
+function generarObra() {
+
+    /*
+     * TODAVÍA NO SE REGISTRA NADA.
+     *
+     * En este paso solamente validamos
+     * que la captura esté completa.
+     */
+
+    const privada =
+        document.getElementById(
+            "privada"
+        ).value;
+
+
+    const tipoObra =
+        document.getElementById(
+            "tipoObra"
+        ).value;
+
+
+    if (!privada) {
+
+        mostrarMensaje(
+            "Seleccione una privada.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if (!loteSeleccionado) {
+
+        mostrarMensaje(
+            "Seleccione un lote.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if (!tipoObra) {
+
+        mostrarMensaje(
+            "Seleccione el tipo de obra.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if (!propietarioTemporal) {
+
+        mostrarMensaje(
+            "Capture los datos del propietario.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if (!droTemporal) {
+
+        mostrarMensaje(
+            "Capture los datos del DRO.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    mostrarMensaje(
+        "La información está completa. El registro definitivo se implementará en el siguiente paso.",
+        "info"
+    );
+
+}
+
+
+/* ==========================================================
+   MENSAJE
+========================================================== */
+
+function mostrarMensaje(
+    texto,
+    tipo = "info"
+) {
+
+    const elemento =
+        document.getElementById(
+            "mensaje"
+        );
+
+
+    elemento.textContent =
+        texto;
+
+
+    elemento.className =
+        `msg visible ${tipo}`;
+
+
+    elemento.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
+
+}
+
+
+/* ==========================================================
+   BIENVENIDA
+========================================================== */
+
+function mostrarBienvenida() {
+
+    const overlay =
+        document.getElementById(
+            "bienvenidaSIGVIC"
+        );
+
+
+    const contenido =
+        document.getElementById(
+            "bienvenidaContenido"
+        );
+
+
+    const cargo =
+        window.contextoActual?.contexto
+            ?.nombre_cargo ||
+        "Administración";
+
+
+    document.getElementById(
+        "bienvenidaCargo"
+    ).textContent =
+        cargo;
+
+
+    requestAnimationFrame(() => {
+
+        contenido.style.opacity =
+            "1";
+
+        contenido.style.transform =
+            "translateY(0)";
+
+    });
+
+
+    setTimeout(() => {
+
+        overlay.style.opacity =
+            "0";
+
+
+        setTimeout(() => {
+
+            overlay.remove();
+
+        }, 800);
+
+    }, 2200);
+
+}
+
+
+/* ==========================================================
+   ESCAPAR HTML
+========================================================== */
+
+function escaparHTML(valor) {
+
+    return String(valor)
+
+        .replaceAll("&", "&amp;")
+
+        .replaceAll("<", "&lt;")
+
+        .replaceAll(">", "&gt;")
+
+        .replaceAll('"', "&quot;")
+
+        .replaceAll("'", "&#039;");
+
+}
+
+</script>
+
+</body>
+
+</html>
