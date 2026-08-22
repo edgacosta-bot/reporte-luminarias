@@ -1941,81 +1941,11 @@ async function generarObra() {
     }
 
 
-
-/* ======================================================
-   INICIO DEL REGISTRO
-====================================================== */
-
-mostrarMensaje(
-    "Generando obra...",
-    "info"
-);
-
-
     /* ======================================================
-       REGISTRO DEFINITIVO
-       
-       La lógica de negocio permanece en PostgreSQL.
-       El frontend únicamente consume la RPC.
+       CONFIRMACIÓN FINAL
     ====================================================== */
 
-    const {
-        data,
-        error
-    } = await supabaseClient.rpc(
-        "registrar_obra_v2",
-        {
-            p_lote_id:
-                loteSeleccionado.id,
-
-            p_propietario_id:
-                propietarioTemporal.id,
-
-            p_dro_id:
-                droTemporal.id,
-
-            p_tipo_obra_id:
-                Number(tipoObra)
-        }
-    );
-
-
-    /* ======================================================
-       ERROR
-    ====================================================== */
-
-    if (error) {
-
-        console.error(
-            "Error al registrar obra:",
-            error
-        );
-
-        mostrarMensaje(
-            error.message ||
-            "No fue posible registrar la obra.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    /* ======================================================
-       REGISTRO EXITOSO
-    ====================================================== */
-
-    console.log(
-        "Resultado registrar_obra_v2:",
-        data
-    );
-
-
-    mostrarMensaje(
-        "La obra fue registrada correctamente.",
-        "ok"
-    );
+    abrirModalConfirmacionObra();
 
 }
 
