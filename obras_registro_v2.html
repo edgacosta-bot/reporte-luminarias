@@ -1555,7 +1555,7 @@ function cerrarModalDRO() {
 }
 
 
-function guardarDROTemporal() {
+async function guardarDROTemporal() {
 
     const nombre =
         document
@@ -1595,7 +1595,47 @@ function guardarDROTemporal() {
     }
 
 
+    /* ======================================================
+       GUARDAR DRO MEDIANTE RPC V2
+    ====================================================== */
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "guardar_datos_dro_v2",
+        {
+            p_nombre: nombre,
+            p_telefono: telefono,
+            p_correo: correo
+        }
+    );
+
+
+    if (error) {
+
+        console.error(
+            "Error al registrar DRO:",
+            error
+        );
+
+        alert(
+            "No fue posible guardar los datos del DRO."
+        );
+
+        return;
+
+    }
+
+
+    /* ======================================================
+       CONSERVAR DATOS Y UUID
+    ====================================================== */
+
     droTemporal = {
+
+        id:
+            data.dro_id,
 
         nombre,
 
