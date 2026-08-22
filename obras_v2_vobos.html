@@ -541,15 +541,19 @@ async function registrarDecision() {
 
   if (error) {
 
-    console.error(error);
+  console.error("ERROR COMPLETO RPC:", error);
+  console.error("code:", error.code);
+  console.error("message:", error.message);
+  console.error("details:", error.details);
+  console.error("hint:", error.hint);
 
-    mostrarToast(
-      error.message || "No fue posible registrar el VoBo.",
-      true
-    );
+  mostrarToast(
+    error.message || "No fue posible registrar el VoBo.",
+    true
+  );
 
-    return;
-  }
+  return;
+}
 
   if (!data?.ok) {
 
