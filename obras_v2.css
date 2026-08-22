@@ -759,3 +759,210 @@ select:disabled {
         transform: rotate(360deg);
     }
 }
+
+
+/* ======================================================
+   MODAL DE CONFIRMACIÓN DE REGISTRO DE OBRA
+====================================================== */
+
+.modal-confirmacion-obra {
+
+    position:fixed;
+
+    inset:0;
+
+    z-index:2000;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:24px;
+
+    background:rgba(31,41,55,.55);
+
+    opacity:0;
+
+    visibility:hidden;
+
+    transition:
+        opacity .2s ease,
+        visibility .2s ease;
+
+}
+
+
+.modal-confirmacion-obra.visible {
+
+    opacity:1;
+
+    visibility:visible;
+
+}
+
+
+/* ======================================================
+   CONTENEDOR
+====================================================== */
+
+.modal-confirmacion-contenido {
+
+    width:100%;
+
+    max-width:520px;
+
+    background:#FFFFFF;
+
+    border-radius:20px;
+
+    padding:32px;
+
+    box-shadow:
+        0 20px 50px rgba(0,0,0,.20);
+
+    transform:translateY(15px);
+
+    transition:transform .2s ease;
+
+}
+
+
+.modal-confirmacion-obra.visible
+.modal-confirmacion-contenido {
+
+    transform:translateY(0);
+
+}
+
+
+/* ======================================================
+   ICONO
+====================================================== */
+
+.modal-confirmacion-icono {
+
+    width:56px;
+
+    height:56px;
+
+    margin-bottom:20px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:50%;
+
+    background:#FBECEF;
+
+    color:var(--vino);
+
+    font-size:28px;
+
+    font-weight:bold;
+
+}
+
+
+/* ======================================================
+   TITULO
+====================================================== */
+
+.modal-confirmacion-contenido h2 {
+
+    margin:0 0 12px;
+
+    color:var(--texto);
+
+    font-size:25px;
+
+    font-weight:700;
+
+}
+
+
+/* ======================================================
+   TEXTO
+====================================================== */
+
+.modal-confirmacion-texto {
+
+    margin:0 0 10px;
+
+    color:var(--texto);
+
+    font-size:17px;
+
+    line-height:1.5;
+
+}
+
+
+.modal-confirmacion-detalle {
+
+    margin:0;
+
+    color:var(--texto-secundario);
+
+    font-size:15px;
+
+    line-height:1.6;
+
+}
+
+
+/* ======================================================
+   ACCIONES
+====================================================== */
+
+.modal-confirmacion-acciones {
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:12px;
+
+    margin-top:28px;
+
+}
+
+
+.modal-confirmacion-acciones .btn {
+
+    min-width:140px;
+
+}
+
+
+/* ======================================================
+   RESPONSIVE
+====================================================== */
+
+@media(max-width:520px){
+
+    .modal-confirmacion-contenido {
+
+        padding:24px;
+
+    }
+
+
+    .modal-confirmacion-acciones {
+
+        flex-direction:column-reverse;
+
+    }
+
+
+    .modal-confirmacion-acciones .btn {
+
+        width:100%;
+
+    }
+
+}
