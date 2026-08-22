@@ -460,10 +460,11 @@ vobos.forEach(v => {
           ? `
 
             <button
-              class="btn-vobo"
-              onclick="registrarDecision(true)">
-              ✓ Dar VoBo
-            </button>
+  class="btn-vobo"
+  onclick="registrarDecision()"
+>
+  ✓ Dar VoBo
+</button>
 
             
 
@@ -522,38 +523,31 @@ async function registrarDecision() {
     return;
   }
 
-  const confirmar = confirm(
-    "¿Confirmas que deseas otorgar tu VoBo a esta obra?"
-  );
-
-  if (!confirmar) {
-    return;
-  }
-
   const { data, error } =
     await supabaseClient.rpc(
       "registrar_vobo_obra_v2",
       {
         p_obra_id: obraId,
+        p_aprobado: true,
         p_observaciones: null
       }
     );
 
   if (error) {
 
-  console.error("ERROR COMPLETO RPC:", error);
-  console.error("code:", error.code);
-  console.error("message:", error.message);
-  console.error("details:", error.details);
-  console.error("hint:", error.hint);
+    console.error("ERROR COMPLETO RPC:", error);
+    console.error("code:", error.code);
+    console.error("message:", error.message);
+    console.error("details:", error.details);
+    console.error("hint:", error.hint);
 
-  mostrarToast(
-    error.message || "No fue posible registrar el VoBo.",
-    true
-  );
+    mostrarToast(
+      error.message || "No fue posible registrar el VoBo.",
+      true
+    );
 
-  return;
-}
+    return;
+  }
 
   if (!data?.ok) {
 
@@ -570,7 +564,6 @@ async function registrarDecision() {
   );
 
   await cargarObra();
-
 }
 
 
