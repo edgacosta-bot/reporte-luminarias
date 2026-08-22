@@ -435,11 +435,19 @@
                        Propietario
                    </div>
                
-                   <div
-                       id="resumenPropietario"
-                       class="resumen-value">
-                       —
-                   </div>
+          <div
+              id="resumenPropietario"
+              class="resumen-value">
+          
+              —
+          
+          </div>
+          
+          <div
+              id="resumenPropietarioContacto"
+              class="resumen-contacto">
+          
+          </div>
                
                    <div
                        id="resumenPropietarioContacto"
@@ -455,11 +463,19 @@
                        DRO
                    </div>
                
-                   <div
-                       id="resumenDRO"
-                       class="resumen-value">
-                       —
-                   </div>
+               <div
+                   id="resumenDRO"
+                   class="resumen-value">
+               
+                   —
+               
+               </div>
+               
+               <div
+                   id="resumenDROContacto"
+                   class="resumen-contacto">
+               
+               </div>
                
                    <div
                        id="resumenDROContacto"
@@ -1652,18 +1668,20 @@ function actualizarResumen() {
             "privada"
         );
 
-
     const lote =
         document.getElementById(
             "lote"
         );
-
 
     const tipo =
         document.getElementById(
             "tipoObra"
         );
 
+
+    /* ======================================================
+       DATOS GENERALES
+    ====================================================== */
 
     document.getElementById(
         "resumenPrivada"
@@ -1690,6 +1708,10 @@ function actualizarResumen() {
         : "—";
 
 
+    /* ======================================================
+       PROPIETARIO
+    ====================================================== */
+
     document.getElementById(
         "resumenPropietario"
     ).textContent =
@@ -1698,13 +1720,68 @@ function actualizarResumen() {
 
 
     document.getElementById(
+        "resumenPropietarioContacto"
+    ).innerHTML =
+        propietarioTemporal
+        ? `
+            Teléfono:
+            ${propietarioTemporal.telefono
+                ? escaparHTML(
+                    propietarioTemporal.telefono
+                  )
+                : "—"
+            }
+
+            <br>
+
+            Correo:
+            ${propietarioTemporal.correo_electronico
+                ? escaparHTML(
+                    propietarioTemporal.correo_electronico
+                  )
+                : "—"
+            }
+          `
+        : "";
+
+
+    /* ======================================================
+       DRO
+    ====================================================== */
+
+    document.getElementById(
         "resumenDRO"
     ).textContent =
         droTemporal?.nombre ||
         "—";
 
-}
 
+    document.getElementById(
+        "resumenDROContacto"
+    ).innerHTML =
+        droTemporal
+        ? `
+            Teléfono:
+            ${droTemporal.telefono
+                ? escaparHTML(
+                    droTemporal.telefono
+                  )
+                : "—"
+            }
+
+            <br>
+
+            Correo:
+            ${droTemporal.correo_electronico
+                ? escaparHTML(
+                    droTemporal.correo_electronico
+                  )
+                : "—"
+            }
+          `
+        : "";
+
+}
 
 /* ==========================================================
    GENERAR OBRA
