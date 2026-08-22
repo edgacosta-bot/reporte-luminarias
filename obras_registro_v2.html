@@ -1357,31 +1357,21 @@ async function guardarPropietarioTemporal() {
 
 
     /* ======================================================
-       CREAR PROPIETARIO
+       GUARDAR PROPIETARIO MEDIANTE RPC V2
     ====================================================== */
 
     const {
         data,
         error
-    } = await supabaseClient
-        .from("propietarios_obra")
-        .insert([{
+    } = await supabaseClient.rpc(
+        "guardar_datos_propietario_v2",
+        {
+            p_nombre: nombre,
+            p_telefono: telefono,
+            p_correo: correo
+        }
+    );
 
-            nombre,
-
-            telefono,
-
-            correo_electronico:
-                correo || null
-
-        }])
-        .select("id")
-        .single();
-
-
-    /* ======================================================
-       ERROR
-    ====================================================== */
 
     if (error) {
 
@@ -1400,13 +1390,13 @@ async function guardarPropietarioTemporal() {
 
 
     /* ======================================================
-       CONSERVAR DATOS + UUID
+       CONSERVAR DATOS Y UUID
     ====================================================== */
 
     propietarioTemporal = {
 
         id:
-            data.id,
+            data.propietario_id,
 
         nombre,
 
@@ -1425,7 +1415,6 @@ async function guardarPropietarioTemporal() {
     actualizarResumen();
 
 }
-
 /* ==========================================================
    PINTAR PROPIETARIO
 ========================================================== */
@@ -1566,7 +1555,7 @@ function cerrarModalDRO() {
 }
 
 
-async function guardarDROTemporal() {
+function guardarDROTemporal() {
 
     const nombre =
         document
@@ -1606,57 +1595,7 @@ async function guardarDROTemporal() {
     }
 
 
-    /* ======================================================
-       CREAR DRO
-    ====================================================== */
-
-    const {
-        data,
-        error
-    } = await supabaseClient
-        .from("directores_responsables_obra")
-        .insert([{
-
-            nombre,
-
-            telefono,
-
-            correo_electronico:
-                correo || null
-
-        }])
-        .select("id")
-        .single();
-
-
-    /* ======================================================
-       ERROR
-    ====================================================== */
-
-    if (error) {
-
-        console.error(
-            "Error al registrar DRO:",
-            error
-        );
-
-        alert(
-            "No fue posible guardar los datos del DRO."
-        );
-
-        return;
-
-    }
-
-
-    /* ======================================================
-       CONSERVAR DATOS + UUID
-    ====================================================== */
-
     droTemporal = {
-
-        id:
-            data.id,
 
         nombre,
 
@@ -1675,7 +1614,6 @@ async function guardarDROTemporal() {
     actualizarResumen();
 
 }
-
 /* ==========================================================
    PINTAR DRO
 ========================================================== */
