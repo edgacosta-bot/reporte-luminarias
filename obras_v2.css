@@ -743,6 +743,19 @@ select:disabled {
 
     to {
 
+
+.resumen-contacto {
+
+    margin-top: 8px;
+
+    font-size: 14px;
+
+    line-height: 1.7;
+
+    color: var(--texto-secundario);
+
+}
+
         transform: rotate(360deg);
     }
 }
