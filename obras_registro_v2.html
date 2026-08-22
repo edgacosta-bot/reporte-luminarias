@@ -1942,13 +1942,35 @@ async function generarObra() {
 
 
     /* ======================================================
-       CONFIRMACIÓN DE DATOS
-    ====================================================== */
+   CONFIRMACIÓN FINAL
+====================================================== */
+
+const confirmar = window.confirm(
+    "¿Desea registrar esta obra?\n\n" +
+    "Se generará el expediente correspondiente y la información " +
+    "capturada quedará registrada en SIGVIC."
+);
+
+if (!confirmar) {
 
     mostrarMensaje(
-        "Generando obra...",
+        "Registro cancelado.",
         "info"
     );
+
+    return;
+
+}
+
+
+/* ======================================================
+   INICIO DEL REGISTRO
+====================================================== */
+
+mostrarMensaje(
+    "Generando obra...",
+    "info"
+);
 
 
     /* ======================================================
@@ -2129,6 +2151,64 @@ function escaparHTML(valor) {
 
 </script>
 
+<!-- ======================================================
+     MODAL DE CONFIRMACIÓN DE REGISTRO DE OBRA
+====================================================== -->
+
+<div
+    id="modalConfirmacionObra"
+    class="modal-confirmacion-obra"
+    aria-hidden="true"
+>
+
+    <div
+        class="modal-confirmacion-contenido"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalConfirmacionObraTitulo"
+    >
+
+        <div class="modal-confirmacion-icono">
+            ✓
+        </div>
+
+        <h2 id="modalConfirmacionObraTitulo">
+            Confirmar registro
+        </h2>
+
+        <p class="modal-confirmacion-texto">
+            Está a punto de registrar esta obra en SIGVIC.
+        </p>
+
+        <p class="modal-confirmacion-detalle">
+            Una vez confirmada, se generará el registro correspondiente
+            y la información capturada quedará registrada en el sistema.
+        </p>
+
+        <div class="modal-confirmacion-acciones">
+
+            <button
+                type="button"
+                class="btn btn-light"
+                onclick="cerrarModalConfirmacionObra()"
+            >
+                Cancelar
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-primary"
+                onclick="confirmarRegistroObra()"
+            >
+                Aceptar y registrar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+     
 </body>
 
 </html>
