@@ -1941,27 +1941,6 @@ async function generarObra() {
     }
 
 
-    /* ======================================================
-   CONFIRMACIÓN FINAL
-====================================================== */
-
-const confirmar = window.confirm(
-    "¿Desea registrar esta obra?\n\n" +
-    "Se generará el expediente correspondiente y la información " +
-    "capturada quedará registrada en SIGVIC."
-);
-
-if (!confirmar) {
-
-    mostrarMensaje(
-        "Registro cancelado.",
-        "info"
-    );
-
-    return;
-
-}
-
 
 /* ======================================================
    INICIO DEL REGISTRO
