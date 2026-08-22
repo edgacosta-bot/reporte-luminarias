@@ -1316,7 +1316,7 @@ function cerrarModalPropietario() {
 }
 
 
-function guardarPropietarioTemporal() {
+async function guardarPropietarioTemporal() {
 
     const nombre =
         document
@@ -1356,7 +1356,57 @@ function guardarPropietarioTemporal() {
     }
 
 
+    /* ======================================================
+       CREAR PROPIETARIO
+    ====================================================== */
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("propietarios_obra")
+        .insert([{
+
+            nombre,
+
+            telefono,
+
+            correo_electronico:
+                correo || null
+
+        }])
+        .select("id")
+        .single();
+
+
+    /* ======================================================
+       ERROR
+    ====================================================== */
+
+    if (error) {
+
+        console.error(
+            "Error al registrar propietario:",
+            error
+        );
+
+        alert(
+            "No fue posible guardar los datos del propietario."
+        );
+
+        return;
+
+    }
+
+
+    /* ======================================================
+       CONSERVAR DATOS + UUID
+    ====================================================== */
+
     propietarioTemporal = {
+
+        id:
+            data.id,
 
         nombre,
 
@@ -1375,7 +1425,6 @@ function guardarPropietarioTemporal() {
     actualizarResumen();
 
 }
-
 
 /* ==========================================================
    PINTAR PROPIETARIO
@@ -1517,7 +1566,7 @@ function cerrarModalDRO() {
 }
 
 
-function guardarDROTemporal() {
+async function guardarDROTemporal() {
 
     const nombre =
         document
@@ -1557,7 +1606,57 @@ function guardarDROTemporal() {
     }
 
 
+    /* ======================================================
+       CREAR DRO
+    ====================================================== */
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("directores_responsables_obra")
+        .insert([{
+
+            nombre,
+
+            telefono,
+
+            correo_electronico:
+                correo || null
+
+        }])
+        .select("id")
+        .single();
+
+
+    /* ======================================================
+       ERROR
+    ====================================================== */
+
+    if (error) {
+
+        console.error(
+            "Error al registrar DRO:",
+            error
+        );
+
+        alert(
+            "No fue posible guardar los datos del DRO."
+        );
+
+        return;
+
+    }
+
+
+    /* ======================================================
+       CONSERVAR DATOS + UUID
+    ====================================================== */
+
     droTemporal = {
+
+        id:
+            data.id,
 
         nombre,
 
@@ -1576,7 +1675,6 @@ function guardarDROTemporal() {
     actualizarResumen();
 
 }
-
 
 /* ==========================================================
    PINTAR DRO
