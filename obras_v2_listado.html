@@ -642,13 +642,53 @@ function terminarObra(obraId) {
 }
 
 
-function reanudarObra(obraId) {
+async function reanudarObra(obraId) {
 
-    console.log(
-        "Pendiente implementar reanudación:",
-        obraId
+    const confirmar = confirm(
+        "¿Confirma que desea reanudar esta obra?"
     );
 
+    if (!confirmar) {
+        return;
+    }
+
+    const { data, error } =
+        await supabaseClient.rpc(
+            "reanudar_obra_v2",
+            {
+                p_obra_id: obraId
+            }
+        );
+
+    if (error) {
+
+        console.error(
+            "ERROR REANUDACIÓN:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "No fue posible reanudar la obra."
+        );
+
+        return;
+    }
+
+    if (!data?.ok) {
+
+        alert(
+            "La reanudación no pudo completarse."
+        );
+
+        return;
+    }
+
+    alert(
+        "La obra fue reanudada correctamente."
+    );
+
+    await cargarObras();
 }
 
 
