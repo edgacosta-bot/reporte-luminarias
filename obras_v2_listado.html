@@ -258,11 +258,19 @@
                 Observaciones
             </label>
 
-            <textarea
-                id="observacionesSuspension"
-                rows="4"
-                placeholder="Observaciones opcionales">
-            </textarea>
+<textarea
+    id="observacionesSuspension"
+    rows="4"
+    placeholder="Observaciones opcionales"
+    style="
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 8px;
+        min-height: 100px;
+        resize: vertical;
+    "></textarea>
+            
 
         </div>
 
@@ -670,6 +678,109 @@ function suspenderObra(obraId) {
         "modalSuspension"
     ).style.display = "flex";
 }
+
+
+async function confirmarSuspension() {
+
+    if (!obraSuspender) {
+
+        mostrarToast(
+            "No se identificó la obra.",
+            true
+        );
+
+        return;
+    }
+
+    const causal =
+        document.getElementById(
+            "causalSuspension"
+        ).value;
+
+    if (!causal) {
+
+        mostrarToast(
+            "Seleccione una causal de suspensión.",
+            true
+        );
+
+        return;
+    }
+
+    const observaciones =
+        document.getElementById(
+            "observacionesSuspension"
+        ).value.trim() || null;
+
+    const confirmar = confirm(
+        "¿Confirma la suspensión de esta obra?"
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
+    const { data, error } =
+        await supabaseClient.rpc(
+            "suspender_obra_v2",
+            {
+                p_obra_id: obraSuspender,
+                p_causal: causal,
+                p_observaciones: observaciones
+            }
+        );
+
+    if (error) {
+
+        console.error(
+            "ERROR SUSPENSIÓN:",
+            error
+        );
+
+        mostrarToast(
+            error.message ||
+            "No fue posible suspender la obra.",
+            true
+        );
+
+        return;
+    }
+
+    if (!data?.ok) {
+
+        mostrarToast(
+            "La suspensión no pudo completarse.",
+            true
+        );
+
+        return;
+    }
+
+    cerrarModalSuspension();
+
+    mostrarToast(
+        "La obra fue suspendida correctamente."
+    );
+
+    await cargarObras();
+} 
+
+function cerrarModalSuspension() {
+
+    document.getElementById(
+        "modalSuspension"
+    ).style.display = "none";
+
+    document.getElementById(
+        "causalSuspension"
+    ).value = "";
+
+    document.getElementById(
+        "observacionesSuspension"
+    ).value = "";
+
+    obraSuspender = null;
+}    
 
 function terminarObra(obraId) {
 
