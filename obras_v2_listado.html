@@ -548,6 +548,53 @@ function renderizarLista(
             "persona-card";
 
 
+        /*
+         * Información adicional
+         * para obras suspendidas.
+         */
+        let informacionSuspension = "";
+
+        if (estado === "SUSPENDIDA") {
+
+            informacionSuspension = `
+
+                <div class="suspension-info">
+
+                    <div>
+                        <strong>Suspendida por:</strong>
+                        ${escapeHTML(
+                            obra.suspendido_por ||
+                            "No identificado"
+                        )}
+                    </div>
+
+                    <div>
+                        <strong>Motivo:</strong>
+                        ${escapeHTML(
+                            obra.motivo_suspension ||
+                            "No especificado"
+                        )}
+                    </div>
+
+                    ${
+                        obra.observaciones_suspension
+                        ? `
+                            <div>
+                                <strong>Observaciones:</strong>
+                                ${escapeHTML(
+                                    obra.observaciones_suspension
+                                )}
+                            </div>
+                        `
+                        : ""
+                    }
+
+                </div>
+
+            `;
+        }
+
+
         elemento.innerHTML = `
 
             <div class="persona-header">
@@ -562,6 +609,10 @@ function renderizarLista(
                 </div>
 
             </div>
+
+
+            ${informacionSuspension}
+
 
             <div class="actions">
 
@@ -579,7 +630,6 @@ function renderizarLista(
     });
 
 }
-
 
 /* ==========================================================
    TEXTO DEL ESTADO
