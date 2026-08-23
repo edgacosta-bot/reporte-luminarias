@@ -198,16 +198,52 @@ window.addEventListener("DOMContentLoaded", async () => {
 
         await protegerPagina([
             "admin",
-            "administracion"
+            "administracion",
+            "residente"
         ]);
+
+        const { data: { user }, error: userError } =
+            await supabaseClient.auth.getUser();
+
+        if (userError || !user) {
+            throw new Error("No se pudo identificar al usuario.");
+        }
+
+        // Administrador / Administración
+        const { data: residente, error: residenteError } =
+            await supabaseClient
+                .from("residentes")
+                .select("tipo, es_mesa_directiva, activo")
+                .eq("user_id", user.id)
+                .maybeSingle();
+
+        if (residenteError) {
+            throw residenteError;
+        }
+
+        const tipo = (residente?.tipo || "").toLowerCase();
+
+        const esAdministracion =
+            ["admin", "administracion"].includes(tipo);
+
+        const esMesaDirectiva =
+            residente?.es_mesa_directiva === true &&
+            residente?.activo === true;
+
+        if (!esAdministracion && !esMesaDirectiva) {
+
+            alert("No tiene autorización para acceder a este módulo.");
+
+            window.location.href = "index.html";
+            return;
+        }
 
     } catch (e) {
 
-        console.warn(
-            "Auth no bloqueante",
-            e
-        );
+        console.error("Error de acceso:", e);
 
+        window.location.href = "index.html";
+        return;
     }
 
     await cargarObras();
