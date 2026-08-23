@@ -13,6 +13,45 @@
 
 <link rel="stylesheet" href="obras_v2.css">
 
+<style>
+        /* =====================================================
+           TOAST SIGVIC
+           ===================================================== */
+
+        #toast {
+            display: none;
+            position: fixed;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            z-index: 99999;
+            max-width: calc(100vw - 40px);
+            padding: 14px 22px;
+            border-radius: 10px;
+            background: #166534;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,.25);
+        }
+
+        #toast.error {
+            background: #991b1b;
+        }
+
+        #observacionesSuspension {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 110px;
+            margin-top: 8px;
+            padding: 12px;
+            resize: vertical;
+            font: inherit;
+        }
+</style>
+
 </head>
 
 <body>
@@ -298,10 +337,19 @@
 
     </div>
 
-</div>    
+</div>
+
+
+<!-- =====================================================
+     TOAST
+     ===================================================== -->
+
+<div id="toast"></div>
 
 
 <script>
+
+let obraSuspender = null;
 
 /* ==========================================================
    INICIALIZACIÓN
@@ -850,9 +898,10 @@ async function reanudarObra(obraId) {
             error
         );
 
-        alert(
+        mostrarToast(
             error.message ||
-            "No fue posible reanudar la obra."
+            "No fue posible reanudar la obra.",
+            true
         );
 
         return;
@@ -860,14 +909,15 @@ async function reanudarObra(obraId) {
 
     if (!data?.ok) {
 
-        alert(
-            "La reanudación no pudo completarse."
+        mostrarToast(
+            "La reanudación no pudo completarse.",
+            true
         );
 
         return;
     }
 
-    alert(
+    mostrarToast(
         "La obra fue reanudada correctamente."
     );
 
