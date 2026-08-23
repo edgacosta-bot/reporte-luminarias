@@ -542,13 +542,93 @@ function abrirVobos(obraId) {
    ACCIONES FUTURAS
    ========================================================== */
 
-function suspenderObra(obraId) {
+async function suspenderObra(obraId) {
 
-    console.log(
-        "Pendiente implementar suspensión:",
-        obraId
+    const causal = prompt(
+        "Ingrese la causal de suspensión:\n\n" +
+        "COND - Conducta inapropiada de trabajadores\n" +
+        "PAGO - Falta de pago\n" +
+        "PROP - Solicitud del propietario\n" +
+        "PROY - Alteración del proyecto aprobado\n" +
+        "OTR - Otra\n\n" +
+        "Escriba la clave:"
     );
 
+    if (!causal) {
+        return;
+    }
+
+    const causalNormalizada = causal.trim().toUpperCase();
+
+    const causalesValidas = [
+        "COND",
+        "PAGO",
+        "PROP",
+        "PROY",
+        "OTR"
+    ];
+
+    if (!causalesValidas.includes(causalNormalizada)) {
+
+        alert(
+            "La causal indicada no es válida."
+        );
+
+        return;
+    }
+
+    const observaciones = prompt(
+        "Observaciones (opcional):"
+    );
+
+    const confirmar = confirm(
+        "¿Confirma la suspensión de esta obra?"
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
+    const { data, error } =
+        await supabaseClient.rpc(
+            "suspender_obra_v2",
+            {
+                p_obra_id: obraId,
+                p_causal: causalNormalizada,
+                p_observaciones:
+                    observaciones?.trim() || null
+            }
+        );
+
+    if (error) {
+
+        console.error(
+            "ERROR SUSPENSIÓN:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "No fue posible suspender la obra."
+        );
+
+        return;
+    }
+
+    if (!data?.ok) {
+
+        alert(
+            "La suspensión no pudo completarse."
+        );
+
+        return;
+    }
+
+    alert(
+        "La obra fue suspendida correctamente."
+    );
+
+    await cargarObras();
 }
 
 
