@@ -760,14 +760,7 @@ async function confirmarSuspension() {
             "observacionesSuspension"
         ).value.trim() || null;
 
-    const confirmar = confirm(
-        "¿Confirma la suspensión de esta obra?"
-    );
-
-    if (!confirmar) {
-        return;
-    }
-
+    
     const { data, error } =
         await supabaseClient.rpc(
             "suspender_obra_v2",
@@ -875,15 +868,7 @@ function terminarObra(obraId) {
 
 async function reanudarObra(obraId) {
 
-    const confirmar = confirm(
-        "¿Confirma que desea reanudar esta obra?"
-    );
-
-    if (!confirmar) {
-        return;
-    }
-
-    const { data, error } =
+        const { data, error } =
         await supabaseClient.rpc(
             "reanudar_obra_v2",
             {
