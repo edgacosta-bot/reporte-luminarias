@@ -185,6 +185,113 @@
 
 </main>
 
+<!-- =====================================================
+     MODAL DE SUSPENSIÓN
+     ===================================================== -->
+
+<div
+    id="modalSuspension"
+    class="modal-overlay"
+    style="display:none;">
+
+    <div class="modal">
+
+        <div class="modal-header">
+            <div>
+                <div class="modal-title">
+                    Suspender obra
+                </div>
+
+                <div
+                    id="modalSuspensionObra"
+                    class="modal-subtitle">
+                </div>
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                onclick="cerrarModalSuspension()">
+                ×
+            </button>
+        </div>
+
+        <div class="modal-body">
+
+            <label for="causalSuspension">
+                Causal de suspensión
+            </label>
+
+            <select id="causalSuspension">
+
+                <option value="">
+                    Selecciona una causal
+                </option>
+
+                <option value="COND">
+                    Conducta inapropiada de trabajadores
+                </option>
+
+                <option value="PAGO">
+                    Falta de pago
+                </option>
+
+                <option value="PROP">
+                    Solicitud del propietario
+                </option>
+
+                <option value="PROY">
+                    Alteración del proyecto aprobado
+                </option>
+
+                <option value="OTR">
+                    Otra
+                </option>
+
+            </select>
+
+
+            <label
+                for="observacionesSuspension"
+                style="margin-top:15px;">
+
+                Observaciones
+            </label>
+
+            <textarea
+                id="observacionesSuspension"
+                rows="4"
+                placeholder="Observaciones opcionales">
+            </textarea>
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="cerrarModalSuspension()">
+
+                Cancelar
+
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-primary"
+                onclick="confirmarSuspension()">
+
+                Confirmar suspensión
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>    
+
 
 <script>
 
@@ -542,95 +649,27 @@ function abrirVobos(obraId) {
    ACCIONES FUTURAS
    ========================================================== */
 
-async function suspenderObra(obraId) {
+function suspenderObra(obraId) {
 
-    const causal = prompt(
-        "Ingrese la causal de suspensión:\n\n" +
-        "COND - Conducta inapropiada de trabajadores\n" +
-        "PAGO - Falta de pago\n" +
-        "PROP - Solicitud del propietario\n" +
-        "PROY - Alteración del proyecto aprobado\n" +
-        "OTR - Otra\n\n" +
-        "Escriba la clave:"
-    );
+    obraSuspender = obraId;
 
-    if (!causal) {
-        return;
-    }
+    document.getElementById(
+        "modalSuspensionObra"
+    ).textContent =
+        "Confirma la suspensión de la obra seleccionada.";
 
-    const causalNormalizada = causal.trim().toUpperCase();
+    document.getElementById(
+        "causalSuspension"
+    ).value = "";
 
-    const causalesValidas = [
-        "COND",
-        "PAGO",
-        "PROP",
-        "PROY",
-        "OTR"
-    ];
+    document.getElementById(
+        "observacionesSuspension"
+    ).value = "";
 
-    if (!causalesValidas.includes(causalNormalizada)) {
-
-        alert(
-            "La causal indicada no es válida."
-        );
-
-        return;
-    }
-
-    const observaciones = prompt(
-        "Observaciones (opcional):"
-    );
-
-    const confirmar = confirm(
-        "¿Confirma la suspensión de esta obra?"
-    );
-
-    if (!confirmar) {
-        return;
-    }
-
-    const { data, error } =
-        await supabaseClient.rpc(
-            "suspender_obra_v2",
-            {
-                p_obra_id: obraId,
-                p_causal: causalNormalizada,
-                p_observaciones:
-                    observaciones?.trim() || null
-            }
-        );
-
-    if (error) {
-
-        console.error(
-            "ERROR SUSPENSIÓN:",
-            error
-        );
-
-        alert(
-            error.message ||
-            "No fue posible suspender la obra."
-        );
-
-        return;
-    }
-
-    if (!data?.ok) {
-
-        alert(
-            "La suspensión no pudo completarse."
-        );
-
-        return;
-    }
-
-    alert(
-        "La obra fue suspendida correctamente."
-    );
-
-    await cargarObras();
+    document.getElementById(
+        "modalSuspension"
+    ).style.display = "flex";
 }
-
 
 function terminarObra(obraId) {
 
