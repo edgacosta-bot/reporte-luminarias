@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Listado de obras</title>
+
+<link rel="stylesheet" href="obras_v2.css">
+
+</head>
+
+<body>
+
+<header class="header">
+
+    <div class="header-left">
+
+        <button
+            class="btn-regresar"
+            type="button"
+            onclick="history.back()"
+            title="Regresar">
+            ←
+        </button>
+
+        <div>
+            <div class="header-title">
+                Gestión de Obras
+            </div>
+
+            <div class="header-subtitle">
+                Listado de obras
+            </div>
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <div class="page-intro">
+
+        <div class="eyebrow">
+            OBRAS
+        </div>
+
+        <h1>
+            Listado de obras
+        </h1>
+
+        <p>
+            Obras clasificadas de acuerdo con su estado operativo.
+        </p>
+
+    </div>
+
+
+    <!-- MENSAJE -->
+
+    <div
+        id="mensaje"
+        class="msg">
+    </div>
+
+
+    <!-- =====================================================
+         EN APROBACIÓN DE MESA DIRECTIVA
+         ===================================================== -->
+
+    <section class="card">
+
+        <div class="card-title">
+            En aprobación de Mesa Directiva
+        </div>
+
+        <div class="card-subtitle">
+            Obras pendientes de la emisión de los Vistos Buenos.
+        </div>
+
+        <div id="listaVobos"></div>
+
+    </section>
+
+
+    <!-- =====================================================
+         EN EJECUCIÓN
+         ===================================================== -->
+
+    <section class="card">
+
+        <div class="card-title">
+            En ejecución
+        </div>
+
+        <div class="card-subtitle">
+            Obras actualmente en ejecución.
+        </div>
+
+        <div id="listaEjecucion"></div>
+
+    </section>
+
+
+    <!-- =====================================================
+         SUSPENDIDAS
+         ===================================================== -->
+
+    <section class="card">
+
+        <div class="card-title">
+            Suspendidas
+        </div>
+
+        <div class="card-subtitle">
+            Obras cuya ejecución se encuentra temporalmente suspendida.
+        </div>
+
+        <div id="listaSuspendidas"></div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TERMINADAS
+         ===================================================== -->
+
+    <section class="card">
+
+        <div class="card-title">
+            Terminadas
+        </div>
+
+        <div class="card-subtitle">
+            Obras cuya ejecución ha concluido.
+        </div>
+
+        <div id="listaTerminadas"></div>
+
+    </section>
+
+
+    <!-- =====================================================
+         ARCHIVADAS
+         ===================================================== -->
+
+    <section class="card">
+
+        <div class="card-title">
+            Archivadas
+        </div>
+
+        <div class="card-subtitle">
+            Obras retiradas del listado operativo.
+        </div>
+
+        <div
+            id="archivadasResumen"
+            class="resumen">
+
+            <div class="resumen-item">
+
+                <div class="resumen-label">
+                    Obras archivadas
+                </div>
+
+                <div
+                    id="contadorArchivadas"
+                    class="resumen-value">
+                    0
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script>
+
+/* ==========================================================
+   INICIALIZACIÓN
+   ========================================================== */
+
+window.addEventListener("DOMContentLoaded", async () => {
+
+    try {
+
+        await protegerPagina([
+            "admin",
+            "administracion"
+        ]);
+
+    } catch (e) {
+
+        console.warn(
+            "Auth no bloqueante",
+            e
+        );
+
+    }
+
+    await cargarObras();
+
+});
+
+
+/* ==========================================================
+   CARGAR LISTADO
+   ========================================================== */
+
+async function cargarObras() {
+
+    mostrarMensaje(
+        "Cargando obras...",
+        "info"
+    );
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "obtener_listado_obras_v2"
+        );
+
+        if (error) {
+            throw error;
+        }
+
+        console.log(
+            "Listado obras V2:",
+            data
+        );
+
+
+        renderizarLista(
+            "listaVobos",
+            data?.pendiente_vobos || [],
+            "PENDIENTE_VOBOS"
+        );
+
+
+        renderizarLista(
+            "listaEjecucion",
+            data?.ejecucion || [],
+            "EJECUCION"
+        );
+
+
+        renderizarLista(
+            "listaSuspendidas",
+            data?.suspendidas || [],
+            "SUSPENDIDA"
+        );
+
+
+        renderizarLista(
+            "listaTerminadas",
+            data?.terminadas || [],
+            "TERMINADA"
+        );
+
+
+        document.getElementById(
+            "contadorArchivadas"
+        ).textContent =
+            data?.archivadas_total ?? 0;
+
+
+        ocultarMensaje();
+
+    } catch (error) {
+
+        console.error(
+            "Error cargando obras V2:",
+            error
+        );
+
+        mostrarMensaje(
+            error.message ||
+            "No fue posible cargar el listado de obras.",
+            "error"
+        );
+
+    }
+
+}
+
+
+/* ==========================================================
+   RENDERIZAR SECCIÓN
+   ========================================================== */
+
+function renderizarLista(
+    idContenedor,
+    obras,
+    estado
+) {
+
+    const contenedor =
+        document.getElementById(
+            idContenedor
+        );
+
+    if (!contenedor) {
+        return;
+    }
+
+
+    obras = Array.isArray(obras)
+        ? obras
+        : [];
+
+
+    if (obras.length === 0) {
+
+        contenedor.innerHTML = `
+            <div class="persona-empty">
+                No hay obras en este estado.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    contenedor.innerHTML = "";
+
+
+    obras.forEach(obra => {
+
+        const elemento =
+            document.createElement("div");
+
+        elemento.className =
+            "persona-card";
+
+
+        elemento.innerHTML = `
+
+            <div class="persona-header">
+
+                <div class="persona-title">
+                    Privada ${escapeHTML(obra.privada)}
+                    · Lote ${escapeHTML(obra.casa)}
+                </div>
+
+                <div class="persona-status">
+                    ${textoEstado(estado)}
+                </div>
+
+            </div>
+
+            <div class="actions">
+
+                ${botonesEstado(obra)}
+
+            </div>
+
+        `;
+
+
+        contenedor.appendChild(
+            elemento
+        );
+
+    });
+
+}
+
+
+/* ==========================================================
+   TEXTO DEL ESTADO
+   ========================================================== */
+
+function textoEstado(estado) {
+
+    switch (estado) {
+
+        case "PENDIENTE_VOBOS":
+            return "En aprobación de Mesa Directiva";
+
+        case "EJECUCION":
+            return "En ejecución";
+
+        case "SUSPENDIDA":
+            return "Suspendida";
+
+        case "TERMINADA":
+            return "Terminada";
+
+        case "ARCHIVADA":
+            return "Archivada";
+
+        default:
+            return estado || "";
+
+    }
+
+}
+
+
+/* ==========================================================
+   BOTONES SEGÚN ESTADO
+   ========================================================== */
+
+function botonesEstado(obra) {
+
+    switch (obra.estado_operativo) {
+
+
+        case "PENDIENTE_VOBOS":
+
+            return `
+                <button
+                    class="btn btn-primary btn-small"
+                    type="button"
+                    onclick="abrirVobos('${obra.id}')">
+                    Ver aprobación
+                </button>
+            `;
+
+
+        case "EJECUCION":
+
+            return `
+
+                <button
+                    class="btn btn-secondary btn-small"
+                    type="button"
+                    onclick="suspenderObra('${obra.id}')">
+                    Suspender
+                </button>
+
+                <button
+                    class="btn btn-primary btn-small"
+                    type="button"
+                    onclick="terminarObra('${obra.id}')">
+                    Registrar terminación
+                </button>
+
+            `;
+
+
+        case "SUSPENDIDA":
+
+            return `
+                <button
+                    class="btn btn-primary btn-small"
+                    type="button"
+                    onclick="reanudarObra('${obra.id}')">
+                    Reanudar
+                </button>
+            `;
+
+
+        case "TERMINADA":
+
+            return `
+                <button
+                    class="btn btn-secondary btn-small"
+                    type="button"
+                    onclick="archivarObra('${obra.id}')">
+                    Archivar
+                </button>
+            `;
+
+
+        default:
+
+            return "";
+
+    }
+
+}
+
+
+/* ==========================================================
+   NAVEGACIÓN A VOBOS
+   ========================================================== */
+
+function abrirVobos(obraId) {
+
+    window.location.href =
+        `obras_v2_vobos.html?obra_id=${
+            encodeURIComponent(obraId)
+        }`;
+
+}
+
+
+/* ==========================================================
+   ACCIONES FUTURAS
+   ========================================================== */
+
+function suspenderObra(obraId) {
+
+    console.log(
+        "Pendiente implementar suspensión:",
+        obraId
+    );
+
+}
+
+
+function terminarObra(obraId) {
+
+    console.log(
+        "Pendiente implementar terminación:",
+        obraId
+    );
+
+}
+
+
+function reanudarObra(obraId) {
+
+    console.log(
+        "Pendiente implementar reanudación:",
+        obraId
+    );
+
+}
+
+
+function archivarObra(obraId) {
+
+    console.log(
+        "Pendiente implementar archivo:",
+        obraId
+    );
+
+}
+
+
+/* ==========================================================
+   MENSAJES
+   ========================================================== */
+
+function mostrarMensaje(
+    texto,
+    tipo = "info"
+) {
+
+    const mensaje =
+        document.getElementById(
+            "mensaje"
+        );
+
+    mensaje.textContent = texto;
+
+    mensaje.className =
+        `msg visible ${tipo}`;
+
+}
+
+
+function ocultarMensaje() {
+
+    const mensaje =
+        document.getElementById(
+            "mensaje"
+        );
+
+    mensaje.className =
+        "msg";
+
+}
+
+
+/* ==========================================================
+   SEGURIDAD HTML
+   ========================================================== */
+
+function escapeHTML(valor) {
+
+    return String(
+        valor ?? ""
+    )
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+}
+
+</script>
+
+</body>
+</html>
