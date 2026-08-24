@@ -816,12 +816,13 @@ async function cargarObras() {
 
 async function obtenerContactosObraV2(obraId) {
 
-    const { data, error } = await supabase.rpc(
-        "obtener_contactos_obra_v2",
-        {
-            p_obra_id: obraId
-        }
-    );
+    const { data, error } =
+        await supabaseClient.rpc(
+            "obtener_contactos_obra_v2",
+            {
+                p_obra_id: obraId
+            }
+        );
 
     if (error) {
         throw error;
