@@ -677,6 +677,13 @@ async function cargarObras() {
         );
 
 
+        renderizarLista(
+            "listaArchivadas",
+            data?.archivadas || [],
+            "ARCHIVADA"
+        );
+
+
         document.getElementById(
             "contadorArchivadas"
         ).textContent =
