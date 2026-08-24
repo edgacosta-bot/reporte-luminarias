@@ -126,6 +126,65 @@
 .archivo-detalle {
     padding-top: 12px;
 }
+
+/* =========================================================
+   DATOS DE CONTACTO DE LA OBRA
+   ========================================================= */
+
+.obra-datos-contacto {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin: 18px 28px 20px;
+}
+
+.obra-contacto-bloque {
+    min-width: 0;
+}
+
+.obra-contacto-titulo {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.obra-contacto-bloque div:not(.obra-contacto-titulo) {
+    font-size: 15px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.obra-contacto-bloque strong {
+    font-weight: 600;
+}
+
+
+/* Fecha de autorización */
+
+.obra-datos-contacto .obra-contacto-bloque:last-child {
+    grid-column: 1 / -1;
+    padding-top: 4px;
+    border-top: 1px solid #e5e7eb;
+}
+
+
+/* =========================================================
+   VISTA MÓVIL
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .obra-datos-contacto {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin: 16px 20px 18px;
+    }
+
+    .obra-datos-contacto .obra-contacto-bloque:last-child {
+        grid-column: auto;
+    }
+
+}
         
 </style>
 
@@ -1151,14 +1210,16 @@ async function renderizarLista(
             elemento.innerHTML = `
 
                 <div class="persona-header">
-
+                
                     <div class="persona-title">
                         Privada ${escapeHTML(obra.privada)}
                         · Lote ${escapeHTML(obra.casa)}
                     </div>
-
-
-                        <div class="obra-datos-contacto">
+                
+                </div>
+                
+                
+                <div class="obra-datos-contacto">
                         
                             <div class="obra-contacto-bloque">
                                 <div class="obra-contacto-titulo">Propietario</div>
