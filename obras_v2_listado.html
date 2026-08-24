@@ -723,6 +723,59 @@ function renderizarLista(
         }
 
 
+        /*
+         * Información adicional
+         * para obras terminadas.
+         */
+        let informacionTerminacion = "";
+
+        if (estado === "TERMINADA") {
+
+            informacionTerminacion = `
+
+                <div class="suspension-info">
+
+                    <div>
+                        <strong>Fecha de terminación:</strong>
+                        ${obra.fecha_terminacion
+                            ? escapeHTML(
+                                new Date(
+                                    obra.fecha_terminacion
+                                ).toLocaleDateString(
+                                    "es-MX"
+                                )
+                            )
+                            : "No registrada"
+                        }
+                    </div>
+
+                    <div>
+                        <strong>Registrada por:</strong>
+                        ${escapeHTML(
+                            obra.terminado_por ||
+                            "No identificado"
+                        )}
+                    </div>
+
+                    ${
+                        obra.observaciones_terminacion
+                        ? `
+                            <div>
+                                <strong>Observaciones:</strong>
+                                ${escapeHTML(
+                                    obra.observaciones_terminacion
+                                )}
+                            </div>
+                        `
+                        : ""
+                    }
+
+                </div>
+
+            `;
+        }
+
+
         elemento.innerHTML = `
 
             <div class="persona-header">
@@ -740,6 +793,8 @@ function renderizarLista(
 
 
             ${informacionSuspension}
+
+            ${informacionTerminacion}
 
 
             <div class="actions">
