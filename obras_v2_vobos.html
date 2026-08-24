@@ -264,13 +264,26 @@ async function cargarObra() {
 
   if (obra.propietario_id) {
 
-  const { data } = await supabaseClient
+const {
+  data,
+  error: propietarioError
+} = await supabaseClient
   .from("propietarios_obra")
   .select("id, nombre, telefono, correo_electronico")
   .eq("id", obra.propietario_id)
   .maybeSingle();
 
-    propietario = data;
+console.log(
+  "PROPIETARIO CONSULTADO:",
+  data
+);
+
+console.log(
+  "ERROR PROPIETARIO:",
+  propietarioError
+);
+
+propietario = data;
   }
 
   // DRO
@@ -278,13 +291,27 @@ async function cargarObra() {
 
   if (obra.dro_id) {
 
-  const { data } = await supabaseClient
+const {
+  data,
+  error: droError
+} = await supabaseClient
   .from("directores_responsables_obra")
   .select("id, nombre, telefono, correo_electronico")
   .eq("id", obra.dro_id)
   .maybeSingle();
 
-    dro = data;
+console.log(
+  "DRO CONSULTADO:",
+  data
+);
+
+console.log(
+  "ERROR DRO:",
+  droError
+);
+
+dro = data;
+    
   }
 
   // Tipo de obra
