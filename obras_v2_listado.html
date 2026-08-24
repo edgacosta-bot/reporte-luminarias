@@ -818,9 +818,11 @@ function renderizarLista(
 
 
         /*
-         * Información adicional
-         * para obras suspendidas.
+         * =====================================================
+         * INFORMACIÓN ADICIONAL PARA OBRAS SUSPENDIDAS
+         * =====================================================
          */
+
         let informacionSuspension = "";
 
         if (estado === "SUSPENDIDA") {
@@ -865,9 +867,11 @@ function renderizarLista(
 
 
         /*
-         * Información adicional
-         * para obras terminadas.
+         * =====================================================
+         * INFORMACIÓN ADICIONAL PARA OBRAS TERMINADAS
+         * =====================================================
          */
+
         let informacionTerminacion = "";
 
         if (estado === "TERMINADA") {
@@ -878,7 +882,8 @@ function renderizarLista(
 
                     <div>
                         <strong>Fecha de terminación:</strong>
-                        ${obra.fecha_terminacion
+                        ${
+                            obra.fecha_terminacion
                             ? escapeHTML(
                                 new Date(
                                     obra.fecha_terminacion
@@ -890,13 +895,15 @@ function renderizarLista(
                         }
                     </div>
 
+
                     <div>
-                        <strong>Registrada por:</strong>
+                        <strong>Terminada por:</strong>
                         ${escapeHTML(
                             obra.terminado_por ||
                             "No identificado"
                         )}
                     </div>
+
 
                     ${
                         obra.observaciones_terminacion
@@ -916,10 +923,13 @@ function renderizarLista(
             `;
         }
 
+
         /*
-         * Información histórica
-         * para obras archivadas.
+         * =====================================================
+         * INFORMACIÓN HISTÓRICA PARA OBRAS ARCHIVADAS
+         * =====================================================
          */
+
         let informacionArchivo = "";
 
         if (estado === "ARCHIVADA") {
@@ -997,6 +1007,12 @@ function renderizarLista(
         }
 
 
+        /*
+         * =====================================================
+         * TARJETA DE LA OBRA
+         * =====================================================
+         */
+
         elemento.innerHTML = `
 
             <div class="persona-header">
@@ -1013,14 +1029,14 @@ function renderizarLista(
             </div>
 
 
-                ${informacionSuspension}
-                
-                ${informacionTerminacion}
-                
-                ${informacionArchivo}
-                
-                
-                <div class="actions">
+            ${informacionSuspension}
+
+            ${informacionTerminacion}
+
+            ${informacionArchivo}
+
+
+            <div class="actions">
 
                 ${botonesEstado(obra)}
 
@@ -1036,7 +1052,6 @@ function renderizarLista(
     });
 
 }
-
 /* ==========================================================
    TEXTO DEL ESTADO
    ========================================================== */
