@@ -1018,7 +1018,7 @@ function cerrarModalTerminacion() {
 }
 
 
-function confirmarTerminacion() {
+async function confirmarTerminacion() {
 
     if (!obraTerminar) {
 
@@ -1035,13 +1035,55 @@ function confirmarTerminacion() {
             "observacionesTerminacion"
         ).value.trim() || null;
 
-    console.log(
-        "Terminación preparada:",
-        {
-            obraId: obraTerminar,
-            observaciones: observaciones
-        }
+
+    const { data, error } =
+        await supabaseClient.rpc(
+            "registrar_terminacion_obra_v2",
+            {
+                p_obra_id: obraTerminar,
+                p_observaciones: observaciones
+            }
+        );
+
+
+    if (error) {
+
+        console.error(
+            "ERROR TERMINACIÓN:",
+            error
+        );
+
+        mostrarToast(
+            error.message ||
+            "No fue posible registrar la terminación.",
+            true
+        );
+
+        return;
+    }
+
+
+    if (!data?.ok) {
+
+        mostrarToast(
+            "La terminación no pudo completarse.",
+            true
+        );
+
+        return;
+    }
+
+
+    cerrarModalTerminacion();
+
+
+    mostrarToast(
+        "La obra fue terminada correctamente."
     );
+
+
+    await cargarObras();
+
 }
         
 function mostrarToast(mensaje, error = false) {
