@@ -242,97 +242,174 @@ window.addEventListener("DOMContentLoaded", async () => {
 
 async function cargarObra() {
 
+  /*
+   * ==========================================================
+   * 1. Obtener la obra
+   * ==========================================================
+   */
+
   const { data: obra, error } = await supabaseClient
     .from("obras_v2")
     .select("*")
     .eq("id", obraId)
     .maybeSingle();
 
+
   if (error) {
-    console.error("Error obra:", error);
-    mostrarError("Error al consultar la obra.");
+
+    console.error(
+      "Error obra:",
+      error
+    );
+
+    mostrarError(
+      "Error al consultar la obra."
+    );
+
     return;
   }
+
 
   if (!obra) {
-    mostrarError("La obra no existe.");
+
+    mostrarError(
+      "La obra no existe."
+    );
+
     return;
   }
 
-  // Propietario
-  let propietario = null;
 
-  if (obra.propietario_id) {
+  /*
+   * ==========================================================
+   * 2. Obtener Propietario y DRO
+   *
+   * Ya no se consultan directamente las tablas:
+   *
+   * propietarios_obra
+   * directores_responsables_obra
+   *
+   * La información se obtiene mediante la RPC
+   * obtener_contactos_obra_v2.
+   * ==========================================================
+   */
 
-const {
-  data,
-  error: propietarioError
-} = await supabaseClient
-  .from("propietarios_obra")
-  .select("id, nombre, telefono, correo_electronico")
-  .eq("id", obra.propietario_id)
-  .maybeSingle();
+  const {
+    data: contactos,
+    error: contactosError
+  } = await supabaseClient.rpc(
+    "obtener_contactos_obra_v2",
+    {
+      p_obra_id: obraId
+    }
+  );
 
-console.log(
-  "PROPIETARIO CONSULTADO:",
-  data
-);
 
-console.log(
-  "ERROR PROPIETARIO:",
-  propietarioError
-);
+  if (contactosError) {
 
-propietario = data;
+    console.error(
+      "Error contactos obra:",
+      contactosError
+    );
+
+    mostrarError(
+      "No fue posible consultar los datos de contacto de la obra."
+    );
+
+    return;
   }
 
-  // DRO
-  let dro = null;
 
-  if (obra.dro_id) {
+  if (!contactos?.ok) {
 
-const {
-  data,
-  error: droError
-} = await supabaseClient
-  .from("directores_responsables_obra")
-  .select("id, nombre, telefono, correo_electronico")
-  .eq("id", obra.dro_id)
-  .maybeSingle();
+    console.error(
+      "Respuesta inválida de contactos:",
+      contactos
+    );
 
-console.log(
-  "DRO CONSULTADO:",
-  data
-);
+    mostrarError(
+      "No fue posible obtener los datos de contacto de la obra."
+    );
 
-console.log(
-  "ERROR DRO:",
-  droError
-);
-
-dro = data;
-    
+    return;
   }
 
-  // Tipo de obra
+
+  /*
+   * ==========================================================
+   * 3. Asignar los contactos a la obra
+   *
+   * Mantenemos exactamente la estructura que ya utiliza
+   * pintarObra():
+   *
+   * obra.propietario
+   * obra.dro
+   * ==========================================================
+   */
+
+  obra.propietario =
+    contactos.propietario || null;
+
+  obra.dro =
+    contactos.dro || null;
+
+
+  /*
+   * ==========================================================
+   * 4. Obtener tipo de obra
+   * ==========================================================
+   */
+
   let tipoObra = null;
+
 
   if (obra.tipo_obra_id) {
 
-    const { data } = await supabaseClient
+    const {
+      data,
+      error: tipoObraError
+    } = await supabaseClient
       .from("catalogo_tipos_obra")
       .select("id, nombre")
       .eq("id", obra.tipo_obra_id)
       .maybeSingle();
 
+
+    if (tipoObraError) {
+
+      console.error(
+        "Error tipo de obra:",
+        tipoObraError
+      );
+
+      mostrarError(
+        "No fue posible consultar el tipo de obra."
+      );
+
+      return;
+    }
+
+
     tipoObra = data;
   }
 
-  obra.propietario = propietario;
-  obra.dro = dro;
-  obra.tipo_obra = tipoObra;
 
-  await cargarVobos(obra);
+  obra.tipo_obra =
+    tipoObra;
+
+
+  /*
+   * ==========================================================
+   * 5. Continuar con el flujo de Vistos Buenos
+   *
+   * No modificamos cargarVobos().
+   * ==========================================================
+   */
+
+  await cargarVobos(
+    obra
+  );
+
 }
 
 /* =========================================================
