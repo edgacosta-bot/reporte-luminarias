@@ -185,6 +185,61 @@
     }
 
 }
+
+/* =========================================================
+   ENCABEZADO DE LA OBRA
+   ========================================================= */
+
+.obra-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 28px;
+    padding: 4px 0 14px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.obra-header-icon {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    color: #991f45;
+}
+
+.obra-header-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.obra-header-title {
+    color: #7f1d3f;
+    font-size: 23px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+
+/* =========================================================
+   AJUSTE MÓVIL
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .obra-header {
+        margin: 0 20px;
+    }
+
+    .obra-header-title {
+        font-size: 20px;
+    }
+
+    .obra-header-icon {
+        width: 28px;
+        height: 28px;
+        flex-basis: 28px;
+    }
+
+}
         
 </style>
 
@@ -1209,14 +1264,41 @@ async function renderizarLista(
 
             elemento.innerHTML = `
 
-                <div class="persona-header">
-                
-                    <div class="persona-title">
-                        Privada ${escapeHTML(obra.privada)}
-                        · Lote ${escapeHTML(obra.casa)}
-                    </div>
-                
-                </div>
+                <div class="obra-header">
+
+    <div class="obra-header-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+                d="M3 10.5 12 3l9 7.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            />
+            <path
+                d="M5 9.5V21h14V9.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linejoin="round"
+            />
+            <path
+                d="M9 21v-6h6v6"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linejoin="round"
+            />
+        </svg>
+    </div>
+
+    <div class="obra-header-title">
+        Privada ${escapeHTML(obra.privada)}
+        · Lote ${escapeHTML(obra.casa)}
+    </div>
+
+</div>
                 
                 
                 <div class="obra-datos-contacto">
