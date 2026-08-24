@@ -814,6 +814,22 @@ async function cargarObras() {
 
 }
 
+async function obtenerContactosObraV2(obraId) {
+
+    const { data, error } = await supabase.rpc(
+        "obtener_contactos_obra_v2",
+        {
+            p_obra_id: obraId
+        }
+    );
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
 /* ==========================================================
    RENDERIZAR SECCIÓN
    ========================================================== */
@@ -855,7 +871,7 @@ function renderizarLista(
     contenedor.innerHTML = "";
 
 
-    obras.forEach(obra => {
+   for (const obra of obras) {
 
         const elemento =
             document.createElement("div");
@@ -863,6 +879,17 @@ function renderizarLista(
         elemento.className =
             "persona-card";
 
+        let contactos = null;
+
+        try {
+            contactos = await obtenerContactosObraV2(obra.id);
+        } catch (error) {
+            console.error(
+                "Error obteniendo contactos de la obra:",
+                obra.id,
+                error
+            );
+        }
 
         /*
          * =====================================================
@@ -1060,6 +1087,30 @@ function renderizarLista(
          * =====================================================
          */
 
+        const propietario =
+            contactos?.propietario || null;
+
+        const dro =
+            contactos?.dro || null;
+
+        const propietarioNombre =
+            propietario?.nombre || "SIN DATOS";
+
+        const propietarioTelefono =
+            propietario?.telefono || "SIN DATOS";
+
+        const propietarioCorreo =
+            propietario?.correo_electronico || "SIN DATOS";
+
+        const droNombre =
+            dro?.nombre || "SIN DATOS";
+
+        const droTelefono =
+            dro?.telefono || "SIN DATOS";
+
+        const droCorreo =
+            dro?.correo_electronico || "SIN DATOS";
+           
         if (estado === "ARCHIVADA") {
 
             /*
@@ -1106,9 +1157,66 @@ function renderizarLista(
                         · Lote ${escapeHTML(obra.casa)}
                     </div>
 
-                    <div class="persona-status">
-                        ${textoEstado(estado)}
-                    </div>
+
+                        <div class="obra-datos-contacto">
+                        
+                            <div class="obra-contacto-bloque">
+                                <div class="obra-contacto-titulo">Propietario</div>
+                        
+                                <div>
+                                    <strong>Nombre:</strong>
+                                    ${escapeHTML(propietarioNombre)}
+                                </div>
+                        
+                                <div>
+                                    <strong>Teléfono:</strong>
+                                    ${escapeHTML(propietarioTelefono)}
+                                </div>
+                        
+                                <div>
+                                    <strong>Correo:</strong>
+                                    ${escapeHTML(propietarioCorreo)}
+                                </div>
+                            </div>
+                        
+                        
+                            <div class="obra-contacto-bloque">
+                                <div class="obra-contacto-titulo">DRO</div>
+                        
+                                <div>
+                                    <strong>Nombre:</strong>
+                                    ${escapeHTML(droNombre)}
+                                </div>
+                        
+                                <div>
+                                    <strong>Teléfono:</strong>
+                                    ${escapeHTML(droTelefono)}
+                                </div>
+                        
+                                <div>
+                                    <strong>Correo:</strong>
+                                    ${escapeHTML(droCorreo)}
+                                </div>
+                            </div>
+                        
+                        
+                            <div class="obra-contacto-bloque">
+                                <div class="obra-contacto-titulo">
+                                    Fecha de autorización
+                                </div>
+                        
+                                <div>
+                                    ${
+                                        obra.fecha_autorizacion
+                                            ? new Date(
+                                                obra.fecha_autorizacion
+                                            ).toLocaleDateString("es-MX")
+                                            : "SIN DATOS"
+                                    }
+                                </div>
+                            </div>
+                        
+</div>
 
                 </div>
 
