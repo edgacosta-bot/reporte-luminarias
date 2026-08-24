@@ -79,6 +79,53 @@
     font-weight: 600;
     color: #333;
 }
+
+
+/* ==========================================================
+   OBRAS ARCHIVADAS
+   ========================================================== */
+
+.obra-archivada {
+    width: 100%;
+}
+
+
+/* Evita el marcador nativo del navegador */
+
+.obra-archivada > summary {
+    list-style: none;
+    cursor: pointer;
+}
+
+.obra-archivada > summary::-webkit-details-marker {
+    display: none;
+}
+
+
+/* Indicador de despliegue */
+
+.obra-archivada > summary::after {
+    content: "⌄";
+    font-size: 24px;
+    font-weight: 400;
+    color: #999;
+    margin-left: auto;
+    transition: transform 0.2s ease;
+}
+
+
+/* Cuando está abierta */
+
+.obra-archivada[open] > summary::after {
+    transform: rotate(180deg);
+}
+
+
+/* Área del detalle */
+
+.archivo-detalle {
+    padding-top: 12px;
+}
         
 </style>
 
@@ -819,7 +866,7 @@ function renderizarLista(
 
         /*
          * =====================================================
-         * INFORMACIÓN ADICIONAL PARA OBRAS SUSPENDIDAS
+         * INFORMACIÓN PARA OBRAS SUSPENDIDAS
          * =====================================================
          */
 
@@ -868,7 +915,7 @@ function renderizarLista(
 
         /*
          * =====================================================
-         * INFORMACIÓN ADICIONAL PARA OBRAS TERMINADAS
+         * INFORMACIÓN PARA OBRAS TERMINADAS
          * =====================================================
          */
 
@@ -1009,40 +1056,77 @@ function renderizarLista(
 
         /*
          * =====================================================
-         * TARJETA DE LA OBRA
+         * TARJETA
          * =====================================================
          */
 
-        elemento.innerHTML = `
+        if (estado === "ARCHIVADA") {
 
-            <div class="persona-header">
+            /*
+             * Las obras archivadas se presentan
+             * como un elemento desplegable.
+             */
 
-                <div class="persona-title">
-                    Privada ${escapeHTML(obra.privada)}
-                    · Lote ${escapeHTML(obra.casa)}
+            elemento.innerHTML = `
+
+                <details class="obra-archivada">
+
+                    <summary class="persona-header">
+
+                        <div class="persona-title">
+                            Privada ${escapeHTML(obra.privada)}
+                            · Lote ${escapeHTML(obra.casa)}
+                        </div>
+
+                    </summary>
+
+
+                    <div class="archivo-detalle">
+
+                        ${informacionArchivo}
+
+                    </div>
+
+                </details>
+
+            `;
+
+        } else {
+
+            /*
+             * Tarjetas normales del listado operativo.
+             */
+
+            elemento.innerHTML = `
+
+                <div class="persona-header">
+
+                    <div class="persona-title">
+                        Privada ${escapeHTML(obra.privada)}
+                        · Lote ${escapeHTML(obra.casa)}
+                    </div>
+
+                    <div class="persona-status">
+                        ${textoEstado(estado)}
+                    </div>
+
                 </div>
 
-                <div class="persona-status">
-                    ${textoEstado(estado)}
+
+                ${informacionSuspension}
+
+                ${informacionTerminacion}
+
+
+                <div class="actions">
+
+                    ${botonesEstado(obra)}
+
                 </div>
 
-            </div>
+            `;
 
-
-            ${informacionSuspension}
-
-            ${informacionTerminacion}
-
-            ${informacionArchivo}
-
-
-            <div class="actions">
-
-                ${botonesEstado(obra)}
-
-            </div>
-
-        `;
+        }
 
 
         contenedor.appendChild(
