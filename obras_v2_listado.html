@@ -230,25 +230,32 @@
             Obras retiradas del listado operativo.
         </div>
 
+
         <div
             id="archivadasResumen"
             class="resumen">
-
+        
             <div class="resumen-item">
-
+        
                 <div class="resumen-label">
                     Obras archivadas
                 </div>
-
+        
                 <div
                     id="contadorArchivadas"
                     class="resumen-value">
                     0
                 </div>
-
+        
             </div>
-
+        
         </div>
+
+
+<div
+    id="listaArchivadas">
+</div>
+            
 
     </section>
 
@@ -556,6 +563,10 @@ let obraSuspender = null;
 let obraArchivar = null;
 let obraTerminar = null;
 
+let listaEjecucion = [];
+let listaSuspendidas = [];
+let listaTerminadas = [];
+
 /* ==========================================================
    INICIALIZACIÓN
    ========================================================== */
@@ -649,6 +660,33 @@ async function cargarObras() {
         );
 
 
+        /*
+         * Conservar las listas en memoria
+         * para las acciones del frontend.
+         */
+
+        listaEjecucion =
+            Array.isArray(data?.ejecucion)
+                ? data.ejecucion
+                : [];
+
+
+        listaSuspendidas =
+            Array.isArray(data?.suspendidas)
+                ? data.suspendidas
+                : [];
+
+
+        listaTerminadas =
+            Array.isArray(data?.terminadas)
+                ? data.terminadas
+                : [];
+
+
+        /*
+         * PENDIENTE DE VOBOS
+         */
+
         renderizarLista(
             "listaVobos",
             data?.pendiente_vobos || [],
@@ -656,26 +694,42 @@ async function cargarObras() {
         );
 
 
+        /*
+         * EJECUCIÓN
+         */
+
         renderizarLista(
             "listaEjecucion",
-            data?.ejecucion || [],
+            listaEjecucion,
             "EJECUCION"
         );
 
 
+        /*
+         * SUSPENDIDAS
+         */
+
         renderizarLista(
             "listaSuspendidas",
-            data?.suspendidas || [],
+            listaSuspendidas,
             "SUSPENDIDA"
         );
 
 
+        /*
+         * TERMINADAS
+         */
+
         renderizarLista(
             "listaTerminadas",
-            data?.terminadas || [],
+            listaTerminadas,
             "TERMINADA"
         );
 
+
+        /*
+         * ARCHIVADAS
+         */
 
         renderizarLista(
             "listaArchivadas",
@@ -683,6 +737,10 @@ async function cargarObras() {
             "ARCHIVADA"
         );
 
+
+        /*
+         * CONTADOR DE ARCHIVADAS
+         */
 
         document.getElementById(
             "contadorArchivadas"
@@ -708,7 +766,6 @@ async function cargarObras() {
     }
 
 }
-
 
 /* ==========================================================
    RENDERIZAR SECCIÓN
@@ -859,6 +916,86 @@ function renderizarLista(
             `;
         }
 
+        /*
+         * Información histórica
+         * para obras archivadas.
+         */
+        let informacionArchivo = "";
+
+        if (estado === "ARCHIVADA") {
+
+            informacionArchivo = `
+
+                <div class="suspension-info">
+
+                    <div>
+                        <strong>Fecha de terminación:</strong>
+                        ${
+                            obra.fecha_terminacion
+                            ? escapeHTML(
+                                new Date(
+                                    obra.fecha_terminacion
+                                ).toLocaleDateString(
+                                    "es-MX"
+                                )
+                            )
+                            : "No registrada"
+                        }
+                    </div>
+
+
+                    <div>
+                        <strong>Terminada por:</strong>
+                        ${escapeHTML(
+                            obra.terminado_por ||
+                            "No identificado"
+                        )}
+                    </div>
+
+
+                    ${
+                        obra.observaciones_terminacion
+                        ? `
+                            <div>
+                                <strong>Observaciones de terminación:</strong>
+                                ${escapeHTML(
+                                    obra.observaciones_terminacion
+                                )}
+                            </div>
+                        `
+                        : ""
+                    }
+
+
+                    <div>
+                        <strong>Fecha de archivo:</strong>
+                        ${
+                            obra.fecha_archivado
+                            ? escapeHTML(
+                                new Date(
+                                    obra.fecha_archivado
+                                ).toLocaleDateString(
+                                    "es-MX"
+                                )
+                            )
+                            : "No registrada"
+                        }
+                    </div>
+
+
+                    <div>
+                        <strong>Archivada por:</strong>
+                        ${escapeHTML(
+                            obra.archivado_por ||
+                            "No identificado"
+                        )}
+                    </div>
+
+                </div>
+
+            `;
+        }
+
 
         elemento.innerHTML = `
 
@@ -876,12 +1013,14 @@ function renderizarLista(
             </div>
 
 
-            ${informacionSuspension}
-
-            ${informacionTerminacion}
-
-
-            <div class="actions">
+                ${informacionSuspension}
+                
+                ${informacionTerminacion}
+                
+                ${informacionArchivo}
+                
+                
+                <div class="actions">
 
                 ${botonesEstado(obra)}
 
