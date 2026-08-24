@@ -1237,15 +1237,62 @@ async function reanudarObra(obraId) {
 }
 
 
-function archivarObra(obraId) {
+async function archivarObra(obraId) {
 
-    console.log(
-        "Pendiente implementar archivo:",
-        obraId
+    const confirmar = confirm(
+        "¿Confirma que desea archivar la obra seleccionada?"
     );
 
-}
+    if (!confirmar) {
+        return;
+    }
 
+
+    const { data, error } =
+        await supabaseClient.rpc(
+            "archivar_obra_v2",
+            {
+                p_obra_id: obraId
+            }
+        );
+
+
+    if (error) {
+
+        console.error(
+            "ERROR ARCHIVO:",
+            error
+        );
+
+        mostrarToast(
+            error.message ||
+            "No fue posible archivar la obra.",
+            true
+        );
+
+        return;
+    }
+
+
+    if (!data?.ok) {
+
+        mostrarToast(
+            "El archivo de la obra no pudo completarse.",
+            true
+        );
+
+        return;
+    }
+
+
+    mostrarToast(
+        "La obra fue archivada correctamente."
+    );
+
+
+    await cargarObras();
+
+}
 
 /* ==========================================================
    MENSAJES
