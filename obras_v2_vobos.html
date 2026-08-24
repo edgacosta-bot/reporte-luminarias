@@ -114,6 +114,65 @@ textarea {
   display: none;
 }
 
+/* ==========================================================
+   PARTICIPANTES DE LA OBRA
+   ========================================================== */
+
+.participantes-obra {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+
+.participante {
+    background: #334155;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+
+.participante-titulo {
+    font-size: 12px;
+    font-weight: bold;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+}
+
+
+.participante-nombre {
+    font-weight: bold;
+    margin-bottom: 7px;
+}
+
+
+.participante-contacto {
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+
+.participante-contacto a {
+    color: #cbd5e1;
+    text-decoration: none;
+}
+
+
+.participante-contacto a:hover {
+    text-decoration: underline;
+}
+
+
+@media (max-width: 560px) {
+
+    .participantes-obra {
+        grid-template-columns: 1fr;
+    }
+
+}
+
 </style>
 
 </head>
@@ -205,11 +264,11 @@ async function cargarObra() {
 
   if (obra.propietario_id) {
 
-    const { data } = await supabaseClient
-      .from("propietarios_obra")
-      .select("id, nombre")
-      .eq("id", obra.propietario_id)
-      .maybeSingle();
+  const { data } = await supabaseClient
+  .from("propietarios_obra")
+  .select("id, nombre, telefono, correo_electronico")
+  .eq("id", obra.propietario_id)
+  .maybeSingle();
 
     propietario = data;
   }
@@ -219,11 +278,11 @@ async function cargarObra() {
 
   if (obra.dro_id) {
 
-    const { data } = await supabaseClient
-      .from("directores_responsables_obra")
-      .select("id, nombre")
-      .eq("id", obra.dro_id)
-      .maybeSingle();
+  const { data } = await supabaseClient
+  .from("directores_responsables_obra")
+  .select("id, nombre, telefono, correo_electronico")
+  .eq("id", obra.dro_id)
+  .maybeSingle();
 
     dro = data;
   }
@@ -371,16 +430,117 @@ function pintarObra(obra, vobos, residente) {
       ${obra.tipo_obra?.nombre || "—"}
     </div>
 
-    <div>
-      <b>Propietario:</b>
-      ${obra.propietario?.nombre || "—"}
-    </div>
+        <div class="participantes-obra">
 
-    <div>
-      <b>DRO:</b>
-      ${obra.dro?.nombre || "—"}
-    </div>
+      <div class="participante">
 
+        <div class="participante-titulo">
+          Propietario
+        </div>
+
+        <div class="participante-nombre">
+          ${obra.propietario?.nombre || "—"}
+        </div>
+
+        <div class="participante-contacto">
+
+          ${
+            obra.propietario?.telefono
+              ? `
+                <div>
+                  ☎
+                  <a href="tel:${escapeHTML(obra.propietario.telefono)}">
+                    ${escapeHTML(obra.propietario.telefono)}
+                  </a>
+                </div>
+              `
+              : ""
+          }
+
+          ${
+            obra.propietario?.correo_electronico
+              ? `
+                <div>
+                  ✉
+                  <a href="mailto:${escapeHTML(obra.propietario.correo_electronico)}">
+                    ${escapeHTML(obra.propietario.correo_electronico)}
+                  </a>
+                </div>
+              `
+              : ""
+          }
+
+          ${
+            !obra.propietario?.telefono &&
+            !obra.propietario?.correo_electronico
+              ? `
+                <div>
+                  Sin datos de contacto
+                </div>
+              `
+              : ""
+          }
+
+        </div>
+
+      </div>
+
+
+      <div class="participante">
+
+        <div class="participante-titulo">
+          DRO
+        </div>
+
+        <div class="participante-nombre">
+          ${obra.dro?.nombre || "—"}
+        </div>
+
+        <div class="participante-contacto">
+
+          ${
+            obra.dro?.telefono
+              ? `
+                <div>
+                  ☎
+                  <a href="tel:${escapeHTML(obra.dro.telefono)}">
+                    ${escapeHTML(obra.dro.telefono)}
+                  </a>
+                </div>
+              `
+              : ""
+          }
+
+          ${
+            obra.dro?.correo_electronico
+              ? `
+                <div>
+                  ✉
+                  <a href="mailto:${escapeHTML(obra.dro.correo_electronico)}">
+                    ${escapeHTML(obra.dro.correo_electronico)}
+                  </a>
+                </div>
+              `
+              : ""
+          }
+
+          ${
+            !obra.dro?.telefono &&
+            !obra.dro?.correo_electronico
+              ? `
+                <div>
+                  Sin datos de contacto
+                </div>
+              `
+              : ""
+          }
+
+        </div>
+
+      </div>
+
+    </div>
+    
     <div style="margin-top:10px;">
       <b>Vistos Buenos:</b>
       ${aprobados} de ${total}
