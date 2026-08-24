@@ -189,56 +189,92 @@
    ========================================================= */
 
 .obra-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 0 28px;
-    padding: 4px 0 14px;
-    border-bottom: 1px solid #e5e7eb;
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+
+    width: auto !important;
+    margin: 0 28px !important;
+    padding: 4px 0 14px !important;
+
+    border-bottom: 1px solid #e5e7eb !important;
 }
 
 .obra-header-icon {
-    width: 32px;
-    height: 32px;
-    flex: 0 0 32px;
-    color: #991f45;
+    display: block !important;
+
+    width: 32px !important;
+    height: 32px !important;
+
+    min-width: 32px !important;
+    min-height: 32px !important;
+
+    max-width: 32px !important;
+    max-height: 32px !important;
+
+    flex: 0 0 32px !important;
+
+    color: #991f45 !important;
 }
 
 .obra-header-icon svg {
-    width: 100%;
-    height: 100%;
+    display: block !important;
+
+    width: 32px !important;
+    height: 32px !important;
+
+    min-width: 32px !important;
+    min-height: 32px !important;
+
+    max-width: 32px !important;
+    max-height: 32px !important;
 }
 
 .obra-header-title {
-    color: #7f1d3f;
-    font-size: 23px;
-    font-weight: 700;
-    letter-spacing: 0.2px;
+    color: #991f45 !important;
+
+    font-size: 23px !important;
+    line-height: 1.2 !important;
+
+    font-weight: 700 !important;
+    letter-spacing: 0.2px !important;
+
+    margin: 0 !important;
 }
 
 
 /* =========================================================
-   AJUSTE MÓVIL
+   MÓVIL
    ========================================================= */
 
 @media (max-width: 600px) {
 
     .obra-header {
-        margin: 0 20px;
+        margin: 0 20px !important;
+        gap: 12px !important;
     }
 
-    .obra-header-title {
-        font-size: 20px;
+    .obra-header-icon,
+    .obra-header-icon svg {
+        width: 28px !important;
+        height: 28px !important;
+
+        min-width: 28px !important;
+        min-height: 28px !important;
+
+        max-width: 28px !important;
+        max-height: 28px !important;
     }
 
     .obra-header-icon {
-        width: 28px;
-        height: 28px;
-        flex-basis: 28px;
+        flex-basis: 28px !important;
+    }
+
+    .obra-header-title {
+        font-size: 20px !important;
     }
 
 }
-
 /* =====================================================
    ENCABEZADOS DE SEGMENTOS
    ===================================================== */
