@@ -49,7 +49,7 @@ body {
 
 .header {
 
-    height: 76px;
+    min-height: 78px;
 
     display: flex;
 
@@ -59,9 +59,12 @@ body {
 
     padding: 0 30px;
 
-    border-bottom: 1px solid #e5e7eb;
+    background: #6f1733;
 
-    background: #ffffff;
+    color: #ffffff;
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,.08);
 }
 
 .header-left {
@@ -70,59 +73,86 @@ body {
 
     align-items: center;
 
-    gap: 18px;
+    gap: 16px;
 }
 
 .btn-regresar {
 
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
 
-    border: none;
+    display: inline-flex;
 
-    border-radius: 10px;
+    align-items: center;
+    justify-content: center;
 
-    background: #f3f4f6;
+    border: 1px solid rgba(255,255,255,.28);
 
-    color: #555;
+    border-radius: 9px;
 
-    font-size: 22px;
+    background: rgba(255,255,255,.10);
+
+    color: #ffffff;
+
+    font-size: 21px;
+
+    line-height: 1;
 
     cursor: pointer;
+
+    transition:
+        background .18s ease,
+        border-color .18s ease;
 }
 
 .btn-regresar:hover {
 
-    background: #e5e7eb;
+    background: rgba(255,255,255,.18);
+
+    border-color:
+        rgba(255,255,255,.42);
+}
+
+.btn-regresar:focus-visible {
+
+    outline: 3px solid
+        rgba(255,255,255,.28);
+
+    outline-offset: 2px;
 }
 
 .header-title {
 
-    font-size: 21px;
+    font-size: 20px;
 
     font-weight: 700;
 
-    color: #8B1E3F;
+    line-height: 1.2;
+
+    color: #ffffff;
 }
 
 .header-subtitle {
 
+    margin-top: 3px;
+
     font-size: 12px;
 
-    color: #777;
+    line-height: 1.2;
 
-    margin-top: 3px;
+    color: rgba(255,255,255,.78);
 }
 
 .header-user {
 
-    font-size: 14px;
+    font-size: 13px;
 
-    font-weight: 600;
+    font-weight: 650;
 
-    color: #555;
+    color: rgba(255,255,255,.90);
+
+    white-space: nowrap;
 }
-
 
 /* ==========================================================
    CONTENEDOR
@@ -752,24 +782,22 @@ select:disabled {
         <button
             id="btnRegresar"
             class="btn-regresar"
-            title="Regresar">
+            title="Regresar"
+            aria-label="Regresar">
 
             ←
 
         </button>
 
+
         <div>
 
             <div class="header-title">
-
-                SIGVIC
-
+                Gestión de Obras
             </div>
 
             <div class="header-subtitle">
-
-                Gestión de Obras
-
+                Registro de obra
             </div>
 
         </div>
@@ -788,7 +816,6 @@ select:disabled {
 </header>
 
 
-
 <!-- ==========================================================
      CONTENIDO
 ========================================================== -->
@@ -796,28 +823,73 @@ select:disabled {
 <main class="container">
 
 
-    <div class="page-intro">
+<div class="page-intro">
 
-        <div class="eyebrow">
+    <div class="titulo-seccion">
 
-            OBRAS
+        <span
+            class="titulo-seccion-icono"
+            aria-hidden="true">
+
+            <svg viewBox="0 0 24 24" fill="none">
+
+                <!-- Edificio en construcción -->
+
+                <path
+                    d="M5 21V8l7-4 7 4v13"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+
+                <!-- Estructura -->
+
+                <path
+                    d="M8 11h2M14 11h2M8 14.5h2M14 14.5h2"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                />
+
+                <!-- Base -->
+
+                <path
+                    d="M3.5 21h17"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                />
+
+                <!-- Elemento de construcción -->
+
+                <path
+                    d="M9 18h6"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                />
+
+            </svg>
+
+        </span>
+
+
+        <div class="titulo-seccion-contenido">
+
+            <h1>
+                Registrar obra de construcción
+            </h1>
+
+            <div class="descripcion">
+                Capture la información necesaria para generar una nueva obra en SIGVIC.
+            </div>
 
         </div>
 
-        <h1>
-
-            Registro de obra
-
-        </h1>
-
-        <p>
-
-            Capture la información necesaria para
-            generar una nueva obra en SIGVIC.
-
-        </p>
-
     </div>
+
+</div>
 
 
 
