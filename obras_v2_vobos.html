@@ -678,7 +678,10 @@ body {
 
 
 
-<section class="nota-mesa-directiva">
+<section
+    class="nota-mesa-directiva"
+    style="display: none;"
+>
 
     <div class="nota-icono" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none">
@@ -1212,6 +1215,15 @@ if (!residente) {
     );
 
     return;
+}
+
+const notaMesa =
+    document.querySelector(
+        ".nota-mesa-directiva"
+    );
+
+if (notaMesa) {
+    notaMesa.style.display = "flex";
 }
 
 
