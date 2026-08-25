@@ -777,6 +777,143 @@
     </div>
 
 </div>
+
+<!-- =====================================================
+     MODAL DE CONTACTOS DE LA OBRA
+     ===================================================== -->
+
+<div
+    id="modalContactosObra"
+    class="modal-overlay"
+    style="display:none;">
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <div>
+
+                <div class="modal-title">
+                    Editar contactos
+                </div>
+
+                <div
+                    id="modalContactosObraTitulo"
+                    class="modal-subtitle">
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="modal-close"
+                onclick="cerrarModalContactos()">
+
+                ×
+
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <div class="modal-seccion-titulo">
+                Propietario
+            </div>
+
+
+            <label for="contactoPropietarioNombre">
+                Nombre
+            </label>
+
+            <input
+                type="text"
+                id="contactoPropietarioNombre"
+                autocomplete="name">
+
+
+            <label for="contactoPropietarioTelefono">
+                Teléfono
+            </label>
+
+            <input
+                type="tel"
+                id="contactoPropietarioTelefono"
+                autocomplete="tel">
+
+
+            <label for="contactoPropietarioCorreo">
+                Correo electrónico
+            </label>
+
+            <input
+                type="email"
+                id="contactoPropietarioCorreo"
+                autocomplete="email">
+
+
+            <div class="modal-seccion-titulo">
+                DRO
+            </div>
+
+
+            <label for="contactoDroNombre">
+                Nombre
+            </label>
+
+            <input
+                type="text"
+                id="contactoDroNombre">
+
+
+            <label for="contactoDroTelefono">
+                Teléfono
+            </label>
+
+            <input
+                type="tel"
+                id="contactoDroTelefono">
+
+
+            <label for="contactoDroCorreo">
+                Correo electrónico
+            </label>
+
+            <input
+                type="email"
+                id="contactoDroCorreo">
+
+        </div>
+
+
+        <div class="modal-footer">
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="cerrarModalContactos()">
+
+                Cancelar
+
+            </button>
+
+
+            <button
+                type="button"
+                class="btn btn-primary"
+                onclick="guardarContactosObra()">
+
+                Guardar contactos
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
         
 <!-- =====================================================
      TOAST
@@ -790,6 +927,7 @@
 let obraSuspender = null;
 let obraArchivar = null;
 let obraTerminar = null;
+let obraContactos = null;
 
 let listaEjecucion = [];
 let listaSuspendidas = [];
@@ -1012,6 +1150,189 @@ async function obtenerContactosObraV2(obraId) {
     return data;
 }
 
+function abrirModalContactos(obra) {
+
+    obraContactos = obra;
+
+    document.getElementById(
+        "modalContactosObraTitulo"
+    ).textContent =
+        `Privada ${obra.privada} · Lote ${obra.casa}`;
+
+
+    const contactos =
+        obra._contactos || {};
+
+
+    const propietario =
+        contactos.propietario || {};
+
+    const dro =
+        contactos.dro || {};
+
+
+    document.getElementById(
+        "contactoPropietarioNombre"
+    ).value =
+        propietario.nombre || "";
+
+
+    document.getElementById(
+        "contactoPropietarioTelefono"
+    ).value =
+        propietario.telefono || "";
+
+
+    document.getElementById(
+        "contactoPropietarioCorreo"
+    ).value =
+        propietario.correo_electronico || "";
+
+
+    document.getElementById(
+        "contactoDroNombre"
+    ).value =
+        dro.nombre || "";
+
+
+    document.getElementById(
+        "contactoDroTelefono"
+    ).value =
+        dro.telefono || "";
+
+
+    document.getElementById(
+        "contactoDroCorreo"
+    ).value =
+        dro.correo_electronico || "";
+
+
+    document.getElementById(
+        "modalContactosObra"
+    ).style.display = "flex";
+}
+
+function cerrarModalContactos() {
+
+    document.getElementById(
+        "modalContactosObra"
+    ).style.display = "none";
+
+    obraContactos = null;
+}
+
+
+async function guardarContactosObra() {
+
+    if (!obraContactos) {
+        return;
+    }
+
+    const obraId = obraContactos.id;
+
+    const propietarioNombre =
+        document.getElementById(
+            "contactoPropietarioNombre"
+        ).value.trim();
+
+    const propietarioTelefono =
+        document.getElementById(
+            "contactoPropietarioTelefono"
+        ).value.trim();
+
+    const propietarioCorreo =
+        document.getElementById(
+            "contactoPropietarioCorreo"
+        ).value.trim();
+
+    const droNombre =
+        document.getElementById(
+            "contactoDroNombre"
+        ).value.trim();
+
+    const droTelefono =
+        document.getElementById(
+            "contactoDroTelefono"
+        ).value.trim();
+
+    const droCorreo =
+        document.getElementById(
+            "contactoDroCorreo"
+        ).value.trim();
+
+
+    try {
+
+        const { data, error } =
+            await supabaseClient.rpc(
+                "actualizar_contactos_obra_v2",
+                {
+                    p_obra_id:
+                        obraId,
+
+                    p_propietario_nombre:
+                        propietarioNombre || null,
+
+                    p_propietario_telefono:
+                        propietarioTelefono || null,
+
+                    p_propietario_correo:
+                        propietarioCorreo || null,
+
+                    p_dro_nombre:
+                        droNombre || null,
+
+                    p_dro_telefono:
+                        droTelefono || null,
+
+                    p_dro_correo:
+                        droCorreo || null
+                }
+            );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        console.log(
+            "Contactos actualizados:",
+            data
+        );
+
+
+        cerrarModalContactos();
+
+        mostrarToast(
+            "Contactos actualizados correctamente."
+        );
+
+
+        /*
+         * Volver a cargar el listado
+         * para mostrar inmediatamente
+         * los datos actualizados.
+         */
+
+        await cargarObras();
+
+
+    } catch (error) {
+
+        console.error(
+            "Error actualizando contactos:",
+            error
+        );
+
+        mostrarToast(
+            error.message ||
+            "No fue posible actualizar los contactos.",
+            true
+        );
+    }
+}
+
 /* ==========================================================
    RENDERIZAR SECCIÓN
    ========================================================== */
@@ -1072,6 +1393,7 @@ async function renderizarLista(
             );
         }
 
+        obra._contactos = contactos;
         /*
          * =====================================================
          * INFORMACIÓN PARA OBRAS SUSPENDIDAS
@@ -1517,6 +1839,15 @@ function botonesEstado(obra) {
                     type="button"
                     onclick="terminarObra('${obra.id}')">
                     Registrar terminación
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    onclick='abrirModalContactos(${JSON.stringify(obra)})'>
+                
+                    Editar contactos
+                
                 </button>
 
             `;
