@@ -362,8 +362,13 @@ html:not(.sigvic-inicializado) body {
     color: #991b3f;
 }
 
-.page-intro {
+.page-intro h1 {
+    margin: 0;
     text-align: center;
+    font-size: 32px;
+    line-height: 1.2;
+    font-weight: 600;
+    color: #333333;
 }
         
 
@@ -573,14 +578,35 @@ html:not(.sigvic-inicializado) body {
 }
 
 .btn-regresar {
-    background: rgba(255, 255, 255, 0.14);
+    width: 64px;
+    height: 64px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.12);
     color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.35);
+
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 16px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
 }
 
 .btn-regresar:hover {
-    background: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.20);
+    transform: translateX(-2px);
 }
+
+.btn-regresar:active {
+    transform: translateX(-1px);
+}
+
 
 </style>
 
@@ -736,7 +762,7 @@ html:not(.sigvic-inicializado) body {
 <div class="page-intro">
 
     <h1>
-        Listado de Obras
+        Obras en construcción
     </h1>
 
 </div>
