@@ -307,6 +307,13 @@
     line-height: 1.4;
     margin-bottom: 28px;
 }
+
+.header-cargo {
+    margin-top: 4px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #991b3f;
+}
         
 </style>
 
@@ -334,6 +341,13 @@
             <div class="header-subtitle">
                 Listado de obras
             </div>
+
+           <div
+              id="usuarioCargo"
+              class="header-cargo">
+           </div>
+                
+                
         </div>
 
     </div>
@@ -343,21 +357,14 @@
 
 <main class="container">
 
-    <div class="page-intro">
 
-        <div class="eyebrow">
-            OBRAS
-        </div>
+<div class="page-intro">
 
-        <h1>
-            Listado de obras
-        </h1>
+    <h1>
+        Listado de Obras de Construcción
+    </h1>
 
-        <p>
-            Obras clasificadas de acuerdo con su estado operativo.
-        </p>
-
-    </div>
+</div>
 
 
     <!-- MENSAJE -->
@@ -366,6 +373,33 @@
         id="mensaje"
         class="msg">
     </div>
+
+    <!-- =====================================================
+     AGREGAR OBRA DE CONSTRUCCIÓN
+     SOLO ADMINISTRACIÓN
+     ===================================================== -->
+
+<section
+    id="tarjetaAgregarObra"
+    class="card"
+    style="display: none;">
+
+    <div class="card-title">
+        Agregar Obra de Construcción
+    </div>
+
+    <div class="card-subtitle">
+        Registrar una nueva obra en el sistema.
+    </div>
+
+    <button
+        type="button"
+        class="btn-accion"
+        onclick="window.location.href='obras_registro_v2.html'">
+        Agregar obra de construcción
+    </button>
+
+</section>
 
 
     <!-- =====================================================
@@ -958,7 +992,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         const { data: residente, error: residenteError } =
             await supabaseClient
                 .from("residentes")
-                .select("tipo, es_mesa_directiva, activo")
+                .select("tipo, es_mesa_directiva, activo, id_cargo")
                 .eq("user_id", user.id)
                 .maybeSingle();
 
@@ -974,6 +1008,51 @@ window.addEventListener("DOMContentLoaded", async () => {
         const esMesaDirectiva =
             residente?.es_mesa_directiva === true &&
             residente?.activo === true;
+
+
+        let nombreCargo = "";
+
+        if (esAdministracion) {
+        
+            nombreCargo = "Administración";
+        
+        } else if (esMesaDirectiva && residente?.id_cargo) {
+        
+            const {
+                data: cargo,
+                error: cargoError
+            } = await supabaseClient
+                .from("catalogo_cargos")
+                .select("nombre")
+                .eq("id", residente.id_cargo)
+                .maybeSingle();
+        
+            if (cargoError) {
+                throw cargoError;
+            }
+        
+            nombreCargo =
+                cargo?.nombre ||
+                "Miembro de la Mesa Directiva";
+        }
+
+                const usuarioCargo =
+                    document.getElementById("usuarioCargo");
+                
+                if (usuarioCargo) {
+                    usuarioCargo.textContent =
+                        esAdministracion
+                            ? "Administración"
+                            : `${nombreCargo} de la Mesa Directiva`;
+                }
+
+                const tarjetaAgregarObra =
+                    document.getElementById("tarjetaAgregarObra");
+                
+                if (tarjetaAgregarObra) {
+                    tarjetaAgregarObra.style.display =
+                        esAdministracion ? "" : "none";
+                }
 
         if (!esAdministracion && !esMesaDirectiva) {
 
