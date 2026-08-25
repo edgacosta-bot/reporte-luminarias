@@ -452,6 +452,72 @@ body {
 
 
 /* ==========================================================
+   NOTA INFORMATIVA — MESA DIRECTIVA
+   ========================================================== */
+
+.nota-mesa-directiva {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    max-width: 980px;
+    margin: 18px auto 32px;
+    padding: 16px 18px;
+    box-sizing: border-box;
+    border: 1px solid #e8e0e3;
+    border-radius: 12px;
+    background: #fbf9fa;
+    color: #5f6368;
+}
+
+.nota-icono {
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    color: var(--vino);
+}
+
+.nota-icono svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.nota-contenido {
+    min-width: 0;
+}
+
+.nota-titulo {
+    color: #4b5563;
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.nota-texto {
+    margin-top: 6px;
+    color: #6b7280;
+    font-size: 12.5px;
+    line-height: 1.65;
+}
+
+.nota-texto p {
+    margin: 0 0 8px;
+}
+
+.nota-texto p:last-child {
+    margin-bottom: 0;
+}
+
+.nota-texto strong {
+    color: #4b5563;
+    font-weight: 700;
+}
+
+.nota-gracias {
+    color: #7b8188;
+}
+
+
+/* ==========================================================
    RESPONSIVE
    ========================================================== */
 
@@ -477,6 +543,17 @@ body {
 }
 
 @media (max-width: 560px) {
+
+    .nota-mesa-directiva {
+        margin-top: 14px;
+        margin-bottom: 24px;
+        padding: 14px;
+    }
+
+    .nota-texto {
+        font-size: 12px;
+        line-height: 1.6;
+    }
 
     .page-intro {
         margin-bottom: 20px;
@@ -598,6 +675,56 @@ body {
     </section>
 
 </main>
+
+
+
+<section class="nota-mesa-directiva">
+
+    <div class="nota-icono" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="9"
+                    stroke="currentColor" stroke-width="1.7"/>
+            <path d="M12 10.5v5"
+                  stroke="currentColor" stroke-width="1.7"
+                  stroke-linecap="round"/>
+            <circle cx="12" cy="7.4" r="1"
+                    fill="currentColor"/>
+        </svg>
+    </div>
+
+    <div class="nota-contenido">
+
+        <div class="nota-titulo">
+            Estimado miembro de la Mesa Directiva:
+        </div>
+
+        <div class="nota-texto">
+
+            <p>
+                Antes de emitir tu VoBo, puedes ponerte en contacto
+                con el administrador para verificar que el lote se
+                encuentre <strong>regularizado en cuanto a adeudos y
+                pagos efectuados, que cuente con la fianza de garantía
+                correspondiente y que cumpla con lo establecido en el
+                Reglamento de Construcción</strong>.
+            </p>
+
+            <p>
+                Si lo deseas, también puedes ponerte en contacto
+                directamente con el <strong>propietario o el DRO</strong>,
+                utilizando los datos de contacto que se muestran en
+                esta pantalla.
+            </p>
+
+            <p class="nota-gracias">
+                Gracias.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
 
 
 <div id="toast"></div>
