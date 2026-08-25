@@ -41,13 +41,28 @@ body {
     color: var(--texto);
 }
 
+/* ==========================================================
+   ENCABEZADO INSTITUCIONAL
+   ========================================================== */
+
 .header {
-    border-bottom: 1px solid var(--borde);
+    background: var(--vino);
+    color: #ffffff;
+    border-bottom: none;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .08);
+}
+
+.header-title {
+    color: #ffffff;
+}
+
+.header-subtitle {
+    color: #ffffff;
 }
 
 .header-cargo {
     margin-top: 4px;
-    color: var(--vino);
+    color: #ffffff;
     font-size: 14px;
     font-weight: 700;
 }
@@ -56,20 +71,59 @@ body {
     max-width: 980px;
 }
 
+/* ==========================================================
+   IDENTIFICACIÓN DE LA SECCIÓN
+   ========================================================== */
+
 .page-intro {
-    text-align: center;
+    margin-bottom: 28px;
+}
+
+.titulo-seccion {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 13px;
     margin-bottom: 26px;
 }
+.titulo-seccion-icono {
+    display: inline-flex;
 
-.page-intro h1 {
-    margin: 0;
-    color: #111827;
+    width: 38px;
+    height: 38px;
+
+    align-items: center;
+    justify-content: center;
+
+    color: var(--vino);
+
+    flex-shrink: 0;
 }
 
-.page-intro .descripcion {
-    margin-top: 7px;
-    color: var(--texto-suave);
+.titulo-seccion-icono svg {
+    width: 100%;
+    height: 100%;
+}
+
+.titulo-seccion-contenido {
+    text-align: left;
+}
+
+.titulo-seccion-contenido h1 {
+    margin: 0;
+    font-size: 27px;
+    line-height: 1.2;
+    font-weight: 650;
+    color: #333333;
+}
+
+.descripcion {
+    margin-top: 4px;
+
     font-size: 15px;
+    line-height: 1.45;
+
+    color: var(--texto-secundario);
 }
 
 
@@ -95,19 +149,20 @@ body {
     align-items: center;
     justify-content: space-between;
     gap: 20px;
+    padding-bottom: 18px;
 }
 
 .obra-clave {
-    color: #111827;
-    font-size: 27px;
-    font-weight: 750;
-    line-height: 1.2;
+    color: #333333;
+    font-size: 23px;
+    font-weight: 650;
+    line-height: 1.25;
 }
 
 .obra-descripcion {
-    margin-top: 6px;
+    margin-top: 5px;
     color: var(--texto-suave);
-    font-size: 15px;
+    font-size: 14px;
 }
 
 .obra-vobo-resumen {
@@ -115,11 +170,15 @@ body {
     align-items: baseline;
     gap: 5px;
     white-space: nowrap;
-    padding: 9px 13px;
+
+    padding: 8px 13px;
+
     border: 1px solid #ead8de;
     border-radius: 10px;
+
     background: var(--vino-claro);
     color: var(--vino-oscuro);
+
     font-size: 13px;
     font-weight: 700;
 }
@@ -141,11 +200,11 @@ body {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
-    margin-top: 22px;
+    margin-top: 20px;
 }
 
 .dato-obra {
-    padding: 13px 15px;
+    padding: 12px 14px;
     border: 1px solid #edf0f2;
     border-radius: 10px;
     background: #fafafa;
@@ -153,19 +212,18 @@ body {
 
 .dato-etiqueta {
     color: var(--texto-suave);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: .04em;
+    letter-spacing: .05em;
 }
 
 .dato-valor {
-    margin-top: 5px;
-    color: #111827;
+    margin-top: 4px;
+    color: #333333;
     font-size: 15px;
-    font-weight: 650;
+    font-weight: 600;
 }
-
 
 /* ==========================================================
    SECCIONES
@@ -177,11 +235,15 @@ body {
     background: var(--borde);
 }
 
+/* ==========================================================
+   SECCIÓN Y PARTICIPANTES
+   ========================================================== */
+
 .seccion-titulo {
-    margin-bottom: 13px;
-    color: #111827;
-    font-size: 18px;
-    font-weight: 750;
+    margin-bottom: 14px;
+    color: #333333;
+    font-size: 17px;
+    font-weight: 650;
 }
 
 
@@ -197,8 +259,11 @@ body {
 
 .participante {
     display: flex;
-    gap: 14px;
-    padding: 17px;
+    align-items: flex-start;
+    gap: 13px;
+
+    padding: 16px;
+
     background: #fafafa;
     border: 1px solid #edf0f2;
     border-radius: 12px;
@@ -206,11 +271,15 @@ body {
 
 .participante-icono {
     flex: 0 0 38px;
+
     width: 38px;
     height: 38px;
+
     padding: 7px;
     box-sizing: border-box;
+
     border-radius: 10px;
+
     background: var(--vino-claro);
     color: var(--vino);
 }
@@ -228,23 +297,23 @@ body {
 .participante-titulo {
     color: var(--texto-suave);
     font-size: 11px;
-    font-weight: 750;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: .06em;
+    letter-spacing: .05em;
 }
 
 .participante-nombre {
-    margin-top: 5px;
-    color: #111827;
+    margin-top: 4px;
+    color: #333333;
     font-size: 15px;
-    font-weight: 700;
+    font-weight: 650;
 }
 
 .participante-contacto {
-    margin-top: 8px;
+    margin-top: 7px;
     color: var(--texto-suave);
     font-size: 13px;
-    line-height: 1.65;
+    line-height: 1.6;
 }
 
 .participante-contacto a {
@@ -256,7 +325,6 @@ body {
     color: var(--vino);
     text-decoration: underline;
 }
-
 .contacto-icono {
     display: inline-block;
     width: 21px;
@@ -273,12 +341,27 @@ body {
    VOBOS
    ========================================================== */
 
+/* ==========================================================
+   VISTOS BUENOS
+   ========================================================== */
+
 .vobo {
     padding: 16px 17px;
     margin-top: 10px;
-    border: 1px solid #edf0f2;
+
+    border: 1px solid #e8ebee;
     border-radius: 12px;
+
     background: #ffffff;
+
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease;
+}
+
+.vobo:hover {
+    border-color: #dedfe2;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .035);
 }
 
 .vobo-header {
@@ -289,20 +372,25 @@ body {
 }
 
 .vobo-cargo {
-    color: #1f2937;
+    color: #333333;
     font-size: 15px;
-    font-weight: 700;
+    font-weight: 650;
 }
 
 .estado {
     display: inline-flex;
     align-items: center;
-    min-height: 28px;
+    justify-content: center;
+
+    min-height: 27px;
     padding: 4px 10px;
+
     border-radius: 999px;
+
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 750;
     letter-spacing: .03em;
+
     white-space: nowrap;
 }
 
@@ -322,7 +410,8 @@ body {
 }
 
 .vobo-fecha {
-    margin-top: 7px;
+    margin-top: 6px;
+
     color: #9ca3af;
     font-size: 12px;
 }
@@ -330,7 +419,9 @@ body {
 .vobo-observaciones {
     margin-top: 9px;
     padding-top: 9px;
+
     border-top: 1px solid #f0f0f0;
+
     color: #4b5563;
     font-size: 13px;
     line-height: 1.5;
@@ -342,7 +433,7 @@ body {
 
 
 /* ==========================================================
-   ACCIÓN DE VOVO
+   ACCIÓN DE VOBO
    ========================================================== */
 
 .btn-vobo {
@@ -350,30 +441,46 @@ body {
     align-items: center;
     justify-content: center;
     gap: 7px;
+
     width: auto;
     min-width: 150px;
+
     margin-top: 13px;
     padding: 10px 17px;
+
     border: 1px solid var(--vino);
     border-radius: 9px;
+
     background: var(--vino);
     color: #ffffff;
+
     font: inherit;
     font-size: 14px;
-    font-weight: 750;
+    font-weight: 700;
+
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(153,27,63,.14);
+
+    box-shadow: 0 4px 10px rgba(153, 27, 63, .14);
+
+    transition:
+        background .18s ease,
+        transform .12s ease,
+        box-shadow .18s ease;
 }
 
 .btn-vobo:hover {
     background: var(--vino-oscuro);
+    box-shadow: 0 5px 12px rgba(153, 27, 63, .18);
+}
+
+.btn-vobo:active {
+    transform: translateY(1px);
 }
 
 .btn-vobo:focus-visible {
-    outline: 3px solid rgba(153,27,63,.20);
+    outline: 3px solid rgba(153, 27, 63, .20);
     outline-offset: 2px;
 }
-
 
 /* ==========================================================
    TODOS APROBADOS
@@ -455,24 +562,35 @@ body {
    NOTA INFORMATIVA — MESA DIRECTIVA
    ========================================================== */
 
+/* ==========================================================
+   NOTA PARA MESA DIRECTIVA
+   ========================================================== */
+
 .nota-mesa-directiva {
     display: flex;
     align-items: flex-start;
     gap: 13px;
+
     max-width: 980px;
-    margin: 18px auto 32px;
-    padding: 16px 18px;
+
+    margin: 20px auto 32px;
+    padding: 15px 18px;
+
     box-sizing: border-box;
+
     border: 1px solid #e8e0e3;
     border-radius: 12px;
+
     background: #fbf9fa;
     color: #5f6368;
 }
 
 .nota-icono {
-    flex: 0 0 30px;
-    width: 30px;
-    height: 30px;
+    flex: 0 0 29px;
+
+    width: 29px;
+    height: 29px;
+
     color: var(--vino);
 }
 
@@ -489,14 +607,15 @@ body {
 .nota-titulo {
     color: #4b5563;
     font-size: 13px;
-    font-weight: 750;
+    font-weight: 700;
 }
 
 .nota-texto {
     margin-top: 6px;
+
     color: #6b7280;
     font-size: 12.5px;
-    line-height: 1.65;
+    line-height: 1.6;
 }
 
 .nota-texto p {
@@ -515,7 +634,6 @@ body {
 .nota-gracias {
     color: #7b8188;
 }
-
 
 /* ==========================================================
    RESPONSIVE
@@ -596,16 +714,21 @@ body {
    ICONO DE REGRESO
    ========================================================== */
 
+/* ==========================================================
+   BOTÓN REGRESAR — ENCABEZADO INSTITUCIONAL
+   ========================================================== */
+
 .btn-regresar {
-    border: 1px solid var(--borde);
-    background: #ffffff;
-    color: #4b5563;
-    border-radius: 9px;
+    border: 1px solid rgba(255, 255, 255, .25);
+    background: rgba(255, 255, 255, .10);
+    color: #ffffff;
+    border-radius: 18px;
 }
 
 .btn-regresar:hover {
-    color: var(--vino);
-    border-color: #d9b7c1;
+    background: rgba(255, 255, 255, .18);
+    border-color: rgba(255, 255, 255, .40);
+    color: #ffffff;
 }
 
 </style>
@@ -651,17 +774,66 @@ body {
 
 <main class="container">
 
-    <div class="page-intro">
+<div class="page-intro">
 
-        <h1>
-            Aprobación de Mesa Directiva
-        </h1>
+    <div class="titulo-seccion">
 
-        <div class="descripcion">
-            Revisión de la obra y emisión del Visto Bueno correspondiente.
+        <span class="titulo-seccion-icono" aria-hidden="true">
+
+            <svg viewBox="0 0 24 24" fill="none">
+
+                <!-- Documento -->
+                <path
+                    d="M7 3.5h7l4 4V20.5H7z"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linejoin="round"
+                />
+
+                <!-- Doblez -->
+                <path
+                    d="M14 3.5v4h4"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linejoin="round"
+                />
+
+                <!-- Líneas -->
+                <path
+                    d="M10 11h5M10 14h5"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                />
+
+                <!-- Visto bueno -->
+                <path
+                    d="m10 17 1.5 1.5L15 15"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+
+            </svg>
+
+        </span>
+
+        <div class="titulo-seccion-contenido">
+
+            <h1>
+                Aprobación de Mesa Directiva
+            </h1>
+
+            <div class="descripcion">
+                Revisión de la obra y emisión del Visto Bueno correspondiente.
+            </div>
+
         </div>
 
     </div>
+
+</div>
 
 
     <section
