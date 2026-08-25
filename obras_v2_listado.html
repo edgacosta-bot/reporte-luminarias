@@ -124,7 +124,18 @@
 /* Área del detalle */
 
 .archivo-detalle {
-    padding-top: 12px;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 0 0;
+}
+
+.obra-archivada[open] .archivo-detalle {
+    display: block !important;
+}
+
+.obra-archivada[open] .archivo-detalle .suspension-info {
+    display: block !important;
 }
 
 /* =========================================================
