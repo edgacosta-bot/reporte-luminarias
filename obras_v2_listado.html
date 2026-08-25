@@ -373,7 +373,7 @@ html:not(.sigvic-inicializado) body {
 
 .selector-estados {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 16px;
     margin: 0 0 30px;
 }
@@ -416,10 +416,15 @@ html:not(.sigvic-inicializado) body {
     box-shadow: 0 8px 22px rgba(153,27,63,.12);
 }
 
+.boton-estado-obra.activo .boton-estado-contador {
+    color: #991b3f;
+}
+
 .boton-estado-icono {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
     display: block;
+    color: currentColor;
 }
 
 .boton-estado-icono svg {
@@ -433,6 +438,14 @@ html:not(.sigvic-inicializado) body {
     font-weight: 700;
     line-height: 1.2;
     text-align: center;
+}
+
+.boton-estado-contador {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1;
+    color: #6b7280;
+    margin-left: 3px;
 }
 
 .seccion-obras {
@@ -715,86 +728,292 @@ html:not(.sigvic-inicializado) body {
          SELECTOR DE ESTADOS OPERATIVOS
          ===================================================== -->
 
-    <div class="selector-estados" aria-label="Estados de las obras">
+<!-- =====================================================
+     SELECTOR DE ESTADOS OPERATIVOS
+     ===================================================== -->
 
-        <button type="button"
-                class="boton-estado-obra"
-                id="btnEstadoEjecucion"
-                aria-pressed="false"
-                onclick="seleccionarEstadoObras('ejecucion')">
-            <span class="boton-estado-icono" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M4 20h16M6 20V9.5L12 4l6 5.5V20"
-                          stroke="currentColor" stroke-width="1.8"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M9 20v-5h6v5M8 9h2M14 9h2"
-                          stroke="currentColor" stroke-width="1.8"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </span>
-            <span class="boton-estado-texto">En Ejecución</span>
-        </button>
+<div class="selector-estados" aria-label="Estados de las obras">
 
-        <button type="button"
-                class="boton-estado-obra"
-                id="btnEstadoSuspendidas"
-                aria-pressed="false"
-                onclick="seleccionarEstadoObras('suspendidas')">
-            <span class="boton-estado-icono" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="8.5"
-                            stroke="currentColor" stroke-width="1.8"/>
-                    <path d="M9.5 9v6M14.5 9v6"
-                          stroke="currentColor" stroke-width="1.8"
-                          stroke-linecap="round"/>
-                </svg>
-            </span>
-            <span class="boton-estado-texto">Suspendidas</span>
-        </button>
+    <!-- EN APROBACIÓN MESA DIRECTIVA -->
 
-        <button type="button"
-                class="boton-estado-obra"
-                id="btnEstadoTerminadas"
-                aria-pressed="false"
-                onclick="seleccionarEstadoObras('terminadas')">
-            <span class="boton-estado-icono" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="8.5"
-                            stroke="currentColor" stroke-width="1.8"/>
-                    <path d="m8.5 12 2.3 2.3 4.8-5"
-                          stroke="currentColor" stroke-width="1.8"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </span>
-            <span class="boton-estado-texto">Terminadas</span>
-        </button>
+    <button type="button"
+            class="boton-estado-obra"
+            id="btnEstadoAprobacion"
+            aria-pressed="false"
+            onclick="seleccionarEstadoObras('aprobacion')">
 
-        <button type="button"
-                class="boton-estado-obra"
-                id="btnEstadoArchivadas"
-                aria-pressed="false"
-                onclick="seleccionarEstadoObras('archivadas')">
-            <span class="boton-estado-icono" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M4.5 7.5h15v11h-15z"
-                          stroke="currentColor" stroke-width="1.8"
-                          stroke-linejoin="round"/>
-                    <path d="M3.5 4.5h17v3h-17zM9 12h6"
-                          stroke="currentColor" stroke-width="1.8"
-                          stroke-linejoin="round" stroke-linecap="round"/>
-                </svg>
-            </span>
-            <span class="boton-estado-texto">Archivadas</span>
-        </button>
+        <span class="boton-estado-icono" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
 
-    </div>
+                <!-- Documento -->
+                <path
+                    d="M6 3.5h8l4 4V20.5H6V3.5Z"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linejoin="round"/>
+
+                <path
+                    d="M14 3.5v4h4"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linejoin="round"/>
+
+                <!-- Texto -->
+                <path
+                    d="M9 11h6M9 14h4"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"/>
+
+                <!-- VoBo -->
+                <path
+                    d="m14.5 17 1.4 1.4 2.6-3"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"/>
+
+            </svg>
+        </span>
+
+        <span class="boton-estado-texto">
+            En aprobación Mesa Directiva
+        </span>
+
+        <span class="boton-estado-contador"
+              id="contadorEstadoAprobacion">
+            (0)
+        </span>
+
+    </button>
+
+
+    <!-- EN EJECUCIÓN -->
+
+    <button type="button"
+            class="boton-estado-obra"
+            id="btnEstadoEjecucion"
+            aria-pressed="false"
+            onclick="seleccionarEstadoObras('ejecucion')">
+
+        <span class="boton-estado-icono" aria-hidden="true">
+
+            <svg viewBox="0 0 24 24" fill="none">
+
+                <path
+                    d="M4.5 20.5h15"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"/>
+
+                <path
+                    d="M6.5 20.5V7.5L12 4l5.5 3.5v13"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linejoin="round"/>
+
+                <path
+                    d="M9 10h1.5M13.5 10H15"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"/>
+
+                <path
+                    d="M9 13.5h1.5M13.5 13.5H15"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"/>
+
+                <path
+                    d="M10 20.5v-3.5h4v3.5"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linejoin="round"/>
+
+            </svg>
+
+        </span>
+
+        <span class="boton-estado-texto">
+            En ejecución
+        </span>
+
+        <span class="boton-estado-contador"
+              id="contadorEstadoEjecucion">
+            (0)
+        </span>
+
+    </button>
+
+
+    <!-- SUSPENDIDAS -->
+
+    <button type="button"
+            class="boton-estado-obra"
+            id="btnEstadoSuspendidas"
+            aria-pressed="false"
+            onclick="seleccionarEstadoObras('suspendidas')">
+
+        <span class="boton-estado-icono" aria-hidden="true">
+
+            <svg viewBox="0 0 24 24" fill="none">
+
+                <!-- Documento -->
+                <path
+                    d="M6 3.5h8l4 4V20.5H6V3.5Z"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linejoin="round"/>
+
+                <path
+                    d="M14 3.5v4h4"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linejoin="round"/>
+
+                <!-- Pausa -->
+                <path
+                    d="M9.5 11v4M14.5 11v4"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linecap="round"/>
+
+            </svg>
+
+        </span>
+
+        <span class="boton-estado-texto">
+            Suspendidas
+        </span>
+
+        <span class="boton-estado-contador"
+              id="contadorEstadoSuspendidas">
+            (0)
+        </span>
+
+    </button>
+
+
+    <!-- TERMINADAS -->
+
+    <button type="button"
+            class="boton-estado-obra"
+            id="btnEstadoTerminadas"
+            aria-pressed="false"
+            onclick="seleccionarEstadoObras('terminadas')">
+
+        <span class="boton-estado-icono" aria-hidden="true">
+
+            <svg viewBox="0 0 24 24" fill="none">
+
+                <!-- Documento -->
+                <path
+                    d="M6 3.5h8l4 4V20.5H6V3.5Z"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linejoin="round"/>
+
+                <path
+                    d="M14 3.5v4h4"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linejoin="round"/>
+
+                <!-- Check -->
+                <path
+                    d="m9 14 2.2 2.2 4.3-4.7"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"/>
+
+            </svg>
+
+        </span>
+
+        <span class="boton-estado-texto">
+            Terminadas
+        </span>
+
+        <span class="boton-estado-contador"
+              id="contadorEstadoTerminadas">
+            (0)
+        </span>
+
+    </button>
+
+
+    <!-- ARCHIVADAS -->
+
+    <button type="button"
+            class="boton-estado-obra"
+            id="btnEstadoArchivadas"
+            aria-pressed="false"
+            onclick="seleccionarEstadoObras('archivadas')">
+
+        <span class="boton-estado-icono" aria-hidden="true">
+
+            <svg viewBox="0 0 24 24" fill="none">
+
+                <!-- Caja / archivo -->
+                <path
+                    d="M4.5 7.5h15v11h-15z"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linejoin="round"/>
+
+                <path
+                    d="M3.5 4.5h17v3h-17z"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linejoin="round"/>
+
+                <path
+                    d="M9 12h6"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"/>
+
+            </svg>
+
+        </span>
+
+        <span class="boton-estado-texto">
+            Archivadas
+        </span>
+
+        <span class="boton-estado-contador"
+              id="contadorEstadoArchivadas">
+            (0)
+        </span>
+
+    </button>
+
+</div>
 
     <div id="estadoSeleccionado"
          class="estado-seleccionado"
          style="display:none;">
     </div>
 
+<!-- =====================================================
+     EN APROBACIÓN MESA DIRECTIVA
+     ===================================================== -->
 
+<section id="seccionAprobacion" class="card seccion-obras">
+
+    <div class="card-title">
+        En aprobación Mesa Directiva
+    </div>
+
+    <div class="card-subtitle">
+        Obras pendientes de los Vistos Buenos de la Mesa Directiva.
+    </div>
+
+    <div id="listaAprobacion"></div>
+
+</section>
+    
     <!-- =====================================================
          EN EJECUCIÓN
          ===================================================== -->
@@ -1324,6 +1543,7 @@ let obraContactos = null;
 let listaEjecucion = [];
 let listaSuspendidas = [];
 let listaTerminadas = [];
+let listaAprobacion = [];
 
 /* ==========================================================
    INICIALIZACIÓN
@@ -1524,8 +1744,9 @@ async function cargarObras() {
 
 
         /*
-         * Conservar las listas en memoria
-         * para las acciones del frontend.
+         * =====================================================
+         * CONSERVAR LAS LISTAS EN MEMORIA
+         * =====================================================
          */
 
         listaEjecucion =
@@ -1547,18 +1768,34 @@ async function cargarObras() {
 
 
         /*
-         * PENDIENTE DE VOBOS
+         * =====================================================
+         * APROBACIÓN MESA DIRECTIVA
+         * =====================================================
+         */
+
+        listaAprobacion =
+            Array.isArray(data?.pendiente_vobos)
+                ? data.pendiente_vobos
+                : [];
+
+
+        /*
+         * =====================================================
+         * APROBACIÓN MESA DIRECTIVA
+         * =====================================================
          */
 
         renderizarLista(
-            "listaVobos",
-            data?.pendiente_vobos || [],
+            "listaAprobacion",
+            listaAprobacion,
             "PENDIENTE_VOBOS"
         );
 
 
         /*
+         * =====================================================
          * EJECUCIÓN
+         * =====================================================
          */
 
         renderizarLista(
@@ -1569,8 +1806,9 @@ async function cargarObras() {
 
 
         /*
+         * =====================================================
          * SUSPENDIDAS
-         */
+         * ===================================================== */
 
         renderizarLista(
             "listaSuspendidas",
@@ -1580,8 +1818,9 @@ async function cargarObras() {
 
 
         /*
+         * =====================================================
          * TERMINADAS
-         */
+         * ===================================================== */
 
         renderizarLista(
             "listaTerminadas",
@@ -1591,8 +1830,9 @@ async function cargarObras() {
 
 
         /*
+         * =====================================================
          * ARCHIVADAS
-         */
+         * ===================================================== */
 
         renderizarLista(
             "listaArchivadas",
@@ -1602,16 +1842,102 @@ async function cargarObras() {
 
 
         /*
-         * CONTADOR DE ARCHIVADAS
+         * =====================================================
+         * CONTADORES DE ESTADOS
+         * ===================================================== */
+
+        const contadorAprobacion =
+            document.getElementById(
+                "contadorEstadoAprobacion"
+            );
+
+        if (contadorAprobacion) {
+
+            contadorAprobacion.textContent =
+                `(${listaAprobacion.length})`;
+
+        }
+
+
+        const contadorEjecucion =
+            document.getElementById(
+                "contadorEstadoEjecucion"
+            );
+
+        if (contadorEjecucion) {
+
+            contadorEjecucion.textContent =
+                `(${listaEjecucion.length})`;
+
+        }
+
+
+        const contadorSuspendidas =
+            document.getElementById(
+                "contadorEstadoSuspendidas"
+            );
+
+        if (contadorSuspendidas) {
+
+            contadorSuspendidas.textContent =
+                `(${listaSuspendidas.length})`;
+
+        }
+
+
+        const contadorTerminadas =
+            document.getElementById(
+                "contadorEstadoTerminadas"
+            );
+
+        if (contadorTerminadas) {
+
+            contadorTerminadas.textContent =
+                `(${listaTerminadas.length})`;
+
+        }
+
+
+        const contadorArchivadas =
+            document.getElementById(
+                "contadorEstadoArchivadas"
+            );
+
+        if (contadorArchivadas) {
+
+            contadorArchivadas.textContent =
+                `(${(data?.archivadas || []).length})`;
+
+        }
+
+
+        /*
+         * =====================================================
+         * CONTADOR INTERNO DE ARCHIVADAS
+         * =====================================================
          */
 
-        document.getElementById(
-            "contadorArchivadas"
-        ).textContent =
-            data?.archivadas_total ?? 0;
+        const contadorArchivadasResumen =
+            document.getElementById(
+                "contadorArchivadas"
+            );
 
+        if (contadorArchivadasResumen) {
+
+            contadorArchivadasResumen.textContent =
+                data?.archivadas_total ?? 0;
+
+        }
+
+
+        /*
+         * =====================================================
+         * FINALIZAR CARGA
+         * =====================================================
+         */
 
         ocultarMensaje();
+
 
     } catch (error) {
 
