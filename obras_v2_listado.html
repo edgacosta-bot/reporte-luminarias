@@ -1187,7 +1187,75 @@ async function renderizarLista(
 
        let informacionArchivo = "";
 
+if (estado === "ARCHIVADA") {
 
+    informacionArchivo = `
+
+        <div class="suspension-info">
+
+            <div>
+                <strong>Fecha de terminación:</strong>
+                ${
+                    obra.fecha_terminacion
+                    ? escapeHTML(
+                        new Date(
+                            obra.fecha_terminacion
+                        ).toLocaleDateString(
+                            "es-MX"
+                        )
+                    )
+                    : "No registrada"
+                }
+            </div>
+
+            <div>
+                <strong>Terminada por:</strong>
+                ${escapeHTML(
+                    obra.terminado_por ||
+                    "No identificado"
+                )}
+            </div>
+
+            ${
+                obra.observaciones_terminacion
+                ? `
+                    <div>
+                        <strong>Observaciones de terminación:</strong>
+                        ${escapeHTML(
+                            obra.observaciones_terminacion
+                        )}
+                    </div>
+                `
+                : ""
+            }
+
+            <div>
+                <strong>Fecha de archivo:</strong>
+                ${
+                    obra.fecha_archivado
+                    ? escapeHTML(
+                        new Date(
+                            obra.fecha_archivado
+                        ).toLocaleDateString(
+                            "es-MX"
+                        )
+                    )
+                    : "No registrada"
+                }
+            </div>
+
+            <div>
+                <strong>Archivada por:</strong>
+                ${escapeHTML(
+                    obra.archivado_por ||
+                    "No identificado"
+                )}
+            </div>
+
+        </div>
+
+    `;
+}
 
         /*
          * =====================================================
