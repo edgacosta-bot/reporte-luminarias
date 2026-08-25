@@ -2034,6 +2034,17 @@ async function cargarTiposObra() {
 
 function configurarEventos() {
 
+    document
+        .getElementById("btnRegresar")
+        .addEventListener(
+            "click",
+            function() {
+
+                window.location.href =
+                    "obras_v2_listado.html";
+
+            }
+        );
 
     document
         .getElementById("privada")
