@@ -486,7 +486,7 @@
     try {
         if (
             sessionStorage.getItem(
-                "sigvic_obras_bienvenida"
+                "sigvic_obras_bienvenida_" + window.__SIGVIC_USER_ID
             ) === "1"
         ) {
             document.documentElement.classList.add(
@@ -1304,6 +1304,11 @@ window.addEventListener("DOMContentLoaded", async () => {
             throw new Error("No se pudo identificar al usuario.");
         }
 
+        // La bienvenida se controla por usuario, no por pestaña global.
+        // Así, si se cambia de usuario en la misma pestaña, el nuevo
+        // usuario recibe su propia bienvenida.
+        window.__SIGVIC_USER_ID = user.id;
+
         // Administrador / Administración
         const { data: residente, error: residenteError } =
             await supabaseClient
@@ -1372,15 +1377,18 @@ window.addEventListener("DOMContentLoaded", async () => {
                  */
                 try {
 
+                    const claveBienvenida =
+                        "sigvic_obras_bienvenida_" + user.id;
+
                     const bienvenidaMostrada =
                         sessionStorage.getItem(
-                            "sigvic_obras_bienvenida"
+                            claveBienvenida
                         ) === "1";
 
                     if (!bienvenidaMostrada) {
 
                         sessionStorage.setItem(
-                            "sigvic_obras_bienvenida",
+                            claveBienvenida,
                             "1"
                         );
 
