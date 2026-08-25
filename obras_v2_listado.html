@@ -362,13 +362,47 @@ html:not(.sigvic-inicializado) body {
     color: #991b3f;
 }
 
+/* =====================================================
+   TÍTULO DE CONTENIDO — OBRAS
+   ===================================================== */
+
 .page-intro h1 {
     margin: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
     text-align: center;
-    font-size: 32px;
+
+    font-size: 27px;
     line-height: 1.2;
     font-weight: 600;
+
     color: #333333;
+}
+
+
+/* Icono de Obras en construcción */
+
+.titulo-obras-icono {
+    display: inline-flex;
+
+    width: 34px;
+    height: 34px;
+
+    align-items: center;
+    justify-content: center;
+
+    color: #8f1d3f;
+
+    flex-shrink: 0;
+}
+
+.titulo-obras-icono svg {
+    width: 100%;
+    height: 100%;
 }
         
 
@@ -761,8 +795,45 @@ html:not(.sigvic-inicializado) body {
 
 <div class="page-intro">
 
-    <h1>
-        Obras en construcción
+    <h1 class="titulo-obras">
+
+        <span class="titulo-obras-icono" aria-hidden="true">
+
+            <svg viewBox="0 0 24 24" fill="none">
+
+                <!-- Edificio -->
+                <path
+                    d="M5 21V8.5L12 4l7 4.5V21"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+
+                <!-- Planta / niveles -->
+                <path
+                    d="M8.5 12h2M13.5 12h2M8.5 15.5h2M13.5 15.5h2"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                />
+
+                <!-- Base -->
+                <path
+                    d="M3.5 21h17"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                />
+
+            </svg>
+
+        </span>
+
+        <span>
+            Obras en construcción
+        </span>
+
     </h1>
 
 </div>
