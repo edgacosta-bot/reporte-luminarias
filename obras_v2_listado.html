@@ -1002,14 +1002,6 @@ html:not(.sigvic-inicializado) body {
 
 <section id="seccionAprobacion" class="card seccion-obras">
 
-    <div class="card-title">
-        En aprobación Mesa Directiva
-    </div>
-
-    <div class="card-subtitle">
-        Obras pendientes de los Vistos Buenos de la Mesa Directiva.
-    </div>
-
     <div id="listaAprobacion"></div>
 
 </section>
@@ -3137,6 +3129,13 @@ function archivarObra(obraId) {
 function seleccionarEstadoObras(estado) {
 
     const configuracion = {
+       
+        aprobacion: {
+            boton: "btnEstadoAprobacion",
+            seccion: "seccionAprobacion",
+            titulo: "En aprobación Mesa Directiva"
+        },
+        
         ejecucion: {
             boton: "btnEstadoEjecucion",
             seccion: "seccionEjecucion",
