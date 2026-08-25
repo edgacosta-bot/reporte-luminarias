@@ -2722,41 +2722,13 @@ function seleccionarEstadoObras(estado) {
         }
     };
 
-    const seleccion = configuracion[estado];
+
+    const seleccion =
+        configuracion[estado];
 
     if (!seleccion) {
         return;
     }
-
-    document
-        .querySelectorAll(".boton-estado-obra")
-        .forEach(boton => {
-
-            const activo =
-                boton.id === seleccion.boton;
-
-            boton.classList.toggle(
-                "activo",
-                activo
-            );
-
-            boton.setAttribute(
-                "aria-pressed",
-                activo ? "true" : "false"
-            );
-
-        });
-
-
-    document
-        .querySelectorAll(".seccion-obras")
-        .forEach(seccion => {
-
-            seccion.classList.remove(
-                "visible"
-            );
-
-        });
 
 
     const seccion =
@@ -2764,10 +2736,98 @@ function seleccionarEstadoObras(estado) {
             seleccion.seccion
         );
 
+
+    const estabaVisible =
+        seccion &&
+        seccion.classList.contains("visible");
+
+
+    /*
+     * Primero cerramos todas las secciones
+     * y desactivamos todos los botones.
+     */
+
+    document
+        .querySelectorAll(".seccion-obras")
+        .forEach(elemento => {
+
+            elemento.classList.remove(
+                "visible"
+            );
+
+        });
+
+
+    document
+        .querySelectorAll(".boton-estado-obra")
+        .forEach(boton => {
+
+            boton.classList.remove(
+                "activo"
+            );
+
+            boton.setAttribute(
+                "aria-pressed",
+                "false"
+            );
+
+        });
+
+
+    /*
+     * Si la sección que se pulsó ya estaba abierta,
+     * el segundo clic simplemente la deja cerrada.
+     */
+
+    if (estabaVisible) {
+
+        const indicador =
+            document.getElementById(
+                "estadoSeleccionado"
+            );
+
+        if (indicador) {
+
+            indicador.textContent = "";
+
+            indicador.style.display =
+                "none";
+
+        }
+
+        return;
+    }
+
+
+    /*
+     * Si estaba cerrada, la abrimos.
+     */
+
     if (seccion) {
+
         seccion.classList.add(
             "visible"
         );
+
+    }
+
+
+    const boton =
+        document.getElementById(
+            seleccion.boton
+        );
+
+    if (boton) {
+
+        boton.classList.add(
+            "activo"
+        );
+
+        boton.setAttribute(
+            "aria-pressed",
+            "true"
+        );
+
     }
 
 
@@ -2783,6 +2843,7 @@ function seleccionarEstadoObras(estado) {
 
         indicador.style.display =
             "block";
+
     }
 }
 
