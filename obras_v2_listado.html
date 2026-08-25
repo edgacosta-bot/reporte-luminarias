@@ -362,117 +362,27 @@
     text-align: center;
 }
         
+</style>
 
-/* ==========================================================
-   SELECTOR DE ESTADO DE LAS OBRAS
-   ========================================================== */
 
-.selector-estados {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 16px;
-    margin: 0 0 30px;
+<style id="guardBienvenidaSesion">
+#bienvenidaSIGVIC.oculta-por-sesion {
+    display: none !important;
 }
-
-.boton-estado-obra {
-    appearance: none;
-    border: 1px solid #e5e7eb;
-    background: #ffffff;
-    border-radius: 14px;
-    min-height: 118px;
-    padding: 18px 14px;
-    cursor: pointer;
-    color: #374151;
-    box-shadow: 0 4px 14px rgba(0,0,0,.06);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: transform .18s ease, box-shadow .18s ease,
-                border-color .18s ease, color .18s ease,
-                background .18s ease;
+</style>
+<script>
+(function () {
+    try {
+        if (sessionStorage.getItem("sigvic_obras_bienvenida") === "1") {
+            document.documentElement.classList.add("sigvic-bienvenida-ya-mostrada");
+        }
+    } catch (e) {}
+})();
+</script>
+<style>
+html.sigvic-bienvenida-ya-mostrada #bienvenidaSIGVIC {
+    display: none !important;
 }
-
-.boton-estado-obra:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0,0,0,.09);
-    border-color: #c9a0ad;
-}
-
-.boton-estado-obra:focus-visible {
-    outline: 3px solid rgba(153,27,63,.20);
-    outline-offset: 2px;
-}
-
-.boton-estado-obra.activo {
-    border-color: #991b3f;
-    background: #fff8fa;
-    color: #991b3f;
-    box-shadow: 0 8px 22px rgba(153,27,63,.12);
-}
-
-.boton-estado-icono {
-    width: 34px;
-    height: 34px;
-    display: block;
-}
-
-.boton-estado-icono svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-
-.boton-estado-texto {
-    font-size: 16px;
-    font-weight: 700;
-    line-height: 1.2;
-    text-align: center;
-}
-
-.seccion-obras {
-    display: none;
-}
-
-.seccion-obras.visible {
-    display: block;
-}
-
-.estado-seleccionado {
-    color: #7f1d3f;
-    font-size: 24px;
-    font-weight: 700;
-    margin: 0 0 16px;
-    text-align: center;
-}
-
-@media (max-width: 800px) {
-    .selector-estados {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 480px) {
-    .selector-estados {
-        gap: 10px;
-    }
-
-    .boton-estado-obra {
-        min-height: 105px;
-        padding: 14px 10px;
-    }
-
-    .boton-estado-icono {
-        width: 30px;
-        height: 30px;
-    }
-
-    .boton-estado-texto {
-        font-size: 14px;
-    }
-}
-
 </style>
 
 </head>
@@ -625,7 +535,7 @@
 <div class="page-intro">
 
     <h1>
-        Listado de Obras
+        Listado de Obras de Construcción
     </h1>
 
 </div>
@@ -646,98 +556,15 @@
     </section>
 
 
-
-    <!-- =====================================================
-         SELECTOR DE ESTADOS OPERATIVOS
-         ===================================================== -->
-
-    <div class="selector-estados" aria-label="Estados de las obras">
-
-        <button type="button"
-                class="boton-estado-obra"
-                id="btnEstadoEjecucion"
-                aria-pressed="false"
-                onclick="seleccionarEstadoObras('ejecucion')">
-            <span class="boton-estado-icono" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M4 20h16M6 20V9.5L12 4l6 5.5V20"
-                          stroke="currentColor" stroke-width="1.8"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M9 20v-5h6v5M8 9h2M14 9h2"
-                          stroke="currentColor" stroke-width="1.8"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </span>
-            <span class="boton-estado-texto">En Ejecución</span>
-        </button>
-
-        <button type="button"
-                class="boton-estado-obra"
-                id="btnEstadoSuspendidas"
-                aria-pressed="false"
-                onclick="seleccionarEstadoObras('suspendidas')">
-            <span class="boton-estado-icono" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="8.5"
-                            stroke="currentColor" stroke-width="1.8"/>
-                    <path d="M9.5 9v6M14.5 9v6"
-                          stroke="currentColor" stroke-width="1.8"
-                          stroke-linecap="round"/>
-                </svg>
-            </span>
-            <span class="boton-estado-texto">Suspendidas</span>
-        </button>
-
-        <button type="button"
-                class="boton-estado-obra"
-                id="btnEstadoTerminadas"
-                aria-pressed="false"
-                onclick="seleccionarEstadoObras('terminadas')">
-            <span class="boton-estado-icono" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="8.5"
-                            stroke="currentColor" stroke-width="1.8"/>
-                    <path d="m8.5 12 2.3 2.3 4.8-5"
-                          stroke="currentColor" stroke-width="1.8"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </span>
-            <span class="boton-estado-texto">Terminadas</span>
-        </button>
-
-        <button type="button"
-                class="boton-estado-obra"
-                id="btnEstadoArchivadas"
-                aria-pressed="false"
-                onclick="seleccionarEstadoObras('archivadas')">
-            <span class="boton-estado-icono" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M4.5 7.5h15v11h-15z"
-                          stroke="currentColor" stroke-width="1.8"
-                          stroke-linejoin="round"/>
-                    <path d="M3.5 4.5h17v3h-17zM9 12h6"
-                          stroke="currentColor" stroke-width="1.8"
-                          stroke-linejoin="round" stroke-linecap="round"/>
-                </svg>
-            </span>
-            <span class="boton-estado-texto">Archivadas</span>
-        </button>
-
-    </div>
-
-    <div id="estadoSeleccionado"
-         class="estado-seleccionado"
-         style="display:none;">
-    </div>
-
-
     <!-- =====================================================
          EN EJECUCIÓN
          ===================================================== -->
 
-    <section id="seccionEjecucion" class="card seccion-obras">
+    <section class="card">
 
-        <div class="card-title">En ejecución</div>
+        <div class="card-title">
+            En ejecución
+        </div>
 
         <div class="card-subtitle">
             Obras actualmente en ejecución.
@@ -752,9 +579,11 @@
          SUSPENDIDAS
          ===================================================== -->
 
-    <section id="seccionSuspendidas" class="card seccion-obras">
+    <section class="card">
 
-        <div class="card-title">Suspendidas</div>
+        <div class="card-title">
+            Suspendidas
+        </div>
 
         <div class="card-subtitle">
             Obras cuya ejecución se encuentra temporalmente suspendida.
@@ -769,9 +598,11 @@
          TERMINADAS
          ===================================================== -->
 
-    <section id="seccionTerminadas" class="card seccion-obras">
+    <section class="card">
 
-        <div class="card-title">Terminadas</div>
+        <div class="card-title">
+            Terminadas
+        </div>
 
         <div class="card-subtitle">
             Obras cuya ejecución ha concluido.
@@ -786,34 +617,44 @@
          ARCHIVADAS
          ===================================================== -->
 
-    <section id="seccionArchivadas" class="card seccion-obras">
+    <section class="card">
 
-        <div class="card-title">Archivadas</div>
+        <div class="card-title">
+            Archivadas
+        </div>
 
         <div class="card-subtitle">
             Obras retiradas del listado operativo.
         </div>
 
-        <div id="archivadasResumen" class="resumen">
 
+        <div
+            id="archivadasResumen"
+            class="resumen">
+        
             <div class="resumen-item">
-
+        
                 <div class="resumen-label">
                     Obras archivadas
                 </div>
-
-                <div id="contadorArchivadas" class="resumen-value">
+        
+                <div
+                    id="contadorArchivadas"
+                    class="resumen-value">
                     0
                 </div>
-
+        
             </div>
-
+        
         </div>
 
-        <div id="listaArchivadas"></div>
+
+<div
+    id="listaArchivadas">
+</div>
+            
 
     </section>
-
 
 </main>
 
@@ -2691,167 +2532,8 @@ function archivarObra(obraId) {
 }
 
 /* ==========================================================
-   SELECTOR DE ESTADO DE OBRAS
-   ========================================================== */
-
-function seleccionarEstadoObras(estado) {
-
-    const configuracion = {
-        ejecucion: {
-            boton: "btnEstadoEjecucion",
-            seccion: "seccionEjecucion",
-            titulo: "En Ejecución"
-        },
-
-        suspendidas: {
-            boton: "btnEstadoSuspendidas",
-            seccion: "seccionSuspendidas",
-            titulo: "Suspendidas"
-        },
-
-        terminadas: {
-            boton: "btnEstadoTerminadas",
-            seccion: "seccionTerminadas",
-            titulo: "Terminadas"
-        },
-
-        archivadas: {
-            boton: "btnEstadoArchivadas",
-            seccion: "seccionArchivadas",
-            titulo: "Archivadas"
-        }
-    };
-
-
-    const seleccion =
-        configuracion[estado];
-
-    if (!seleccion) {
-        return;
-    }
-
-
-    const seccion =
-        document.getElementById(
-            seleccion.seccion
-        );
-
-
-    const estabaVisible =
-        seccion &&
-        seccion.classList.contains("visible");
-
-
-    /*
-     * Primero cerramos todas las secciones
-     * y desactivamos todos los botones.
-     */
-
-    document
-        .querySelectorAll(".seccion-obras")
-        .forEach(elemento => {
-
-            elemento.classList.remove(
-                "visible"
-            );
-
-        });
-
-
-    document
-        .querySelectorAll(".boton-estado-obra")
-        .forEach(boton => {
-
-            boton.classList.remove(
-                "activo"
-            );
-
-            boton.setAttribute(
-                "aria-pressed",
-                "false"
-            );
-
-        });
-
-
-    /*
-     * Si la sección que se pulsó ya estaba abierta,
-     * el segundo clic simplemente la deja cerrada.
-     */
-
-    if (estabaVisible) {
-
-        const indicador =
-            document.getElementById(
-                "estadoSeleccionado"
-            );
-
-        if (indicador) {
-
-            indicador.textContent = "";
-
-            indicador.style.display =
-                "none";
-
-        }
-
-        return;
-    }
-
-
-    /*
-     * Si estaba cerrada, la abrimos.
-     */
-
-    if (seccion) {
-
-        seccion.classList.add(
-            "visible"
-        );
-
-    }
-
-
-    const boton =
-        document.getElementById(
-            seleccion.boton
-        );
-
-    if (boton) {
-
-        boton.classList.add(
-            "activo"
-        );
-
-        boton.setAttribute(
-            "aria-pressed",
-            "true"
-        );
-
-    }
-
-
-    const indicador =
-        document.getElementById(
-            "estadoSeleccionado"
-        );
-
-    if (indicador) {
-
-        indicador.textContent =
-            seleccion.titulo;
-
-        indicador.style.display =
-            "block";
-
-    }
-}
-
-
-/* ==========================================================
    MENSAJES
    ========================================================== */
-
 
 function mostrarMensaje(
     texto,
@@ -2959,6 +2641,77 @@ function mostrarBienvenida(nombreCargoBienvenida) {
 
 }
 
+</script>
+
+
+<script>
+/* ==========================================================
+   BIENVENIDA — UNA SOLA VEZ POR SESIÓN DE PESTAÑA
+   ========================================================== */
+(function () {
+
+    const CLAVE_BIENVENIDA =
+        "sigvic_obras_bienvenida";
+
+    try {
+
+        const yaMostrada =
+            sessionStorage.getItem(CLAVE_BIENVENIDA) === "1";
+
+        if (yaMostrada) {
+            document.documentElement
+                .classList
+                .add("sigvic-bienvenida-ya-mostrada");
+        }
+
+    } catch (e) {
+        // Si sessionStorage no está disponible,
+        // se conserva el comportamiento actual.
+    }
+
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const bienvenida =
+                document.getElementById(
+                    "bienvenidaSIGVIC"
+                );
+
+            if (!bienvenida) {
+                return;
+            }
+
+            try {
+
+                if (
+                    sessionStorage.getItem(
+                        CLAVE_BIENVENIDA
+                    ) !== "1"
+                ) {
+
+                    /*
+                     * La cortinilla acaba de entrar
+                     * por primera vez en esta pestaña.
+                     *
+                     * La marcamos como mostrada.
+                     */
+
+                    sessionStorage.setItem(
+                        CLAVE_BIENVENIDA,
+                        "1"
+                    );
+
+                }
+
+            } catch (e) {}
+
+        },
+        { once: true }
+    );
+
+})();
 </script>
 
 </body>
