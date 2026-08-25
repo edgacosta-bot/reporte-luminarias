@@ -641,6 +641,102 @@ html:not(.sigvic-inicializado) body {
     transform: translateX(-1px);
 }
 
+/* ==========================================================
+   TARJETA — AGREGAR OBRA DE CONSTRUCCIÓN
+   ========================================================== */
+
+.tarjeta-agregar-obra {
+    padding: 22px 24px;
+}
+
+.agregar-obra-contenido {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.agregar-obra-icono {
+    flex: 0 0 42px;
+
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--vino);
+
+    background: var(--vino-claro);
+    border-radius: 11px;
+}
+
+.agregar-obra-icono svg {
+    width: 27px;
+    height: 27px;
+    display: block;
+}
+
+.agregar-obra-texto {
+    min-width: 0;
+    flex: 1;
+}
+
+.agregar-obra-titulo {
+    color: #333333;
+    font-size: 19px;
+    font-weight: 650;
+    line-height: 1.25;
+}
+
+.agregar-obra-subtitulo {
+    margin-top: 4px;
+
+    color: var(--texto-suave);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.tarjeta-agregar-obra .btn-accion {
+    flex: 0 0 auto;
+
+    min-height: 44px;
+    padding: 0 18px;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.tarjeta-agregar-obra .btn-accion-icono {
+    width: 21px;
+    height: 21px;
+
+    font-size: 23px;
+}
+
+
+/* ==========================================================
+   RESPONSIVE — AGREGAR OBRA
+   ========================================================== */
+
+@media (max-width: 700px) {
+
+    .agregar-obra-contenido {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .agregar-obra-texto {
+        flex: 1 1 calc(100% - 58px);
+    }
+
+    .tarjeta-agregar-obra .btn-accion {
+        width: 100%;
+        margin-top: 4px;
+    }
+
+}
+
 
 </style>
 
@@ -772,24 +868,74 @@ html:not(.sigvic-inicializado) body {
 
 <section
     id="tarjetaAgregarObra"
-    class="card"
+    class="card tarjeta-agregar-obra"
     style="display: none;">
 
-    <div class="card-title">
-        Agregar Obra de Construcción
-    </div>
+    <div class="agregar-obra-contenido">
 
-    <div class="card-subtitle">
-        Registrar una nueva obra en el sistema.
-    </div>
+        <div class="agregar-obra-icono" aria-hidden="true">
 
-    <button
-        type="button"
-        class="btn-accion"
-        onclick="window.location.href='obras_registro_v2.html'">
-        <span class="btn-accion-icono" aria-hidden="true">+</span>
-        <span>Agregar obra de construcción</span>
-    </button>
+            <svg viewBox="0 0 24 24" fill="none">
+
+                <!-- Edificio en construcción -->
+                <path
+                    d="M5 21V7.5L12 4l7 3.5V21"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+
+                <!-- Niveles -->
+                <path
+                    d="M8.5 11h2M13.5 11h2M8.5 14.5h2M13.5 14.5h2"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                />
+
+                <!-- Base -->
+                <path
+                    d="M3.5 21h17"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                />
+
+            </svg>
+
+        </div>
+
+
+        <div class="agregar-obra-texto">
+
+            <div class="agregar-obra-titulo">
+                Agregar obra de construcción
+            </div>
+
+            <div class="agregar-obra-subtitulo">
+                Registrar una nueva obra en el sistema.
+            </div>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="btn-accion"
+            onclick="window.location.href='obras_registro_v2.html'">
+
+            <span class="btn-accion-icono" aria-hidden="true">
+                +
+            </span>
+
+            <span>
+                Agregar obra
+            </span>
+
+        </button>
+
+    </div>
 
 </section>
 
