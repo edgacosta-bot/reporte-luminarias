@@ -473,6 +473,64 @@
     }
 }
 
+.btn-accion {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    min-height: 52px;
+    padding: 0 24px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #8f173f;
+    color: #ffffff;
+
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+
+    transition:
+        background-color 0.15s ease,
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.btn-accion:hover {
+    background: #7c1236;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+}
+
+.btn-accion:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.btn-accion:focus-visible {
+    outline: 3px solid rgba(143, 23, 63, 0.25);
+    outline-offset: 3px;
+}
+
+.btn-accion-icono {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 25px;
+    height: 25px;
+
+    font-size: 27px;
+    font-weight: 300;
+    line-height: 1;
+}
+
 </style>
 
 
@@ -639,7 +697,8 @@
         type="button"
         class="btn-accion"
         onclick="window.location.href='obras_registro_v2.html'">
-        Agregar obra de construcción
+        <span class="btn-accion-icono" aria-hidden="true">+</span>
+        <span>Agregar obra de construcción</span>
     </button>
 
 </section>
