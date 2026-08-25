@@ -534,27 +534,6 @@
 </style>
 
 
-<style id="guardBienvenidaSesion">
-    html.sigvic-bienvenida-ya-mostrada #bienvenidaSIGVIC {
-        display: none !important;
-    }
-</style>
-<script>
-(function () {
-    try {
-        if (
-            sessionStorage.getItem(
-                "sigvic_obras_bienvenida_" + window.__SIGVIC_USER_ID
-            ) === "1"
-        ) {
-            document.documentElement.classList.add(
-                "sigvic-bienvenida-ya-mostrada"
-            );
-        }
-    } catch (e) {}
-})();
-</script>
-
 </head>
 
 <body>
