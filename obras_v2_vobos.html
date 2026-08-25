@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -8,193 +9,601 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Aprobación Mesa Directiva</title>
+<title>Aprobación de Mesa Directiva</title>
+
+<link rel="stylesheet" href="obras_v2.css">
 
 <style>
 
+/* ==========================================================
+   PANTALLA DE APROBACIÓN — LÍNEA VISUAL SIGVIC OBRAS
+   ========================================================== */
+
+:root {
+    --vino: #991b3f;
+    --vino-oscuro: #7f1d3f;
+    --vino-claro: #fff8fa;
+    --texto: #374151;
+    --texto-suave: #6b7280;
+    --borde: #e5e7eb;
+    --fondo: #f8f9fb;
+    --blanco: #ffffff;
+    --verde: #166534;
+    --verde-fondo: #f0fdf4;
+    --amarillo: #a16207;
+    --amarillo-fondo: #fffbeb;
+    --rojo: #b91c1c;
+    --rojo-fondo: #fef2f2;
+}
+
 body {
-  margin: 0;
-  font-family: Arial;
-  background: #0f172a;
-  color: white;
+    background: var(--fondo);
+    color: var(--texto);
+}
+
+.header {
+    border-bottom: 1px solid var(--borde);
+}
+
+.header-cargo {
+    margin-top: 4px;
+    color: var(--vino);
+    font-size: 14px;
+    font-weight: 700;
 }
 
 .container {
-  padding: 20px;
-  max-width: 700px;
-  margin: auto;
+    max-width: 980px;
 }
 
-.logo {
-  width: 100px;
-  margin: 10px auto 20px;
-  display: block;
+.page-intro {
+    text-align: center;
+    margin-bottom: 26px;
 }
 
-h2 {
-  text-align: center;
+.page-intro h1 {
+    margin: 0;
+    color: #111827;
 }
 
-.card {
-  background: #1e293b;
-  padding: 18px;
-  border-radius: 12px;
-  margin-top: 20px;
+.page-intro .descripcion {
+    margin-top: 7px;
+    color: var(--texto-suave);
+    font-size: 15px;
 }
 
-.vobo {
-  background: #334155;
-  padding: 14px;
-  border-radius: 10px;
-  margin-top: 10px;
-}
-
-.vobo-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.estado {
-  font-weight: bold;
-}
-
-.pendiente {
-  color: #facc15;
-}
-
-.aprobado {
-  color: #22c55e;
-}
-
-.no-aprobado {
-  color: #ef4444;
-}
-
-button {
-  width: 100%;
-  margin-top: 10px;
-  padding: 11px;
-  border: none;
-  border-radius: 8px;
-  color: white;
-  cursor: pointer;
-}
-
-.btn-vobo {
-  background: #22c55e;
-}
-
-.btn-no-vobo {
-  background: #ef4444;
-}
-
-.btn-cancelar {
-  background: #64748b;
-}
-
-textarea {
-  width: 100%;
-  box-sizing: border-box;
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  resize: vertical;
-}
-
-#toast {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #22c55e;
-  padding: 12px 20px;
-  border-radius: 8px;
-  display: none;
-}
 
 /* ==========================================================
-   PARTICIPANTES DE LA OBRA
+   TARJETA PRINCIPAL
+   ========================================================== */
+
+.obra-card {
+    background: var(--blanco);
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 26px;
+    box-shadow: 0 5px 18px rgba(0,0,0,.055);
+}
+
+
+/* ==========================================================
+   IDENTIFICACIÓN DE LA OBRA
+   ========================================================== */
+
+.obra-identificacion {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.obra-clave {
+    color: #111827;
+    font-size: 27px;
+    font-weight: 750;
+    line-height: 1.2;
+}
+
+.obra-descripcion {
+    margin-top: 6px;
+    color: var(--texto-suave);
+    font-size: 15px;
+}
+
+.obra-vobo-resumen {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    white-space: nowrap;
+    padding: 9px 13px;
+    border: 1px solid #ead8de;
+    border-radius: 10px;
+    background: var(--vino-claro);
+    color: var(--vino-oscuro);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.resumen-numero {
+    font-size: 20px;
+}
+
+.resumen-separador {
+    opacity: .5;
+}
+
+
+/* ==========================================================
+   DATOS DE OBRA
+   ========================================================== */
+
+.datos-obra {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.dato-obra {
+    padding: 13px 15px;
+    border: 1px solid #edf0f2;
+    border-radius: 10px;
+    background: #fafafa;
+}
+
+.dato-etiqueta {
+    color: var(--texto-suave);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.dato-valor {
+    margin-top: 5px;
+    color: #111827;
+    font-size: 15px;
+    font-weight: 650;
+}
+
+
+/* ==========================================================
+   SECCIONES
+   ========================================================== */
+
+.separador {
+    height: 1px;
+    margin: 26px 0;
+    background: var(--borde);
+}
+
+.seccion-titulo {
+    margin-bottom: 13px;
+    color: #111827;
+    font-size: 18px;
+    font-weight: 750;
+}
+
+
+/* ==========================================================
+   PARTICIPANTES
    ========================================================== */
 
 .participantes-obra {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 16px;
+    gap: 14px;
 }
-
 
 .participante {
-    background: #334155;
-    border-radius: 10px;
-    padding: 12px;
+    display: flex;
+    gap: 14px;
+    padding: 17px;
+    background: #fafafa;
+    border: 1px solid #edf0f2;
+    border-radius: 12px;
 }
 
+.participante-icono {
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    padding: 7px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    background: var(--vino-claro);
+    color: var(--vino);
+}
+
+.participante-icono svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.participante-contenido {
+    min-width: 0;
+}
 
 .participante-titulo {
-    font-size: 12px;
-    font-weight: bold;
-    color: #cbd5e1;
+    color: var(--texto-suave);
+    font-size: 11px;
+    font-weight: 750;
     text-transform: uppercase;
-    margin-bottom: 7px;
+    letter-spacing: .06em;
 }
-
 
 .participante-nombre {
-    font-weight: bold;
-    margin-bottom: 7px;
+    margin-top: 5px;
+    color: #111827;
+    font-size: 15px;
+    font-weight: 700;
 }
-
 
 .participante-contacto {
+    margin-top: 8px;
+    color: var(--texto-suave);
     font-size: 13px;
-    line-height: 1.6;
+    line-height: 1.65;
 }
 
-
 .participante-contacto a {
-    color: #cbd5e1;
+    color: #4b5563;
     text-decoration: none;
 }
 
-
 .participante-contacto a:hover {
+    color: var(--vino);
     text-decoration: underline;
 }
 
+.contacto-icono {
+    display: inline-block;
+    width: 21px;
+    color: var(--vino);
+}
+
+.sin-contacto {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+
+/* ==========================================================
+   VOBOS
+   ========================================================== */
+
+.vobo {
+    padding: 16px 17px;
+    margin-top: 10px;
+    border: 1px solid #edf0f2;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.vobo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.vobo-cargo {
+    color: #1f2937;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.estado {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .03em;
+    white-space: nowrap;
+}
+
+.estado.pendiente {
+    color: var(--amarillo);
+    background: var(--amarillo-fondo);
+}
+
+.estado.aprobado {
+    color: var(--verde);
+    background: var(--verde-fondo);
+}
+
+.estado.no-aprobado {
+    color: var(--rojo);
+    background: var(--rojo-fondo);
+}
+
+.vobo-fecha {
+    margin-top: 7px;
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+.vobo-observaciones {
+    margin-top: 9px;
+    padding-top: 9px;
+    border-top: 1px solid #f0f0f0;
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.vobo-observaciones span {
+    font-weight: 700;
+}
+
+
+/* ==========================================================
+   ACCIÓN DE VOVO
+   ========================================================== */
+
+.btn-vobo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: auto;
+    min-width: 150px;
+    margin-top: 13px;
+    padding: 10px 17px;
+    border: 1px solid var(--vino);
+    border-radius: 9px;
+    background: var(--vino);
+    color: #ffffff;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 750;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(153,27,63,.14);
+}
+
+.btn-vobo:hover {
+    background: var(--vino-oscuro);
+}
+
+.btn-vobo:focus-visible {
+    outline: 3px solid rgba(153,27,63,.20);
+    outline-offset: 2px;
+}
+
+
+/* ==========================================================
+   TODOS APROBADOS
+   ========================================================== */
+
+.todos-aprobados {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-top: 16px;
+    padding: 15px 17px;
+    border: 1px solid #bbf7d0;
+    border-radius: 12px;
+    background: var(--verde-fondo);
+    color: var(--verde);
+}
+
+.todos-aprobados-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #dcfce7;
+    font-weight: 800;
+}
+
+.todos-aprobados-titulo {
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.todos-aprobados-texto {
+    margin-top: 2px;
+    font-size: 12px;
+    color: #4b7c5c;
+}
+
+
+/* ==========================================================
+   MENSAJES Y TOAST
+   ========================================================== */
+
+#toast {
+    position: fixed;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    z-index: 99999;
+    display: none;
+    max-width: calc(100vw - 40px);
+    padding: 13px 20px;
+    border-radius: 10px;
+    background: var(--verde);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 650;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,.18);
+}
+
+#toast.error {
+    background: var(--rojo);
+}
+
+.msg-error {
+    padding: 16px;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    background: var(--rojo-fondo);
+    color: var(--rojo);
+    line-height: 1.5;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 760px) {
+
+    .obra-card {
+        padding: 20px;
+    }
+
+    .obra-identificacion {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .datos-obra {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .obra-vobo-resumen {
+        align-self: flex-start;
+    }
+
+}
 
 @media (max-width: 560px) {
+
+    .page-intro {
+        margin-bottom: 20px;
+    }
+
+    .page-intro h1 {
+        font-size: 25px;
+    }
+
+    .obra-clave {
+        font-size: 23px;
+    }
+
+    .datos-obra {
+        grid-template-columns: 1fr;
+    }
 
     .participantes-obra {
         grid-template-columns: 1fr;
     }
 
+    .participante {
+        padding: 14px;
+    }
+
+    .vobo-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .btn-vobo {
+        width: 100%;
+    }
+
+}
+
+
+/* ==========================================================
+   ICONO DE REGRESO
+   ========================================================== */
+
+.btn-regresar {
+    border: 1px solid var(--borde);
+    background: #ffffff;
+    color: #4b5563;
+    border-radius: 9px;
+}
+
+.btn-regresar:hover {
+    color: var(--vino);
+    border-color: #d9b7c1;
 }
 
 </style>
 
 </head>
 
+
 <body>
 
-<div class="container">
+<header class="header">
 
-<img src="/icono-512.png" class="logo">
+    <div class="header-left">
 
-<h2>Aprobación Mesa Directiva</h2>
+        <button
+            class="btn-regresar"
+            type="button"
+            onclick="history.back()"
+            title="Regresar">
+            ←
+        </button>
 
-<div id="obra" class="card">
-  Cargando obra...
-</div>
+        <div>
 
-</div>
+            <div class="header-title">
+                Gestión de Obras
+            </div>
+
+            <div class="header-subtitle">
+                Aprobación de Mesa Directiva
+            </div>
+
+            <div
+                id="usuarioCargo"
+                class="header-cargo">
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <div class="page-intro">
+
+        <h1>
+            Aprobación de Mesa Directiva
+        </h1>
+
+        <div class="descripcion">
+            Revisión de la obra y emisión del Visto Bueno correspondiente.
+        </div>
+
+    </div>
+
+
+    <section
+        id="obra"
+        class="obra-card">
+
+        <div class="msg">
+            Cargando obra...
+        </div>
+
+    </section>
+
+</main>
+
 
 <div id="toast"></div>
 
-<script>
 
+<script>
 let obraId = null;
 let usuarioActual = null;
 let voboActual = null;
@@ -495,6 +904,18 @@ async function cargarVobos(obra) {
     v => v.cargo_id === residente.id_cargo
   );
 
+  const cargoNombre =
+    voboActual?.cargo?.nombre ||
+    "Mesa Directiva";
+
+  const usuarioCargo =
+    document.getElementById("usuarioCargo");
+
+  if (usuarioCargo) {
+    usuarioCargo.textContent =
+      cargoNombre;
+  }
+
   pintarObra(
     obra,
     vobos,
@@ -519,71 +940,139 @@ function pintarObra(obra, vobos, residente) {
   const todosAprobados =
     aprobados === total;
 
+
   let html = `
 
-    <div>
-      <b>Privada:</b> ${obra.privada}
+    <div class="obra-identificacion">
+
+      <div>
+        <div class="obra-clave">
+          Obra ${escapeHTML(obra.privada)}-${escapeHTML(obra.casa)}
+        </div>
+
+        <div class="obra-descripcion">
+          Obra de construcción
+        </div>
+      </div>
+
+      <div class="obra-vobo-resumen">
+        <span class="resumen-numero">${aprobados}</span>
+        <span class="resumen-separador">/</span>
+        <span>${total} VoBos</span>
+      </div>
+
     </div>
 
-    <div>
-      <b>Lote:</b> ${obra.casa}
+
+    <div class="datos-obra">
+
+      <div class="dato-obra">
+        <div class="dato-etiqueta">
+          Privada
+        </div>
+
+        <div class="dato-valor">
+          ${escapeHTML(obra.privada)}
+        </div>
+      </div>
+
+
+      <div class="dato-obra">
+        <div class="dato-etiqueta">
+          Lote
+        </div>
+
+        <div class="dato-valor">
+          ${escapeHTML(obra.casa)}
+        </div>
+      </div>
+
+
+      <div class="dato-obra">
+        <div class="dato-etiqueta">
+          Tipo de obra
+        </div>
+
+        <div class="dato-valor">
+          ${escapeHTML(obra.tipo_obra?.nombre || "—")}
+        </div>
+      </div>
+
     </div>
 
-    <div>
-      <b>Tipo de obra:</b>
-      ${obra.tipo_obra?.nombre || "—"}
+
+    <div class="separador"></div>
+
+
+    <div class="seccion-titulo">
+      Participantes de la obra
     </div>
 
-        <div class="participantes-obra">
+
+    <div class="participantes-obra">
 
       <div class="participante">
 
-        <div class="participante-titulo">
-          Propietario
+        <div class="participante-icono" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="8" r="3.2"
+                    stroke="currentColor" stroke-width="1.7"/>
+            <path d="M5.5 20c.7-4 2.8-6 6.5-6s5.8 2 6.5 6"
+                  stroke="currentColor" stroke-width="1.7"
+                  stroke-linecap="round"/>
+          </svg>
         </div>
 
-        <div class="participante-nombre">
-          ${obra.propietario?.nombre || "—"}
-        </div>
+        <div class="participante-contenido">
 
-        <div class="participante-contacto">
+          <div class="participante-titulo">
+            Propietario
+          </div>
 
-          ${
-            obra.propietario?.telefono
-              ? `
-                <div>
-                  ☎
-                  <a href="tel:${escapeHTML(obra.propietario.telefono)}">
-                    ${escapeHTML(obra.propietario.telefono)}
-                  </a>
-                </div>
-              `
-              : ""
-          }
+          <div class="participante-nombre">
+            ${escapeHTML(obra.propietario?.nombre || "—")}
+          </div>
 
-          ${
-            obra.propietario?.correo_electronico
-              ? `
-                <div>
-                  ✉
-                  <a href="mailto:${escapeHTML(obra.propietario.correo_electronico)}">
-                    ${escapeHTML(obra.propietario.correo_electronico)}
-                  </a>
-                </div>
-              `
-              : ""
-          }
+          <div class="participante-contacto">
 
-          ${
-            !obra.propietario?.telefono &&
-            !obra.propietario?.correo_electronico
-              ? `
-                <div>
-                  Sin datos de contacto
-                </div>
-              `
-              : ""
-          }
+            ${
+              obra.propietario?.telefono
+                ? `
+                  <div>
+                    <span class="contacto-icono">☎</span>
+                    <a href="tel:${escapeHTML(obra.propietario.telefono)}">
+                      ${escapeHTML(obra.propietario.telefono)}
+                    </a>
+                  </div>
+                `
+                : ""
+            }
+
+            ${
+              obra.propietario?.correo_electronico
+                ? `
+                  <div>
+                    <span class="contacto-icono">✉</span>
+                    <a href="mailto:${escapeHTML(obra.propietario.correo_electronico)}">
+                      ${escapeHTML(obra.propietario.correo_electronico)}
+                    </a>
+                  </div>
+                `
+                : ""
+            }
+
+            ${
+              !obra.propietario?.telefono &&
+              !obra.propietario?.correo_electronico
+                ? `
+                  <div class="sin-contacto">
+                    Sin datos de contacto
+                  </div>
+                `
+                : ""
+            }
+
+          </div>
 
         </div>
 
@@ -592,97 +1081,119 @@ function pintarObra(obra, vobos, residente) {
 
       <div class="participante">
 
-        <div class="participante-titulo">
-          DRO
+        <div class="participante-icono" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M4 20h16M6.5 20V7.5L12 4l5.5 3.5V20"
+                  stroke="currentColor" stroke-width="1.7"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 11h6M9 14h6"
+                  stroke="currentColor" stroke-width="1.7"
+                  stroke-linecap="round"/>
+          </svg>
         </div>
 
-        <div class="participante-nombre">
-          ${obra.dro?.nombre || "—"}
-        </div>
+        <div class="participante-contenido">
 
-        <div class="participante-contacto">
+          <div class="participante-titulo">
+            DRO
+          </div>
 
-          ${
-            obra.dro?.telefono
-              ? `
-                <div>
-                  ☎
-                  <a href="tel:${escapeHTML(obra.dro.telefono)}">
-                    ${escapeHTML(obra.dro.telefono)}
-                  </a>
-                </div>
-              `
-              : ""
-          }
+          <div class="participante-nombre">
+            ${escapeHTML(obra.dro?.nombre || "—")}
+          </div>
 
-          ${
-            obra.dro?.correo_electronico
-              ? `
-                <div>
-                  ✉
-                  <a href="mailto:${escapeHTML(obra.dro.correo_electronico)}">
-                    ${escapeHTML(obra.dro.correo_electronico)}
-                  </a>
-                </div>
-              `
-              : ""
-          }
+          <div class="participante-contacto">
 
-          ${
-            !obra.dro?.telefono &&
-            !obra.dro?.correo_electronico
-              ? `
-                <div>
-                  Sin datos de contacto
-                </div>
-              `
-              : ""
-          }
+            ${
+              obra.dro?.telefono
+                ? `
+                  <div>
+                    <span class="contacto-icono">☎</span>
+                    <a href="tel:${escapeHTML(obra.dro.telefono)}">
+                      ${escapeHTML(obra.dro.telefono)}
+                    </a>
+                  </div>
+                `
+                : ""
+            }
+
+            ${
+              obra.dro?.correo_electronico
+                ? `
+                  <div>
+                    <span class="contacto-icono">✉</span>
+                    <a href="mailto:${escapeHTML(obra.dro.correo_electronico)}">
+                      ${escapeHTML(obra.dro.correo_electronico)}
+                    </a>
+                  </div>
+                `
+                : ""
+            }
+
+            ${
+              !obra.dro?.telefono &&
+              !obra.dro?.correo_electronico
+                ? `
+                  <div class="sin-contacto">
+                    Sin datos de contacto
+                  </div>
+                `
+                : ""
+            }
+
+          </div>
 
         </div>
 
       </div>
 
     </div>
-    
-    <div style="margin-top:10px;">
-      <b>Vistos Buenos:</b>
-      ${aprobados} de ${total}
+
+
+    <div class="separador"></div>
+
+
+    <div class="seccion-titulo">
+      Vistos Buenos de la Mesa Directiva
     </div>
-
-    <hr style="margin:18px 0;border-color:#475569;">
-
-    <h3>Integrantes de la Mesa Directiva</h3>
 
   `;
 
 
   const ordenCargos = {
-  PRES: 1,
-  SECR: 2,
-  TESO: 3,
-  VOC1: 4,
-  VOC2: 5
-};
+    PRES: 1,
+    SECR: 2,
+    TESO: 3,
+    VOC1: 4,
+    VOC2: 5
+  };
 
-vobos.sort((a, b) => {
-  return (
-    (ordenCargos[a.cargo?.clave] || 99) -
-    (ordenCargos[b.cargo?.clave] || 99)
-  );
-});
 
-vobos.forEach(v => {
+  vobos.sort((a, b) => {
+
+    return (
+      (ordenCargos[a.cargo?.clave] || 99) -
+      (ordenCargos[b.cargo?.clave] || 99)
+    );
+
+  });
+
+
+  vobos.forEach(v => {
 
     let clase = "pendiente";
+    let etiqueta = "PENDIENTE";
 
     if (v.estado === "APROBADO") {
       clase = "aprobado";
+      etiqueta = "APROBADO";
     }
 
     if (v.estado === "NO_APROBADO") {
       clase = "no-aprobado";
+      etiqueta = "NO APROBADO";
     }
+
 
     html += `
 
@@ -690,32 +1201,39 @@ vobos.forEach(v => {
 
         <div class="vobo-header">
 
-          <b>
-            ${v.cargo?.nombre || "Cargo"}
-          </b>
+          <div class="vobo-cargo">
+            ${escapeHTML(v.cargo?.nombre || "Cargo")}
+          </div>
 
           <span class="estado ${clase}">
-            ${v.estado}
+            ${etiqueta}
           </span>
 
         </div>
 
+
         ${
           v.fecha_vobo
-            ? `<div style="margin-top:6px;font-size:13px;">
-                 ${formatearFecha(v.fecha_vobo)}
-               </div>`
+            ? `
+              <div class="vobo-fecha">
+                ${formatearFecha(v.fecha_vobo)}
+              </div>
+            `
             : ""
         }
 
+
         ${
           v.observaciones
-            ? `<div style="margin-top:8px;">
-                 <b>Observaciones:</b>
-                 ${v.observaciones}
-               </div>`
+            ? `
+              <div class="vobo-observaciones">
+                <span>Observaciones:</span>
+                ${escapeHTML(v.observaciones)}
+              </div>
+            `
             : ""
         }
+
 
         ${
           v.id === voboActual?.id &&
@@ -724,16 +1242,15 @@ vobos.forEach(v => {
           ? `
 
             <button
-  class="btn-vobo"
-  onclick="registrarDecision()"
->
-  ✓ Dar VoBo
-</button>
-
-            
+              class="btn-vobo"
+              type="button"
+              onclick="registrarDecision()"
+            >
+              <span aria-hidden="true">✓</span>
+              Dar VoBo
+            </button>
 
           `
-
           : ""
         }
 
@@ -748,16 +1265,21 @@ vobos.forEach(v => {
 
     html += `
 
-      <div
-        style="
-          margin-top:18px;
-          padding:14px;
-          border-radius:10px;
-          background:#14532d;
-        "
-      >
+      <div class="todos-aprobados">
 
-        ✓ Todos los Vistos Buenos han sido otorgados.
+        <div class="todos-aprobados-icono" aria-hidden="true">
+          ✓
+        </div>
+
+        <div>
+          <div class="todos-aprobados-titulo">
+            Todos los Vistos Buenos han sido otorgados.
+          </div>
+
+          <div class="todos-aprobados-texto">
+            La obra cuenta con la aprobación de todos los integrantes requeridos.
+          </div>
+        </div>
 
       </div>
 
@@ -769,7 +1291,6 @@ vobos.forEach(v => {
   document.getElementById("obra").innerHTML = html;
 
 }
-
 
 /* =========================================================
    REGISTRAR DECISIÓN
@@ -903,7 +1424,6 @@ function mostrarToast(msg, error = false) {
   }, 3000);
 
 }
-
 </script>
 
 </body>
