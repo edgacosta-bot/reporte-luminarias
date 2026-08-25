@@ -14,6 +14,10 @@
 <link rel="stylesheet" href="obras_v2.css">
 
 <style>
+
+html:not(.sigvic-inicializado) body {
+    visibility: hidden;
+}
         /* =====================================================
            TOAST SIGVIC
            ===================================================== */
@@ -1423,28 +1427,32 @@ window.addEventListener("DOMContentLoaded", async () => {
                             claveBienvenida
                         ) === "1";
 
-                    if (!bienvenidaMostrada) {
-
-                        sessionStorage.setItem(
-                            claveBienvenida,
-                            "1"
+                if (!bienvenidaMostrada) {
+                
+                    sessionStorage.setItem(
+                        claveBienvenida,
+                        "1"
+                    );
+                
+                    mostrarBienvenida(
+                        textoBienvenida
+                    );
+                
+                } else {
+                
+                    const overlay =
+                        document.getElementById(
+                            "bienvenidaSIGVIC"
                         );
-
-                        mostrarBienvenida(
-                            textoBienvenida
-                        );
-
-                    } else {
-
-                        const overlay =
-                            document.getElementById(
-                                "bienvenidaSIGVIC"
-                            );
-
-                        if (overlay) {
-                            overlay.remove();
-                        }
+                
+                    if (overlay) {
+                        overlay.remove();
                     }
+                }
+                
+                document.documentElement.classList.add(
+                    "sigvic-inicializado"
+                );
 
                 } catch (e) {
 
