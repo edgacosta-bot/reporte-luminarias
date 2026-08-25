@@ -2796,6 +2796,48 @@ function seleccionarEstadoObras(estado) {
         return;
     }
 
+const botonSeleccionado =
+    document.getElementById(seleccion.boton);
+
+const yaActivo =
+    botonSeleccionado &&
+    botonSeleccionado.classList.contains("activo");
+
+if (yaActivo) {
+
+    document
+        .querySelectorAll(".boton-estado-obra")
+        .forEach(boton => {
+
+            boton.classList.remove("activo");
+            boton.setAttribute(
+                "aria-pressed",
+                "false"
+            );
+
+        });
+
+    document
+        .querySelectorAll(".seccion-obras")
+        .forEach(seccion => {
+
+            seccion.classList.remove("visible");
+
+        });
+
+    const indicador =
+        document.getElementById(
+            "estadoSeleccionado"
+        );
+
+    if (indicador) {
+        indicador.textContent = "";
+        indicador.style.display = "none";
+    }
+
+    return;
+}
+
     document
         .querySelectorAll(".boton-estado-obra")
         .forEach(boton => {
