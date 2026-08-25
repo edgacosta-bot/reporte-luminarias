@@ -765,9 +765,150 @@ window.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  usuarioActual = userData.user;
+usuarioActual = userData.user;
 
-  await cargarObra();
+
+/* =========================================================
+   IDENTIFICAR PERFIL DEL USUARIO
+   ========================================================= */
+
+const {
+    data: residente,
+    error: residenteError
+} = await supabaseClient
+    .from("residentes")
+    .select(`
+        id,
+        tipo,
+        id_cargo,
+        es_mesa_directiva,
+        activo
+    `)
+    .eq("user_id", usuarioActual.id)
+    .maybeSingle();
+
+
+if (residenteError) {
+
+    console.error(
+        "Error al identificar perfil:",
+        residenteError
+    );
+
+    mostrarError(
+        "No fue posible identificar el perfil del usuario."
+    );
+
+    return;
+}
+
+
+const tipo =
+    (residente?.tipo || "").toLowerCase();
+
+
+const esAdministracion =
+    ["admin", "administracion"].includes(tipo);
+
+
+const esMesaDirectiva =
+    residente?.es_mesa_directiva === true &&
+    residente?.activo === true;
+
+
+/*
+ * Guardamos el perfil para utilizarlo
+ * durante el resto del flujo.
+ */
+
+window.esAdministracion =
+    esAdministracion;
+
+window.esMesaDirectiva =
+    esMesaDirectiva;
+
+
+/*
+ * Mostrar el cargo únicamente cuando
+ * corresponde a Mesa Directiva.
+ */
+
+const usuarioCargo =
+    document.getElementById("usuarioCargo");
+
+
+if (usuarioCargo) {
+
+    if (esAdministracion) {
+
+        usuarioCargo.textContent =
+            "Administración";
+
+    } else if (
+        esMesaDirectiva &&
+        residente?.id_cargo
+    ) {
+
+        const {
+            data: cargo,
+            error: cargoError
+        } = await supabaseClient
+            .from("catalogo_cargos")
+            .select("nombre")
+            .eq("id", residente.id_cargo)
+            .maybeSingle();
+
+
+        if (cargoError) {
+
+            console.error(
+                "Error al consultar cargo:",
+                cargoError
+            );
+
+            mostrarError(
+                "No fue posible identificar el cargo del usuario."
+            );
+
+            return;
+        }
+
+
+        usuarioCargo.textContent =
+            cargo?.nombre ||
+            "Miembro de la Mesa Directiva";
+
+    } else {
+
+        usuarioCargo.textContent = "";
+
+    }
+
+}
+
+
+/*
+ * La nota informativa solo corresponde
+ * a Mesa Directiva.
+ */
+
+const notaMesa =
+    document.querySelector(
+        ".nota-mesa-directiva"
+    );
+
+
+if (notaMesa) {
+
+    notaMesa.style.display =
+        esMesaDirectiva
+            ? ""
+            : "none";
+
+}
+
+
+await cargarObra();
 
 });
 
@@ -992,41 +1133,101 @@ async function cargarVobos(obra) {
     return;
   }
 
-  const { data: residente, error: residenteError } =
-    await supabaseClient
-      .from("residentes")
-      .select(`
+  /*
+ * Administración no participa en el flujo de VoBos.
+ * Puede consultar la obra, pero no necesita tener
+ * un registro de Mesa Directiva.
+ */
+
+if (window.esAdministracion) {
+
+    voboActual = null;
+
+    pintarObra(
+        obra,
+        vobos,
+        null
+    );
+
+    return;
+}
+
+
+/*
+ * A partir de aquí el usuario debe ser
+ * integrante activo de Mesa Directiva.
+ */
+
+if (!window.esMesaDirectiva) {
+
+    mostrarError(
+        "El usuario actual no tiene un perfil autorizado para emitir VoBos."
+    );
+
+    return;
+}
+
+
+/*
+ * Obtener el registro del integrante de Mesa Directiva.
+ */
+
+const {
+    data: residente,
+    error: residenteError
+} = await supabaseClient
+    .from("residentes")
+    .select(`
         id,
         id_cargo,
         nombre,
         es_mesa_directiva,
         activo
-      `)
-      .eq("user_id", usuarioActual.id)
-      .eq("es_mesa_directiva", true)
-      .eq("activo", true)
-      .maybeSingle();
+    `)
+    .eq("user_id", usuarioActual.id)
+    .eq("es_mesa_directiva", true)
+    .eq("activo", true)
+    .maybeSingle();
 
-  if (residenteError) {
 
-    console.error(residenteError);
+if (residenteError) {
+
+    console.error(
+        "Error al identificar integrante:",
+        residenteError
+    );
 
     mostrarError(
-      "No fue posible identificar al integrante de Mesa Directiva."
+        "No fue posible identificar al integrante de Mesa Directiva."
     );
 
     return;
-  }
+}
 
-  if (!residente) {
+
+if (!residente) {
 
     mostrarError(
-      "El usuario actual no pertenece a la Mesa Directiva."
+        "No fue posible identificar al integrante de Mesa Directiva."
     );
 
     return;
-  }
+}
 
+
+voboActual =
+    vobos.find(
+        v =>
+            v.cargo_id ===
+            residente.id_cargo
+    );
+
+
+pintarObra(
+    obra,
+    vobos,
+    residente
+);
   voboActual = vobos.find(
     v => v.cargo_id === residente.id_cargo
   );
@@ -1363,8 +1564,9 @@ function pintarObra(obra, vobos, residente) {
 
 
         ${
-          v.id === voboActual?.id &&
-          v.estado === "PENDIENTE"
+          window.esMesaDirectiva === true &&
+         v.id === voboActual?.id &&
+         v.estado === "PENDIENTE"
 
           ? `
 
@@ -1513,21 +1715,15 @@ function formatearFecha(fecha) {
 
 function mostrarError(mensaje) {
 
-  document.getElementById("obra").innerHTML = `
+    document.getElementById("obra").innerHTML = `
 
-    <div
-      style="
-        background:#7f1d1d;
-        padding:15px;
-        border-radius:10px;
-      "
-    >
+        <div class="msg-error">
 
-      ${mensaje}
+            ${mensaje}
 
-    </div>
+        </div>
 
-  `;
+    `;
 
 }
 
