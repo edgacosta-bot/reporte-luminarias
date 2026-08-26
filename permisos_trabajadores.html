@@ -325,40 +325,7 @@ async function cargar() {
     return;
   }
 
-  // =========================================================
-  // CARGAR OBRAS
-  // =========================================================
-
-  const { data: obrasData, error: errorObras } =
-    await supabaseClient
-      .from("obras")
-      .select("privada,casa,estatus");
-
-  if (errorObras) {
-
-    console.error(
-      "ERROR CARGANDO OBRAS:",
-      errorObras
-    );
-
-    document.getElementById("lista").innerHTML =
-      "Error al cargar";
-
-    return;
-  }
-
-  const mapaObras = {};
-
-  (obrasData || []).forEach(o => {
-
-    const clave =
-      `${o.privada}-${o.casa}`;
-
-    mapaObras[clave] =
-      o.estatus;
-
-  });
-
+ 
 
   // =========================================================
   // PREPARAR LISTADO
@@ -488,11 +455,8 @@ async function cargar() {
           "estado-verde";
 
 
-        const claveObra =
-          `${t.privada}-${t.casa}`;
-
         const obraSuspendida =
-          mapaObras[claveObra] === "suspendida";
+          t.estatus_obra === "suspendida";
 
 
         // =====================================================
