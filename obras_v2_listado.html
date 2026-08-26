@@ -2492,25 +2492,36 @@ async function renderizarLista(
             "persona-card";
 
 
-        /*
+               /*
          * =====================================================
          * FECHAS DE LA OBRA
          * =====================================================
          *
-         * La fecha de registro proviene de obras_v2.created_at.
+         * Fecha de registro:
+         * - Sólo corresponde a obras de origen V2.
+         * - Para V2 proviene de obras_v2.created_at.
+         * - Las obras V1 fueron migradas y su created_at
+         *   corresponde al proceso de migración, por lo que
+         *   NO debe mostrarse como fecha de registro.
          *
-         * Regla:
-         * - Si existe fecha_registro, se muestra.
-         * - Si existe fecha_autorizacion, se muestra.
-         * - Si alguna no existe, no se genera ese renglón.
-         * - Nunca se muestra "SIN DATOS".
+         * Fecha de autorización:
+         * - Se muestra cuando existe.
+         *
+         * Nunca se muestra "SIN DATOS".
          */
 
         let informacionFechas = "";
 
+        const mostrarFechaRegistro =
+            obra.origen === "V2" &&
+            !!obra.fecha_registro;
+
+        const mostrarFechaAutorizacion =
+            !!obra.fecha_autorizacion;
+
         if (
-            obra.fecha_registro ||
-            obra.fecha_autorizacion
+            mostrarFechaRegistro ||
+            mostrarFechaAutorizacion
         ) {
 
             informacionFechas = `
@@ -2518,7 +2529,7 @@ async function renderizarLista(
                 <div class="obra-fechas">
 
                     ${
-                        obra.fecha_registro
+                        mostrarFechaRegistro
                         ? `
                             <div class="obra-fecha">
 
@@ -2539,7 +2550,7 @@ async function renderizarLista(
 
 
                     ${
-                        obra.fecha_autorizacion
+                        mostrarFechaAutorizacion
                         ? `
                             <div class="obra-fecha">
 
@@ -2562,7 +2573,6 @@ async function renderizarLista(
 
             `;
         }
-
 
         /*
          * =====================================================
