@@ -2610,62 +2610,155 @@ function abrirModalContactos(obra) {
 
     obraContactos = obra;
 
-    document.getElementById(
-        "modalContactosObraTitulo"
-    ).textContent =
-        `Privada ${obra.privada} · Lote ${obra.casa}`;
+
+    /*
+     * =====================================================
+     * IDENTIFICACIÓN DE LA OBRA
+     * =====================================================
+     */
+
+    const titulo =
+        document.getElementById(
+            "modalContactosObraTitulo"
+        );
+
+    if (titulo) {
+
+        titulo.textContent =
+            `Privada ${obra.privada} · Lote ${obra.casa}`;
+
+    }
 
 
-    const contactos =
-        obra._contactos || {};
-
+    /*
+     * =====================================================
+     * CONTACTOS EXISTENTES
+     *
+     * La RPC obtener_listado_obras_v2()
+     * ya entrega estos objetos directamente:
+     *
+     * obra.propietario
+     * obra.dro
+     *
+     * No debemos utilizar _contactos aquí.
+     * =====================================================
+     */
 
     const propietario =
-        contactos.propietario || {};
+        obra?.propietario || {};
 
     const dro =
-        contactos.dro || {};
+        obra?.dro || {};
 
 
-    document.getElementById(
-        "contactoPropietarioNombre"
-    ).value =
-        propietario.nombre || "";
+    /*
+     * =====================================================
+     * PROPIETARIO
+     * =====================================================
+     */
+
+    const campoPropietarioNombre =
+        document.getElementById(
+            "contactoPropietarioNombre"
+        );
+
+    if (campoPropietarioNombre) {
+
+        campoPropietarioNombre.value =
+            propietario.nombre || "";
+
+    }
 
 
-    document.getElementById(
-        "contactoPropietarioTelefono"
-    ).value =
-        propietario.telefono || "";
+    const campoPropietarioTelefono =
+        document.getElementById(
+            "contactoPropietarioTelefono"
+        );
+
+    if (campoPropietarioTelefono) {
+
+        campoPropietarioTelefono.value =
+            propietario.telefono || "";
+
+    }
 
 
-    document.getElementById(
-        "contactoPropietarioCorreo"
-    ).value =
-        propietario.correo_electronico || "";
+    const campoPropietarioCorreo =
+        document.getElementById(
+            "contactoPropietarioCorreo"
+        );
+
+    if (campoPropietarioCorreo) {
+
+        campoPropietarioCorreo.value =
+            propietario.correo_electronico || "";
+
+    }
 
 
-    document.getElementById(
-        "contactoDroNombre"
-    ).value =
-        dro.nombre || "";
+    /*
+     * =====================================================
+     * DRO
+     * =====================================================
+     */
+
+    const campoDroNombre =
+        document.getElementById(
+            "contactoDroNombre"
+        );
+
+    if (campoDroNombre) {
+
+        campoDroNombre.value =
+            dro.nombre || "";
+
+    }
 
 
-    document.getElementById(
-        "contactoDroTelefono"
-    ).value =
-        dro.telefono || "";
+    const campoDroTelefono =
+        document.getElementById(
+            "contactoDroTelefono"
+        );
+
+    if (campoDroTelefono) {
+
+        campoDroTelefono.value =
+            dro.telefono || "";
+
+    }
 
 
-    document.getElementById(
-        "contactoDroCorreo"
-    ).value =
-        dro.correo_electronico || "";
+    const campoDroCorreo =
+        document.getElementById(
+            "contactoDroCorreo"
+        );
+
+    if (campoDroCorreo) {
+
+        campoDroCorreo.value =
+            dro.correo_electronico || "";
+
+    }
 
 
-    document.getElementById(
-        "modalContactosObra"
-    ).style.display = "flex";
+    /*
+     * =====================================================
+     * MOSTRAR MODAL
+     * =====================================================
+     */
+
+    const modal =
+        document.getElementById(
+            "modalContactosObra"
+        );
+
+    if (modal) {
+
+        modal.style.display =
+            "flex";
+
+    }
+
 }
 
 function cerrarModalContactos() {
