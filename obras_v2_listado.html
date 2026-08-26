@@ -2843,22 +2843,18 @@ async function renderizarLista(
             "persona-card";
 
 
-               /*
+        /*
          * =====================================================
          * FECHAS DE LA OBRA
          * =====================================================
          *
          * Fecha de registro:
-         * - Sólo corresponde a obras de origen V2.
-         * - Para V2 proviene de obras_v2.created_at.
-         * - Las obras V1 fueron migradas y su created_at
-         *   corresponde al proceso de migración, por lo que
-         *   NO debe mostrarse como fecha de registro.
+         * - Sólo corresponde a obras V2.
          *
          * Fecha de autorización:
          * - Se muestra cuando existe.
          *
-         * Nunca se muestra "SIN DATOS".
+         * Nunca mostramos "SIN DATOS".
          */
 
         let informacionFechas = "";
@@ -2869,6 +2865,7 @@ async function renderizarLista(
 
         const mostrarFechaAutorizacion =
             !!obra.fecha_autorizacion;
+
 
         if (
             mostrarFechaRegistro ||
@@ -2925,6 +2922,117 @@ async function renderizarLista(
             `;
         }
 
+
+        /*
+         * =====================================================
+         * CONTACTOS DE LA OBRA
+         * =====================================================
+         */
+
+        const propietario =
+            obra.propietario || {};
+
+        const dro =
+            obra.dro || {};
+
+
+        function mostrarDatoContacto(valor) {
+
+            const dato =
+                String(valor ?? "").trim();
+
+
+            if (!dato) {
+
+                return `
+                    <span class="obra-contacto-pendiente">
+                        (pendiente)
+                    </span>
+                `;
+
+            }
+
+
+            return escapeHTML(dato);
+        }
+
+
+        const informacionContactos = `
+
+            <div class="obra-contactos">
+
+                <!-- ============================
+                     PROPIETARIO
+                     ============================ -->
+
+                <div class="obra-contacto">
+
+                    <div class="obra-contacto-titulo">
+                        Propietario
+                    </div>
+
+                    <div class="obra-contacto-linea">
+                        <strong>Nombre:</strong>
+                        ${mostrarDatoContacto(
+                            propietario.nombre
+                        )}
+                    </div>
+
+                    <div class="obra-contacto-linea">
+                        <strong>Teléfono:</strong>
+                        ${mostrarDatoContacto(
+                            propietario.telefono
+                        )}
+                    </div>
+
+                    <div class="obra-contacto-linea">
+                        <strong>Correo:</strong>
+                        ${mostrarDatoContacto(
+                            propietario.correo_electronico
+                        )}
+                    </div>
+
+                </div>
+
+
+                <!-- ============================
+                     DRO
+                     ============================ -->
+
+                <div class="obra-contacto">
+
+                    <div class="obra-contacto-titulo">
+                        DRO
+                    </div>
+
+                    <div class="obra-contacto-linea">
+                        <strong>Nombre:</strong>
+                        ${mostrarDatoContacto(
+                            dro.nombre
+                        )}
+                    </div>
+
+                    <div class="obra-contacto-linea">
+                        <strong>Teléfono:</strong>
+                        ${mostrarDatoContacto(
+                            dro.telefono
+                        )}
+                    </div>
+
+                    <div class="obra-contacto-linea">
+                        <strong>Correo:</strong>
+                        ${mostrarDatoContacto(
+                            dro.correo_electronico
+                        )}
+                    </div>
+
+                </div>
+
+            </div>
+
+        `;
+
+
         /*
          * =====================================================
          * TARJETA
@@ -2936,18 +3044,28 @@ async function renderizarLista(
             <div class="persona-header">
 
                 <div class="persona-title">
-                    Privada ${escapeHTML(obra.privada)}
-                    · Lote ${escapeHTML(obra.casa)}
+
+                    Privada
+                    ${escapeHTML(obra.privada)}
+                    · Lote
+                    ${escapeHTML(obra.casa)}
+
                 </div>
 
+
                 <div class="persona-status">
+
                     ${textoEstado(estado)}
+
                 </div>
 
             </div>
 
 
             ${informacionFechas}
+
+
+            ${informacionContactos}
 
 
             <div class="actions">
