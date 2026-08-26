@@ -295,20 +295,11 @@ let { data: rv } = await queryVigilante;
     origen:`${r.privada}-${r.casa}`,
     extra2: mapaVigilantes[r.vigilante_id] || "Sin nombre",
 
-    // 🔥 NUEVO
-    rol_creador: r.rol_creador
+    
   });
 });
 
-// 🔵 MAPA OBRAS
-let mapaObras = {};
-const { data: listaObras } = await supabaseClient
-  .from("obras")
-  .select("id, privada, casa");
 
-listaObras?.forEach(o=>{
-  mapaObras[o.id] = `${o.privada}-${o.casa}`;
-});
 
 // 🔵 MAPA TRABAJADORES
 let mapaTrabajadores = {};
@@ -352,7 +343,10 @@ let { data: obras } = await queryObras;
 
     reporta: `${i.privada}-${i.casa}`,
 
-    obra: mapaObras[i.obra_id] || "Obra no identificada",
+    obra:
+  i.privada && i.casa
+    ? `${i.privada}-${i.casa}`
+    : "Obra no identificada",
 
     trabajador: i.trabajador_id
       ? `👷 ${mapaTrabajadores[i.trabajador_id] || "Trabajador desconocido"}`
