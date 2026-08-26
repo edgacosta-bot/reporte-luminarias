@@ -2009,6 +2009,356 @@ function cerrarAvisoContactosPendientes() {
     modal.style.display = "none";
 }
 
+window.addEventListener(
+    "DOMContentLoaded",
+    async () => {
+
+        try {
+
+            /*
+             * =====================================================
+             * PROTECCIÓN DE PÁGINA
+             * =====================================================
+             */
+
+            await protegerPagina([
+                "admin",
+                "administracion",
+                "residente"
+            ]);
+
+
+            /*
+             * =====================================================
+             * IDENTIFICAR USUARIO
+             * =====================================================
+             */
+
+            const {
+                data: { user },
+                error: userError
+            } = await supabaseClient.auth.getUser();
+
+            if (userError || !user) {
+                throw new Error(
+                    "No se pudo identificar al usuario."
+                );
+            }
+
+
+            /*
+             * =====================================================
+             * IDENTIFICAR ROL
+             * =====================================================
+             */
+
+            const {
+                data: residente,
+                error: residenteError
+            } = await supabaseClient
+                .from("residentes")
+                .select(
+                    "tipo, es_mesa_directiva, activo, id_cargo"
+                )
+                .eq("user_id", user.id)
+                .maybeSingle();
+
+            if (residenteError) {
+                throw residenteError;
+            }
+
+
+            const tipo =
+                (residente?.tipo || "")
+                    .toLowerCase();
+
+
+            const esAdministracion =
+                [
+                    "admin",
+                    "administracion"
+                ].includes(tipo);
+
+
+            const esMesaDirectiva =
+                residente?.es_mesa_directiva === true &&
+                residente?.activo === true;
+
+
+            /*
+             * =====================================================
+             * DETERMINAR CARGO
+             * =====================================================
+             */
+
+            let nombreCargo = "";
+
+
+            if (esAdministracion) {
+
+                nombreCargo =
+                    "Administración";
+
+            } else if (
+                esMesaDirectiva &&
+                residente?.id_cargo
+            ) {
+
+                const {
+                    data: cargo,
+                    error: cargoError
+                } = await supabaseClient
+                    .from("catalogo_cargos")
+                    .select("nombre")
+                    .eq(
+                        "id",
+                        residente.id_cargo
+                    )
+                    .maybeSingle();
+
+                if (cargoError) {
+                    throw cargoError;
+                }
+
+                nombreCargo =
+                    cargo?.nombre ||
+                    "Miembro de la Mesa Directiva";
+            }
+
+
+            /*
+             * =====================================================
+             * VALIDAR AUTORIZACIÓN
+             * =====================================================
+             */
+
+            if (
+                !esAdministracion &&
+                !esMesaDirectiva
+            ) {
+
+                alert(
+                    "No tiene autorización para acceder a este módulo."
+                );
+
+                window.location.href =
+                    "index.html";
+
+                return;
+            }
+
+
+            /*
+             * =====================================================
+             * ENCABEZADO
+             * =====================================================
+             */
+
+            const usuarioCargo =
+                document.getElementById(
+                    "usuarioCargo"
+                );
+
+            if (usuarioCargo) {
+
+                usuarioCargo.textContent =
+                    esAdministracion
+                        ? "Administración"
+                        : `${nombreCargo} de la Mesa Directiva`;
+
+            }
+
+
+            const textoBienvenida =
+                esAdministracion
+                    ? "Administración"
+                    : `${nombreCargo} de la Mesa Directiva`;
+
+
+            /*
+             * =====================================================
+             * TARJETA AGREGAR OBRA
+             * =====================================================
+             */
+
+            const tarjetaAgregarObra =
+                document.getElementById(
+                    "tarjetaAgregarObra"
+                );
+
+            if (tarjetaAgregarObra) {
+
+                tarjetaAgregarObra.style.display =
+                    esAdministracion
+                        ? ""
+                        : "none";
+
+            }
+
+
+            /*
+             * =====================================================
+             * BOTÓN OK DEL AVISO
+             * =====================================================
+             */
+
+            inicializarAvisoContactosPendientes();
+
+
+            /*
+             * =====================================================
+             * HACER VISIBLE LA PÁGINA
+             * =====================================================
+             */
+
+            document.documentElement.classList.add(
+                "sigvic-inicializado"
+            );
+
+
+            /*
+             * =====================================================
+             * CARGAR OBRAS
+             * =====================================================
+             */
+
+            const datosObras =
+                await cargarObras();
+
+
+            /*
+             * =====================================================
+             * CONTACTOS INCOMPLETOS
+             * =====================================================
+             */
+
+            const contactosPendientes =
+                Number(
+                    datosObras
+                        ?.contactos_incompletos_total ||
+                    0
+                );
+
+
+            /*
+             * =====================================================
+             * CORTINILLA DE BIENVENIDA
+             *
+             * La bienvenida se controla por usuario y por
+             * sessionStorage, igual que antes.
+             * =====================================================
+             */
+
+            const claveBienvenida =
+                "sigvic_obras_bienvenida_" +
+                user.id;
+
+
+            let bienvenidaMostrada = false;
+
+
+            try {
+
+                bienvenidaMostrada =
+                    sessionStorage.getItem(
+                        claveBienvenida
+                    ) === "1";
+
+
+            } catch (e) {
+
+                console.warn(
+                    "No se pudo consultar sessionStorage.",
+                    e
+                );
+
+            }
+
+
+            /*
+             * =====================================================
+             * PRIMERA ENTRADA
+             * =====================================================
+             */
+
+            if (!bienvenidaMostrada) {
+
+                try {
+
+                    sessionStorage.setItem(
+                        claveBienvenida,
+                        "1"
+                    );
+
+                } catch (e) {
+
+                    console.warn(
+                        "No se pudo guardar la bienvenida en sessionStorage.",
+                        e
+                    );
+
+                }
+
+
+                mostrarBienvenida(
+                    textoBienvenida,
+                    esAdministracion
+                        ? contactosPendientes
+                        : 0
+                );
+
+
+            } else {
+
+                /*
+                 * La cortinilla ya se mostró anteriormente.
+                 * Eliminamos el overlay si sigue presente.
+                 */
+
+                const overlay =
+                    document.getElementById(
+                        "bienvenidaSIGVIC"
+                    );
+
+                if (overlay) {
+                    overlay.remove();
+                }
+
+
+                /*
+                 * Si ya no habrá cortinilla,
+                 * el aviso debe aparecer directamente.
+                 */
+
+                if (
+                    esAdministracion &&
+                    contactosPendientes > 0
+                ) {
+
+                    mostrarAvisoContactosPendientes(
+                        contactosPendientes
+                    );
+
+                }
+
+            }
+
+        } catch (e) {
+
+            console.error(
+                "Error de acceso:",
+                e
+            );
+
+            window.location.href =
+                "index.html";
+
+            return;
+        }
+
+    }
+);
+    
 /* ==========================================================
    CARGAR LISTADO
    ========================================================== */
