@@ -2423,7 +2423,7 @@ async function guardarContactosObra() {
         await cargarObras();
 
 
-    } catch (error) {
+       } catch (error) {
 
         console.error(
             "Error actualizando contactos:",
@@ -2436,11 +2436,13 @@ async function guardarContactosObra() {
             true
         );
 
+        return;
+
     }
 
 }
-        );
 
+   
 /* ==========================================================
    RENDERIZAR SECCIÓN
    ========================================================== */
