@@ -7,10 +7,14 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Registrar trabajador</title>
 
 <style>
-* { box-sizing: border-box; }
+
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -31,7 +35,8 @@ body {
   max-width: 400px;
 }
 
-select, input {
+select,
+input {
   width: 100%;
   padding: 12px;
   margin-bottom: 12px;
@@ -51,13 +56,24 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .mensaje {
   margin-top: 10px;
   text-align: center;
 }
 
-.error { color: #f87171; }
-.ok { color: #34d399; }
+.error {
+  color: #f87171;
+}
+
+.ok {
+  color: #34d399;
+}
+
 </style>
 
 </head>
@@ -66,165 +82,335 @@ button {
 
 <div class="card">
 
-<h2>Registrar trabajador</h2>
+  <h2>Registrar trabajador</h2>
 
-<select id="obra">
-  <option value="">Cargando obras aprobadas...</option>
-</select>
+  <select id="obra">
+    <option value="">
+      Cargando obras aprobadas...
+    </option>
+  </select>
 
-<input type="text" id="nombre" placeholder="Nombre del trabajador">
+  <input
+    type="text"
+    id="nombre"
+    placeholder="Nombre del trabajador"
+  >
 
-<input type="date" id="fecha_inicio">
-<input type="date" id="fecha_fin">
+  <input
+    type="date"
+    id="fecha_inicio"
+  >
 
-<button id="btnRegistrar">Registrar</button>
+  <input
+    type="date"
+    id="fecha_fin"
+  >
 
-<div id="mensaje" class="mensaje"></div>
+  <button id="btnRegistrar">
+    Registrar
+  </button>
+
+  <div
+    id="mensaje"
+    class="mensaje">
+  </div>
 
 </div>
 
 <script>
 
-// 🔐 CONTROL
-window.addEventListener("DOMContentLoaded", async () => {
-  try {
-    await protegerPagina(["admin", "administracion"]);
-  } catch (e) {
-    console.warn("Auth no bloqueante");
-  }
+// ==========================================================
+// CONTROL DE ACCESO
+// ==========================================================
 
-  await cargarObras();
-});
+window.addEventListener(
+  "DOMContentLoaded",
+  async () => {
 
-// 🔥 CARGAR SOLO OBRAS APROBADAS
-async function cargarObras() {
+    try {
 
-  const select = document.getElementById("obra");
+      await protegerPagina([
+        "admin",
+        "administracion"
+      ]);
 
-  try {
+    } catch (e) {
 
-    const { data, error } = await supabaseClient
-      .from("obras")
-      .select("*")
-      .eq("estatus", "aprobada")
-      .eq("aprobada", true);
+      console.warn(
+        "Auth no bloqueante"
+      );
 
-    if (error) throw error;
-
-    if (!data || data.length === 0) {
-      select.innerHTML = '<option>No hay obras aprobadas</option>';
-      return;
     }
 
-    select.innerHTML = '<option value="">Selecciona obra</option>';
+    await cargarObras();
 
-    data.forEach(o => {
-      const option = document.createElement("option");
-      option.value = o.id; // ✅ CAMBIO SEGURO
-      option.textContent = `Privada ${o.privada} - Lote ${o.casa}`;
-      select.appendChild(option);
-    });
-
-  } catch (err) {
-    console.error(err);
-    select.innerHTML = '<option>Error cargando obras</option>';
   }
+);
+
+
+// ==========================================================
+// CARGAR OBRAS APROBADAS
+// ==========================================================
+
+async function cargarObras() {
+
+  const select =
+    document.getElementById("obra");
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "obtener_obras_trabajadores"
+      );
+
+    if (error) {
+      throw error;
+    }
+
+    if (
+      !data ||
+      data.length === 0
+    ) {
+
+      select.innerHTML =
+        "<option>" +
+        "No hay obras aprobadas" +
+        "</option>";
+
+      return;
+
+    }
+
+    select.innerHTML =
+      '<option value="">' +
+      "Selecciona obra" +
+      "</option>";
+
+    data.forEach(
+      obra => {
+
+        const option =
+          document.createElement(
+            "option"
+          );
+
+        option.value =
+          obra.obra_id;
+
+        option.textContent =
+          `Privada ${obra.privada} - Lote ${obra.casa}`;
+
+        select.appendChild(option);
+
+      }
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Error cargando obras:",
+      error
+    );
+
+    select.innerHTML =
+      "<option>" +
+      "Error cargando obras" +
+      "</option>";
+
+  }
+
 }
 
-// 🚀 REGISTRAR TRABAJADOR
-document.getElementById("btnRegistrar").addEventListener("click", registrar);
+
+// ==========================================================
+// REGISTRAR TRABAJADOR
+// ==========================================================
+
+document
+  .getElementById(
+    "btnRegistrar"
+  )
+  .addEventListener(
+    "click",
+    registrar
+  );
+
 
 async function registrar() {
 
-  const mensaje = document.getElementById("mensaje");
-  const btn = document.getElementById("btnRegistrar");
+  const mensaje =
+    document.getElementById(
+      "mensaje"
+    );
 
-  mensaje.className = "mensaje";
+  const btn =
+    document.getElementById(
+      "btnRegistrar"
+    );
+
+
+  mensaje.className =
+    "mensaje";
+
+  mensaje.innerText = "";
+
   btn.disabled = true;
-  btn.innerText = "Registrando...";
+
+  btn.innerText =
+    "Registrando...";
+
 
   try {
 
-    const obra_id = document.getElementById("obra").value;
-    const nombre = document.getElementById("nombre").value.trim();
-    const fecha_inicio = document.getElementById("fecha_inicio").value;
-    const fecha_fin = document.getElementById("fecha_fin").value;
+    const obra_id =
+      document
+        .getElementById("obra")
+        .value;
 
-    if (!obra_id || !nombre) {
-      throw new Error("Completa todos los campos");
+    const nombre =
+      document
+        .getElementById("nombre")
+        .value
+        .trim();
+
+    const fecha_inicio =
+      document
+        .getElementById("fecha_inicio")
+        .value;
+
+    const fecha_fin =
+      document
+        .getElementById("fecha_fin")
+        .value;
+
+
+    // ------------------------------------------------------
+    // VALIDACIÓN BÁSICA DE CAPTURA
+    // ------------------------------------------------------
+
+    if (
+      !obra_id ||
+      !nombre
+    ) {
+
+      throw new Error(
+        "Completa todos los campos"
+      );
+
     }
 
-    // 🔥 Obtener obra real desde BD (NO confiar en frontend)
-    const { data: obra, error: errorObra } = await supabaseClient
-      .from("obras")
-      .select("*")
-      .eq("id", obra_id)
-      .single();
 
-    if (errorObra || !obra) {
-      throw new Error("Obra inválida");
+    // ------------------------------------------------------
+    // REGISTRO CENTRALIZADO EN BACKEND
+    // ------------------------------------------------------
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "registrar_trabajador_obra",
+        {
+          p_obra_id:
+            obra_id,
+
+          p_nombre:
+            nombre,
+
+          p_fecha_inicio:
+            fecha_inicio || null,
+
+          p_fecha_fin:
+            fecha_fin || null
+        }
+      );
+
+
+    if (error) {
+      throw error;
     }
 
-    if (!obra.aprobada) {
-      throw new Error("La obra no está aprobada");
+
+    // ------------------------------------------------------
+    // RESPUESTA DEL BACKEND
+    // ------------------------------------------------------
+
+    if (
+      !data ||
+      data.ok !== true
+    ) {
+
+      throw new Error(
+        data?.mensaje ||
+        "No fue posible registrar al trabajador."
+      );
+
     }
 
-    // 📅 VALIDACIÓN DE FECHAS
-    if (fecha_inicio && fecha_fin && fecha_fin < fecha_inicio) {
-      throw new Error("La fecha fin no puede ser menor que la de inicio");
-    }
 
-    // 🔒 VALIDAR DUPLICADOS
-    const { data: existente } = await supabaseClient
-      .from("trabajadores_obra")
-      .select("id")
-      .eq("nombre", nombre)
-      .eq("obra_id", obra_id)
-      .maybeSingle();
-
-    if (existente) {
-      throw new Error("Este trabajador ya está registrado en esta obra");
-    }
-
-    const qr_codigo = crypto.randomUUID();
-
-    const { error } = await supabaseClient
-      .from("trabajadores_obra")
-      .insert([{
-        nombre,
-        privada: obra.privada,
-        casa: obra.casa,
-        obra_id: obra.id,
-        qr_codigo,
-        activo: true,
-        fecha_inicio: fecha_inicio || null,
-        fecha_fin: fecha_fin || null
-      }]);
-
-    if (error) throw error;
+    // ------------------------------------------------------
+    // ÉXITO
+    // ------------------------------------------------------
 
     mensaje.innerHTML = `
-      <b>✅ Trabajador registrado</b><br><br>
-      Ya puedes generar su código QR
+      <b>✅ Trabajador registrado</b>
+      <br><br>
+      Ya puedes generar su código QR.
     `;
-    mensaje.classList.add("ok");
 
-    // limpiar
-    document.getElementById("obra").value = "";
-    document.getElementById("nombre").value = "";
-    document.getElementById("fecha_inicio").value = "";
-    document.getElementById("fecha_fin").value = "";
+    mensaje.classList.add(
+      "ok"
+    );
 
-  } catch (err) {
 
-    console.error(err);
-    mensaje.innerText = err.message || "Error al registrar trabajador";
-    mensaje.classList.add("error");
+    // ------------------------------------------------------
+    // LIMPIAR FORMULARIO
+    // ------------------------------------------------------
+
+    document
+      .getElementById("obra")
+      .value = "";
+
+    document
+      .getElementById("nombre")
+      .value = "";
+
+    document
+      .getElementById("fecha_inicio")
+      .value = "";
+
+    document
+      .getElementById("fecha_fin")
+      .value = "";
+
+
+  } catch (error) {
+
+    console.error(
+      "Error registrando trabajador:",
+      error
+    );
+
+    mensaje.innerText =
+      error.message ||
+      "Error al registrar trabajador.";
+
+    mensaje.classList.add(
+      "error"
+    );
 
   }
 
+
   btn.disabled = false;
-  btn.innerText = "Registrar";
+
+  btn.innerText =
+    "Registrar";
+
 }
 
 </script>
