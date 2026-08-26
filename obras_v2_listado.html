@@ -767,6 +767,108 @@ html:not(.sigvic-inicializado) body {
     font-weight: 500;
 }
 
+/* ==========================================================
+   CONTACTOS DE LA OBRA
+   ========================================================== */
+
+.obra-contactos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin: 18px 28px 20px;
+    padding-top: 4px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.obra-contacto {
+    min-width: 0;
+}
+
+.obra-contacto-titulo {
+    color: #7f1d3f;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 7px;
+}
+
+.obra-contacto-linea {
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.obra-contacto-pendiente {
+    color: #b45309;
+    font-style: italic;
+}
+
+@media (max-width: 600px) {
+
+    .obra-contactos {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin: 16px 20px 18px;
+    }
+
+}
+
+
+/* ==========================================================
+   AVISO DE CONTACTOS PENDIENTES
+   ========================================================== */
+
+#modalContactosPendientes {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99990;
+    background: rgba(15, 23, 42, 0.28);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+#modalContactosPendientes .modal-contactos-pendientes-card {
+    width: min(520px, 100%);
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 0 18px 50px rgba(0,0,0,.20);
+    text-align: left;
+}
+
+#modalContactosPendientes .modal-contactos-pendientes-titulo {
+    color: #7f1d3f;
+    font-size: 21px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+#modalContactosPendientes .modal-contactos-pendientes-texto {
+    color: #374151;
+    font-size: 15px;
+    line-height: 1.55;
+}
+
+#btnCerrarContactosPendientes {
+    margin-top: 22px;
+    width: 100%;
+    min-height: 46px;
+    border: none;
+    border-radius: 11px;
+    background: #8f173f;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#btnCerrarContactosPendientes:hover {
+    background: #7c1236;
+}
+
 </style>
 
 
@@ -843,6 +945,33 @@ html:not(.sigvic-inicializado) body {
             Administración
 
         </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================================
+     AVISO DE CONTACTOS PENDIENTES
+     ========================================================== -->
+
+<div id="modalContactosPendientes">
+
+    <div class="modal-contactos-pendientes-card">
+
+        <div class="modal-contactos-pendientes-titulo">
+            Estimado administrador
+        </div>
+
+        <div
+            id="textoContactosPendientes"
+            class="modal-contactos-pendientes-texto">
+        </div>
+
+        <button
+            type="button"
+            id="btnCerrarContactosPendientes">
+            OK
+        </button>
 
     </div>
 
@@ -1827,173 +1956,58 @@ let listaSuspendidas = [];
 let listaTerminadas = [];
 let listaAprobacion = [];
 
+
 /* ==========================================================
-   INICIALIZACIÓN
+   AVISO DE CONTACTOS PENDIENTES
    ========================================================== */
 
-window.addEventListener("DOMContentLoaded", async () => {
+function mostrarAvisoContactosPendientes(total) {
 
-    try {
-
-        await protegerPagina([
-            "admin",
-            "administracion",
-            "residente"
-        ]);
-
-        const { data: { user }, error: userError } =
-            await supabaseClient.auth.getUser();
-
-        if (userError || !user) {
-            throw new Error("No se pudo identificar al usuario.");
-        }
-
-        // La bienvenida se controla por usuario, no por pestaña global.
-        // Así, si se cambia de usuario en la misma pestaña, el nuevo
-        // usuario recibe su propia bienvenida.
-        window.__SIGVIC_USER_ID = user.id;
-
-        // Administrador / Administración
-        const { data: residente, error: residenteError } =
-            await supabaseClient
-                .from("residentes")
-                .select("tipo, es_mesa_directiva, activo, id_cargo")
-                .eq("user_id", user.id)
-                .maybeSingle();
-
-        if (residenteError) {
-            throw residenteError;
-        }
-
-        const tipo = (residente?.tipo || "").toLowerCase();
-
-        const esAdministracion =
-            ["admin", "administracion"].includes(tipo);
-
-        const esMesaDirectiva =
-            residente?.es_mesa_directiva === true &&
-            residente?.activo === true;
-
-
-        let nombreCargo = "";
-
-        if (esAdministracion) {
-        
-            nombreCargo = "Administración";
-        
-        } else if (esMesaDirectiva && residente?.id_cargo) {
-        
-            const {
-                data: cargo,
-                error: cargoError
-            } = await supabaseClient
-                .from("catalogo_cargos")
-                .select("nombre")
-                .eq("id", residente.id_cargo)
-                .maybeSingle();
-        
-            if (cargoError) {
-                throw cargoError;
-            }
-        
-            nombreCargo =
-                cargo?.nombre ||
-                "Miembro de la Mesa Directiva";
-        }
-
-                const usuarioCargo =
-                    document.getElementById("usuarioCargo");
-                
-                if (usuarioCargo) {
-                    usuarioCargo.textContent =
-                        esAdministracion
-                            ? "Administración"
-                            : `${nombreCargo} de la Mesa Directiva`;
-                }                const textoBienvenida =
-                    esAdministracion
-                        ? "Administración"
-                        : `${nombreCargo} de la Mesa Directiva`;
-
-                /*
-                 * La cortinilla es una bienvenida al módulo.
-                 * No debe repetirse al regresar desde una pantalla
-                 * secundaria como obras_v2_vobos.html.
-                 */
-                try {
-
-                    const claveBienvenida =
-                        "sigvic_obras_bienvenida_" + user.id;
-
-                    const bienvenidaMostrada =
-                        sessionStorage.getItem(
-                            claveBienvenida
-                        ) === "1";
-
-                if (!bienvenidaMostrada) {
-                
-                    sessionStorage.setItem(
-                        claveBienvenida,
-                        "1"
-                    );
-                
-                    mostrarBienvenida(
-                        textoBienvenida
-                    );
-                
-                } else {
-                
-                    const overlay =
-                        document.getElementById(
-                            "bienvenidaSIGVIC"
-                        );
-                
-                    if (overlay) {
-                        overlay.remove();
-                    }
-                }
-                
-                document.documentElement.classList.add(
-                    "sigvic-inicializado"
-                );
-
-                } catch (e) {
-
-                    // Si sessionStorage no está disponible,
-                    // se conserva el comportamiento anterior.
-                    mostrarBienvenida(
-                        textoBienvenida
-                    );
-                }
-            
-
-                const tarjetaAgregarObra =
-                    document.getElementById("tarjetaAgregarObra");
-                
-                if (tarjetaAgregarObra) {
-                    tarjetaAgregarObra.style.display =
-                        esAdministracion ? "" : "none";
-                }
-
-        if (!esAdministracion && !esMesaDirectiva) {
-
-            alert("No tiene autorización para acceder a este módulo.");
-
-            window.location.href = "index.html";
-            return;
-        }
-
-    } catch (e) {
-
-        console.error("Error de acceso:", e);
-
-        window.location.href = "index.html";
+    if (!total || total <= 0) {
         return;
     }
 
-    await cargarObras();
+    const modal =
+        document.getElementById(
+            "modalContactosPendientes"
+        );
 
-});
+    const texto =
+        document.getElementById(
+            "textoContactosPendientes"
+        );
 
+    if (!modal || !texto) {
+        return;
+    }
+
+    texto.innerHTML = `
+        Se requiere completar la información de contacto
+        de <strong>${total} obras</strong>, para su empleo
+        por la Mesa Directiva.<br><br>
+
+        Favor de requisitarla.<br><br>
+
+        Gracias.
+    `;
+
+    modal.style.display = "flex";
+}
+
+
+function cerrarAvisoContactosPendientes() {
+
+    const modal =
+        document.getElementById(
+            "modalContactosPendientes"
+        );
+
+    if (!modal) {
+        return;
+    }
+
+    modal.style.display = "none";
+}
 
 /* ==========================================================
    CARGAR LISTADO
@@ -2063,7 +2077,7 @@ async function cargarObras() {
 
         /*
          * =====================================================
-         * APROBACIÓN MESA DIRECTIVA
+         * RENDERIZAR LISTAS
          * =====================================================
          */
 
@@ -2074,23 +2088,12 @@ async function cargarObras() {
         );
 
 
-        /*
-         * =====================================================
-         * EJECUCIÓN
-         * =====================================================
-         */
-
         renderizarLista(
             "listaEjecucion",
             listaEjecucion,
             "EJECUCION"
         );
 
-
-        /*
-         * =====================================================
-         * SUSPENDIDAS
-         * ===================================================== */
 
         renderizarLista(
             "listaSuspendidas",
@@ -2099,22 +2102,12 @@ async function cargarObras() {
         );
 
 
-        /*
-         * =====================================================
-         * TERMINADAS
-         * ===================================================== */
-
         renderizarLista(
             "listaTerminadas",
             listaTerminadas,
             "TERMINADA"
         );
 
-
-        /*
-         * =====================================================
-         * ARCHIVADAS
-         * ===================================================== */
 
         renderizarLista(
             "listaArchivadas",
@@ -2126,7 +2119,8 @@ async function cargarObras() {
         /*
          * =====================================================
          * CONTADORES DE ESTADOS
-         * ===================================================== */
+         * =====================================================
+         */
 
         const contadorAprobacion =
             document.getElementById(
@@ -2221,6 +2215,14 @@ async function cargarObras() {
         ocultarMensaje();
 
 
+        /*
+         * =====================================================
+         * DEVOLVER DATOS AL INICIALIZADOR
+         * =====================================================
+         */
+
+        return data;
+
     } catch (error) {
 
         console.error(
@@ -2234,10 +2236,9 @@ async function cargarObras() {
             "error"
         );
 
+        return null;
     }
-
 }
-
 async function obtenerContactosObraV2(obraId) {
 
     const { data, error } =
@@ -3376,7 +3377,10 @@ function escapeHTML(valor) {
    BIENVENIDA
    ========================================================== */
 
-function mostrarBienvenida(nombreCargoBienvenida) {
+function mostrarBienvenida(
+    nombreCargoBienvenida,
+    contactosPendientes = 0
+) {
 
     const overlay =
         document.getElementById(
@@ -3398,7 +3402,8 @@ function mostrarBienvenida(nombreCargoBienvenida) {
         return;
     }
 
-     overlay.style.display = "flex";
+
+    overlay.style.display = "flex";
 
 
     cargo.textContent =
@@ -3426,12 +3431,51 @@ function mostrarBienvenida(nombreCargoBienvenida) {
 
             overlay.remove();
 
+
+            /*
+             * =====================================================
+             * AVISO DE CONTACTOS PENDIENTES
+             * =====================================================
+             *
+             * Sólo Administración.
+             * Sólo cuando existen obras incompletas.
+             */
+
+            if (
+                nombreCargoBienvenida === "Administración" &&
+                Number(contactosPendientes) > 0
+            ) {
+
+                mostrarAvisoContactosPendientes(
+                    Number(contactosPendientes)
+                );
+
+            }
+
         }, 800);
 
     }, 2200);
 
 }
 
+function inicializarAvisoContactosPendientes() {
+
+    const boton =
+        document.getElementById(
+            "btnCerrarContactosPendientes"
+        );
+
+    if (!boton) {
+        return;
+    }
+
+    boton.addEventListener(
+        "click",
+        cerrarAvisoContactosPendientes
+    );
+
+}
+    
 </script>
 
 </body>
