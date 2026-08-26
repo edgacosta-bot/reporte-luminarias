@@ -738,6 +738,35 @@ html:not(.sigvic-inicializado) body {
 }
 
 
+    /* ==========================================================
+   FECHAS DE LA OBRA
+========================================================== */
+
+.obra-fechas {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 11px;
+}
+
+.obra-fecha {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+}
+
+.obra-fecha-etiqueta {
+    color: #9ca3af;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.obra-fecha-valor {
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 500;
+}
+
 </style>
 
 
@@ -2406,8 +2435,9 @@ async function guardarContactosObra() {
             "No fue posible actualizar los contactos.",
             true
         );
-    }
-}
+/* =======================================
+   RENDERIZAR SECCIÓN
+   ========================================================== */
 
 /* ==========================================================
    RENDERIZAR SECCIÓN
@@ -2418,6 +2448,7 @@ async function renderizarLista(
     obras,
     estado
 ) {
+
     const contenedor =
         document.getElementById(
             idContenedor
@@ -2442,14 +2473,13 @@ async function renderizarLista(
         `;
 
         return;
-
     }
 
 
     contenedor.innerHTML = "";
 
 
-   for (const obra of obras) {
+    obras.forEach(obra => {
 
         const elemento =
             document.createElement("div");
@@ -2457,57 +2487,68 @@ async function renderizarLista(
         elemento.className =
             "persona-card";
 
-        let contactos = null;
 
-        try {
-            contactos = await obtenerContactosObraV2(obra.id);
-        } catch (error) {
-            console.error(
-                "Error obteniendo contactos de la obra:",
-                obra.id,
-                error
-            );
-        }
-
-        obra._contactos = contactos;
         /*
          * =====================================================
-         * INFORMACIÓN PARA OBRAS SUSPENDIDAS
+         * FECHAS DE LA OBRA
          * =====================================================
+         *
+         * La fecha de registro proviene de obras_v2.created_at.
+         *
+         * Regla:
+         * - Si existe fecha_registro, se muestra.
+         * - Si existe fecha_autorizacion, se muestra.
+         * - Si alguna no existe, no se genera ese renglón.
+         * - Nunca se muestra "SIN DATOS".
          */
 
-        let informacionSuspension = "";
+        let informacionFechas = "";
 
-        if (estado === "SUSPENDIDA") {
+        if (
+            obra.fecha_registro ||
+            obra.fecha_autorizacion
+        ) {
 
-            informacionSuspension = `
+            informacionFechas = `
 
-                <div class="suspension-info">
-
-                    <div>
-                        <strong>Suspendida por:</strong>
-                        ${escapeHTML(
-                            obra.suspendido_por ||
-                            "No identificado"
-                        )}
-                    </div>
-
-                    <div>
-                        <strong>Motivo:</strong>
-                        ${escapeHTML(
-                            obra.motivo_suspension ||
-                            "No especificado"
-                        )}
-                    </div>
+                <div class="obra-fechas">
 
                     ${
-                        obra.observaciones_suspension
+                        obra.fecha_registro
                         ? `
-                            <div>
-                                <strong>Observaciones:</strong>
-                                ${escapeHTML(
-                                    obra.observaciones_suspension
-                                )}
+                            <div class="obra-fecha">
+
+                                <span class="obra-fecha-etiqueta">
+                                    Fecha de registro
+                                </span>
+
+                                <span class="obra-fecha-valor">
+                                    ${formatearFecha(
+                                        obra.fecha_registro
+                                    )}
+                                </span>
+
+                            </div>
+                        `
+                        : ""
+                    }
+
+
+                    ${
+                        obra.fecha_autorizacion
+                        ? `
+                            <div class="obra-fecha">
+
+                                <span class="obra-fecha-etiqueta">
+                                    Fecha de autorización
+                                </span>
+
+                                <span class="obra-fecha-valor">
+                                    ${formatearFecha(
+                                        obra.fecha_autorizacion
+                                    )}
+                                </span>
+
                             </div>
                         `
                         : ""
@@ -2518,142 +2559,6 @@ async function renderizarLista(
             `;
         }
 
-
-        /*
-         * =====================================================
-         * INFORMACIÓN PARA OBRAS TERMINADAS
-         * =====================================================
-         */
-
-        let informacionTerminacion = "";
-
-        if (estado === "TERMINADA") {
-
-            informacionTerminacion = `
-
-                <div class="suspension-info">
-
-                    <div>
-                        <strong>Fecha de terminación:</strong>
-                        ${
-                            obra.fecha_terminacion
-                            ? escapeHTML(
-                                new Date(
-                                    obra.fecha_terminacion
-                                ).toLocaleDateString(
-                                    "es-MX"
-                                )
-                            )
-                            : "No registrada"
-                        }
-                    </div>
-
-
-                    <div>
-                        <strong>Terminada por:</strong>
-                        ${escapeHTML(
-                            obra.terminado_por ||
-                            "No identificado"
-                        )}
-                    </div>
-
-
-                    ${
-                        obra.observaciones_terminacion
-                        ? `
-                            <div>
-                                <strong>Observaciones:</strong>
-                                ${escapeHTML(
-                                    obra.observaciones_terminacion
-                                )}
-                            </div>
-                        `
-                        : ""
-                    }
-
-                </div>
-
-            `;
-        }
-
-
-        /*
-         * =====================================================
-         * INFORMACIÓN HISTÓRICA PARA OBRAS ARCHIVADAS
-         * =====================================================
-         */
-
-       let informacionArchivo = "";
-
-if (estado === "ARCHIVADA") {
-
-    informacionArchivo = `
-
-        <div class="suspension-info">
-
-            <div>
-                <strong>Fecha de terminación:</strong>
-                ${
-                    obra.fecha_terminacion
-                    ? escapeHTML(
-                        new Date(
-                            obra.fecha_terminacion
-                        ).toLocaleDateString(
-                            "es-MX"
-                        )
-                    )
-                    : "No registrada"
-                }
-            </div>
-
-            <div>
-                <strong>Terminada por:</strong>
-                ${escapeHTML(
-                    obra.terminado_por ||
-                    "No identificado"
-                )}
-            </div>
-
-            ${
-                obra.observaciones_terminacion
-                ? `
-                    <div>
-                        <strong>Observaciones de terminación:</strong>
-                        ${escapeHTML(
-                            obra.observaciones_terminacion
-                        )}
-                    </div>
-                `
-                : ""
-            }
-
-            <div>
-                <strong>Fecha de archivo:</strong>
-                ${
-                    obra.fecha_archivado
-                    ? escapeHTML(
-                        new Date(
-                            obra.fecha_archivado
-                        ).toLocaleDateString(
-                            "es-MX"
-                        )
-                    )
-                    : "No registrada"
-                }
-            </div>
-
-            <div>
-                <strong>Archivada por:</strong>
-                ${escapeHTML(
-                    obra.archivado_por ||
-                    "No identificado"
-                )}
-            </div>
-
-        </div>
-
-    `;
-}
 
         /*
          * =====================================================
@@ -2661,190 +2566,39 @@ if (estado === "ARCHIVADA") {
          * =====================================================
          */
 
-        const propietario =
-            contactos?.propietario || null;
+        elemento.innerHTML = `
 
-        const dro =
-            contactos?.dro || null;
+            <div class="persona-header">
 
-        const propietarioNombre =
-            propietario?.nombre || "SIN DATOS";
-
-        const propietarioTelefono =
-            propietario?.telefono || "SIN DATOS";
-
-        const propietarioCorreo =
-            propietario?.correo_electronico || "SIN DATOS";
-
-        const droNombre =
-            dro?.nombre || "SIN DATOS";
-
-        const droTelefono =
-            dro?.telefono || "SIN DATOS";
-
-        const droCorreo =
-            dro?.correo_electronico || "SIN DATOS";
-           
-        if (estado === "ARCHIVADA") {
-
-            /*
-             * Las obras archivadas se presentan
-             * como un elemento desplegable.
-             */
-
-            elemento.innerHTML = `
-
-                <details class="obra-archivada">
-
-                    <summary class="persona-header">
-
-                        <div class="persona-title">
-                            Privada ${escapeHTML(obra.privada)}
-                            · Lote ${escapeHTML(obra.casa)}
-                        </div>
-
-                    </summary>
-
-
-                    <div class="archivo-detalle">
-
-                        ${informacionArchivo}
-
-                    </div>
-
-                </details>
-
-            `;
-
-        } else {
-
-            /*
-             * Tarjetas normales del listado operativo.
-             */
-
-            elemento.innerHTML = `
-
-                <div class="obra-header">
-
-    <div class="obra-header-icon">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path
-                d="M3 10.5 12 3l9 7.5"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            />
-            <path
-                d="M5 9.5V21h14V9.5"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linejoin="round"
-            />
-            <path
-                d="M9 21v-6h6v6"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linejoin="round"
-            />
-        </svg>
-    </div>
-
-    <div class="obra-header-title">
-        Privada ${escapeHTML(obra.privada)}
-        · Lote ${escapeHTML(obra.casa)}
-    </div>
-
-</div>
-                
-                
-                <div class="obra-datos-contacto">
-                        
-                            <div class="obra-contacto-bloque">
-                                <div class="obra-contacto-titulo">Propietario</div>
-                        
-                                <div>
-                                    <strong>Nombre:</strong>
-                                    ${escapeHTML(propietarioNombre)}
-                                </div>
-                        
-                                <div>
-                                    <strong>Teléfono:</strong>
-                                    ${escapeHTML(propietarioTelefono)}
-                                </div>
-                        
-                                <div>
-                                    <strong>Correo:</strong>
-                                    ${escapeHTML(propietarioCorreo)}
-                                </div>
-                            </div>
-                        
-                        
-                            <div class="obra-contacto-bloque">
-                                <div class="obra-contacto-titulo">DRO</div>
-                        
-                                <div>
-                                    <strong>Nombre:</strong>
-                                    ${escapeHTML(droNombre)}
-                                </div>
-                        
-                                <div>
-                                    <strong>Teléfono:</strong>
-                                    ${escapeHTML(droTelefono)}
-                                </div>
-                        
-                                <div>
-                                    <strong>Correo:</strong>
-                                    ${escapeHTML(droCorreo)}
-                                </div>
-                            </div>
-                        
-                        
-                            <div class="obra-contacto-bloque">
-                                <div class="obra-contacto-titulo">
-                                    Fecha de autorización
-                                </div>
-                        
-                                <div>
-                                    ${
-                                        obra.fecha_autorizacion
-                                            ? new Date(
-                                                obra.fecha_autorizacion
-                                            ).toLocaleDateString("es-MX")
-                                            : "SIN DATOS"
-                                    }
-                                </div>
-                            </div>
-                        
-</div>
-
+                <div class="persona-title">
+                    Privada ${escapeHTML(obra.privada)}
+                    · Lote ${escapeHTML(obra.casa)}
                 </div>
 
-
-                ${informacionSuspension}
-
-                ${informacionTerminacion}
-
-
-                <div class="actions">
-
-                    ${botonesEstado(obra)}
-
+                <div class="persona-status">
+                    ${textoEstado(estado)}
                 </div>
 
-            `;
+            </div>
 
-        }
+
+            ${informacionFechas}
+
+
+            <div class="actions">
+
+                ${botonesEstado(obra)}
+
+            </div>
+
+        `;
 
 
         contenedor.appendChild(
             elemento
         );
 
-    }
+    });
 
 }
 /* ==========================================================
@@ -3564,7 +3318,29 @@ function ocultarMensaje() {
 
 }
 
+function formatearFecha(valor) {
 
+    if (!valor) {
+        return "";
+    }
+
+    const fecha = new Date(valor);
+
+    if (Number.isNaN(fecha.getTime())) {
+        return "";
+    }
+
+    return fecha.toLocaleDateString(
+        "es-MX",
+        {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        }
+    );
+
+}
+    
 /* ==========================================================
    SEGURIDAD HTML
    ========================================================== */
