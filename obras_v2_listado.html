@@ -2727,6 +2727,140 @@ async function renderizarLista(
     estado
 ) {
 
+    const contenedor =
+        document.getElementById(
+            idContenedor
+        );
+
+    if (!contenedor) {
+        return;
+    }
+
+
+    obras = Array.isArray(obras)
+        ? obras
+        : [];
+
+
+    if (obras.length === 0) {
+
+        contenedor.innerHTML = `
+            <div class="persona-empty">
+                No hay obras en este estado.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    contenedor.innerHTML = "";
+
+
+    obras.forEach(obra => {
+
+        const elemento =
+            document.createElement("div");
+
+        elemento.className =
+            "persona-card";
+
+
+        /*
+         * =====================================================
+         * FECHAS DE LA OBRA
+         * =====================================================
+         *
+         * Por ahora:
+         * - Fecha de registro y autorización sólo se muestran
+         *   cuando la RPC las entrega.
+         *
+         * Las obras suspendidas y terminadas actualmente
+         * no reciben esas fechas desde la RPC, por lo que
+         * no se inventa ni se muestra información vacía.
+         */
+
+        let informacionFechas = "";
+
+
+        const mostrarFechaRegistro =
+            obra.origen === "V2" &&
+            !!obra.fecha_registro;
+
+
+        const mostrarFechaAutorizacion =
+            !!obra.fecha_autorizacion;
+
+
+        if (
+            mostrarFechaRegistro ||
+            mostrarFechaAutorizacion
+        ) {
+
+            informacionFechas = `
+
+                <div class="obra-fechas">
+
+                    ${
+                        mostrarFechaRegistro
+                        ? `
+                            <div class="obra-fecha">
+
+                                <span class="obra-fecha-etiqueta">
+                                    Fecha de registro
+                                </span>
+
+                                <span class="obra-fecha-valor">
+                                    ${formatearFecha(
+                                        obra.fecha_registro
+                                    )}
+                                </span>
+
+                            </div>
+                        `
+                        : ""
+                    }
+
+
+                    ${
+                        mostrarFechaAutorizacion
+                        ? `
+                            <div class="obra-fecha">
+
+                                <span class="obra-fecha-etiqueta">
+                                    Fecha de autorización
+                                </span>
+
+                                <span class="obra-fecha-valor">
+                                    ${formatearFecha(
+                                        obra.fecha_autorizacion
+                                    )}
+                                </span>
+
+                            </div>
+                        `
+                        : ""
+                    }
+
+                </div>
+
+            `;
+        }
+
+
+        /*
+         * =====================================================
+         * CONTACTOS
+         * =====================================================
+         */
+
+        const propietario =
+            obra.propietario || {};
+
+
+        const dro =
+            obra.dro || {};
+
 
         function mostrarDatoContacto(valor) {
 
@@ -2752,10 +2886,6 @@ async function renderizarLista(
         const informacionContactos = `
 
             <div class="obra-contactos">
-
-                <!-- ============================
-                     PROPIETARIO
-                     ============================ -->
 
                 <div class="obra-contacto">
 
@@ -2786,10 +2916,6 @@ async function renderizarLista(
 
                 </div>
 
-
-                <!-- ============================
-                     DRO
-                     ============================ -->
 
                 <div class="obra-contacto">
 
@@ -2827,6 +2953,135 @@ async function renderizarLista(
 
         /*
          * =====================================================
+         * INFORMACIÓN DE SUSPENSIÓN
+         * =====================================================
+         */
+
+        let informacionSuspension = "";
+
+
+        if (
+            obra.estado_operativo ===
+            "SUSPENDIDA"
+        ) {
+
+            informacionSuspension = `
+
+                <div class="suspension-info">
+
+                    <div>
+                        <strong>Causal:</strong>
+                        ${mostrarDatoContacto(
+                            obra.motivo_suspension
+                        )}
+                    </div>
+
+                    <div>
+                        <strong>Observaciones:</strong>
+                        ${
+                            obra.observaciones_suspension
+                            ? escapeHTML(
+                                obra.observaciones_suspension
+                              )
+                            : `
+                                <span class="obra-contacto-pendiente">
+                                    (pendiente)
+                                </span>
+                            `
+                        }
+                    </div>
+
+                    <div>
+                        <strong>Fecha de suspensión:</strong>
+                        ${
+                            obra.fecha_suspension
+                            ? formatearFecha(
+                                obra.fecha_suspension
+                              )
+                            : `
+                                <span class="obra-contacto-pendiente">
+                                    (pendiente)
+                                </span>
+                            `
+                        }
+                    </div>
+
+                    <div>
+                        <strong>Suspendió:</strong>
+                        ${mostrarDatoContacto(
+                            obra.suspendido_por
+                        )}
+                    </div>
+
+                </div>
+
+            `;
+        }
+
+
+        /*
+         * =====================================================
+         * INFORMACIÓN DE TERMINACIÓN
+         * =====================================================
+         */
+
+        let informacionTerminacion = "";
+
+
+        if (
+            obra.estado_operativo ===
+            "TERMINADA"
+        ) {
+
+            informacionTerminacion = `
+
+                <div class="suspension-info">
+
+                    <div>
+                        <strong>Fecha de terminación:</strong>
+                        ${
+                            obra.fecha_terminacion
+                            ? formatearFecha(
+                                obra.fecha_terminacion
+                              )
+                            : `
+                                <span class="obra-contacto-pendiente">
+                                    (pendiente)
+                                </span>
+                            `
+                        }
+                    </div>
+
+                    <div>
+                        <strong>Observaciones:</strong>
+                        ${
+                            obra.observaciones_terminacion
+                            ? escapeHTML(
+                                obra.observaciones_terminacion
+                              )
+                            : `
+                                <span class="obra-contacto-pendiente">
+                                    (pendiente)
+                                </span>
+                            `
+                        }
+                    </div>
+
+                    <div>
+                        <strong>Terminó:</strong>
+                        ${mostrarDatoContacto(
+                            obra.terminado_por
+                        )}
+                    </div>
+
+                </div>
+
+            `;
+        }
+
+
+        /*
+         * =====================================================
          * TARJETA
          * =====================================================
          */
@@ -2836,19 +3091,15 @@ async function renderizarLista(
             <div class="persona-header">
 
                 <div class="persona-title">
-
                     Privada
                     ${escapeHTML(obra.privada)}
                     · Lote
                     ${escapeHTML(obra.casa)}
-
                 </div>
 
 
                 <div class="persona-status">
-
                     ${textoEstado(estado)}
-
                 </div>
 
             </div>
@@ -2860,10 +3111,14 @@ async function renderizarLista(
             ${informacionContactos}
 
 
+            ${informacionSuspension}
+
+
+            ${informacionTerminacion}
+
+
             <div class="actions">
-
                 ${botonesEstado(obra)}
-
             </div>
 
         `;
