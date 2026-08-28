@@ -1563,16 +1563,12 @@ select:disabled {
     id="modalDRO"
     class="modal-overlay">
 
-
     <div class="modal">
-
 
         <div class="modal-header">
 
             <div class="modal-title">
-
                 Datos del Director Responsable de Obra
-
             </div>
 
             <button
@@ -1588,13 +1584,10 @@ select:disabled {
 
         <div class="modal-body">
 
-
             <div class="modal-field">
 
                 <label for="droNombre">
-
                     Nombre completo
-
                 </label>
 
                 <input
@@ -1602,15 +1595,24 @@ select:disabled {
                     type="text"
                     autocomplete="off">
 
+                <div
+                    id="droError"
+                    style="
+                        display: none;
+                        margin-top: 7px;
+                        color: #991b1b;
+                        font-size: 12px;
+                        line-height: 1.4;
+                    ">
+                </div>
+
             </div>
 
 
             <div class="modal-field">
 
                 <label for="droTelefono">
-
                     Teléfono
-
                 </label>
 
                 <input
@@ -1624,9 +1626,7 @@ select:disabled {
             <div class="modal-field">
 
                 <label for="droCorreo">
-
                     Correo electrónico
-
                 </label>
 
                 <input
@@ -1635,7 +1635,6 @@ select:disabled {
                     autocomplete="off">
 
             </div>
-
 
         </div>
 
@@ -1660,7 +1659,6 @@ select:disabled {
             </button>
 
         </div>
-
 
     </div>
 
