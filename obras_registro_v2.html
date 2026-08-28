@@ -2913,7 +2913,7 @@ function generarObra() {
 
     /* ======================================================
        VALIDACIONES
-    ====================================================== */
+       ====================================================== */
 
     if (!privada) {
 
@@ -2923,7 +2923,6 @@ function generarObra() {
         );
 
         return;
-
     }
 
 
@@ -2935,7 +2934,6 @@ function generarObra() {
         );
 
         return;
-
     }
 
 
@@ -2947,37 +2945,61 @@ function generarObra() {
         );
 
         return;
-
     }
 
 
-    if (!propietarioTemporal) {
+    /*
+     * =====================================================
+     * PROPIETARIO
+     *
+     * Es opcional.
+     *
+     * Puede generarse la obra aunque no exista
+     * propietarioTemporal.
+     * =====================================================
+     */
 
-        mostrarMensaje(
-            "Capture los datos del propietario.",
-            "error"
-        );
 
-        return;
-
-    }
-
+    /*
+     * =====================================================
+     * DRO
+     *
+     * Es obligatorio.
+     *
+     * La validación definitiva también existe en backend,
+     * pero la validamos aquí para informar inmediatamente
+     * al usuario.
+     * =====================================================
+     */
 
     if (!droTemporal) {
 
         mostrarMensaje(
-            "Capture los datos del DRO.",
+            "Es necesario requisitar al menos el nombre del DRO para generar el registro de la obra.",
             "error"
         );
 
         return;
+    }
 
+
+    if (
+        !droTemporal.nombre ||
+        !droTemporal.nombre.trim()
+    ) {
+
+        mostrarMensaje(
+            "Es necesario requisitar al menos el nombre del DRO para generar el registro de la obra.",
+            "error"
+        );
+
+        return;
     }
 
 
     /* ======================================================
        CONFIRMACIÓN
-    ====================================================== */
+       ====================================================== */
 
     abrirModalConfirmacionObra();
 
