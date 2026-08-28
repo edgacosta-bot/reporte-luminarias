@@ -1490,18 +1490,27 @@ select:disabled {
 
 
             <div class="modal-field">
-
-                <label for="propietarioNombre">
-
+            
+                <label for="droNombre">
                     Nombre completo
-
                 </label>
-
+            
                 <input
-                    id="propietarioNombre"
+                    id="droNombre"
                     type="text"
                     autocomplete="off">
-
+            
+                <div
+                    id="droError"
+                    style="
+                        display: none;
+                        margin-top: 7px;
+                        color: #991b1b;
+                        font-size: 12px;
+                        line-height: 1.4;
+                    ">
+                </div>
+            
             </div>
 
 
@@ -2502,6 +2511,17 @@ function abrirModalDRO() {
             "modalDRO"
         );
 
+    const error =
+        document.getElementById(
+            "droError"
+        );
+
+
+    /*
+     * =====================================================
+     * CARGAR DATOS EXISTENTES
+     * =====================================================
+     */
 
     document.getElementById(
         "droNombre"
@@ -2521,10 +2541,38 @@ function abrirModalDRO() {
         droTemporal?.correo_electronico || "";
 
 
+    /*
+     * =====================================================
+     * LIMPIAR MENSAJE DE ERROR
+     * =====================================================
+     */
+
+    if (error) {
+
+        error.textContent = "";
+
+        error.style.display =
+            "none";
+
+    }
+
+
+    /*
+     * =====================================================
+     * MOSTRAR MODAL
+     * =====================================================
+     */
+
     modal.classList.add(
         "visible"
     );
 
+
+    /*
+     * =====================================================
+     * ENFOCAR NOMBRE
+     * =====================================================
+     */
 
     setTimeout(() => {
 
@@ -2581,23 +2629,68 @@ async function guardarDROTemporal() {
             .trim();
 
 
-    if (!nombre) {
-
-        alert(
-            "Debes indicar el nombre del DRO."
+    const error =
+        document.getElementById(
+            "droError"
         );
 
+
+    /*
+     * =====================================================
+     * VALIDACIÓN DEL NOMBRE
+     * =====================================================
+     */
+
+    if (!nombre) {
+
+        if (error) {
+
+            error.textContent =
+                "El nombre del DRO es obligatorio.";
+
+            error.style.display =
+                "block";
+
+        }
+
+        document
+            .getElementById(
+                "droNombre"
+            )
+            .focus();
+
         return;
+    }
+
+
+    /*
+     * =====================================================
+     * LIMPIAR ERROR
+     * ===================================================== */
+
+    if (error) {
+
+        error.textContent = "";
+
+        error.style.display =
+            "none";
 
     }
 
 
+    /*
+     * =====================================================
+     * GUARDAR / PROCESAR DRO
+     * =====================================================
+     */
+
     const {
         data,
-        error
+        error: rpcError
     } = await supabaseClient.rpc(
         "guardar_datos_dro_v2",
         {
+
             p_nombre:
                 nombre,
 
@@ -2606,26 +2699,45 @@ async function guardarDROTemporal() {
 
             p_correo:
                 correo
+
         }
     );
 
 
-    if (error) {
+    /*
+     * =====================================================
+     * ERROR DEL BACKEND
+     * =====================================================
+     */
+
+    if (rpcError) {
 
         console.error(
             "Error al registrar DRO:",
-            error
+            rpcError
         );
 
-        alert(
-            error.message ||
-            "No fue posible guardar los datos del DRO."
-        );
+
+        if (error) {
+
+            error.textContent =
+                rpcError.message ||
+                "No fue posible guardar los datos del DRO.";
+
+            error.style.display =
+                "block";
+
+        }
 
         return;
-
     }
 
+
+    /*
+     * =====================================================
+     * OBTENER ID
+     * =====================================================
+     */
 
     const droId =
         data?.dro_id;
@@ -2638,14 +2750,26 @@ async function guardarDROTemporal() {
             data
         );
 
-        alert(
-            "El DRO fue procesado, pero no se recibió su identificador."
-        );
+
+        if (error) {
+
+            error.textContent =
+                "El DRO fue procesado, pero no se recibió su identificador.";
+
+            error.style.display =
+                "block";
+
+        }
 
         return;
-
     }
 
+
+    /*
+     * =====================================================
+     * GUARDAR EN MEMORIA TEMPORAL
+     * =====================================================
+     */
 
     droTemporal = {
 
@@ -2661,6 +2785,12 @@ async function guardarDROTemporal() {
 
     };
 
+
+    /*
+     * =====================================================
+     * CERRAR Y ACTUALIZAR
+     * =====================================================
+     */
 
     cerrarModalDRO();
 
