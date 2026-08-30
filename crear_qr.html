@@ -250,81 +250,290 @@ function mostrarBloqueo() {
 
 async function generarQR() {
 
-  const visitante = document.getElementById('visitante').value;
-  const fecha = document.getElementById('fecha').value;
-  const hora_inicio = document.getElementById('hora_inicio').value;
-  const hora_fin = document.getElementById('hora_fin').value;
+  const visitante =
+    document.getElementById("visitante").value.trim();
 
-  if (!visitante || !fecha || !hora_inicio || !hora_fin) {
+  const fecha =
+    document.getElementById("fecha").value;
+
+  const hora_inicio =
+    document.getElementById("hora_inicio").value;
+
+  const hora_fin =
+    document.getElementById("hora_fin").value;
+
+
+  // ==========================================================
+  // VALIDACIÓN BÁSICA
+  // ==========================================================
+
+  if (
+    !visitante ||
+    !fecha ||
+    !hora_inicio ||
+    !hora_fin
+  ) {
+
     alert("Completa todos los campos");
     return;
+
   }
 
-  const estado = (residenteGlobal.estado_pago || "corriente").toLowerCase().trim();
 
-  if (estado === "moroso") {
-    mostrarBloqueo();
+  // ==========================================================
+  // FUNCIÓN PARA LLAMAR AL BACKEND
+  // ==========================================================
+
+  async function solicitarQR(confirmarAtraso = false) {
+
+    const { data, error } =
+      await supabaseClient.rpc(
+        "registrar_visita_qr",
+        {
+          p_nombre_visitante: visitante,
+          p_fecha_visita: fecha,
+          p_hora_inicio: hora_inicio,
+          p_hora_fin: hora_fin,
+          p_confirmar_atraso: confirmarAtraso
+        }
+      );
+
+
+    // ========================================================
+    // ERROR DE COMUNICACIÓN
+    // ========================================================
+
+    if (error) {
+
+      console.error(
+        "ERROR registrar_visita_qr:",
+        error
+      );
+
+      alert(
+        "No fue posible generar el código QR."
+      );
+
+      return null;
+
+    }
+
+
+    // ========================================================
+    // RESPUESTA DEL BACKEND
+    // ========================================================
+
+    if (!data) {
+
+      alert(
+        "No fue posible generar el código QR."
+      );
+
+      return null;
+
+    }
+
+
+    return data;
+
+  }
+
+
+  // ==========================================================
+  // PRIMERA SOLICITUD
+  // ==========================================================
+
+  const respuesta =
+    await solicitarQR(false);
+
+
+  if (!respuesta) {
     return;
   }
 
-  if (estado === "atraso_1") {
-    const continuar = await mostrarModal();
-    if (!continuar) return;
+
+  // ==========================================================
+  // MOROSO
+  // ==========================================================
+
+  if (
+    respuesta.codigo === "MOROSO"
+  ){
+
+    mostrarBloqueo();
+    return;
+
   }
 
-  const codigo = crypto.randomUUID();
-  const tipo_generador = obtenerTipoGenerador();
 
-  const { data: { user } } = await supabaseClient.auth.getUser();
+  // ==========================================================
+  // ATRASO_1
+  // ==========================================================
 
-  const fechaInicio = new Date(`${fecha}T${hora_inicio}:00`);
-  const fechaFin = new Date(`${fecha}T${hora_fin}:00`);
+  if (
+    respuesta.codigo === "ATRASO_1"
+    &&
+    respuesta.requiere_confirmacion === true
+  ){
 
-const { error } = await supabaseClient.from('visitas_qr').insert([{
-  residente_id: residenteGlobal.id,
-  user_id: user.id,
-  nombre_visitante: visitante,
+    const continuar =
+      await mostrarModal();
 
-  // 🔥 CAMPOS CORRECTOS
-  fecha_visita: fecha,
-  hora_inicio: hora_inicio,
-  hora_fin: hora_fin,
 
-  codigo_qr: codigo,
-  privada: residenteGlobal.privada,
-  casa: residenteGlobal.casa,
-  estatus: 'activo',
-  tipo_generador: tipo_generador,
-  residente_nombre: residenteGlobal.nombre || ''
-}]);
+    if (!continuar) {
+      return;
+    }
 
-if (error) {
-  console.error("ERROR INSERT:", error);
-  alert("Error al guardar QR");
-  return;
+
+    // --------------------------------------------------------
+    // SEGUNDA SOLICITUD CON CONFIRMACIÓN
+    // --------------------------------------------------------
+
+    const respuestaConfirmada =
+      await solicitarQR(true);
+
+
+    if (!respuestaConfirmada) {
+      return;
+    }
+
+
+    if (
+      respuestaConfirmada.ok !== true
+    ){
+
+      alert(
+        respuestaConfirmada.mensaje ||
+        "No fue posible generar el código QR."
+      );
+
+      return;
+
+    }
+
+
+    // Continuar con el QR generado
+    await mostrarQRGenerado(
+      respuestaConfirmada
+    );
+
+    return;
+
+  }
+
+
+  // ==========================================================
+  // ERROR DE NEGOCIO
+  // ==========================================================
+
+  if (
+    respuesta.ok !== true
+  ){
+
+    alert(
+      respuesta.mensaje ||
+      "No fue posible generar el código QR."
+    );
+
+    return;
+
+  }
+
+
+  // ==========================================================
+  // QR GENERADO
+  // ==========================================================
+
+  await mostrarQRGenerado(
+    respuesta
+  );
+
 }
 
-  const linkRelativo = `/mostrar_qr.html?qr=${codigo}`;
-  const linkAbsoluto = `${window.location.origin}/mostrar_qr.html?qr=${codigo}`;
+async function mostrarQRGenerado(respuesta) {
 
-  document.getElementById("qrcode").innerHTML = `
+  const codigo =
+    respuesta.codigo_qr;
+
+  if (!codigo) {
+
+    alert(
+      "El servidor no devolvió el código QR."
+    );
+
+    return;
+
+  }
+
+
+  const linkRelativo =
+    `/mostrar_qr.html?qr=${codigo}`;
+
+  const linkAbsoluto =
+    `${window.location.origin}/mostrar_qr.html?qr=${codigo}`;
+
+
+  // ==========================================================
+  // MOSTRAR QR
+  // ==========================================================
+
+  document.getElementById(
+    "qrcode"
+  ).innerHTML = `
+
     <div class="qr-wrapper">
-      <img src="/icono-512.png" class="qr-logo">
+
+      <img
+        src="/icono-512.png"
+        class="qr-logo">
+
       <div id="qrCanvas"></div>
-      <div class="qr-title">Villas de la Concepción</div>
+
+      <div class="qr-title">
+        Villas de la Concepción
+      </div>
+
     </div>
+
   `;
 
-  new QRCode(document.getElementById("qrCanvas"), {
-    text: linkRelativo,
-    width: 200,
-    height: 200
-  });
 
-  const btn = document.getElementById("btnWhatsapp");
+  new QRCode(
+    document.getElementById("qrCanvas"),
+    {
+      text: linkRelativo,
+      width: 200,
+      height: 200
+    }
+  );
+
+
+  // ==========================================================
+  // WHATSAPP
+  // ==========================================================
+
+  const btn =
+    document.getElementById(
+      "btnWhatsapp"
+    );
+
+
   btn.style.display = "block";
-  btn.onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(linkAbsoluto)}`);
+
+
+  btn.onclick = () => {
+
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(
+        linkAbsoluto
+      )}`,
+      "_blank"
+    );
+
+  };
+
 }
+  
 
 </script>
 
