@@ -199,6 +199,25 @@
   </div>
 </div>
 
+
+<div id="modalMensaje" class="modal">
+  <div class="modal-content">
+
+    <p>
+      <b id="modalMensajeTitulo">⚠️ Aviso</b>
+    </p>
+
+    <p id="modalMensajeTexto"></p>
+
+    <button
+      class="btn-blue"
+      onclick="cerrarModalMensaje()">
+      Entendido
+    </button>
+
+  </div>
+</div>
+
 <script>
 
 let residenteGlobal = null;
@@ -248,6 +267,34 @@ function mostrarBloqueo() {
   document.getElementById("modalBloqueo").style.display = "flex";
 }
 
+function mostrarModalMensaje(
+  mensaje,
+  titulo = "⚠️ Aviso"
+) {
+
+  document.getElementById(
+    "modalMensajeTitulo"
+  ).innerText = titulo;
+
+  document.getElementById(
+    "modalMensajeTexto"
+  ).innerText = mensaje;
+
+  document.getElementById(
+    "modalMensaje"
+  ).style.display = "flex";
+}
+
+
+function cerrarModalMensaje() {
+
+  document.getElementById(
+    "modalMensaje"
+  ).style.display = "none";
+
+}
+  
+
 async function generarQR() {
 
   const visitante =
@@ -274,9 +321,11 @@ async function generarQR() {
     !hora_fin
   ) {
 
-    alert("Completa todos los campos");
-    return;
+    mostrarModalMensaje(
+      "Completa todos los campos."
+    );
 
+    return;
   }
 
 
@@ -284,7 +333,9 @@ async function generarQR() {
   // FUNCIÓN PARA LLAMAR AL BACKEND
   // ==========================================================
 
-  async function solicitarQR(confirmarAtraso = false) {
+  async function solicitarQR(
+    confirmarAtraso = false
+  ) {
 
     const { data, error } =
       await supabaseClient.rpc(
@@ -310,32 +361,31 @@ async function generarQR() {
         error
       );
 
-      alert(
-        "No fue posible generar el código QR."
+      mostrarModalMensaje(
+        "No fue posible comunicarse con el servidor.",
+        "⚠️ Error"
       );
 
       return null;
-
     }
 
 
     // ========================================================
-    // RESPUESTA DEL BACKEND
+    // RESPUESTA VACÍA
     // ========================================================
 
     if (!data) {
 
-      alert(
-        "No fue posible generar el código QR."
+      mostrarModalMensaje(
+        "No fue posible generar el código QR.",
+        "⚠️ Aviso"
       );
 
       return null;
-
     }
 
 
     return data;
-
   }
 
 
@@ -358,11 +408,11 @@ async function generarQR() {
 
   if (
     respuesta.codigo === "MOROSO"
-  ){
+  ) {
 
     mostrarBloqueo();
-    return;
 
+    return;
   }
 
 
@@ -374,7 +424,7 @@ async function generarQR() {
     respuesta.codigo === "ATRASO_1"
     &&
     respuesta.requiere_confirmacion === true
-  ){
+  ) {
 
     const continuar =
       await mostrarModal();
@@ -398,27 +448,33 @@ async function generarQR() {
     }
 
 
+    // --------------------------------------------------------
+    // VALIDAR RESULTADO
+    // --------------------------------------------------------
+
     if (
       respuestaConfirmada.ok !== true
-    ){
+    ) {
 
-      alert(
+      mostrarModalMensaje(
         respuestaConfirmada.mensaje ||
-        "No fue posible generar el código QR."
+        "No fue posible generar el código QR.",
+        "⚠️ Aviso"
       );
 
       return;
-
     }
 
 
-    // Continuar con el QR generado
+    // --------------------------------------------------------
+    // QR GENERADO
+    // --------------------------------------------------------
+
     await mostrarQRGenerado(
       respuestaConfirmada
     );
 
     return;
-
   }
 
 
@@ -428,15 +484,15 @@ async function generarQR() {
 
   if (
     respuesta.ok !== true
-  ){
+  ) {
 
-    alert(
+    mostrarModalMensaje(
       respuesta.mensaje ||
-      "No fue posible generar el código QR."
+      "No fue posible generar el código QR.",
+      "⚠️ Aviso"
     );
 
     return;
-
   }
 
 
@@ -449,22 +505,30 @@ async function generarQR() {
   );
 
 }
-
 async function mostrarQRGenerado(respuesta) {
 
   const codigo =
     respuesta.codigo_qr;
 
+
+  // ==========================================================
+  // VALIDAR RESPUESTA DEL BACKEND
+  // ==========================================================
+
   if (!codigo) {
 
-    alert(
-      "El servidor no devolvió el código QR."
+    mostrarModalMensaje(
+      "El servidor no devolvió el código QR.",
+      "⚠️ Aviso"
     );
 
     return;
-
   }
 
+
+  // ==========================================================
+  // CONSTRUIR ENLACES
+  // ==========================================================
 
   const linkRelativo =
     `/mostrar_qr.html?qr=${codigo}`;
@@ -498,6 +562,10 @@ async function mostrarQRGenerado(respuesta) {
   `;
 
 
+  // ==========================================================
+  // GENERAR QR VISUAL
+  // ==========================================================
+
   new QRCode(
     document.getElementById("qrCanvas"),
     {
@@ -509,7 +577,7 @@ async function mostrarQRGenerado(respuesta) {
 
 
   // ==========================================================
-  // WHATSAPP
+  // BOTÓN WHATSAPP
   // ==========================================================
 
   const btn =
