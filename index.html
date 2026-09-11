@@ -245,18 +245,19 @@ body {
    ====================================================== */
 
 .kpi-icono-servicio {
-  width: 42px;
-  height: 42px;
-  margin: 0 auto 6px auto;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 38px;
-  line-height: 42px;
+  font-size: 30px;
+  line-height: 1;
 }
 
 
 .kpi-titulo-servicio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   margin-bottom: 2px;
 }
 
@@ -339,7 +340,7 @@ body {
 
 </div> 
 
- <!-- KPI SERVICIOS POR ARRIBAR -->
+<!-- KPI SERVICIOS POR ARRIBAR -->
 <div
   class="kpi"
   id="kpiServiciosArribar"
@@ -347,13 +348,9 @@ body {
   style="cursor:pointer;"
 >
 
-<div class="kpi-icono-servicio">
-  🛵
-</div>
-
-  
   <div class="kpi-titulo-servicio">
-    Servicios por arribar
+    <span class="kpi-icono-servicio">🛵</span>
+    <span>Servicios por arribar</span>
   </div>
 
   <span id="kpiServiciosArribarNumero">
