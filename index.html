@@ -126,6 +126,12 @@ body {
   transform: scale(1.03);
   opacity: 0.95;
 }
+
+ /* KPI SERVICIOS POR ARRIBAR - ALERTA */
+.kpi-servicios-alerta {
+  background: #b91c1c;
+  color: white;
+} 
   
 /* BOTONES */
 .menu {
@@ -303,6 +309,19 @@ body {
   <span id="kpiAbastecimientos">0</span>
 
 </div> 
+
+  <!-- KPI SERVICIOS POR ARRIBAR -->
+<div
+  class="kpi"
+  id="kpiServiciosArribar"
+  onclick="abrirServiciosArribar()"
+  style="cursor:pointer;">
+
+  🚚 Servicios por arribar <br>
+
+  <span id="kpiServiciosArribarNumero">0</span>
+
+</div>
 
     <!-- KPI TRABAJADORES SUSPENDIDOS -->
   <div
@@ -905,6 +924,16 @@ function abrirPaquetes() {
   }
 
 }
+
+function abrirServiciosArribar() {
+
+  if (rolActual !== "vigilante") {
+    return;
+  }
+
+  window.location.href =
+    "servicios_arribo_vigilante.html";
+}  
   
 async function cargarKPIs() {
 
@@ -947,6 +976,47 @@ async function cargarKPIs() {
 
     document.getElementById("kpiAbastecimientos").innerText =
       data?.abastecimientos_dentro ?? 0;
+
+
+    // ======================================================
+    // KPI SERVICIOS POR ARRIBAR
+    // ======================================================
+
+    const kpiServiciosArribar =
+      document.getElementById(
+        "kpiServiciosArribar"
+      );
+
+    const numeroServiciosArribar =
+      document.getElementById(
+        "kpiServiciosArribarNumero"
+      );
+
+    const serviciosPorArribar =
+      data?.servicios_por_arribar ?? 0;
+
+
+    numeroServiciosArribar.innerText =
+      serviciosPorArribar;
+
+
+    // ======================================================
+    // ESTADO VISUAL DEL KPI
+    // ======================================================
+
+    if (serviciosPorArribar > 0) {
+
+      kpiServiciosArribar.classList.add(
+        "kpi-servicios-alerta"
+      );
+
+    } else {
+
+      kpiServiciosArribar.classList.remove(
+        "kpi-servicios-alerta"
+      );
+
+    }
 
 
     // ======================================================
@@ -993,7 +1063,6 @@ async function cargarKPIs() {
   }
 
 }
-
   // ==========================================================
 // TRABAJADORES SUSPENDIDOS
 // ==========================================================
