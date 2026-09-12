@@ -160,6 +160,37 @@ async function init(){
 
   trabajador = data[0];
 
+  // ========================================================
+// DÍA DE ACCESO RESTRINGIDO
+// ========================================================
+
+if (trabajador.dia_restringido === true){
+
+  document.body.className = "error";
+
+  titulo.innerText =
+    "🚫 Acceso no permitido";
+
+  estado.innerText =
+    trabajador.motivo_restriccion ||
+    "Día de descanso obligatorio";
+
+  detalle.innerHTML = `
+    <p>
+      <b>${trabajador.nombre}</b>
+    </p>
+
+    <p>
+      El acceso de trabajadores de obra
+      no está permitido en esta fecha.
+    </p>
+  `;
+
+  ocultarValidacion();
+
+  return;
+}
+
 
   // ========================================================
   // SUSPENSIÓN TEMPORAL
