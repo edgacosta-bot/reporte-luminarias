@@ -558,6 +558,18 @@ async function validarPin() {
     );
 
 
+    /*
+     * El PIN del vigilante solamente autoriza
+     * al vigilante para continuar.
+     *
+     * La entrada NO se considera registrada
+     * en este punto.
+     *
+     * La pantalla verde solamente aparecerá
+     * después de que entrada_trabajador()
+     * confirme exitosamente el registro.
+     */
+
     if (
       tipoAccion === "salida"
     ) {
@@ -574,10 +586,10 @@ async function validarPin() {
     } else {
 
       document.body.className =
-        "ok";
+        "";
 
       estado.innerText =
-        "Acceso permitido";
+        "Confirmar entrada";
 
       btnRegistrar.innerText =
         "Registrar entrada";
@@ -587,6 +599,7 @@ async function validarPin() {
     btnRegistrar.classList.remove(
       "hidden"
     );
+
 
   } catch (error) {
 
@@ -612,7 +625,6 @@ async function validarPin() {
   }
 
 }
-
 
 /* ==========================================================
    REGISTRAR OPERACIÓN
