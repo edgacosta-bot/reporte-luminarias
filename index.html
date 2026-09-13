@@ -960,6 +960,16 @@ function abrirServiciosArribar() {
   window.location.href =
     "servicios_arribo_vigilante.html";
 }  
+
+function abrirVisitantesArribar() {
+
+  if (rolActual !== "vigilante") {
+    return;
+  }
+
+  window.location.href =
+    "visitantes_arribo_vigilante.html";
+}  
   
 async function cargarKPIs() {
 
