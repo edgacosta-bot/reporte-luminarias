@@ -10,235 +10,156 @@
     content="width=device-width, initial-scale=1"
 >
 
-<title>Visitantes por arribar</title>
+<title>Control de visitas de hoy</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 
 <style>
 
-*{
-    box-sizing:border-box;
+* {
+    box-sizing: border-box;
 }
 
-body{
-
-    margin:0;
-
-    font-family:Arial,sans-serif;
-
-    background:#020617;
-
-    color:#fff;
-
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #020617;
+    color: #fff;
 }
 
-.container{
-
-    width:100%;
-
-    max-width:900px;
-
-    margin:auto;
-
-    padding:30px 20px 50px;
-
+.container {
+    width: 100%;
+    max-width: 900px;
+    margin: auto;
+    padding: 30px 20px 50px;
 }
 
-header{
-
-    text-align:center;
-
-    margin-bottom:30px;
-
+header {
+    text-align: center;
+    margin-bottom: 25px;
 }
 
-.logo{
-
-    width:80px;
-
-    margin-bottom:15px;
-
+.logo {
+    width: 80px;
+    margin-bottom: 15px;
 }
 
-h1{
-
-    margin:0;
-
-    font-size:32px;
-
+h1 {
+    margin: 0;
+    font-size: 30px;
 }
 
-.subtitulo{
-
-    margin-top:10px;
-
-    color:#94a3b8;
-
-    font-size:16px;
-
+.subtitulo {
+    margin-top: 10px;
+    color: #94a3b8;
+    font-size: 16px;
 }
 
-.boton-regresar{
-
-    display:block;
-
-    width:100%;
-
-    max-width:300px;
-
-    margin:25px auto;
-
-    padding:14px;
-
-    border:none;
-
-    border-radius:10px;
-
-    background:#1e293b;
-
-    color:#fff;
-
-    font-size:16px;
-
-    font-weight:bold;
-
-    cursor:pointer;
-
+.boton-regresar {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 20px auto 30px;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: #1e293b;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
 }
 
-.resumen{
-
-    text-align:center;
-
-    margin:25px 0;
-
-    font-size:20px;
-
-    font-weight:bold;
-
+.resumen {
+    text-align: center;
+    margin: 20px 0 25px;
+    font-size: 20px;
+    font-weight: bold;
 }
 
-.lista{
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:15px;
-
+.lista {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
-.visita{
-
-    background:#0f172a;
-
-    border-radius:14px;
-
-    padding:20px;
-
-    border-left:6px solid #64748b;
-
+.visita {
+    background: #0f172a;
+    border-radius: 14px;
+    padding: 20px;
+    border-left: 6px solid #64748b;
 }
 
-.visita.vigente{
-
-    border-left-color:#16a34a;
-
+.visita.vigente {
+    border-left-color: #16a34a;
 }
 
-.visita.fuera{
-
-    border-left-color:#dc2626;
-
+.visita.fuera {
+    border-left-color: #dc2626;
 }
 
-.visita.dentro{
-
-    border-left-color:#2563eb;
-
+.visita.dentro {
+    border-left-color: #2563eb;
 }
 
-.visitante{
-
-    font-size:22px;
-
-    font-weight:bold;
-
-    margin-bottom:10px;
-
+.visita.proxima {
+    border-left-color: #f59e0b;
 }
 
-.dato{
-
-    margin:5px 0;
-
-    color:#cbd5e1;
-
+.visitante {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 12px;
 }
 
-.estado{
-
-    margin-top:15px;
-
-    font-weight:bold;
-
-    font-size:17px;
-
+.dato {
+    margin: 6px 0;
+    color: #cbd5e1;
+    font-size: 16px;
 }
 
-.estado.vigente{
-
-    color:#4ade80;
-
+.estado {
+    margin-top: 15px;
+    font-weight: bold;
+    font-size: 17px;
 }
 
-.estado.fuera{
-
-    color:#f87171;
-
+.estado.vigente {
+    color: #4ade80;
 }
 
-.estado.dentro{
-
-    color:#60a5fa;
-
+.estado.fuera {
+    color: #f87171;
 }
 
-.mensaje{
-
-    text-align:center;
-
-    padding:40px 20px;
-
-    color:#94a3b8;
-
-    font-size:18px;
-
+.estado.dentro {
+    color: #60a5fa;
 }
 
-.cargando{
-
-    text-align:center;
-
-    padding:40px;
-
-    color:#94a3b8;
-
+.estado.proxima {
+    color: #fbbf24;
 }
 
-.error{
+.mensaje {
+    text-align: center;
+    padding: 40px 20px;
+    color: #94a3b8;
+    font-size: 18px;
+}
 
-    background:#7f1d1d;
+.cargando {
+    text-align: center;
+    padding: 40px;
+    color: #94a3b8;
+}
 
-    color:#fecaca;
-
-    padding:15px;
-
-    border-radius:10px;
-
-    text-align:center;
-
+.error {
+    background: #7f1d1d;
+    color: #fecaca;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
 }
 
 </style>
@@ -258,11 +179,11 @@ h1{
 >
 
 <h1>
-    Visitantes por arribar
+    Control de visitas de hoy
 </h1>
 
 <div class="subtitulo">
-    Control de accesos
+    Vigilancia
 </div>
 
 </header>
@@ -300,19 +221,16 @@ h1{
 
 <script>
 
-async function iniciar(){
+async function iniciar() {
 
-    try{
+    try {
 
         const {
-            data:sessionData
-        } =
-        await supabaseClient.auth.getSession();
+            data: sessionData
+        } = await supabaseClient.auth.getSession();
 
 
-        if(
-            !sessionData.session
-        ){
+        if (!sessionData.session) {
 
             window.location.href =
                 "login.html";
@@ -329,9 +247,9 @@ async function iniciar(){
 
         await cargarVisitas();
 
-
     }
-    catch(error){
+
+    catch (error) {
 
         console.error(
             "ERROR INICIAL:",
@@ -347,7 +265,7 @@ async function iniciar(){
 }
 
 
-async function cargarVisitas(){
+async function cargarVisitas() {
 
     const lista =
         document.getElementById("lista");
@@ -356,26 +274,17 @@ async function cargarVisitas(){
         document.getElementById("resumen");
 
 
-    try{
-
-        /*
-         * IMPORTANTE:
-         *
-         * Aquí utilizaremos la RPC
-         * específica que ya probamos
-         * para consultar las visitas.
-         */
+    try {
 
         const {
             data,
             error
-        } =
-        await supabaseClient.rpc(
+        } = await supabaseClient.rpc(
             "obtener_visitas_por_arribar"
         );
 
 
-        if(error){
+        if (error) {
 
             console.error(
                 "ERROR RPC:",
@@ -405,9 +314,9 @@ async function cargarVisitas(){
 
         const vigentes =
             visitas.filter(
-                v =>
-                v.clasificacion ===
-                "VIGENTE"
+                visita =>
+                    visita.clasificacion ===
+                    "VIGENTE"
             );
 
 
@@ -416,20 +325,18 @@ async function cargarVisitas(){
                 vigentes.length === 1
                     ? ""
                     : "s"
-            } vigente${
+            } pendiente${
                 vigentes.length === 1
                     ? ""
                     : "s"
-            }`;
+            } de arribo`;
 
 
-        if(
-            visitas.length === 0
-        ){
+        if (!visitas.length) {
 
             lista.innerHTML = `
                 <div class="mensaje">
-                    No hay visitas registradas.
+                    No hay visitas registradas para hoy.
                 </div>
             `;
 
@@ -440,14 +347,14 @@ async function cargarVisitas(){
 
         lista.innerHTML =
             visitas
-            .map(
-                crearTarjeta
-            )
-            .join("");
-
+                .map(
+                    crearTarjeta
+                )
+                .join("");
 
     }
-    catch(error){
+
+    catch (error) {
 
         console.error(
             "ERROR CARGANDO VISITAS:",
@@ -463,39 +370,43 @@ async function cargarVisitas(){
 }
 
 
-function crearTarjeta(visita){
+function crearTarjeta(visita) {
 
-    let clase =
-        "fuera";
+    let clase = "fuera";
 
-    let texto =
-        "FUERA DE VIGENCIA";
+    let texto = "FUERA DE VIGENCIA";
 
 
-    if(
+    if (
         visita.clasificacion ===
         "VIGENTE"
-    ){
+    ) {
 
-        clase =
-            "vigente";
+        clase = "vigente";
 
-        texto =
-            "VISITA VIGENTE";
+        texto = "VISITA VIGENTE";
 
     }
 
-
-    else if(
+    else if (
         visita.clasificacion ===
         "YA_DENTRO"
-    ){
+    ) {
 
-        clase =
-            "dentro";
+        clase = "dentro";
 
-        texto =
-            "VISITANTE YA DENTRO";
+        texto = "VISITANTE YA DENTRO";
+
+    }
+
+    else if (
+        visita.clasificacion ===
+        "PROXIMA"
+    ) {
+
+        clase = "proxima";
+
+        texto = "VISITA PRÓXIMA";
 
     }
 
@@ -507,8 +418,7 @@ function crearTarjeta(visita){
             <div class="visitante">
 
                 ${escapeHtml(
-                    visita.nombre_visitante
-                    || ""
+                    visita.nombre_visitante || ""
                 )}
 
             </div>
@@ -522,16 +432,14 @@ function crearTarjeta(visita){
 
                 Privada
                 ${escapeHtml(
-                    visita.privada
-                    || ""
+                    visita.privada || ""
                 )}
 
                 -
                 Lote
                 ${escapeHtml(
                     String(
-                        visita.casa
-                        || ""
+                        visita.casa || ""
                     )
                 )}
 
@@ -570,48 +478,31 @@ function crearTarjeta(visita){
 }
 
 
-function formatearHora(hora){
+function formatearHora(hora) {
 
-    if(!hora){
-
+    if (!hora) {
         return "";
-
     }
 
     return String(hora)
-        .substring(0,5);
+        .substring(0, 5);
 
 }
 
 
-function escapeHtml(text){
+function escapeHtml(text) {
 
     return String(text)
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
-        );
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 
 }
 
 
-function mostrarError(mensaje){
+function mostrarError(mensaje) {
 
     document.getElementById(
         "lista"
@@ -630,7 +521,7 @@ function mostrarError(mensaje){
 }
 
 
-function regresar(){
+function regresar() {
 
     window.location.href =
         "index.html";
