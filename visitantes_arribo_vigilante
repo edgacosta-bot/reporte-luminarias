@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+>
+
+<title>Visitantes por arribar</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+
+    margin:0;
+
+    font-family:Arial,sans-serif;
+
+    background:#020617;
+
+    color:#fff;
+
+}
+
+.container{
+
+    width:100%;
+
+    max-width:900px;
+
+    margin:auto;
+
+    padding:30px 20px 50px;
+
+}
+
+header{
+
+    text-align:center;
+
+    margin-bottom:30px;
+
+}
+
+.logo{
+
+    width:80px;
+
+    margin-bottom:15px;
+
+}
+
+h1{
+
+    margin:0;
+
+    font-size:32px;
+
+}
+
+.subtitulo{
+
+    margin-top:10px;
+
+    color:#94a3b8;
+
+    font-size:16px;
+
+}
+
+.boton-regresar{
+
+    display:block;
+
+    width:100%;
+
+    max-width:300px;
+
+    margin:25px auto;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#1e293b;
+
+    color:#fff;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+}
+
+.resumen{
+
+    text-align:center;
+
+    margin:25px 0;
+
+    font-size:20px;
+
+    font-weight:bold;
+
+}
+
+.lista{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:15px;
+
+}
+
+.visita{
+
+    background:#0f172a;
+
+    border-radius:14px;
+
+    padding:20px;
+
+    border-left:6px solid #64748b;
+
+}
+
+.visita.vigente{
+
+    border-left-color:#16a34a;
+
+}
+
+.visita.fuera{
+
+    border-left-color:#dc2626;
+
+}
+
+.visita.dentro{
+
+    border-left-color:#2563eb;
+
+}
+
+.visitante{
+
+    font-size:22px;
+
+    font-weight:bold;
+
+    margin-bottom:10px;
+
+}
+
+.dato{
+
+    margin:5px 0;
+
+    color:#cbd5e1;
+
+}
+
+.estado{
+
+    margin-top:15px;
+
+    font-weight:bold;
+
+    font-size:17px;
+
+}
+
+.estado.vigente{
+
+    color:#4ade80;
+
+}
+
+.estado.fuera{
+
+    color:#f87171;
+
+}
+
+.estado.dentro{
+
+    color:#60a5fa;
+
+}
+
+.mensaje{
+
+    text-align:center;
+
+    padding:40px 20px;
+
+    color:#94a3b8;
+
+    font-size:18px;
+
+}
+
+.cargando{
+
+    text-align:center;
+
+    padding:40px;
+
+    color:#94a3b8;
+
+}
+
+.error{
+
+    background:#7f1d1d;
+
+    color:#fecaca;
+
+    padding:15px;
+
+    border-radius:10px;
+
+    text-align:center;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+<header>
+
+<img
+    src="/icono-512.png"
+    class="logo"
+>
+
+<h1>
+    Visitantes por arribar
+</h1>
+
+<div class="subtitulo">
+    Control de accesos
+</div>
+
+</header>
+
+
+<button
+    class="boton-regresar"
+    onclick="regresar()"
+>
+    ← Regresar
+</button>
+
+
+<div
+    id="resumen"
+    class="resumen"
+>
+    Consultando...
+</div>
+
+
+<div
+    id="lista"
+    class="lista"
+>
+
+    <div class="cargando">
+        Consultando visitas...
+    </div>
+
+</div>
+
+</div>
+
+
+<script>
+
+async function iniciar(){
+
+    try{
+
+        const {
+            data:sessionData
+        } =
+        await supabaseClient.auth.getSession();
+
+
+        if(
+            !sessionData.session
+        ){
+
+            window.location.href =
+                "login.html";
+
+            return;
+
+        }
+
+
+        await protegerPagina([
+            "vigilante"
+        ]);
+
+
+        await cargarVisitas();
+
+
+    }
+    catch(error){
+
+        console.error(
+            "ERROR INICIAL:",
+            error
+        );
+
+        mostrarError(
+            "No fue posible cargar las visitas."
+        );
+
+    }
+
+}
+
+
+async function cargarVisitas(){
+
+    const lista =
+        document.getElementById("lista");
+
+    const resumen =
+        document.getElementById("resumen");
+
+
+    try{
+
+        /*
+         * IMPORTANTE:
+         *
+         * Aquí utilizaremos la RPC
+         * específica que ya probamos
+         * para consultar las visitas.
+         */
+
+        const {
+            data,
+            error
+        } =
+        await supabaseClient.rpc(
+            "obtener_visitas_por_arribar"
+        );
+
+
+        if(error){
+
+            console.error(
+                "ERROR RPC:",
+                error
+            );
+
+            mostrarError(
+                "No fue posible consultar las visitas."
+            );
+
+            return;
+
+        }
+
+
+        console.log(
+            "VISITAS RECIBIDAS:",
+            data
+        );
+
+
+        const visitas =
+            Array.isArray(data)
+                ? data
+                : [];
+
+
+        const vigentes =
+            visitas.filter(
+                v =>
+                v.clasificacion ===
+                "VIGENTE"
+            );
+
+
+        resumen.innerText =
+            `${vigentes.length} visita${
+                vigentes.length === 1
+                    ? ""
+                    : "s"
+            } vigente${
+                vigentes.length === 1
+                    ? ""
+                    : "s"
+            }`;
+
+
+        if(
+            visitas.length === 0
+        ){
+
+            lista.innerHTML = `
+                <div class="mensaje">
+                    No hay visitas registradas.
+                </div>
+            `;
+
+            return;
+
+        }
+
+
+        lista.innerHTML =
+            visitas
+            .map(
+                crearTarjeta
+            )
+            .join("");
+
+
+    }
+    catch(error){
+
+        console.error(
+            "ERROR CARGANDO VISITAS:",
+            error
+        );
+
+        mostrarError(
+            "Ocurrió un error al consultar las visitas."
+        );
+
+    }
+
+}
+
+
+function crearTarjeta(visita){
+
+    let clase =
+        "fuera";
+
+    let texto =
+        "FUERA DE VIGENCIA";
+
+
+    if(
+        visita.clasificacion ===
+        "VIGENTE"
+    ){
+
+        clase =
+            "vigente";
+
+        texto =
+            "VISITA VIGENTE";
+
+    }
+
+
+    else if(
+        visita.clasificacion ===
+        "YA_DENTRO"
+    ){
+
+        clase =
+            "dentro";
+
+        texto =
+            "VISITANTE YA DENTRO";
+
+    }
+
+
+    return `
+
+        <div class="visita ${clase}">
+
+            <div class="visitante">
+
+                ${escapeHtml(
+                    visita.nombre_visitante
+                    || ""
+                )}
+
+            </div>
+
+
+            <div class="dato">
+
+                <strong>
+                    Ubicación:
+                </strong>
+
+                Privada
+                ${escapeHtml(
+                    visita.privada
+                    || ""
+                )}
+
+                -
+                Lote
+                ${escapeHtml(
+                    String(
+                        visita.casa
+                        || ""
+                    )
+                )}
+
+            </div>
+
+
+            <div class="dato">
+
+                <strong>
+                    Horario:
+                </strong>
+
+                ${formatearHora(
+                    visita.hora_inicio
+                )}
+
+                -
+                
+                ${formatearHora(
+                    visita.hora_fin
+                )}
+
+            </div>
+
+
+            <div class="estado ${clase}">
+
+                ${texto}
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+function formatearHora(hora){
+
+    if(!hora){
+
+        return "";
+
+    }
+
+    return String(hora)
+        .substring(0,5);
+
+}
+
+
+function escapeHtml(text){
+
+    return String(text)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+function mostrarError(mensaje){
+
+    document.getElementById(
+        "lista"
+    ).innerHTML = `
+
+        <div class="error">
+
+            ${escapeHtml(
+                mensaje
+            )}
+
+        </div>
+
+    `;
+
+}
+
+
+function regresar(){
+
+    window.location.href =
+        "index.html";
+
+}
+
+
+window.addEventListener(
+    "DOMContentLoaded",
+    iniciar
+);
+
+</script>
+
+</body>
+
+</html>
