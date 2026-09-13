@@ -1036,66 +1036,64 @@ async function cargarKPIs() {
       serviciosPorArribar;
 
 
-// ======================================================
-// KPI VISITANTES POR ARRIBAR
-// SOLO VIGILANCIA
-// ======================================================
+    // ======================================================
+    // ESTADO VISUAL DEL KPI SERVICIOS
+    // ======================================================
 
-const kpiVisitantesArribar =
-  document.getElementById(
-    "kpiVisitantesArribar"
-  );
+    if (serviciosPorArribar > 0) {
 
-const numeroVisitantesArribar =
-  document.getElementById(
-    "kpiVisitantesArribarNumero"
-  );
-
-
-// ------------------------------------------------------
-// El KPI solamente existe para vigilancia
-// ------------------------------------------------------
-
-if (rolActual === "vigilante") {
-
-  try {
-
-    const {
-      data: visitasData,
-      error: visitasError
-    } = await supabaseClient.rpc(
-      "obtener_visitas_por_arribar"
-    );
-
-
-    if (visitasError) {
-
-      console.error(
-        "ERROR KPI VISITANTES:",
-        visitasError
-      );
-
-      numeroVisitantesArribar.innerText = "0";
-
-      kpiVisitantesArribar.classList.remove(
+      kpiServiciosArribar.classList.add(
         "kpi-servicios-alerta"
       );
 
     } else {
 
+      kpiServiciosArribar.classList.remove(
+        "kpi-servicios-alerta"
+      );
+
+    }
+
+
+    // ======================================================
+    // KPI VISITANTES POR ARRIBAR
+    // SOLO VIGILANCIA
+    // ======================================================
+
+    const kpiVisitantesArribar =
+      document.getElementById(
+        "kpiVisitantesArribar"
+      );
+
+    const numeroVisitantesArribar =
+      document.getElementById(
+        "kpiVisitantesArribarNumero"
+      );
+
+
+    if (rolActual === "vigilante") {
+
       const visitasPorArribar =
-        visitasData?.[0]?.visitas_por_arribar ?? 0;
+        data?.visitas_por_arribar ?? 0;
 
 
       numeroVisitantesArribar.innerText =
         visitasPorArribar;
 
 
-      // ------------------------------------------------
-      // ESTADO VISUAL
+      // ----------------------------------------------------
+      // El KPI se muestra únicamente en vigilancia
+      // ----------------------------------------------------
+
+      kpiVisitantesArribar.style.display =
+        "block";
+
+
+      // ----------------------------------------------------
+      // Estado visual
       // Reutilizamos el mismo comportamiento
-      // visual de Servicios por arribar.
-      // ------------------------------------------------
+      // de Servicios por arribar.
+      // ----------------------------------------------------
 
       if (visitasPorArribar > 0) {
 
@@ -1111,51 +1109,15 @@ if (rolActual === "vigilante") {
 
       }
 
-    }
-
-  } catch (e) {
-
-    console.error(
-      "ERROR GENERAL KPI VISITANTES:",
-      e
-    );
-
-    numeroVisitantesArribar.innerText = "0";
-
-    kpiVisitantesArribar.classList.remove(
-      "kpi-servicios-alerta"
-    );
-
-  }
-
-} else {
-
-  // ----------------------------------------------------
-  // ADMINISTRACIÓN / RESIDENTES
-  // El KPI no debe utilizarse.
-  // ----------------------------------------------------
-
-  kpiVisitantesArribar.style.display =
-    "none";
-
-}    
-
-
-    // ======================================================
-    // ESTADO VISUAL DEL KPI
-    // ======================================================
-
-    if (serviciosPorArribar > 0) {
-
-      kpiServiciosArribar.classList.add(
-        "kpi-servicios-alerta"
-      );
-
     } else {
 
-      kpiServiciosArribar.classList.remove(
-        "kpi-servicios-alerta"
-      );
+      // ----------------------------------------------------
+      // Administración / Residentes
+      // El KPI no debe mostrarse.
+      // ----------------------------------------------------
+
+      kpiVisitantesArribar.style.display =
+        "none";
 
     }
 
