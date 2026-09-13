@@ -373,9 +373,12 @@ async function cargarVisitas() {
 function crearTarjeta(visita) {
 
     let clase = "fuera";
-
     let texto = "FUERA DE VIGENCIA";
 
+
+    // ------------------------------------------------------
+    // VISITA VIGENTE
+    // ------------------------------------------------------
 
     if (
         visita.clasificacion ===
@@ -388,27 +391,17 @@ function crearTarjeta(visita) {
 
     }
 
-    else if (
-        visita.clasificacion ===
-        "YA_DENTRO"
-    ) {
 
-        clase = "dentro";
-
-        texto = "VISITANTE YA DENTRO";
-
-    }
-
-    else if (
-        visita.clasificacion ===
-        "PROXIMA"
-    ) {
-
-        clase = "proxima";
-
-        texto = "VISITA PRÓXIMA";
-
-    }
+    // ------------------------------------------------------
+    // VISITA FUERA DE VIGENCIA
+    // ------------------------------------------------------
+    //
+    // No se agrega lógica para:
+    //   YA_DENTRO
+    //   PROXIMA
+    //
+    // La RPC ya no devuelve esas clasificaciones.
+    // ------------------------------------------------------
 
 
     return `
@@ -457,7 +450,7 @@ function crearTarjeta(visita) {
                 )}
 
                 -
-                
+
                 ${formatearHora(
                     visita.hora_fin
                 )}
@@ -476,7 +469,6 @@ function crearTarjeta(visita) {
     `;
 
 }
-
 
 function formatearHora(hora) {
 
