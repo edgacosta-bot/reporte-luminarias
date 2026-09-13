@@ -333,6 +333,22 @@ body {
   <span id="kpiServiciosArribarNumero">0</span>
 
 </div>
+
+<!-- KPI VISITANTES POR ARRIBAR -->
+
+<div
+  class="kpi"
+  id="kpiVisitantesArribar"
+  onclick="abrirVisitantesArribar()"
+  style="cursor:pointer;"
+>
+
+  👤 Visitantes por arribar <br>
+
+  <span id="kpiVisitantesArribarNumero">0</span>
+
+</div>
+  
     <!-- KPI TRABAJADORES SUSPENDIDOS -->
   <div
     class="kpi"
@@ -1008,6 +1024,111 @@ async function cargarKPIs() {
 
     numeroServiciosArribar.innerText =
       serviciosPorArribar;
+
+
+// ======================================================
+// KPI VISITANTES POR ARRIBAR
+// SOLO VIGILANCIA
+// ======================================================
+
+const kpiVisitantesArribar =
+  document.getElementById(
+    "kpiVisitantesArribar"
+  );
+
+const numeroVisitantesArribar =
+  document.getElementById(
+    "kpiVisitantesArribarNumero"
+  );
+
+
+// ------------------------------------------------------
+// El KPI solamente existe para vigilancia
+// ------------------------------------------------------
+
+if (rolActual === "vigilante") {
+
+  try {
+
+    const {
+      data: visitasData,
+      error: visitasError
+    } = await supabaseClient.rpc(
+      "obtener_visitas_por_arribar"
+    );
+
+
+    if (visitasError) {
+
+      console.error(
+        "ERROR KPI VISITANTES:",
+        visitasError
+      );
+
+      numeroVisitantesArribar.innerText = "0";
+
+      kpiVisitantesArribar.classList.remove(
+        "kpi-servicios-alerta"
+      );
+
+    } else {
+
+      const visitasPorArribar =
+        visitasData?.[0]?.visitas_por_arribar ?? 0;
+
+
+      numeroVisitantesArribar.innerText =
+        visitasPorArribar;
+
+
+      // ------------------------------------------------
+      // ESTADO VISUAL
+      // Reutilizamos el mismo comportamiento
+      // visual de Servicios por arribar.
+      // ------------------------------------------------
+
+      if (visitasPorArribar > 0) {
+
+        kpiVisitantesArribar.classList.add(
+          "kpi-servicios-alerta"
+        );
+
+      } else {
+
+        kpiVisitantesArribar.classList.remove(
+          "kpi-servicios-alerta"
+        );
+
+      }
+
+    }
+
+  } catch (e) {
+
+    console.error(
+      "ERROR GENERAL KPI VISITANTES:",
+      e
+    );
+
+    numeroVisitantesArribar.innerText = "0";
+
+    kpiVisitantesArribar.classList.remove(
+      "kpi-servicios-alerta"
+    );
+
+  }
+
+} else {
+
+  // ----------------------------------------------------
+  // ADMINISTRACIÓN / RESIDENTES
+  // El KPI no debe utilizarse.
+  // ----------------------------------------------------
+
+  kpiVisitantesArribar.style.display =
+    "none";
+
+}    
 
 
     // ======================================================
