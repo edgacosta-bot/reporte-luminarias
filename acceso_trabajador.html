@@ -830,6 +830,24 @@ function mostrarResultado(
         detalleResultado
       )}
     </p>
+
+    <button
+      id="btnVolverEscaner"
+      style="
+        margin-top: 24px;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 14px;
+        width: 100%;
+        height: 52px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+      "
+    >
+      ← Volver al escáner
+    </button>
   `;
 
   mensaje.innerText =
@@ -849,18 +867,28 @@ function mostrarResultado(
 
 
   /*
-   * Regresar a la pantalla inicial después
-   * de una operación exitosa.
+   * La operación ya terminó correctamente.
+   *
+   * No debemos volver a cargar esta página
+   * ni eliminar el parámetro ?qr=...
+   *
+   * El vigilante utilizará el botón "Volver al escáner"
+   * para regresar al lector QR que utilizó para escanear.
    */
 
-  setTimeout(
+  const btnVolverEscaner =
+    document.getElementById(
+      "btnVolverEscaner"
+    );
+
+
+  btnVolverEscaner.addEventListener(
+    "click",
     () => {
 
-      window.location.href =
-        window.location.pathname;
+      window.history.back();
 
-    },
-    2000
+    }
   );
 
 }
