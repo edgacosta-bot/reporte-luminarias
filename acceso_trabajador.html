@@ -832,7 +832,7 @@ function mostrarResultado(
     </p>
 
     <button
-      id="btnVolverEscaner"
+      id="btnSalir"
       style="
         margin-top: 24px;
         background: #2563eb;
@@ -846,7 +846,7 @@ function mostrarResultado(
         cursor: pointer;
       "
     >
-      ← Volver al escáner
+      SALIR
     </button>
   `;
 
@@ -869,30 +869,67 @@ function mostrarResultado(
   /*
    * La operación ya terminó correctamente.
    *
-   * No debemos volver a cargar esta página
-   * ni eliminar el parámetro ?qr=...
+   * No debemos volver a cargar esta página.
+   * No debemos eliminar el parámetro ?qr=.
+   * No debemos utilizar history.back().
    *
-   * El vigilante utilizará el botón "Volver al escáner"
-   * para regresar al lector QR que utilizó para escanear.
+   * El botón SALIR únicamente intenta cerrar
+   * la ventana/pestaña actual.
+   *
+   * Si el navegador no permite window.close(),
+   * permanecemos en esta pantalla sin navegar
+   * a ninguna otra página.
    */
 
-  const btnVolverEscaner =
+  const btnSalir =
     document.getElementById(
-      "btnVolverEscaner"
+      "btnSalir"
     );
 
 
-  btnVolverEscaner.addEventListener(
+  btnSalir.addEventListener(
     "click",
     () => {
 
-      window.history.back();
+      window.close();
+
+
+      /*
+       * Algunos navegadores no permiten cerrar
+       * una pestaña que no fue abierta mediante
+       * script.
+       *
+       * En ese caso NO hacemos history.back()
+       * ni ninguna otra navegación.
+       *
+       * La operación ya terminó y la pantalla
+       * verde permanece estable.
+       */
+
+      setTimeout(
+        () => {
+
+          if (!window.closed) {
+
+            btnSalir.innerText =
+              "PUEDE CERRAR ESTA VENTANA";
+
+            btnSalir.disabled =
+              true;
+
+            btnSalir.style.opacity =
+              "0.8";
+
+          }
+
+        },
+        300
+      );
 
     }
   );
 
 }
-
 
 /* ==========================================================
    PINTAR ESTADO
