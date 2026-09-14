@@ -106,8 +106,8 @@ button {
 <input type="password" id="pin" placeholder="Ingrese PIN del vigilante">
 <button id="btnValidar" class="btn-primary">Validar</button>
 
-<button id="btnRegistrar" class="btn-success hidden">Registrar</button>
-<button id="btnNotificar" class="btn-warning hidden">Notificar</button>
+<button id="btnRegistrar" class="btn-success hidden">Registrar acceso</button>
+<button id="btnNotificar" class="btn-warning hidden">Notificar por WhatsApp a I-76</button>
 
 </div>
 
@@ -237,7 +237,7 @@ if (pinError) {
 
   console.log("TIPO ACCION DETECTADO:", tipoAccion);
 
- if(tipoAccion === "salida"){
+if(tipoAccion === "salida"){
 
   console.log("FLUJO: SALIDA");
 
@@ -247,8 +247,14 @@ if (pinError) {
   btnRegistrar.innerText = "Registrar salida";
   btnRegistrar.classList.remove("hidden");
 
-  // 🔥 BLOQUEO TOTAL DE FLUJO DE ENTRADA
-  btnNotificar.classList.add("hidden");
+  btnNotificar.innerText = "Notificar por WhatsApp a I-76";
+  btnNotificar.classList.remove("hidden");
+
+  // Orden visual:
+  // 1. Registrar salida
+  // 2. Notificar por WhatsApp
+  btnRegistrar.style.order = "1";
+  btnNotificar.style.order = "2";
 
   return;
 }
@@ -282,11 +288,17 @@ function evaluarEstadoEntrada(){
     estado.innerText = "Acceso permitido";
   }
 
-  btnRegistrar.classList.remove("hidden");
+ btnRegistrar.innerText = "Registrar acceso";
+btnRegistrar.classList.remove("hidden");
 
-// asegurar orden correcto
-btnRegistrar.style.order = "2";
-btnNotificar.style.order = "1";
+btnNotificar.innerText = "Notificar por WhatsApp a I-76";
+btnNotificar.classList.remove("hidden");
+
+// Orden visual:
+// 1. Registrar acceso
+// 2. Notificar por WhatsApp
+btnRegistrar.style.order = "1";
+btnNotificar.style.order = "2";
 }
 
 // 🔹 REGISTRAR
@@ -346,15 +358,15 @@ if (error) {
   return;
 }
 
-    document.body.className = "ok";
-    estado.innerText = "Salida registrada correctamente";
-    btnRegistrar.classList.add("hidden");
+document.body.className = "ok";
+estado.innerText = "Salida registrada correctamente";
 
-    const mensaje = `SIGVIC informa: Estimado Residente, en este momento su empleado doméstico ${trabajador.nombre}, salió del fraccionamiento. Gracias.`;
+btnRegistrar.classList.add("hidden");
 
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
+btnNotificar.innerText = "Notificar por WhatsApp a I-76";
+btnNotificar.classList.remove("hidden");
 
-    return;
+return;    
   }
 
   // 🔹 ENTRADA
@@ -373,35 +385,61 @@ if (error) {
 
   estado.innerText = "Acceso registrado";
 
-  btnRegistrar.classList.add("hidden");
-  btnNotificar.classList.add("hidden");
-  btnRegistrar.disabled = false;
+btnRegistrar.classList.add("hidden");
+btnNotificar.classList.add("hidden");
+btnRegistrar.disabled = false;
 
-  if(estadoPago === "moroso"){
-    setTimeout(() => window.close(), 1500);
-    return;
-  }
+if(estadoPago === "moroso"){
+  setTimeout(() => window.close(), 1500);
+  return;
+}
 
-  btnNotificar.classList.remove("hidden");
+btnNotificar.innerText = "Notificar por WhatsApp a I-76";
+btnNotificar.classList.remove("hidden");
 };
 
 // 🔹 NOTIFICAR
+
 btnNotificar.onclick = () => {
 
   let mensaje = "";
 
-  if(estadoPago === "moroso"){
-    mensaje = `SIGVIC informa: Estimado residente, su empleado ${trabajador.nombre} se encuentra en caseta, le solicitamos su asistencia para que pueda permitírsele el acceso. Gracias`;
-  }
-  else if(estadoPago === "atraso_1"){
-    mensaje = `SIGVIC informa: Estimado residente, en este momento su empleado doméstico ${trabajador.nombre} ingresó al fraccionamiento. Gracias`;
-  }
-  else{
-    mensaje = `SIGVIC informa: Estimado residente, su empleado doméstico ${trabajador.nombre} ingresó al fraccionamiento. Gracias.`;
+  // 🔹 NOTIFICACIÓN DE SALIDA
+  if(tipoAccion === "salida"){
+
+    mensaje =
+      `SIGVIC informa: Estimado residente, en este momento su empleado doméstico ${trabajador.nombre} salió del fraccionamiento. Gracias.`;
+
   }
 
-  window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
-};
+  // 🔹 NOTIFICACIÓN DE ENTRADA
+  else {
+
+    if(estadoPago === "moroso"){
+
+      mensaje =
+        `SIGVIC informa: Estimado residente, su empleado ${trabajador.nombre} se encuentra en caseta, le solicitamos su asistencia para que pueda permitírsele el acceso. Gracias`;
+
+    }
+    else if(estadoPago === "atraso_1"){
+
+      mensaje =
+        `SIGVIC informa: Estimado residente, en este momento su empleado doméstico ${trabajador.nombre} ingresó al fraccionamiento. Gracias`;
+
+    }
+    else{
+
+      mensaje =
+        `SIGVIC informa: Estimado residente, su empleado doméstico ${trabajador.nombre} ingresó al fraccionamiento. Gracias.`;
+
+    }
+
+  }
+
+  window.open(
+    `https://wa.me/?text=${encodeURIComponent(mensaje)}`
+  );
+};  
 
 // 🔹 UI
 function renderDetalle(){
