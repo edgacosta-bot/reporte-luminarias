@@ -61,6 +61,14 @@ button:disabled {
   cursor: not-allowed;
 }
 
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #d1d5db;
+}  
+
 .mensaje {
   margin-top: 10px;
   text-align: center;
@@ -96,15 +104,23 @@ button:disabled {
     placeholder="Nombre del trabajador"
   >
 
-  <input
-    type="date"
-    id="fecha_inicio"
-  >
+ <label for="fecha_inicio">
+  Inicio de vigencia
+</label>
 
-  <input
-    type="date"
-    id="fecha_fin"
-  >
+<input
+  type="date"
+  id="fecha_inicio"
+>
+
+<label for="fecha_fin">
+  Fin de vigencia
+</label>
+
+<input
+  type="date"
+  id="fecha_fin"
+>
 
   <button id="btnRegistrar">
     Registrar
