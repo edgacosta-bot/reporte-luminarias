@@ -869,16 +869,11 @@ function mostrarResultado(
   /*
    * La operación ya terminó correctamente.
    *
-   * No debemos volver a cargar esta página.
-   * No debemos eliminar el parámetro ?qr=.
-   * No debemos utilizar history.back().
+   * No volvemos a cargar la página.
+   * No utilizamos history.back().
+   * No eliminamos el parámetro ?qr=...
    *
-   * El botón SALIR únicamente intenta cerrar
-   * la ventana/pestaña actual.
-   *
-   * Si el navegador no permite window.close(),
-   * permanecemos en esta pantalla sin navegar
-   * a ninguna otra página.
+   * SALIR intenta cerrar la ventana actual.
    */
 
   const btnSalir =
@@ -892,39 +887,6 @@ function mostrarResultado(
     () => {
 
       window.close();
-
-
-      /*
-       * Algunos navegadores no permiten cerrar
-       * una pestaña que no fue abierta mediante
-       * script.
-       *
-       * En ese caso NO hacemos history.back()
-       * ni ninguna otra navegación.
-       *
-       * La operación ya terminó y la pantalla
-       * verde permanece estable.
-       */
-
-      setTimeout(
-        () => {
-
-          if (!window.closed) {
-
-            btnSalir.innerText =
-              "PUEDE CERRAR ESTA VENTANA";
-
-            btnSalir.disabled =
-              true;
-
-            btnSalir.style.opacity =
-              "0.8";
-
-          }
-
-        },
-        300
-      );
 
     }
   );
