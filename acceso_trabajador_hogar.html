@@ -106,8 +106,9 @@ button {
 <input type="password" id="pin" placeholder="Ingrese PIN del vigilante">
 <button id="btnValidar" class="btn-primary">Validar</button>
 
-<button id="btnRegistrar" class="btn-success hidden">Registrar acceso</button>
-<button id="btnNotificar" class="btn-warning hidden">Notificar por WhatsApp a I-76</button>
+<button id="btnRegistrar" class="btn-primary hidden">Registrar</button>
+<button id="btnNotificar" class="btn-warning hidden">Notificar por WhatsApp</button>
+<button id="btnSalir" class="btn-danger hidden">Salir</button>
 
 </div>
 
@@ -121,6 +122,8 @@ let estadoPago = "";
 let vigilante = null;
 let accesoAbierto = null;
 let tipoAccion = "";
+
+const btnSalir = document.getElementById("btnSalir");  
 
 init();
 
@@ -265,40 +268,38 @@ if(tipoAccion === "salida"){
 // 🔹 ENTRADA
 function evaluarEstadoEntrada(){
 
+  // Al iniciar el flujo de entrada,
+  // SOLO debe estar disponible Registrar acceso.
+  btnRegistrar.classList.add("hidden");
+  btnNotificar.classList.add("hidden");
+
   if(estadoPago === "moroso"){
 
     document.body.className = "error";
     estado.innerText = "Acceso NO permitido por irregularidad en cuotas";
 
-    btnRegistrar.innerText = "Registrar acceso con presencia del residente";
+    btnRegistrar.innerText =
+      "Registrar acceso con presencia del residente";
 
     btnRegistrar.classList.remove("hidden");
-    btnNotificar.classList.remove("hidden");
-
-    btnNotificar.parentNode.insertBefore(btnNotificar, btnRegistrar);
 
     return;
   }
 
   if(estadoPago === "atraso_1"){
+
     document.body.className = "warn";
-    estado.innerText = "Acceso permitido (con atraso en pago de cuotas)";
+    estado.innerText =
+      "Acceso permitido (con atraso en pago de cuotas)";
+
   } else {
+
     document.body.className = "ok";
     estado.innerText = "Acceso permitido";
   }
 
- btnRegistrar.innerText = "Registrar acceso";
-btnRegistrar.classList.remove("hidden");
-
-btnNotificar.innerText = "Notificar por WhatsApp a I-76";
-btnNotificar.classList.remove("hidden");
-
-// Orden visual:
-// 1. Registrar acceso
-// 2. Notificar por WhatsApp
-btnRegistrar.style.order = "1";
-btnNotificar.style.order = "2";
+  btnRegistrar.innerText = "Registrar acceso";
+  btnRegistrar.classList.remove("hidden");
 }
 
 // 🔹 REGISTRAR
@@ -369,33 +370,43 @@ btnNotificar.classList.remove("hidden");
 return;    
   }
 
-  // 🔹 ENTRADA
-  const { error } = await supabaseClient.rpc("registrar_entrada_trabajador", {
-  p_trabajador_id: trabajador.id,
-  p_vigilante_id: vigilante.id
-});
+   // 🔹 ENTRADA
+  btnRegistrar.disabled = true;
+  btnRegistrar.innerText = "Procesando...";
 
-if (error) {
-  console.error("ERROR ENTRADA:", error);
-  ui.error("❌ Error al registrar acceso");
-  btnRegistrar.disabled = false;
-  btnRegistrar.innerText = "Registrar";
-  return;
-}
+  const { error } = await supabaseClient.rpc(
+    "registrar_entrada_trabajador",
+    {
+      p_trabajador_id: trabajador.id,
+      p_vigilante_id: vigilante.id
+    }
+  );
+
+  if (error) {
+    console.error("ERROR ENTRADA:", error);
+
+    ui.error("❌ Error al registrar acceso");
+
+    btnRegistrar.disabled = false;
+    btnRegistrar.innerText = "Registrar acceso";
+
+    return;
+  }
+
+  // ==========================================
+  // ACCESO REGISTRADO
+  // ==========================================
 
   estado.innerText = "Acceso registrado";
 
-btnRegistrar.classList.add("hidden");
-btnNotificar.classList.add("hidden");
-btnRegistrar.disabled = false;
+  btnRegistrar.classList.add("hidden");
+  btnRegistrar.disabled = false;
 
-if(estadoPago === "moroso"){
-  setTimeout(() => window.close(), 1500);
-  return;
-}
+  // Ahora sí aparece WhatsApp
+  btnNotificar.innerText =
+    "Notificar por WhatsApp a I-76";
 
-btnNotificar.innerText = "Notificar por WhatsApp a I-76";
-btnNotificar.classList.remove("hidden");
+  btnNotificar.classList.remove("hidden");
 };
 
 // 🔹 NOTIFICAR
@@ -439,7 +450,26 @@ btnNotificar.onclick = () => {
   window.open(
     `https://wa.me/?text=${encodeURIComponent(mensaje)}`
   );
-};  
+
+  // Después de notificar:
+  // desaparece WhatsApp y aparece Salir.
+
+  btnNotificar.classList.add("hidden");
+
+  btnSalir.classList.remove("hidden");
+};
+
+
+  // 🔹 SALIR
+
+btnSalir.onclick = () => {
+
+  window.close();
+
+  setTimeout(() => {
+    history.back();
+  }, 300);
+};
 
 // 🔹 UI
 function renderDetalle(){
