@@ -312,24 +312,24 @@ async function cargarVisitas() {
                 : [];
 
 
-        const vigentes =
-            visitas.filter(
-                visita =>
-                    visita.clasificacion ===
-                    "VIGENTE"
-            );
+       const pendientes =
+    visitas.filter(
+        visita =>
+            visita.clasificacion === "PROXIMA" ||
+            visita.clasificacion === "VIGENTE"
+    );
 
 
-        resumen.innerText =
-            `${vigentes.length} visita${
-                vigentes.length === 1
-                    ? ""
-                    : "s"
-            } pendiente${
-                vigentes.length === 1
-                    ? ""
-                    : "s"
-            } de arribo`;
+resumen.innerText =
+    `${pendientes.length} visita${
+        pendientes.length === 1
+            ? ""
+            : "s"
+    } pendiente${
+        pendientes.length === 1
+            ? ""
+            : "s"
+    } de arribo`;
 
 
         if (!visitas.length) {
@@ -377,10 +377,26 @@ function crearTarjeta(visita) {
 
 
     // ------------------------------------------------------
-    // VISITA VIGENTE
+    // VISITA PRÓXIMA
     // ------------------------------------------------------
 
     if (
+        visita.clasificacion ===
+        "PROXIMA"
+    ) {
+
+        clase = "proxima";
+
+        texto = "VISITA PRÓXIMA";
+
+    }
+
+
+    // ------------------------------------------------------
+    // VISITA VIGENTE
+    // ------------------------------------------------------
+
+    else if (
         visita.clasificacion ===
         "VIGENTE"
     ) {
@@ -395,13 +411,17 @@ function crearTarjeta(visita) {
     // ------------------------------------------------------
     // VISITA FUERA DE VIGENCIA
     // ------------------------------------------------------
-    //
-    // No se agrega lógica para:
-    //   YA_DENTRO
-    //   PROXIMA
-    //
-    // La RPC ya no devuelve esas clasificaciones.
-    // ------------------------------------------------------
+
+    else if (
+        visita.clasificacion ===
+        "FUERA_DE_VIGENCIA"
+    ) {
+
+        clase = "fuera";
+
+        texto = "FUERA DE VIGENCIA";
+
+    }
 
 
     return `
