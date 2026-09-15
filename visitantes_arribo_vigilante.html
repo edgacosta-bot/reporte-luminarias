@@ -377,33 +377,20 @@ function crearTarjeta(visita) {
 
 
     // ------------------------------------------------------
-    // VISITA PRÓXIMA
+    // VISITA PROGRAMADA PARA HOY
+    //
+    // Tanto PROXIMA como VIGENTE se presentan de la misma
+    // manera al vigilante.
     // ------------------------------------------------------
 
     if (
-        visita.clasificacion ===
-        "PROXIMA"
-    ) {
-
-        clase = "proxima";
-
-        texto = "VISITA PRÓXIMA";
-
-    }
-
-
-    // ------------------------------------------------------
-    // VISITA VIGENTE
-    // ------------------------------------------------------
-
-    else if (
-        visita.clasificacion ===
-        "VIGENTE"
+        visita.clasificacion === "PROXIMA" ||
+        visita.clasificacion === "VIGENTE"
     ) {
 
         clase = "vigente";
 
-        texto = "VISITA VIGENTE";
+        texto = "VISITA PROGRAMADA";
 
     }
 
