@@ -200,6 +200,34 @@
 </div>
 
 
+<div id="modalHorario" class="modal">
+  <div class="modal-content">
+
+    <p>
+      <b>⚠️ Verifique el horario de la visita</b>
+    </p>
+
+    <p id="modalHorarioTexto"></p>
+
+    <div class="modal-buttons">
+
+      <button
+        class="btn-gray"
+        onclick="cerrarModalHorario(false)">
+        Corregir
+      </button>
+
+      <button
+        class="btn-blue"
+        onclick="cerrarModalHorario(true)">
+        Continuar
+      </button>
+
+    </div>
+
+  </div>
+</div>  
+
 <div id="modalMensaje" class="modal">
   <div class="modal-content">
 
@@ -234,6 +262,23 @@ window.addEventListener("DOMContentLoaded", async () => {
     .select("*")
     .eq("user_id", user.id)
     .single();
+
+    const hoy = new Date();
+
+  const fechaLocal =
+    hoy.getFullYear()
+    + "-"
+    + String(
+        hoy.getMonth() + 1
+      ).padStart(2, "0")
+    + "-"
+    + String(
+        hoy.getDate()
+      ).padStart(2, "0");
+
+  document.getElementById(
+    "fecha"
+  ).min = fechaLocal;
 
   residenteGlobal = residente;
 
@@ -293,6 +338,59 @@ function cerrarModalMensaje() {
   ).style.display = "none";
 
 }
+
+let resolverModalHorario = null;
+
+
+function mostrarModalHorario(
+  horaInicio,
+  horaFin
+) {
+
+  return new Promise(resolve => {
+
+    resolverModalHorario = resolve;
+
+
+    document.getElementById(
+      "modalHorarioTexto"
+    ).innerText =
+      `La hora de fin (${horaFin}) es anterior a la hora de inicio (${horaInicio}).\n\n` +
+      `El sistema interpretará este horario como una visita que inicia ` +
+      `a las ${horaInicio} de la fecha seleccionada y termina a las ` +
+      `${horaFin} del día siguiente.\n\n` +
+      `¿Desea continuar?`;
+
+
+    document.getElementById(
+      "modalHorario"
+    ).style.display = "flex";
+
+  });
+
+}
+
+
+function cerrarModalHorario(
+  respuesta
+) {
+
+  document.getElementById(
+    "modalHorario"
+  ).style.display = "none";
+
+
+  if (resolverModalHorario) {
+
+    resolverModalHorario(
+      respuesta
+    );
+
+    resolverModalHorario = null;
+
+  }
+
+}
   
 
 async function generarQR() {
@@ -330,6 +428,76 @@ async function generarQR() {
 
 
   // ==========================================================
+  // FECHA NO PUEDE SER PASADA
+  //
+  // Esta validación es únicamente preventiva.
+  // La validación definitiva está en el backend.
+  // ==========================================================
+
+  const hoy =
+    new Date();
+
+  const fechaLocal =
+    hoy.getFullYear()
+    + "-"
+    + String(
+        hoy.getMonth() + 1
+      ).padStart(2, "0")
+    + "-"
+    + String(
+        hoy.getDate()
+      ).padStart(2, "0");
+
+
+  if (fecha < fechaLocal) {
+
+    mostrarModalMensaje(
+      "La fecha de la visita ya pasó. Selecciona una fecha de hoy o posterior.",
+      "⚠️ Fecha inválida"
+    );
+
+    return;
+  }
+
+
+  // ==========================================================
+  // HORARIO DE DURACIÓN CERO
+  // ==========================================================
+
+  if (hora_inicio === hora_fin) {
+
+    mostrarModalMensaje(
+      "La hora de fin debe ser diferente a la hora de inicio.",
+      "⚠️ Horario inválido"
+    );
+
+    return;
+  }
+
+
+  // ==========================================================
+  // CRUCE DE MEDIANOCHE
+  // ==========================================================
+
+  if (hora_fin < hora_inicio) {
+
+    const continuar =
+      await mostrarModalHorario(
+        hora_inicio,
+        hora_fin
+      );
+
+
+    if (!continuar) {
+
+      return;
+
+    }
+
+  }
+
+
+  // ==========================================================
   // FUNCIÓN PARA LLAMAR AL BACKEND
   // ==========================================================
 
@@ -337,17 +505,28 @@ async function generarQR() {
     confirmarAtraso = false
   ) {
 
-    const { data, error } =
-      await supabaseClient.rpc(
-        "registrar_visita_qr",
-        {
-          p_nombre_visitante: visitante,
-          p_fecha_visita: fecha,
-          p_hora_inicio: hora_inicio,
-          p_hora_fin: hora_fin,
-          p_confirmar_atraso: confirmarAtraso
-        }
-      );
+    const {
+      data,
+      error
+    } = await supabaseClient.rpc(
+      "registrar_visita_qr",
+      {
+        p_nombre_visitante:
+          visitante,
+
+        p_fecha_visita:
+          fecha,
+
+        p_hora_inicio:
+          hora_inicio,
+
+        p_hora_fin:
+          hora_fin,
+
+        p_confirmar_atraso:
+          confirmarAtraso
+      }
+    );
 
 
     // ========================================================
@@ -386,6 +565,7 @@ async function generarQR() {
 
 
     return data;
+
   }
 
 
@@ -398,7 +578,9 @@ async function generarQR() {
 
 
   if (!respuesta) {
+
     return;
+
   }
 
 
@@ -431,7 +613,9 @@ async function generarQR() {
 
 
     if (!continuar) {
+
       return;
+
     }
 
 
@@ -444,7 +628,9 @@ async function generarQR() {
 
 
     if (!respuestaConfirmada) {
+
       return;
+
     }
 
 
@@ -475,6 +661,7 @@ async function generarQR() {
     );
 
     return;
+
   }
 
 
@@ -505,6 +692,9 @@ async function generarQR() {
   );
 
 }
+
+  
+
 async function mostrarQRGenerado(respuesta) {
 
   const codigo =
