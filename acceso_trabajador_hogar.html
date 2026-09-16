@@ -250,7 +250,8 @@ if(tipoAccion === "salida"){
   btnRegistrar.innerText = "Registrar salida";
   btnRegistrar.classList.remove("hidden");
 
-  btnNotificar.innerText = "Notificar por WhatsApp a I-76";
+  btnNotificar.innerText =
+  `Notificar por WhatsApp a ${residente.privada}-${residente.casa}`;
   btnNotificar.classList.remove("hidden");
 
   // Orden visual:
@@ -364,7 +365,8 @@ estado.innerText = "Salida registrada correctamente";
 
 btnRegistrar.classList.add("hidden");
 
-btnNotificar.innerText = "Notificar por WhatsApp a I-76";
+btnNotificar.innerText =
+  `Notificar por WhatsApp a ${residente.privada}-${residente.casa}`;
 btnNotificar.classList.remove("hidden");
 
 return;    
@@ -403,8 +405,8 @@ return;
   btnRegistrar.disabled = false;
 
   // Ahora sí aparece WhatsApp
-  btnNotificar.innerText =
-    "Notificar por WhatsApp a I-76";
+ btnNotificar.innerText =
+  `Notificar por WhatsApp a ${residente.privada}-${residente.casa}`;
 
   btnNotificar.classList.remove("hidden");
 };
