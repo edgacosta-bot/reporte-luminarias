@@ -831,28 +831,94 @@
 
 
                     /*
-                     * ==================================================
-                     * 8. REGISTRAR PAGO
-                     *
-                     * Todavía NO conectamos RPC.
-                     * ==================================================
-                     */
+                     /*
+ * ==================================================
+ * 8. PRUEBA TEMPORAL
+ *
+ * Incorporar I-76 al régimen de aportaciones.
+ *
+ * ESTA PRUEBA NO GENERA CUOTAS
+ * NI MODIFICA residentes.
+ * ==================================================
+ */
 
-                    document
-                        .getElementById(
-                            "opcionRegistrarPago"
-                        )
-                        ?.addEventListener(
-                            "click",
-                            () => {
+document
+    .getElementById("opcionRegistrarPago")
+    ?.addEventListener(
+        "click",
+        async () => {
 
-                                alert(
-                                    "La pantalla de registro de pagos se incorporará en la siguiente etapa."
-                                );
+            try {
 
-                            }
-                        );
+                const residenteId =
+                    "5b18062b-76a1-46be-bc9a-03ec0ddbd122";
 
+                const {
+                    data,
+                    error
+                } = await supabaseClient.rpc(
+                    "incorporar_obligado_pago",
+                    {
+                        p_residente_id:
+                            residenteId,
+
+                        p_fecha_inicio_obligacion:
+                            "2026-09-01",
+
+                        p_cantidad_lotes:
+                            1,
+
+                        p_condicion_inmueble:
+                            "residencia",
+
+                        p_observaciones:
+                            "Prueba inicial de incorporación al régimen de aportaciones."
+                    }
+                );
+
+
+                if (error) {
+
+                    console.error(
+                        "Error RPC:",
+                        error
+                    );
+
+                    alert(
+                        "Error al incorporar al régimen:\n\n" +
+                        error.message
+                    );
+
+                    return;
+                }
+
+
+                console.log(
+                    "Resultado incorporación:",
+                    data
+                );
+
+
+                alert(
+                    "I-76 fue incorporado correctamente al régimen de aportaciones."
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Error ejecutando prueba:",
+                    error
+                );
+
+                alert(
+                    "Ocurrió un error al realizar la prueba."
+                );
+
+            }
+
+        }
+    );
 
 
                     /*
