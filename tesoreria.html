@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Tesorería | SIGVIC</title>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Autenticación común de SIGVIC -->
+    <script src="auth.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f5f7;
+            color: #222;
+        }
+
+        .contenedor {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .encabezado {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.08);
+            margin-bottom: 20px;
+        }
+
+        .encabezado h1 {
+            margin: 0 0 8px;
+        }
+
+        .encabezado p {
+            margin: 0;
+            color: #666;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.08);
+        }
+
+        .acciones {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .boton {
+            display: inline-block;
+            padding: 12px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .boton-regresar {
+            background: #e5e7eb;
+            color: #222;
+        }
+
+        .boton-prueba {
+            background: #d4a017;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="contenedor">
+
+        <section class="encabezado">
+            <h1>💰 Tesorería</h1>
+            <p>Sistema Integral de Gestión Vecinal — SIGVIC</p>
+        </section>
+
+        <section class="panel">
+
+            <h2>Acceso autorizado</h2>
+
+            <p>
+                Esta pantalla corresponde al módulo de Tesorería.
+            </p>
+
+            <p>
+                La funcionalidad financiera se incorporará
+                progresivamente.
+            </p>
+
+            <div class="acciones">
+
+                <a
+                    href="index.html"
+                    class="boton boton-regresar"
+                >
+                    ← Regresar
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+
+        window.addEventListener(
+            "DOMContentLoaded",
+            async () => {
+
+                try {
+
+                    /*
+                     * =====================================================
+                     * 1. PROTECCIÓN BÁSICA
+                     * =====================================================
+                     */
+
+                    await protegerPagina([
+                        "admin",
+                        "administracion",
+                        "residente"
+                    ]);
+
+
+                    /*
+                     * =====================================================
+                     * 2. IDENTIFICAR USUARIO
+                     * =====================================================
+                     */
+
+                    const {
+                        data: { user },
+                        error: userError
+                    } = await supabaseClient.auth.getUser();
+
+                    if (userError || !user) {
+
+                        throw new Error(
+                            "No se pudo identificar al usuario."
+                        );
+
+                    }
+
+
+                    /*
+                     * =====================================================
+                     * 3. OBTENER DATOS DEL RESIDENTE
+                     * =====================================================
+                     */
+
+                    const {
+                        data: residente,
+                        error: residenteError
+                    } = await supabaseClient
+                        .from("residentes")
+                        .select(`
+                            tipo,
+                            es_mesa_directiva,
+                            activo,
+                            id_cargo
+                        `)
+                        .eq("user_id", user.id)
+                        .maybeSingle();
+
+
+                    if (residenteError) {
+                        throw residenteError;
+                    }
+
+
+                    if (!residente) {
+
+                        alert(
+                            "No se encontró información del usuario."
+                        );
+
+                        window.location.href = "index.html";
+
+                        return;
+                    }
+
+
+                    /*
+                     * =====================================================
+                     * 4. IDENTIFICAR ADMINISTRADOR
+                     * =====================================================
+                     */
+
+                    const tipo =
+                        (residente.tipo || "")
+                            .trim()
+                            .toLowerCase();
+
+
+                    const esAdministracion =
+                        [
+                            "admin",
+                            "administracion"
+                        ].includes(tipo);
+
+
+                    /*
+                     * =====================================================
+                     * 5. IDENTIFICAR TESORERO
+                     * =====================================================
+                     */
+
+                    const esTesorero =
+                        residente.es_mesa_directiva === true &&
+                        residente.activo === true &&
+                        residente.id_cargo ===
+                            "c731366e-11e6-454f-b6ee-a8005380d3c9";
+
+
+                    /*
+                     * =====================================================
+                     * 6. AUTORIZACIÓN DEL MÓDULO
+                     * =====================================================
+                     */
+
+                    if (
+                        !esAdministracion &&
+                        !esTesorero
+                    ) {
+
+                        alert(
+                            "No tiene autorización para acceder al módulo de Tesorería."
+                        );
+
+                        window.location.href =
+                            "index.html";
+
+                        return;
+                    }
+
+
+                    /*
+                     * =====================================================
+                     * 7. ACCESO AUTORIZADO
+                     * =====================================================
+                     */
+
+                    console.log(
+                        "Acceso autorizado a Tesorería:",
+                        {
+                            usuario: user.id,
+                            esAdministracion,
+                            esTesorero
+                        }
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Error verificando acceso a Tesorería:",
+                        error
+                    );
+
+                    window.location.href =
+                        "index.html";
+                }
+
+            }
+        );
+
+    </script>
+
+</body>
+</html>
