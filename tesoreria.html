@@ -1,336 +1,542 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Tesorería | SIGVIC</title>
+
 
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- Autenticación común de SIGVIC -->
+
+    <!-- Autenticación común -->
     <script src="auth.js"></script>
 
+
+    <!--
+        MISMA IDENTIDAD VISUAL UTILIZADA
+        POR EL MÓDULO DE OBRAS
+    -->
+    <link
+        rel="stylesheet"
+        href="obras_v2.css"
+    >
+
+
     <style>
-        * {
-            box-sizing: border-box;
-        }
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f5f7;
-            color: #222;
-        }
+        /*
+         * ==========================================================
+         * TESORERÍA
+         * Ajustes propios del módulo.
+         * La identidad visual general proviene de obras_v2.css.
+         * ==========================================================
+         */
 
-        .contenedor {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 24px;
-        }
+        .tesoreria-card {
 
-        .encabezado {
-            background: white;
-            border-radius: 12px;
-            padding: 28px;
-            box-shadow: 0 2px 8px rgba(0,0,0,.08);
-            margin-bottom: 20px;
-        }
+            background: #ffffff;
 
-        .encabezado h1 {
-            margin: 0 0 8px;
-            font-size: 42px;
-        }
+            border: 1px solid #e5e7eb;
 
-        .encabezado p {
-            margin: 0;
-            color: #666;
-            font-size: 20px;
-        }
+            border-radius: 16px;
 
-        .panel {
-            background: white;
-            border-radius: 12px;
-            padding: 28px;
-            box-shadow: 0 2px 8px rgba(0,0,0,.08);
-        }
+            padding: 26px;
 
-        .panel h2 {
-            margin-top: 0;
-            margin-bottom: 8px;
-            font-size: 30px;
-        }
+            margin-bottom: 18px;
 
-        .descripcion {
-            margin-top: 0;
-            margin-bottom: 26px;
-            color: #555;
-            font-size: 17px;
-        }
+            box-shadow:
+                0 5px 18px rgba(0,0,0,.055);
 
-        .menu-tesoreria {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 18px;
-        }
+            cursor: pointer;
 
-        .opcion {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 170px;
-            padding: 22px;
-            background: #fafafa;
-            border: 1px solid #e1e4e8;
-            border-radius: 12px;
-            text-decoration: none;
-            color: #222;
             transition:
                 transform .15s ease,
                 box-shadow .15s ease,
                 border-color .15s ease;
+
         }
 
-        .opcion:hover {
+
+        .tesoreria-card:hover {
+
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,.10);
-            border-color: #c7cbd1;
+
+            box-shadow:
+                0 8px 24px rgba(0,0,0,.08);
+
+            border-color: #d8c1c9;
+
         }
 
-        .opcion-icono {
-            font-size: 34px;
-            margin-bottom: 12px;
+
+        .tesoreria-card-header {
+
+            display: flex;
+
+            align-items: flex-start;
+
+            justify-content: space-between;
+
+            gap: 20px;
+
         }
 
-        .opcion-titulo {
-            font-size: 21px;
-            font-weight: bold;
-            margin-bottom: 8px;
+
+        .tesoreria-card-icon {
+
+            width: 48px;
+
+            height: 48px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 12px;
+
+            background: #fff8fa;
+
+            border: 1px solid #ead8de;
+
+            color: #991b3f;
+
+            font-size: 24px;
+
+            flex-shrink: 0;
+
         }
 
-        .opcion-descripcion {
-            color: #666;
-            line-height: 1.45;
+
+        .tesoreria-card-content {
+
+            flex: 1;
+
+        }
+
+
+        .tesoreria-card-title {
+
+            margin: 0;
+
+            color: #111827;
+
+            font-size: 20px;
+
+            font-weight: 700;
+
+        }
+
+
+        .tesoreria-card-description {
+
+            margin-top: 7px;
+
+            color: #6b7280;
+
             font-size: 15px;
+
+            line-height: 1.5;
+
         }
 
-        .estado {
+
+        .tesoreria-card-action {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            margin-top: 20px;
+
+            color: #991b3f;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+        }
+
+
+        .tesoreria-card-disabled {
+
+            opacity: .72;
+
+            cursor: default;
+
+        }
+
+
+        .tesoreria-card-disabled:hover {
+
+            transform: none;
+
+            box-shadow:
+                0 5px 18px rgba(0,0,0,.055);
+
+            border-color: #e5e7eb;
+
+        }
+
+
+        .tesoreria-estado {
+
             display: inline-block;
-            margin-top: 18px;
-            font-size: 13px;
-            color: #777;
+
+            margin-top: 14px;
+
+            padding: 5px 9px;
+
+            border-radius: 7px;
+
+            background: #f3f4f6;
+
+            color: #6b7280;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
         }
 
-        .acciones {
+
+        .tesoreria-seccion {
+
             margin-top: 28px;
+
         }
 
-        .boton-regresar {
-            display: inline-block;
-            padding: 12px 18px;
-            border-radius: 8px;
-            text-decoration: none;
-            background: #e5e7eb;
-            color: #222;
-            font-size: 15px;
+
+        .tesoreria-seccion-titulo {
+
+            margin: 0 0 12px;
+
+            color: #374151;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: .04em;
+
         }
 
-        .boton-regresar:hover {
-            background: #d8dbe0;
-        }
 
         @media (max-width: 600px) {
 
-            .contenedor {
-                padding: 16px;
+            .tesoreria-card {
+
+                padding: 20px;
+
             }
 
-            .encabezado {
-                padding: 22px;
+
+            .tesoreria-card-header {
+
+                gap: 14px;
+
             }
 
-            .encabezado h1 {
-                font-size: 34px;
+
+            .tesoreria-card-icon {
+
+                width: 42px;
+
+                height: 42px;
+
+                font-size: 21px;
+
             }
 
-            .encabezado p {
-                font-size: 17px;
-            }
-
-            .panel {
-                padding: 22px;
-            }
-
-            .panel h2 {
-                font-size: 26px;
-            }
         }
+
     </style>
+
 </head>
+
 
 <body>
 
-    <main class="contenedor">
 
-        <!-- =========================================================
-             ENCABEZADO
-             ========================================================= -->
+    <!-- ==========================================================
+         HEADER
+         ========================================================== -->
 
-        <section class="encabezado">
+    <header class="header">
 
-            <h1>💰 Tesorería</h1>
+        <div class="header-left">
 
-            <p>
-                Sistema Integral de Gestión Vecinal — SIGVIC
-            </p>
+            <button
+                id="btnRegresar"
+                class="btn-regresar"
+                type="button"
+                title="Regresar"
+            >
+                ←
+            </button>
 
-        </section>
+
+            <div>
+
+                <div class="header-title">
+                    Tesorería
+                </div>
+
+                <div class="header-subtitle">
+                    Panel de Tesorería
+                </div>
+
+            </div>
+
+        </div>
 
 
-        <!-- =========================================================
-             PANEL PRINCIPAL
-             ========================================================= -->
+        <div
+            id="usuarioActual"
+            class="header-user"
+        >
+            Tesorería
+        </div>
 
-        <section class="panel">
+    </header>
 
-            <h2>Operaciones de Tesorería</h2>
+
+
+    <!-- ==========================================================
+         CONTENIDO
+         ========================================================== -->
+
+    <main class="container">
+
+
+        <div class="page-intro">
+
+            <div class="eyebrow">
+                TESORERÍA
+            </div>
+
+
+            <h1>
+                Gestión financiera vecinal
+            </h1>
+
 
             <p class="descripcion">
-                Seleccione la operación que desea realizar.
+
+                Administración y control de las cuotas,
+                obligaciones y pagos de los residentes.
+
             </p>
 
+        </div>
 
-            <div class="menu-tesoreria">
 
 
-                <!-- =================================================
-                     REGISTRAR PAGO
-                     ================================================= -->
+        <!-- ======================================================
+             MENÚ PRINCIPAL
+             ======================================================= -->
 
-                <a
-                    href="#"
-                    class="opcion"
-                    id="btnRegistrarPago"
-                >
+        <div class="tesoreria-seccion">
 
-                    <div>
+            <div class="tesoreria-seccion-titulo">
+                Operaciones
+            </div>
 
-                        <div class="opcion-icono">
-                            💳
-                        </div>
 
-                        <div class="opcion-titulo">
+
+            <!-- ==================================================
+                 REGISTRAR PAGO
+                 ================================================== -->
+
+            <section
+                class="tesoreria-card"
+                id="opcionRegistrarPago"
+                role="button"
+                tabindex="0"
+            >
+
+                <div class="tesoreria-card-header">
+
+                    <div class="tesoreria-card-icon">
+                        💳
+                    </div>
+
+
+                    <div class="tesoreria-card-content">
+
+                        <h2 class="tesoreria-card-title">
                             Registrar pago
-                        </div>
+                        </h2>
 
-                        <div class="opcion-descripcion">
+
+                        <div class="tesoreria-card-description">
+
                             Buscar un residente, consultar sus
-                            obligaciones y registrar un pago.
+                            obligaciones pendientes y registrar
+                            un pago.
+
+                        </div>
+
+
+                        <div class="tesoreria-card-action">
+
+                            Abrir
+                            <span>→</span>
+
                         </div>
 
                     </div>
 
-                    <span class="estado">
-                        Disponible próximamente
-                    </span>
+                </div>
 
-                </a>
+            </section>
 
 
-                <!-- =================================================
-                     CONSULTAR PAGOS
-                     ================================================= -->
 
-                <a
-                    href="#"
-                    class="opcion"
-                    id="btnConsultarPagos"
-                >
+            <!-- ==================================================
+                 CONSULTAR PAGOS
+                 ================================================== -->
 
-                    <div>
+            <section
+                class="tesoreria-card tesoreria-card-disabled"
+                id="opcionConsultarPagos"
+                role="button"
+                tabindex="0"
+            >
 
-                        <div class="opcion-icono">
-                            🧾
-                        </div>
+                <div class="tesoreria-card-header">
 
-                        <div class="opcion-titulo">
+                    <div class="tesoreria-card-icon">
+                        🧾
+                    </div>
+
+
+                    <div class="tesoreria-card-content">
+
+                        <h2 class="tesoreria-card-title">
                             Consultar pagos
+                        </h2>
+
+
+                        <div class="tesoreria-card-description">
+
+                            Consultar pagos registrados,
+                            folios, importes, métodos de pago
+                            y periodos cubiertos.
+
                         </div>
 
-                        <div class="opcion-descripcion">
-                            Consultar pagos registrados, folios,
-                            importes y periodos cubiertos.
-                        </div>
+
+                        <span class="tesoreria-estado">
+                            Próximamente
+                        </span>
 
                     </div>
 
-                    <span class="estado">
-                        Disponible próximamente
-                    </span>
+                </div>
 
-                </a>
+            </section>
 
 
-                <!-- =================================================
-                     CUOTAS DE RESIDENTES
-                     ================================================= -->
 
-                <a
-                    href="#"
-                    class="opcion"
-                    id="btnCuotasResidentes"
-                >
+            <!-- ==================================================
+                 CUOTAS
+                 ================================================== -->
 
-                    <div>
+            <section
+                class="tesoreria-card tesoreria-card-disabled"
+                id="opcionCuotas"
+                role="button"
+                tabindex="0"
+            >
 
-                        <div class="opcion-icono">
-                            📋
-                        </div>
+                <div class="tesoreria-card-header">
 
-                        <div class="opcion-titulo">
+                    <div class="tesoreria-card-icon">
+                        📋
+                    </div>
+
+
+                    <div class="tesoreria-card-content">
+
+                        <h2 class="tesoreria-card-title">
                             Cuotas de residentes
+                        </h2>
+
+
+                        <div class="tesoreria-card-description">
+
+                            Consultar obligaciones y situación
+                            de pago de los residentes.
+
                         </div>
 
-                        <div class="opcion-descripcion">
-                            Consultar la información de cuotas y
-                            obligaciones de los residentes.
-                        </div>
+
+                        <span class="tesoreria-estado">
+                            Próximamente
+                        </span>
 
                     </div>
 
-                    <span class="estado">
-                        Disponible próximamente
-                    </span>
+                </div>
 
-                </a>
+            </section>
 
-            </div>
+        </div>
 
 
-            <!-- =====================================================
-                 REGRESAR
-                 ===================================================== -->
 
-            <div class="acciones">
+        <!-- ======================================================
+             REGRESAR
+             ======================================================= -->
 
-                <a
-                    href="index.html"
-                    class="boton-regresar"
-                >
-                    ← Regresar
-                </a>
+        <div
+            style="
+                margin-top:28px;
+                margin-bottom:30px;
+            "
+        >
 
-            </div>
+            <button
+                id="btnRegresarInferior"
+                class="btn-regresar"
+                type="button"
+                style="
+                    padding:10px 16px;
+                    border:1px solid #e5e7eb;
+                    background:#ffffff;
+                    border-radius:8px;
+                    cursor:pointer;
+                    color:#374151;
+                "
+            >
+                ← Regresar
+            </button>
 
-        </section>
+        </div>
+
 
     </main>
 
 
-    <!-- =============================================================
+
+    <!-- ==========================================================
          AUTORIZACIÓN
-         ============================================================= -->
+         ========================================================== -->
 
     <script>
 
@@ -340,10 +546,11 @@
 
                 try {
 
+
                     /*
-                     * =================================================
+                     * ==================================================
                      * 1. PROTECCIÓN BÁSICA
-                     * =================================================
+                     * ==================================================
                      */
 
                     await protegerPagina([
@@ -353,10 +560,11 @@
                     ]);
 
 
+
                     /*
-                     * =================================================
+                     * ==================================================
                      * 2. IDENTIFICAR USUARIO
-                     * =================================================
+                     * ==================================================
                      */
 
                     const {
@@ -366,7 +574,10 @@
                         await supabaseClient.auth.getUser();
 
 
-                    if (userError || !user) {
+                    if (
+                        userError ||
+                        !user
+                    ) {
 
                         throw new Error(
                             "No se pudo identificar al usuario."
@@ -375,10 +586,11 @@
                     }
 
 
+
                     /*
-                     * =================================================
-                     * 3. OBTENER DATOS DEL RESIDENTE
-                     * =================================================
+                     * ==================================================
+                     * 3. OBTENER RESIDENTE
+                     * ==================================================
                      */
 
                     const {
@@ -393,7 +605,10 @@
                                 activo,
                                 id_cargo
                             `)
-                            .eq("user_id", user.id)
+                            .eq(
+                                "user_id",
+                                user.id
+                            )
                             .maybeSingle();
 
 
@@ -414,17 +629,22 @@
                             "index.html";
 
                         return;
+
                     }
 
 
+
                     /*
-                     * =================================================
-                     * 4. IDENTIFICAR ADMINISTRADOR
-                     * =================================================
+                     * ==================================================
+                     * 4. ADMINISTRADOR
+                     * ==================================================
                      */
 
                     const tipo =
-                        (residente.tipo || "")
+                        (
+                            residente.tipo ||
+                            ""
+                        )
                             .trim()
                             .toLowerCase();
 
@@ -433,29 +653,36 @@
                         [
                             "admin",
                             "administracion"
-                        ].includes(tipo);
+                        ]
+                        .includes(tipo);
+
 
 
                     /*
-                     * =================================================
-                     * 5. IDENTIFICAR CARGO AUTORIZADO
+                     * ==================================================
+                     * 5. CARGO AUTORIZADO
                      *
-                     * TEMPORALMENTE:
-                     * Secretario = usuario de pruebas
+                     * TEMPORAL:
+                     * SECRETARIO
                      *
-                     * Posteriormente:
-                     * Tesorero = acceso definitivo
-                     * =================================================
+                     * DEFINITIVO:
+                     * TESORERO
+                     * ==================================================
                      */
 
                     let esTesorero = false;
 
 
                     if (
+
                         residente.es_mesa_directiva === true &&
+
                         residente.activo === true &&
+
                         residente.id_cargo
+
                     ) {
+
 
                         const {
                             data: cargo,
@@ -474,7 +701,7 @@
                         if (cargoError) {
 
                             console.error(
-                                "Error consultando cargo del usuario:",
+                                "Error consultando cargo:",
                                 cargoError
                             );
 
@@ -482,36 +709,73 @@
                                 "index.html";
 
                             return;
+
                         }
 
 
                         const nombreCargo =
-                            (cargo?.nombre || "")
+                            (
+                                cargo?.nombre ||
+                                ""
+                            )
                                 .trim()
                                 .toLowerCase();
 
 
                         /*
-                         * TEMPORAL PARA PRUEBAS
+                         * ==============================================
+                         * PRUEBA TEMPORAL
                          *
-                         * Usuario de pruebas:
-                         * Secretario
+                         * Secretario = acceso al módulo
+                         *
+                         * AL FINAL:
+                         *
+                         * nombreCargo === "tesorero"
+                         * ==============================================
                          */
 
                         esTesorero =
                             nombreCargo === "secretario";
+
+
+
+                        /*
+                         * Mostrar cargo en encabezado
+                         */
+
+                        const usuarioActual =
+                            document.getElementById(
+                                "usuarioActual"
+                            );
+
+
+                        if (usuarioActual) {
+
+                            usuarioActual.textContent =
+                                cargo?.nombre ||
+                                (
+                                    esAdministracion
+                                        ? "Administración"
+                                        : "Usuario"
+                                );
+
+                        }
+
                     }
 
 
+
                     /*
-                     * =================================================
-                     * 6. AUTORIZACIÓN DEL MÓDULO
-                     * =================================================
+                     * ==================================================
+                     * 6. AUTORIZACIÓN
+                     * ==================================================
                      */
 
                     if (
+
                         !esAdministracion &&
                         !esTesorero
+
                     ) {
 
                         alert(
@@ -522,13 +786,117 @@
                             "index.html";
 
                         return;
+
                     }
 
 
+
                     /*
-                     * =================================================
-                     * 7. ACCESO AUTORIZADO
-                     * =================================================
+                     * ==================================================
+                     * 7. NAVEGACIÓN
+                     * ==================================================
+                     */
+
+                    const btnRegresar =
+                        document.getElementById(
+                            "btnRegresar"
+                        );
+
+
+                    const btnRegresarInferior =
+                        document.getElementById(
+                            "btnRegresarInferior"
+                        );
+
+
+                    function regresar() {
+
+                        window.location.href =
+                            "index.html";
+
+                    }
+
+
+                    btnRegresar?.addEventListener(
+                        "click",
+                        regresar
+                    );
+
+
+                    btnRegresarInferior?.addEventListener(
+                        "click",
+                        regresar
+                    );
+
+
+
+                    /*
+                     * ==================================================
+                     * 8. REGISTRAR PAGO
+                     *
+                     * Todavía NO conectamos RPC.
+                     * ==================================================
+                     */
+
+                    document
+                        .getElementById(
+                            "opcionRegistrarPago"
+                        )
+                        ?.addEventListener(
+                            "click",
+                            () => {
+
+                                alert(
+                                    "La pantalla de registro de pagos se incorporará en la siguiente etapa."
+                                );
+
+                            }
+                        );
+
+
+
+                    /*
+                     * ==================================================
+                     * 9. OPCIONES TODAVÍA NO IMPLEMENTADAS
+                     * ==================================================
+                     */
+
+                    document
+                        .getElementById(
+                            "opcionConsultarPagos"
+                        )
+                        ?.addEventListener(
+                            "click",
+                            () => {
+
+                                alert(
+                                    "Esta función se incorporará posteriormente."
+                                );
+
+                            }
+                        );
+
+
+                    document
+                        .getElementById(
+                            "opcionCuotas"
+                        )
+                        ?.addEventListener(
+                            "click",
+                            () => {
+
+                                alert(
+                                    "Esta función se incorporará posteriormente."
+                                );
+
+                            }
+                        );
+
+
+                    /*
+                     * ==================================================
+                     * 10. CONSOLA
+                     * ==================================================
                      */
 
                     console.log(
@@ -541,42 +909,6 @@
                     );
 
 
-                    /*
-                     * =================================================
-                     * 8. BOTONES TEMPORALES
-                     * =================================================
-                     *
-                     * Todavía no conectamos RPCs.
-                     * Solo evitamos que los botones provoquen
-                     * una navegación accidental.
-                     * =================================================
-                     */
-
-                    const botones =
-                        document.querySelectorAll(
-                            ".opcion"
-                        );
-
-
-                    botones.forEach(
-                        boton => {
-
-                            boton.addEventListener(
-                                "click",
-                                event => {
-
-                                    event.preventDefault();
-
-                                    alert(
-                                        "Esta función se incorporará en la siguiente etapa."
-                                    );
-
-                                }
-                            );
-
-                        }
-                    );
-
                 } catch (error) {
 
                     console.error(
@@ -586,6 +918,7 @@
 
                     window.location.href =
                         "index.html";
+
                 }
 
             }
@@ -594,4 +927,5 @@
     </script>
 
 </body>
+
 </html>
