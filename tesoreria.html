@@ -890,19 +890,17 @@ document
                 }
 
 
-                console.log(
-                    "Resultado incorporación:",
-                    data
-                );
-
+            const resultado = data?.[0];
+            
             await mostrarAlerta({
                 titulo: "Incorporación realizada",
                 mensaje: `
-                    El residente <strong>${identificador}</strong>
+                    El residente <strong>${resultado?.identificador}</strong>
                     fue incorporado correctamente al régimen de aportaciones.
                 `
             });
-               
+
+                
 
             } catch (error) {
 
