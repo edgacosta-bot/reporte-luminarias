@@ -33,52 +33,138 @@
         .encabezado {
             background: white;
             border-radius: 12px;
-            padding: 24px;
+            padding: 28px;
             box-shadow: 0 2px 8px rgba(0,0,0,.08);
             margin-bottom: 20px;
         }
 
         .encabezado h1 {
             margin: 0 0 8px;
+            font-size: 42px;
         }
 
         .encabezado p {
             margin: 0;
             color: #666;
+            font-size: 20px;
         }
 
         .panel {
             background: white;
             border-radius: 12px;
-            padding: 24px;
+            padding: 28px;
             box-shadow: 0 2px 8px rgba(0,0,0,.08);
         }
 
-        .acciones {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 20px;
+        .panel h2 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 30px;
         }
 
-        .boton {
+        .descripcion {
+            margin-top: 0;
+            margin-bottom: 26px;
+            color: #555;
+            font-size: 17px;
+        }
+
+        .menu-tesoreria {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 18px;
+        }
+
+        .opcion {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 170px;
+            padding: 22px;
+            background: #fafafa;
+            border: 1px solid #e1e4e8;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #222;
+            transition:
+                transform .15s ease,
+                box-shadow .15s ease,
+                border-color .15s ease;
+        }
+
+        .opcion:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,.10);
+            border-color: #c7cbd1;
+        }
+
+        .opcion-icono {
+            font-size: 34px;
+            margin-bottom: 12px;
+        }
+
+        .opcion-titulo {
+            font-size: 21px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .opcion-descripcion {
+            color: #666;
+            line-height: 1.45;
+            font-size: 15px;
+        }
+
+        .estado {
+            display: inline-block;
+            margin-top: 18px;
+            font-size: 13px;
+            color: #777;
+        }
+
+        .acciones {
+            margin-top: 28px;
+        }
+
+        .boton-regresar {
             display: inline-block;
             padding: 12px 18px;
             border-radius: 8px;
             text-decoration: none;
-            border: none;
-            cursor: pointer;
+            background: #e5e7eb;
+            color: #222;
             font-size: 15px;
         }
 
-        .boton-regresar {
-            background: #e5e7eb;
-            color: #222;
+        .boton-regresar:hover {
+            background: #d8dbe0;
         }
 
-        .boton-prueba {
-            background: #d4a017;
-            color: white;
+        @media (max-width: 600px) {
+
+            .contenedor {
+                padding: 16px;
+            }
+
+            .encabezado {
+                padding: 22px;
+            }
+
+            .encabezado h1 {
+                font-size: 34px;
+            }
+
+            .encabezado p {
+                font-size: 17px;
+            }
+
+            .panel {
+                padding: 22px;
+            }
+
+            .panel h2 {
+                font-size: 26px;
+            }
         }
     </style>
 </head>
@@ -87,29 +173,150 @@
 
     <main class="contenedor">
 
+        <!-- =========================================================
+             ENCABEZADO
+             ========================================================= -->
+
         <section class="encabezado">
+
             <h1>💰 Tesorería</h1>
-            <p>Sistema Integral de Gestión Vecinal — SIGVIC</p>
+
+            <p>
+                Sistema Integral de Gestión Vecinal — SIGVIC
+            </p>
+
         </section>
+
+
+        <!-- =========================================================
+             PANEL PRINCIPAL
+             ========================================================= -->
 
         <section class="panel">
 
-            <h2>Acceso autorizado</h2>
+            <h2>Operaciones de Tesorería</h2>
 
-            <p>
-                Esta pantalla corresponde al módulo de Tesorería.
+            <p class="descripcion">
+                Seleccione la operación que desea realizar.
             </p>
 
-            <p>
-                La funcionalidad financiera se incorporará
-                progresivamente.
-            </p>
+
+            <div class="menu-tesoreria">
+
+
+                <!-- =================================================
+                     REGISTRAR PAGO
+                     ================================================= -->
+
+                <a
+                    href="#"
+                    class="opcion"
+                    id="btnRegistrarPago"
+                >
+
+                    <div>
+
+                        <div class="opcion-icono">
+                            💳
+                        </div>
+
+                        <div class="opcion-titulo">
+                            Registrar pago
+                        </div>
+
+                        <div class="opcion-descripcion">
+                            Buscar un residente, consultar sus
+                            obligaciones y registrar un pago.
+                        </div>
+
+                    </div>
+
+                    <span class="estado">
+                        Disponible próximamente
+                    </span>
+
+                </a>
+
+
+                <!-- =================================================
+                     CONSULTAR PAGOS
+                     ================================================= -->
+
+                <a
+                    href="#"
+                    class="opcion"
+                    id="btnConsultarPagos"
+                >
+
+                    <div>
+
+                        <div class="opcion-icono">
+                            🧾
+                        </div>
+
+                        <div class="opcion-titulo">
+                            Consultar pagos
+                        </div>
+
+                        <div class="opcion-descripcion">
+                            Consultar pagos registrados, folios,
+                            importes y periodos cubiertos.
+                        </div>
+
+                    </div>
+
+                    <span class="estado">
+                        Disponible próximamente
+                    </span>
+
+                </a>
+
+
+                <!-- =================================================
+                     CUOTAS DE RESIDENTES
+                     ================================================= -->
+
+                <a
+                    href="#"
+                    class="opcion"
+                    id="btnCuotasResidentes"
+                >
+
+                    <div>
+
+                        <div class="opcion-icono">
+                            📋
+                        </div>
+
+                        <div class="opcion-titulo">
+                            Cuotas de residentes
+                        </div>
+
+                        <div class="opcion-descripcion">
+                            Consultar la información de cuotas y
+                            obligaciones de los residentes.
+                        </div>
+
+                    </div>
+
+                    <span class="estado">
+                        Disponible próximamente
+                    </span>
+
+                </a>
+
+            </div>
+
+
+            <!-- =====================================================
+                 REGRESAR
+                 ===================================================== -->
 
             <div class="acciones">
 
                 <a
                     href="index.html"
-                    class="boton boton-regresar"
+                    class="boton-regresar"
                 >
                     ← Regresar
                 </a>
@@ -120,6 +327,11 @@
 
     </main>
 
+
+    <!-- =============================================================
+         AUTORIZACIÓN
+         ============================================================= -->
+
     <script>
 
         window.addEventListener(
@@ -129,9 +341,9 @@
                 try {
 
                     /*
-                     * =====================================================
+                     * =================================================
                      * 1. PROTECCIÓN BÁSICA
-                     * =====================================================
+                     * =================================================
                      */
 
                     await protegerPagina([
@@ -142,15 +354,17 @@
 
 
                     /*
-                     * =====================================================
+                     * =================================================
                      * 2. IDENTIFICAR USUARIO
-                     * =====================================================
+                     * =================================================
                      */
 
                     const {
                         data: { user },
                         error: userError
-                    } = await supabaseClient.auth.getUser();
+                    } =
+                        await supabaseClient.auth.getUser();
+
 
                     if (userError || !user) {
 
@@ -162,28 +376,31 @@
 
 
                     /*
-                     * =====================================================
+                     * =================================================
                      * 3. OBTENER DATOS DEL RESIDENTE
-                     * =====================================================
+                     * =================================================
                      */
 
                     const {
                         data: residente,
                         error: residenteError
-                    } = await supabaseClient
-                        .from("residentes")
-                        .select(`
-                            tipo,
-                            es_mesa_directiva,
-                            activo,
-                            id_cargo
-                        `)
-                        .eq("user_id", user.id)
-                        .maybeSingle();
+                    } =
+                        await supabaseClient
+                            .from("residentes")
+                            .select(`
+                                tipo,
+                                es_mesa_directiva,
+                                activo,
+                                id_cargo
+                            `)
+                            .eq("user_id", user.id)
+                            .maybeSingle();
 
 
                     if (residenteError) {
+
                         throw residenteError;
+
                     }
 
 
@@ -193,16 +410,17 @@
                             "No se encontró información del usuario."
                         );
 
-                        window.location.href = "index.html";
+                        window.location.href =
+                            "index.html";
 
                         return;
                     }
 
 
                     /*
-                     * =====================================================
+                     * =================================================
                      * 4. IDENTIFICAR ADMINISTRADOR
-                     * =====================================================
+                     * =================================================
                      */
 
                     const tipo =
@@ -219,57 +437,76 @@
 
 
                     /*
+                     * =================================================
+                     * 5. IDENTIFICAR CARGO AUTORIZADO
+                     *
+                     * TEMPORALMENTE:
+                     * Secretario = usuario de pruebas
+                     *
+                     * Posteriormente:
+                     * Tesorero = acceso definitivo
+                     * =================================================
+                     */
+
+                    let esTesorero = false;
+
+
+                    if (
+                        residente.es_mesa_directiva === true &&
+                        residente.activo === true &&
+                        residente.id_cargo
+                    ) {
+
+                        const {
+                            data: cargo,
+                            error: cargoError
+                        } =
+                            await supabaseClient
+                                .from("catalogo_cargos")
+                                .select("nombre")
+                                .eq(
+                                    "id",
+                                    residente.id_cargo
+                                )
+                                .maybeSingle();
+
+
+                        if (cargoError) {
+
+                            console.error(
+                                "Error consultando cargo del usuario:",
+                                cargoError
+                            );
+
+                            window.location.href =
+                                "index.html";
+
+                            return;
+                        }
+
+
+                        const nombreCargo =
+                            (cargo?.nombre || "")
+                                .trim()
+                                .toLowerCase();
+
+
+                        /*
+                         * TEMPORAL PARA PRUEBAS
+                         *
+                         * Usuario de pruebas:
+                         * Secretario
+                         */
+
+                        esTesorero =
+                            nombreCargo === "secretario";
+                    }
+
+
                     /*
- * =====================================================
- * 5. IDENTIFICAR TESORERO
- * =====================================================
- */
-
-let esTesorero = false;
-
-if (
-    residente.es_mesa_directiva === true &&
-    residente.activo === true &&
-    residente.id_cargo
-) {
-
-    const {
-        data: cargo,
-        error: cargoError
-    } = await supabaseClient
-        .from("catalogo_cargos")
-        .select("nombre")
-        .eq("id", residente.id_cargo)
-        .maybeSingle();
-
-
-    if (cargoError) {
-
-        console.error(
-            "Error consultando cargo del usuario:",
-            cargoError
-        );
-
-        window.location.href = "index.html";
-
-        return;
-    }
-
-
-    const nombreCargo =
-        (cargo?.nombre || "")
-            .trim()
-            .toLowerCase();
-
-
-    esTesorero =
-        nombreCargo === "secretario";
-}
-
-                    /*
-                     * =====================================================
+                     * =================================================
                      * 6. AUTORIZACIÓN DEL MÓDULO
-                     * =====================================================
+                     * =================================================
                      */
 
                     if (
@@ -289,9 +526,9 @@ if (
 
 
                     /*
-                     * =====================================================
+                     * =================================================
                      * 7. ACCESO AUTORIZADO
-                     * =====================================================
+                     * =================================================
                      */
 
                     console.log(
@@ -300,6 +537,43 @@ if (
                             usuario: user.id,
                             esAdministracion,
                             esTesorero
+                        }
+                    );
+
+
+                    /*
+                     * =================================================
+                     * 8. BOTONES TEMPORALES
+                     * =================================================
+                     *
+                     * Todavía no conectamos RPCs.
+                     * Solo evitamos que los botones provoquen
+                     * una navegación accidental.
+                     * =================================================
+                     */
+
+                    const botones =
+                        document.querySelectorAll(
+                            ".opcion"
+                        );
+
+
+                    botones.forEach(
+                        boton => {
+
+                            boton.addEventListener(
+                                "click",
+                                event => {
+
+                                    event.preventDefault();
+
+                                    alert(
+                                        "Esta función se incorporará en la siguiente etapa."
+                                    );
+
+                                }
+                            );
+
                         }
                     );
 
