@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Registrar pago | Tesorería | SIGVIC</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #fafafa;
+            color: #303030;
+        }
+
+        .barra-superior {
+            height: 116px;
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+        }
+
+        .barra-izquierda {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+        }
+
+        .boton-regresar {
+            width: 64px;
+            height: 64px;
+            border: none;
+            border-radius: 14px;
+            background: #f1f2f4;
+            font-size: 32px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .titulo-barra h1 {
+            margin: 0;
+            color: #9d174d;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .titulo-barra p {
+            margin: 4px 0 0;
+            color: #6b7280;
+            font-size: 20px;
+        }
+
+        .usuario-barra {
+            font-size: 20px;
+            font-weight: 700;
+            color: #4b5563;
+        }
+
+        .contenedor {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 56px 24px 80px;
+        }
+
+        .seccion-superior {
+            margin-bottom: 42px;
+        }
+
+        .etiqueta {
+            margin: 0 0 18px;
+            color: #9d174d;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 5px;
+        }
+
+        .seccion-superior h2 {
+            margin: 0 0 18px;
+            font-size: 48px;
+            line-height: 1.1;
+        }
+
+        .seccion-superior p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 22px;
+        }
+
+        .panel {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 22px;
+            padding: 34px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.04);
+        }
+
+        .panel h3 {
+            margin: 0 0 24px;
+            font-size: 28px;
+        }
+
+        .busqueda-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 2fr;
+            gap: 18px;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .campo label {
+            font-size: 15px;
+            font-weight: 700;
+            color: #374151;
+        }
+
+        .campo input {
+            width: 100%;
+            height: 48px;
+            padding: 0 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .campo input:focus {
+            border-color: #9d174d;
+            box-shadow: 0 0 0 3px rgba(157,23,77,.10);
+        }
+
+        .acciones {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 22px;
+        }
+
+        .boton {
+            border: none;
+            border-radius: 10px;
+            padding: 13px 22px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .boton-principal {
+            background: #9d174d;
+            color: white;
+        }
+
+        .boton-principal:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        .mensaje {
+            margin-top: 22px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            display: none;
+            font-size: 16px;
+        }
+
+        .mensaje.error {
+            display: block;
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .mensaje.info {
+            display: block;
+            background: #f8fafc;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .resultados {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .resultados h4 {
+            margin: 0 0 16px;
+            font-size: 21px;
+        }
+
+        .lista-residentes {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .residente {
+            width: 100%;
+            text-align: left;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 18px;
+            cursor: pointer;
+            transition: .15s ease;
+        }
+
+        .residente:hover {
+            border-color: #d8a4ba;
+            background: #fffafb;
+        }
+
+        .residente.seleccionado {
+            border-color: #9d174d;
+            background: #fff8fb;
+        }
+
+        .residente-nombre {
+            font-size: 19px;
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+
+        .residente-datos {
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        .residente-estado {
+            margin-top: 7px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .residente-seleccionado {
+            margin-top: 30px;
+            padding: 24px;
+            border-radius: 16px;
+            background: #faf7f8;
+            border: 1px solid #ead2dc;
+            display: none;
+        }
+
+        .residente-seleccionado h4 {
+            margin: 0 0 16px;
+            font-size: 24px;
+        }
+
+        .datos-seleccionado {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .dato-label {
+            display: block;
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+
+        .dato-valor {
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .continuar {
+            margin-top: 28px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 800px) {
+
+            .barra-superior {
+                padding: 0 16px;
+            }
+
+            .usuario-barra {
+                display: none;
+            }
+
+            .titulo-barra h1 {
+                font-size: 25px;
+            }
+
+            .titulo-barra p {
+                font-size: 16px;
+            }
+
+            .contenedor {
+                padding: 35px 16px 60px;
+            }
+
+            .seccion-superior h2 {
+                font-size: 36px;
+            }
+
+            .busqueda-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .datos-seleccionado {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="barra-superior">
+
+    <div class="barra-izquierda">
+
+        <button
+            type="button"
+            class="boton-regresar"
+            onclick="window.location.href='tesoreria.html'"
+            aria-label="Regresar"
+        >
+            ←
+        </button>
+
+        <div class="titulo-barra">
+            <h1>Tesorería</h1>
+            <p>Registrar pago</p>
+        </div>
+
+    </div>
+
+    <div
+        id="usuarioBarra"
+        class="usuario-barra"
+    >
+        Tesorería
+    </div>
+
+</header>
+
+
+<main class="contenedor">
+
+    <section class="seccion-superior">
+
+        <p class="etiqueta">TESORERÍA</p>
+
+        <h2>Registrar pago</h2>
+
+        <p>
+            Busque al residente para consultar sus obligaciones
+            y registrar posteriormente el pago correspondiente.
+        </p>
+
+    </section>
+
+
+    <section class="panel">
+
+        <h3>Buscar residente</h3>
+
+        <div class="busqueda-grid">
+
+            <div class="campo">
+                <label for="privada">
+                    Privada
+                </label>
+
+                <input
+                    id="privada"
+                    type="text"
+                    placeholder="Ej. I"
+                    autocomplete="off"
+                >
+            </div>
+
+
+            <div class="campo">
+                <label for="casa">
+                    Casa
+                </label>
+
+                <input
+                    id="casa"
+                    type="text"
+                    placeholder="Ej. 76"
+                    autocomplete="off"
+                >
+            </div>
+
+
+            <div class="campo">
+                <label for="nombre">
+                    Nombre
+                </label>
+
+                <input
+                    id="nombre"
+                    type="text"
+                    placeholder="Nombre del residente"
+                    autocomplete="off"
+                >
+            </div>
+
+        </div>
+
+
+        <div class="acciones">
+
+            <button
+                id="btnBuscar"
+                type="button"
+                class="boton boton-principal"
+            >
+                Buscar residente
+            </button>
+
+        </div>
+
+
+        <div
+            id="mensaje"
+            class="mensaje"
+        ></div>
+
+
+        <div
+            id="resultados"
+            class="resultados"
+        >
+
+            <h4>Resultados</h4>
+
+            <div
+                id="listaResidentes"
+                class="lista-residentes"
+            ></div>
+
+        </div>
+
+
+        <div
+            id="residenteSeleccionado"
+            class="residente-seleccionado"
+        >
+
+            <h4>Residente seleccionado</h4>
+
+            <div class="datos-seleccionado">
+
+                <div>
+                    <span class="dato-label">
+                        Nombre
+                    </span>
+
+                    <span
+                        id="selNombre"
+                        class="dato-valor"
+                    ></span>
+                </div>
+
+
+                <div>
+                    <span class="dato-label">
+                        Privada
+                    </span>
+
+                    <span
+                        id="selPrivada"
+                        class="dato-valor"
+                    ></span>
+                </div>
+
+
+                <div>
+                    <span class="dato-label">
+                        Casa
+                    </span>
+
+                    <span
+                        id="selCasa"
+                        class="dato-valor"
+                    ></span>
+                </div>
+
+
+                <div>
+                    <span class="dato-label">
+                        Estado de registro
+                    </span>
+
+                    <span
+                        id="selActivo"
+                        class="dato-valor"
+                    ></span>
+                </div>
+
+
+                <div>
+                    <span class="dato-label">
+                        Situación de pago
+                    </span>
+
+                    <span
+                        id="selEstadoPago"
+                        class="dato-valor"
+                    ></span>
+                </div>
+
+            </div>
+
+
+            <div class="continuar">
+
+                <button
+                    id="btnContinuar"
+                    type="button"
+                    class="boton boton-principal"
+                >
+                    Continuar → Consultar obligaciones
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+    /*
+     * ============================================================
+     * 1. PROTECCIÓN BÁSICA
+     * ============================================================
+     */
+
+    await protegerPagina([
+        "admin",
+        "administracion",
+        "residente"
+    ]);
+
+
+    /*
+     * ============================================================
+     * 2. OBTENER USUARIO ACTUAL
+     * ============================================================
+     */
+
+    const {
+        data: { user },
+        error: userError
+    } = await supabaseClient.auth.getUser();
+
+
+    if (userError || !user) {
+
+        window.location.href = "login.html";
+        return;
+    }
+
+
+    /*
+     * ============================================================
+     * 3. VERIFICAR AUTORIZACIÓN DE TESORERÍA
+     * ============================================================
+     */
+
+    const {
+        data: residenteActual,
+        error: residenteError
+    } = await supabaseClient
+        .from("residentes")
+        .select(`
+            tipo,
+            es_mesa_directiva,
+            activo,
+            id_cargo
+        `)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+
+    if (residenteError || !residenteActual) {
+
+        window.location.href = "index.html";
+        return;
+    }
+
+
+    const tipoActual =
+        (residenteActual.tipo || "")
+            .trim()
+            .toLowerCase();
+
+
+    const esAdministracion =
+        [
+            "admin",
+            "administracion"
+        ].includes(tipoActual);
+
+
+    let esTesorero = false;
+
+
+    if (
+        residenteActual.es_mesa_directiva === true &&
+        residenteActual.activo === true &&
+        residenteActual.id_cargo
+    ) {
+
+        const {
+            data: cargo,
+            error: cargoError
+        } = await supabaseClient
+            .from("catalogo_cargos")
+            .select("nombre")
+            .eq("id", residenteActual.id_cargo)
+            .maybeSingle();
+
+
+        if (cargoError) {
+
+            console.error(cargoError);
+            window.location.href = "index.html";
+            return;
+        }
+
+
+        const nombreCargo =
+            (cargo?.nombre || "")
+                .trim()
+                .toLowerCase();
+
+
+        /*
+         * Durante las pruebas:
+         * Secretario = acceso temporal a Tesorería.
+         *
+         * Posteriormente se cambiará nuevamente
+         * a Tesorero.
+         */
+
+        esTesorero =
+            nombreCargo === "secretario";
+    }
+
+
+    if (
+        !esAdministracion &&
+        !esTesorero
+    ) {
+
+        alert(
+            "No tiene autorización para acceder al módulo de Tesorería."
+        );
+
+        window.location.href = "index.html";
+        return;
+    }
+
+
+    /*
+     * ============================================================
+     * 4. MOSTRAR CARGO
+     * ============================================================
+     */
+
+    const usuarioBarra =
+        document.getElementById("usuarioBarra");
+
+
+    if (esAdministracion) {
+
+        usuarioBarra.textContent =
+            "Administrador";
+
+    } else {
+
+        usuarioBarra.textContent =
+            "Secretario";
+    }
+
+
+    /*
+     * ============================================================
+     * 5. ELEMENTOS
+     * ============================================================
+     */
+
+    const privadaInput =
+        document.getElementById("privada");
+
+    const casaInput =
+        document.getElementById("casa");
+
+    const nombreInput =
+        document.getElementById("nombre");
+
+    const btnBuscar =
+        document.getElementById("btnBuscar");
+
+    const mensaje =
+        document.getElementById("mensaje");
+
+    const resultados =
+        document.getElementById("resultados");
+
+    const listaResidentes =
+        document.getElementById("listaResidentes");
+
+    const residenteSeleccionado =
+        document.getElementById("residenteSeleccionado");
+
+
+    let residenteElegido = null;
+
+
+    /*
+     * ============================================================
+     * 6. MENSAJES
+     * ============================================================
+     */
+
+    function mostrarMensaje(texto, tipo = "info") {
+
+        mensaje.textContent = texto;
+        mensaje.className =
+            "mensaje " + tipo;
+
+    }
+
+
+    function limpiarMensaje() {
+
+        mensaje.textContent = "";
+        mensaje.className = "mensaje";
+
+    }
+
+
+    /*
+     * ============================================================
+     * 7. BUSCAR RESIDENTES
+     * ============================================================
+     */
+
+    async function buscarResidentes() {
+
+        limpiarMensaje();
+
+        resultados.style.display = "none";
+        residenteSeleccionado.style.display = "none";
+
+        listaResidentes.innerHTML = "";
+
+        residenteElegido = null;
+
+
+        const privada =
+            privadaInput.value.trim();
+
+        const casa =
+            casaInput.value.trim();
+
+        const nombre =
+            nombreInput.value.trim();
+
+
+        if (
+            !privada &&
+            !casa &&
+            !nombre
+        ) {
+
+            mostrarMensaje(
+                "Ingrese al menos un dato para realizar la búsqueda.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        btnBuscar.disabled = true;
+        btnBuscar.textContent = "Buscando...";
+
+
+        try {
+
+            let query = supabaseClient
+                .from("residentes")
+                .select(`
+                    id,
+                    nombre,
+                    privada,
+                    casa,
+                    clave,
+                    identificador,
+                    estado_pago,
+                    activo,
+                    es_residente,
+                    obligado_pago
+                `)
+                .eq("activo", true)
+                .order("privada", { ascending: true })
+                .order("casa", { ascending: true })
+                .limit(30);
+
+
+            /*
+             * La búsqueda se construye dinámicamente
+             * según los datos introducidos por Tesorería.
+             */
+
+            if (privada) {
+
+                query =
+                    query.ilike(
+                        "privada",
+                        `%${privada}%`
+                    );
+            }
+
+
+            if (casa) {
+
+                query =
+                    query.ilike(
+                        "casa",
+                        `%${casa}%`
+                    );
+            }
+
+
+            if (nombre) {
+
+                query =
+                    query.ilike(
+                        "nombre",
+                        `%${nombre}%`
+                    );
+            }
+
+
+            const {
+                data,
+                error
+            } = await query;
+
+
+            if (error) {
+                throw error;
+            }
+
+
+            if (!data || data.length === 0) {
+
+                mostrarMensaje(
+                    "No se encontraron residentes con los datos proporcionados.",
+                    "info"
+                );
+
+                return;
+            }
+
+
+            /*
+             * ========================================================
+             * MOSTRAR RESULTADOS
+             * ========================================================
+             */
+
+            data.forEach(residente => {
+
+                const boton =
+                    document.createElement("button");
+
+
+                boton.type = "button";
+                boton.className = "residente";
+
+
+                const nombre =
+                    residente.nombre || "Sin nombre";
+
+
+                const privada =
+                    residente.privada || "—";
+
+
+                const casa =
+                    residente.casa || "—";
+
+
+                const estadoPago =
+                    residente.estado_pago || "Sin determinar";
+
+
+                boton.innerHTML = `
+                    <div class="residente-nombre">
+                        ${escapeHtml(nombre)}
+                    </div>
+
+                    <div class="residente-datos">
+                        Privada ${escapeHtml(privada)}
+                        · Casa ${escapeHtml(casa)}
+                    </div>
+
+                    <div class="residente-estado">
+                        Situación registrada:
+                        ${escapeHtml(estadoPago)}
+                    </div>
+                `;
+
+
+                boton.addEventListener(
+                    "click",
+                    () => seleccionarResidente(
+                        residente,
+                        boton
+                    )
+                );
+
+
+                listaResidentes.appendChild(
+                    boton
+                );
+
+            });
+
+
+            resultados.style.display = "block";
+
+
+        } catch (error) {
+
+            console.error(
+                "Error buscando residentes:",
+                error
+            );
+
+
+            mostrarMensaje(
+                "Ocurrió un error al buscar al residente.",
+                "error"
+            );
+
+        } finally {
+
+            btnBuscar.disabled = false;
+            btnBuscar.textContent =
+                "Buscar residente";
+        }
+    }
+
+
+    /*
+     * ============================================================
+     * 8. SELECCIONAR RESIDENTE
+     * ============================================================
+     */
+
+    function seleccionarResidente(
+        residente,
+        boton
+    ) {
+
+        residenteElegido =
+            residente;
+
+
+        document
+            .querySelectorAll(".residente")
+            .forEach(elemento => {
+
+                elemento.classList.remove(
+                    "seleccionado"
+                );
+
+            });
+
+
+        boton.classList.add(
+            "seleccionado"
+        );
+
+
+        document.getElementById(
+            "selNombre"
+        ).textContent =
+            residente.nombre || "—";
+
+
+        document.getElementById(
+            "selPrivada"
+        ).textContent =
+            residente.privada || "—";
+
+
+        document.getElementById(
+            "selCasa"
+        ).textContent =
+            residente.casa || "—";
+
+
+        document.getElementById(
+            "selActivo"
+        ).textContent =
+            residente.activo
+                ? "Activo"
+                : "Inactivo";
+
+
+        document.getElementById(
+            "selEstadoPago"
+        ).textContent =
+            residente.estado_pago ||
+            "Sin determinar";
+
+
+        residenteSeleccionado.style.display =
+            "block";
+
+
+        residenteSeleccionado.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest"
+        });
+
+    }
+
+
+    /*
+     * ============================================================
+     * 9. CONTINUAR
+     * ============================================================
+     */
+
+    document
+        .getElementById("btnContinuar")
+        .addEventListener(
+            "click",
+            () => {
+
+                if (!residenteElegido) {
+
+                    mostrarMensaje(
+                        "Primero seleccione un residente.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+                /*
+                 * Todavía NO llamamos a ninguna RPC.
+                 *
+                 * En el siguiente paso utilizaremos
+                 * el residente seleccionado para consultar
+                 * sus obligaciones mediante PostgreSQL.
+                 */
+
+                console.log(
+                    "Residente seleccionado:",
+                    residenteElegido
+                );
+
+
+                alert(
+                    "Residente seleccionado correctamente. La consulta de obligaciones se incorporará en el siguiente paso."
+                );
+
+            }
+        );
+
+
+    /*
+     * ============================================================
+     * 10. BOTÓN BUSCAR
+     * ============================================================
+     */
+
+    btnBuscar.addEventListener(
+        "click",
+        buscarResidentes
+    );
+
+
+    /*
+     * Enter en los campos
+     */
+
+    [
+        privadaInput,
+        casaInput,
+        nombreInput
+    ].forEach(input => {
+
+        input.addEventListener(
+            "keydown",
+            event => {
+
+                if (event.key === "Enter") {
+
+                    event.preventDefault();
+
+                    buscarResidentes();
+                }
+
+            }
+        );
+
+    });
+
+
+    /*
+     * ============================================================
+     * 11. ESCAPE HTML
+     * ============================================================
+     */
+
+    function escapeHtml(valor) {
+
+        return String(valor ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+});
+
+</script>
+
+</body>
+</html>
