@@ -126,12 +126,6 @@ body {
   transform: scale(1.03);
   opacity: 0.95;
 }
-
- /* KPI SERVICIOS POR ARRIBAR - ALERTA */
-.kpi-servicios-alerta {
-  background: #b91c1c;
-  color: white;
-} 
   
 /* BOTONES */
 .menu {
@@ -240,15 +234,6 @@ body {
   }
 } 
 
-
-/* ======================================================
-   ALERTA: SERVICIOS PENDIENTES
-   ====================================================== */
-
-.kpi-servicios-alerta {
-  background: #b91c1c;
-  color: white;
-}  
   
 </style>
 
@@ -319,36 +304,6 @@ body {
 
 </div> 
 
-<!-- KPI SERVICIOS POR ARRIBAR -->
-
-<div
-  class="kpi"
-  id="kpiServiciosArribar"
-  onclick="abrirServiciosArribar()"
-  style="cursor:pointer;"
->
-
-  🛵 Servicios por arribar <br>
-
-  <span id="kpiServiciosArribarNumero">0</span>
-
-</div>
-
-<!-- KPI VISITANTES POR ARRIBAR -->
-
-<div
-  class="kpi"
-  id="kpiVisitantesArribar"
-  onclick="abrirVisitantesArribar()"
-  style="cursor:pointer;"
->
-
-  👤 Visitantes por arribar <br>
-
-  <span id="kpiVisitantesArribarNumero">0</span>
-
-</div>
-  
     <!-- KPI TRABAJADORES SUSPENDIDOS -->
   <div
     class="kpi"
@@ -472,9 +427,22 @@ body {
   <a href="admin_vigilantes.html" class="button btn-gris">Altas y bajas de vigilantes</a>
 </div>
 
-  <a href="aportaciones.html" class="button btn-gris">
-    <span class="icon">💰</span> Cuotas residentes
-  </a>
+<!-- TESORERÍA -->
+<div class="menu" id="menuTesoreria" style="display:none;">
+
+  <button class="button btn-oro" onclick="toggleMenu('tesoreria')">
+    <span class="icon">💰</span> Tesorería
+  </button>
+
+  <div id="tesoreria" class="submenu">
+    <a href="tesoreria.html" class="button btn-gris">
+      Registrar pago
+    </a>
+
+    <a href="aportaciones.html" class="button btn-gris">
+      Cuotas residentes
+    </a>
+  </div>
 
 </div>
 
@@ -849,13 +817,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   
   const { data: residente } = await supabaseClient
   .from("residentes")
-  .select("tipo, privada, casa, es_residente")
+  .select("tipo, privada, casa, es_residente, es_mesa_directiva, activo, id_cargo")
   .eq("user_id", user.id)
   .single();
 
   const rol = residente?.tipo || "";
   
   const esResidente = residente?.es_residente;
+
+  const ID_CARGO_TESORERO =
+    "c731366e-11e6-454f-b6ee-a8005380d3c9";
+
+  const esTesorero =
+    residente?.es_mesa_directiva === true &&
+    residente?.activo === true &&
+    residente?.id_cargo === ID_CARGO_TESORERO;
 
   rolActual = rol;
 
@@ -883,11 +859,28 @@ document.getElementById("rolTexto").innerHTML =
 
   if (rol === "administracion") {
   document.getElementById("menuAdmin").style.display = "block";
+  document.getElementById("menuTesoreria").style.display = "flex";
 
   await cargarKPIs();
 
   setInterval(cargarKPIs, 30000); // 🔥 auto actualización cada 30s
 }
+  else if (esTesorero) {
+
+  document.getElementById("menuTesoreria").style.display = "flex";
+
+  if (rol === "residente" || rol === "colono") {
+
+    if (esResidente === true) {
+      document.getElementById("menuResidente").style.display = "block";
+    } else {
+      document.getElementById("menuPropietario").style.display = "block";
+    }
+
+    document.querySelector(".kpis").style.display = "none";
+  }
+
+  }
   else if (rol === "residente" || rol === "colono") {
 
   if (esResidente === true) {
@@ -911,7 +904,7 @@ document.getElementById("rolTexto").innerHTML =
   setInterval(cargarKPIs, 30000);
 }
 
- ["obras", "qr", "infra", "vig", "qr_res", "paq", "reportes", "infra_res", "aportaciones", "obras_res","paq_vig", "obras_vig", "inmobiliaria_vig", "actividades_vig", "otros_accesos", "servicios_vig", "sigvic_vig", "sigvic_admin", "amenidades"]
+ ["obras", "qr", "infra", "vig", "qr_res", "paq", "reportes", "infra_res", "aportaciones", "obras_res", "tesoreria", "paq_vig", "obras_vig", "inmobiliaria_vig", "actividades_vig", "otros_accesos", "servicios_vig", "sigvic_vig", "sigvic_admin", "amenidades"]
   .forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
@@ -950,26 +943,6 @@ function abrirPaquetes() {
   }
 
 }
-
-function abrirServiciosArribar() {
-
-  if (rolActual !== "vigilante") {
-    return;
-  }
-
-  window.location.href =
-    "servicios_arribo_vigilante.html";
-}  
-
-function abrirVisitantesArribar() {
-
-  if (rolActual !== "vigilante") {
-    return;
-  }
-
-  window.location.href =
-    "visitantes_arribo_vigilante.html";
-}  
   
 async function cargarKPIs() {
 
@@ -1012,114 +985,6 @@ async function cargarKPIs() {
 
     document.getElementById("kpiAbastecimientos").innerText =
       data?.abastecimientos_dentro ?? 0;
-
-
-    // ======================================================
-    // KPI SERVICIOS POR ARRIBAR
-    // ======================================================
-
-    const kpiServiciosArribar =
-      document.getElementById(
-        "kpiServiciosArribar"
-      );
-
-    const numeroServiciosArribar =
-      document.getElementById(
-        "kpiServiciosArribarNumero"
-      );
-
-    const serviciosPorArribar =
-      data?.servicios_por_arribar ?? 0;
-
-
-    numeroServiciosArribar.innerText =
-      serviciosPorArribar;
-
-
-    // ======================================================
-    // ESTADO VISUAL DEL KPI SERVICIOS
-    // ======================================================
-
-    if (serviciosPorArribar > 0) {
-
-      kpiServiciosArribar.classList.add(
-        "kpi-servicios-alerta"
-      );
-
-    } else {
-
-      kpiServiciosArribar.classList.remove(
-        "kpi-servicios-alerta"
-      );
-
-    }
-
-
-    // ======================================================
-    // KPI VISITANTES POR ARRIBAR
-    // SOLO VIGILANCIA
-    // ======================================================
-
-    const kpiVisitantesArribar =
-      document.getElementById(
-        "kpiVisitantesArribar"
-      );
-
-    const numeroVisitantesArribar =
-      document.getElementById(
-        "kpiVisitantesArribarNumero"
-      );
-
-
-    if (rolActual === "vigilante") {
-
-      const visitasPorArribar =
-        data?.visitas_por_arribar ?? 0;
-
-
-      numeroVisitantesArribar.innerText =
-        visitasPorArribar;
-
-
-      // ----------------------------------------------------
-      // El KPI se muestra únicamente en vigilancia
-      // ----------------------------------------------------
-
-      kpiVisitantesArribar.style.display =
-        "block";
-
-
-      // ----------------------------------------------------
-      // Estado visual
-      // Reutilizamos el mismo comportamiento
-      // de Servicios por arribar.
-      // ----------------------------------------------------
-
-      if (visitasPorArribar > 0) {
-
-        kpiVisitantesArribar.classList.add(
-          "kpi-servicios-alerta"
-        );
-
-      } else {
-
-        kpiVisitantesArribar.classList.remove(
-          "kpi-servicios-alerta"
-        );
-
-      }
-
-    } else {
-
-      // ----------------------------------------------------
-      // Administración / Residentes
-      // El KPI no debe mostrarse.
-      // ----------------------------------------------------
-
-      kpiVisitantesArribar.style.display =
-        "none";
-
-    }
 
 
     // ======================================================
@@ -1166,6 +1031,7 @@ async function cargarKPIs() {
   }
 
 }
+
   // ==========================================================
 // TRABAJADORES SUSPENDIDOS
 // ==========================================================
