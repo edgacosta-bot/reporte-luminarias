@@ -868,100 +868,407 @@
                     );
 
 
-
-                    /*
-                     /*
+/*
  * ==================================================
- * 8. PRUEBA TEMPORAL
- *
- * Incorporar I-76 al régimen de aportaciones.
- *
- * ESTA PRUEBA NO GENERA CUOTAS
- * NI MODIFICA residentes.
+ * 8. INCORPORAR AL RÉGIMEN DE APORTACIONES
  * ==================================================
  */
 
-        document
-            .getElementById("opcionIncorporarObligado")
-            ?.addEventListener(
-                "click",
-                    
-        async () => {
+const opcionIncorporarObligado =
+    document.getElementById("opcionIncorporarObligado");
 
-            try {
+const modalIncorporarObligado =
+    document.getElementById("modalIncorporarObligado");
 
-                const residenteId =
-                    "5b18062b-76a1-46be-bc9a-03ec0ddbd122";
+const incorporarPrivada =
+    document.getElementById("incorporarPrivada");
 
-                const {
-                    data,
-                    error
-                } = await supabaseClient.rpc(
-                    "incorporar_obligado_pago",
-                    {
-                        p_residente_id:
-                            residenteId,
+const incorporarLote =
+    document.getElementById("incorporarLote");
 
-                        p_fecha_inicio_obligacion:
-                            "2026-09-01",
+const grupoLoteIncorporacion =
+    document.getElementById("grupoLoteIncorporacion");
 
-                        p_cantidad_lotes:
-                            1,
+const grupoFechaIncorporacion =
+    document.getElementById("grupoFechaIncorporacion");
 
-                        p_condicion_inmueble:
-                            "residencia",
+const grupoCondicionIncorporacion =
+    document.getElementById("grupoCondicionIncorporacion");
 
-                        p_observaciones:
-                            "Prueba inicial de incorporación al régimen de aportaciones."
-                    }
-                );
+const grupoCantidadLotes =
+    document.getElementById("grupoCantidadLotes");
 
 
-               if (error) {
+/*
+ * --------------------------------------------------
+ * ABRIR MODAL
+ * --------------------------------------------------
+ */
 
-    console.error(
-        "Error RPC:",
-        error
-    );
+opcionIncorporarObligado?.addEventListener(
+    "click",
+    () => {
 
-    mostrarAlerta({
-        titulo: "Error al incorporar al régimen",
-        mensaje: error.message
+        modalIncorporarObligado.style.display = "flex";
+
+        cargarPrivadasIncorporacion();
+
+    }
+);
+
+
+/*
+ * --------------------------------------------------
+ * CARGAR PRIVADAS
+ * --------------------------------------------------
+ */
+
+async function cargarPrivadasIncorporacion() {
+
+    incorporarPrivada.innerHTML = `
+        <option value="">
+            Cargando privadas...
+        </option>
+    `;
+
+    const { data, error } =
+        await supabaseClient
+            .from("residentes")
+            .select("privada")
+            .eq("es_residente", true)
+            .order("privada");
+
+    if (error) {
+
+        console.error(
+            "Error cargando privadas:",
+            error
+        );
+
+        incorporarPrivada.innerHTML = `
+            <option value="">
+                Error al cargar
+            </option>
+        `;
+
+        mostrarAlerta({
+            titulo: "Error",
+            mensaje:
+                "No fue posible cargar las privadas disponibles."
+        });
+
+        return;
+    }
+
+    const privadas = [
+        ...new Set(
+            (data || [])
+                .map(r => r.privada)
+                .filter(Boolean)
+        )
+    ];
+
+    incorporarPrivada.innerHTML = `
+        <option value="">
+            Seleccione una privada
+        </option>
+    `;
+
+    privadas.forEach(privada => {
+
+        incorporarPrivada.innerHTML += `
+            <option value="${privada}">
+                ${privada}
+            </option>
+        `;
+
     });
 
-    return;
 }
+                   
+/*
+ * --------------------------------------------------
+ * CARGAR LOTES DE LA PRIVADA SELECCIONADA
+ * --------------------------------------------------
+ */
+
+incorporarPrivada?.addEventListener(
+    "change",
+    async () => {
+
+        const privada =
+            incorporarPrivada.value;
+
+        // Reiniciar selección de lote
+        incorporarLote.innerHTML = `
+            <option value="">
+                Seleccione un lote
+            </option>
+        `;
+
+        grupoLoteIncorporacion.style.display = "none";
+
+        grupoFechaIncorporacion.style.display = "none";
+        grupoCondicionIncorporacion.style.display = "none";
+        grupoCantidadLotes.style.display = "none";
 
 
-            const resultado = data?.[0];
-            
-            await mostrarAlerta({
-                titulo: "Incorporación realizada",
-                mensaje: `
-                    El residente <strong>${resultado?.identificador}</strong>
-                    fue incorporado correctamente al régimen de aportaciones.
-                `
+        if (!privada) {
+            return;
+        }
+
+
+        incorporarLote.innerHTML = `
+            <option value="">
+                Cargando lotes...
+            </option>
+        `;
+
+        grupoLoteIncorporacion.style.display = "block";
+
+
+        const { data, error } =
+            await supabaseClient
+                .from("residentes")
+                .select("id, privada, casa, identificador")
+                .eq("privada", privada)
+                .eq("es_residente", true)
+                .order("casa", { ascending: true });
+
+
+        if (error) {
+
+            console.error(
+                "Error cargando lotes:",
+                error
+            );
+
+            incorporarLote.innerHTML = `
+                <option value="">
+                    Error al cargar los lotes
+                </option>
+            `;
+
+            mostrarAlerta({
+                titulo: "Error",
+                mensaje:
+                    "No fue posible cargar los lotes de la privada seleccionada."
             });
 
-                
-
-            } catch (error) {
-
-                console.error(
-                    "Error ejecutando prueba:",
-                    error
-                );
-
-                alert(
-                    "Ocurrió un error al realizar la prueba."
-                );
-
-            }
-
+            return;
         }
+
+
+        incorporarLote.innerHTML = `
+            <option value="">
+                Seleccione un lote
+            </option>
+        `;
+
+
+        (data || []).forEach(residente => {
+
+            incorporarLote.innerHTML += `
+                <option
+                    value="${residente.id}"
+                    data-identificador="${residente.identificador || ""}"
+                >
+                    ${residente.identificador}
+                </option>
+            `;
+
+        });
+
+    }
+);
+
+
+/*
+ * --------------------------------------------------
+ * SELECCIONAR LOTE
+ * --------------------------------------------------
+ */
+
+incorporarLote?.addEventListener(
+    "change",
+    () => {
+
+        const residenteId =
+            incorporarLote.value;
+
+        // No hay lote seleccionado
+        if (!residenteId) {
+
+            grupoFechaIncorporacion.style.display = "none";
+            grupoCondicionIncorporacion.style.display = "none";
+            grupoCantidadLotes.style.display = "none";
+
+            return;
+        }
+
+        // Lote seleccionado:
+        // habilitar datos de incorporación
+        
+
+        const fechaHoy =
+            new Date().toISOString().split("T")[0];
+        
+        const fechaInicioObligacion =
+            document.getElementById(
+                "fechaInicioObligacion"
+            );
+        
+        if (
+            fechaInicioObligacion &&
+            !fechaInicioObligacion.value
+        ) {
+            fechaInicioObligacion.value = fechaHoy;
+        }
+
+        
+        grupoFechaIncorporacion.style.display = "block";
+        grupoCondicionIncorporacion.style.display = "block";
+        grupoCantidadLotes.style.display = "block";
+
+    }
+);    
+
+
+/*
+ * --------------------------------------------------
+ * SELECCIONAR CONDICIÓN DEL INMUEBLE
+ * --------------------------------------------------
+ */
+
+const condicionInmueble =
+    document.getElementById(
+        "condicionInmueble"
     );
 
+condicionInmueble?.addEventListener(
+    "change",
+    () => {
 
+        const condicion =
+            condicionInmueble.value;
+
+        if (!condicion) {
+            return;
+        }
+
+        console.log(
+            "Condición seleccionada:",
+            condicion
+        );
+
+    }
+);          
+
+
+/*
+ * --------------------------------------------------
+ * SELECCIONAR CANTIDAD DE LOTES
+ * --------------------------------------------------
+ */
+
+const cantidadLotes =
+    document.getElementById(
+        "cantidadLotes"
+    );
+
+cantidadLotes?.addEventListener(
+    "change",
+    () => {
+
+        const cantidad =
+            cantidadLotes.value;
+
+        if (!cantidad) {
+            return;
+        }
+
+        console.log(
+            "Cantidad de lotes seleccionada:",
+            Number(cantidad)
+        );
+
+    }
+);  
+
+ /*
+ * --------------------------------------------------
+ * VALIDAR DATOS DE INCORPORACIÓN
+ * --------------------------------------------------
+ */
+
+function validarDatosIncorporacion() {
+
+    const residenteId =
+        incorporarLote?.value;
+
+    const fechaInicio =
+        document.getElementById(
+            "fechaInicioObligacion"
+        )?.value;
+
+    const condicion =
+        condicionInmueble?.value;
+
+    const cantidad =
+        cantidadLotes?.value;
+
+
+    if (!residenteId) {
+
+        mostrarAlerta({
+            titulo: "Datos incompletos",
+            mensaje:
+                "Debe seleccionar un lote."
+        });
+
+        return false;
+    }
+
+
+    if (!fechaInicio) {
+
+        mostrarAlerta({
+            titulo: "Datos incompletos",
+            mensaje:
+                "Debe indicar la fecha de incorporación al régimen."
+        });
+
+        return false;
+    }
+
+
+    if (!condicion) {
+
+        mostrarAlerta({
+            titulo: "Datos incompletos",
+            mensaje:
+                "Debe seleccionar la condición del inmueble."
+        });
+
+        return false;
+    }
+
+
+    if (!cantidad) {
+
+        mostrarAlerta({
+            titulo: "Datos incompletos",
+            mensaje:
+                "Debe seleccionar la cantidad de lotes."
+        });
+
+        return false;
+    }
+
+
+    return true;
+}                   
+                    
 /*
  * ==================================================
  * 9. REGISTRAR PAGO
@@ -1054,8 +1361,319 @@ document
             }
         );
 
+
+
+/*
+ * --------------------------------------------------
+ * ACCIONES DE INCORPORACIÓN
+ * --------------------------------------------------
+ */
+
+const accionesIncorporacion =
+    document.getElementById(
+        "accionesIncorporacion"
+    );
+
+const btnConfirmarIncorporacion =
+    document.getElementById(
+        "btnConfirmarIncorporacion"
+    );
+
+const btnCancelarIncorporacion =
+    document.getElementById(
+        "btnCancelarIncorporacion"
+    );
+
+
+/*
+ * Mostrar acciones cuando se seleccionen
+ * todos los datos necesarios.
+ */
+
+function actualizarAccionesIncorporacion() {
+
+    const residenteId =
+        incorporarLote?.value;
+
+    const fechaInicio =
+        document.getElementById(
+            "fechaInicioObligacion"
+        )?.value;
+
+    const condicion =
+        condicionInmueble?.value;
+
+    const cantidad =
+        cantidadLotes?.value;
+
+
+    const completo =
+        residenteId &&
+        fechaInicio &&
+        condicion &&
+        cantidad;
+
+
+    if (accionesIncorporacion) {
+
+        accionesIncorporacion.style.display =
+            completo
+                ? "block"
+                : "none";
+
+    }
+
+}
+
+
+/*
+ * Actualizar estado cuando cambie
+ * cualquiera de los campos.
+ */
+
+incorporarLote?.addEventListener(
+    "change",
+    actualizarAccionesIncorporacion
+);
+
+document
+    .getElementById("fechaInicioObligacion")
+    ?.addEventListener(
+        "change",
+        actualizarAccionesIncorporacion
+    );
+
+condicionInmueble?.addEventListener(
+    "change",
+    actualizarAccionesIncorporacion
+);
+
+cantidadLotes?.addEventListener(
+    "change",
+    actualizarAccionesIncorporacion
+);
+
+
+/*
+ * --------------------------------------------------
+ * CANCELAR
+ * --------------------------------------------------
+ */
+
+btnCancelarIncorporacion?.addEventListener(
+    "click",
+    () => {
+
+        modalIncorporarObligado.style.display =
+            "none";
+
+    }
+);
+
+
+/*
+ * --------------------------------------------------
+ * CONFIRMAR
+ * --------------------------------------------------
+ */
+
+btnConfirmarIncorporacion?.addEventListener(
+    "click",
+    () => {
+
+        if (
+            !validarDatosIncorporacion()
+        ) {
+            return;
+        }
+
+        console.log(
+            "Datos listos para incorporar:",
+            {
+                residenteId:
+                    incorporarLote.value,
+
+                fechaInicio:
+                    document.getElementById(
+                        "fechaInicioObligacion"
+                    ).value,
+
+                condicion:
+                    condicionInmueble.value,
+
+                cantidadLotes:
+                    Number(
+                        cantidadLotes.value
+                    )
+            }
+        );
+
+    }
+);
+
     </script>
 
+<!-- ==================================================
+     MODAL DE INCORPORACIÓN AL RÉGIMEN
+     ================================================== -->
+
+<div
+    id="modalIncorporarObligado"
+    class="modal-overlay"
+    style="display:none;"
+>
+
+    <div class="modal-contenido">
+
+        <h2>
+            Incorporar al régimen de aportaciones
+        </h2>
+
+        <div class="tesoreria-form-group">
+
+            <label for="incorporarPrivada">
+                Privada
+            </label>
+
+            <select id="incorporarPrivada">
+                <option value="">
+                    Seleccione una privada
+                </option>
+            </select>
+
+        </div>
+
+        <div
+            class="tesoreria-form-group"
+            id="grupoLoteIncorporacion"
+            style="display:none;"
+        >
+
+            <label for="incorporarLote">
+                Lote
+            </label>
+
+            <select id="incorporarLote">
+
+                <option value="">
+                    Seleccione un lote
+                </option>
+
+            </select>
+
+        </div>
+
+        <div
+            class="tesoreria-form-group"
+            id="grupoFechaIncorporacion"
+            style="display:none;"
+        >
+
+            <label for="fechaInicioObligacion">
+                Fecha de incorporación al régimen
+            </label>
+
+            <input
+                type="date"
+                id="fechaInicioObligacion"
+            >
+
+        </div>
+
+        <div
+            class="tesoreria-form-group"
+            id="grupoCondicionIncorporacion"
+            style="display:none;"
+        >
+
+            <label for="condicionInmueble">
+                Condición del inmueble
+            </label>
+
+            <select id="condicionInmueble">
+
+                <option value="">
+                    Seleccione una condición
+                </option>
+
+                <option value="residencia">
+                    Residencia
+                </option>
+
+                <option value="lote_baldio">
+                    Lote baldío
+                </option>
+
+                <option value="obra_construccion">
+                    Obra en construcción
+                </option>
+
+            </select>
+
+        </div>
+
+        <div
+            class="tesoreria-form-group"
+            id="grupoCantidadLotes"
+            style="display:none;"
+        >
+
+            <label for="cantidadLotes">
+                Cantidad de lotes
+            </label>
+
+            <select id="cantidadLotes">
+
+                <option value="">
+                    Seleccione
+                </option>
+
+                <option value="1">
+                    1 lote
+                </option>
+
+                <option value="2">
+                    2 lotes
+                </option>
+
+                <option value="3">
+                    3 lotes
+                </option>
+
+            </select>
+
+        </div>
+
+<div
+    id="accionesIncorporacion"
+    style="
+        display:none;
+        margin-top:20px;
+        text-align:right;
+    "
+>
+
+    <button
+        type="button"
+        id="btnCancelarIncorporacion"
+    >
+        Cancelar
+    </button>
+
+    <button
+        type="button"
+        id="btnConfirmarIncorporacion"
+    >
+        Incorporar al régimen
+    </button>
+
+</div>   
+
+        
+    </div>
+
+</div>
+    
 </body>
 
 </html>
