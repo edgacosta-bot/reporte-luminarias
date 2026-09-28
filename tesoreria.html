@@ -13,12 +13,9 @@
     <title>Tesorería | SIGVIC</title>
 
 
-    <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-
-    <!-- Autenticación común -->
-    <script src="auth.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+   <script src="auth.js"></script>
+   <script src="modal.js"></script>
 
 
     <!--
@@ -898,11 +895,14 @@ document
                     data
                 );
 
-
-                alert(
-                    "I-76 fue incorporado correctamente al régimen de aportaciones."
-                );
-
+            await mostrarAlerta({
+                titulo: "Incorporación realizada",
+                mensaje: `
+                    El residente <strong>${identificador}</strong>
+                    fue incorporado correctamente al régimen de aportaciones.
+                `
+            });
+               
 
             } catch (error) {
 
