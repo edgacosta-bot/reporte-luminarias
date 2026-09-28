@@ -361,7 +361,7 @@
 
             <section
                 class="tesoreria-card"
-                id="opcionRegistrarPago"
+                id="opcionIncorporarObligado"
                 role="button"
                 tabindex="0"
             >
@@ -375,27 +375,26 @@
 
                     <div class="tesoreria-card-content">
 
-                        <h2 class="tesoreria-card-title">
-                            Registrar pago
-                        </h2>
+                        <h2>👤 Incorporar al régimen de aportaciones</h2>
 
 
                         <div class="tesoreria-card-description">
 
-                            Buscar un residente, consultar sus
-                            obligaciones pendientes y registrar
-                            un pago.
+                            Registrar a un residente como sujeto al régimen
+                            de aportaciones y establecer la fecha a partir
+                            de la cual genera obligaciones de pago.
 
                         </div>
 
 
                         <div class="tesoreria-card-action">
-
-                            Abrir
+                        
+                            Incorporar residente
                             <span>→</span>
-
+                        
                         </div>
 
+                        
                     </div>
 
                 </div>
@@ -403,6 +402,49 @@
             </section>
 
 
+<!-- ==================================================
+     REGISTRAR PAGO
+     ================================================== -->
+
+<section
+    class="tesoreria-card"
+    id="opcionRegistrarPago"
+    role="button"
+    tabindex="0"
+>
+
+    <div class="tesoreria-card-header">
+
+        <div class="tesoreria-card-icon">
+            💳
+        </div>
+
+        <div class="tesoreria-card-content">
+
+            <h2 class="tesoreria-card-title">
+                Registrar pago
+            </h2>
+
+            <div class="tesoreria-card-description">
+
+                Registrar un pago correspondiente a una
+                obligación existente y actualizar su
+                situación financiera.
+
+            </div>
+
+            <div class="tesoreria-card-action">
+
+                Registrar pago
+                <span>→</span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>            
 
             <!-- ==================================================
                  CONSULTAR PAGOS
@@ -417,8 +459,8 @@
 
                 <div class="tesoreria-card-header">
 
-                    <div class="tesoreria-card-icon">
-                        🧾
+                   <div class="tesoreria-card-icon">
+                    👤
                     </div>
 
 
@@ -463,9 +505,9 @@
 
                 <div class="tesoreria-card-header">
 
-                    <div class="tesoreria-card-icon">
-                        📋
-                    </div>
+                <div class="tesoreria-card-icon">
+                    👤
+                </div>
 
 
                     <div class="tesoreria-card-content">
@@ -839,10 +881,11 @@
  * ==================================================
  */
 
-document
-    .getElementById("opcionRegistrarPago")
-    ?.addEventListener(
-        "click",
+        document
+            .getElementById("opcionIncorporarObligado")
+            ?.addEventListener(
+                "click",
+                    
         async () => {
 
             try {
@@ -918,6 +961,29 @@ document
         }
     );
 
+
+/*
+ * ==================================================
+ * 9. REGISTRAR PAGO
+ * ==================================================
+ */
+
+document
+    .getElementById("opcionRegistrarPago")
+    ?.addEventListener(
+        "click",
+        () => {
+
+            mostrarAlerta({
+                titulo: "Registrar pago",
+                mensaje: `
+                    La función para registrar pagos
+                    se incorporará en el siguiente paso.
+                `
+            });
+
+        }
+    );
 
                     /*
                      * ==================================================
