@@ -219,17 +219,52 @@
 
 
                     /*
-                     * =====================================================
-                     * 5. IDENTIFICAR TESORERO
-                     * =====================================================
-                     */
+                    /*
+ * =====================================================
+ * 5. IDENTIFICAR TESORERO
+ * =====================================================
+ */
 
-                    const esTesorero =
-                        residente.es_mesa_directiva === true &&
-                        residente.activo === true &&
-                        residente.id_cargo ===
-                            "c731366e-11e6-454f-b6ee-a8005380d3c9";
+let esTesorero = false;
 
+if (
+    residente.es_mesa_directiva === true &&
+    residente.activo === true &&
+    residente.id_cargo
+) {
+
+    const {
+        data: cargo,
+        error: cargoError
+    } = await supabaseClient
+        .from("catalogo_cargos")
+        .select("nombre")
+        .eq("id", residente.id_cargo)
+        .maybeSingle();
+
+
+    if (cargoError) {
+
+        console.error(
+            "Error consultando cargo del usuario:",
+            cargoError
+        );
+
+        window.location.href = "index.html";
+
+        return;
+    }
+
+
+    const nombreCargo =
+        (cargo?.nombre || "")
+            .trim()
+            .toLowerCase();
+
+
+    esTesorero =
+        nombreCargo === "tesorero";
+}
 
                     /*
                      * =====================================================
