@@ -1496,11 +1496,152 @@ document
 
 
 /*
-btnConfirmarIncorporacion?.addEventListener(
 /*
  * --------------------------------------------------
- * CONFIRMAR
+ * ACCIONES DE INCORPORACIÓN
  * --------------------------------------------------
+ */
+
+const accionesIncorporacion =
+    document.getElementById(
+        "accionesIncorporacion"
+    );
+
+const btnConfirmarIncorporacion =
+    document.getElementById(
+        "btnConfirmarIncorporacion"
+    );
+
+const btnCancelarIncorporacion =
+    document.getElementById(
+        "btnCancelarIncorporacion"
+    );
+
+
+/*
+ * --------------------------------------------------
+ * MOSTRAR BOTONES
+ * --------------------------------------------------
+ *
+ * Los botones deben estar disponibles desde que
+ * se abre el formulario, independientemente de
+ * que todavía falten datos por capturar.
+ */
+
+if (accionesIncorporacion) {
+
+    accionesIncorporacion.style.display =
+        "flex";
+
+}
+
+
+/*
+ * --------------------------------------------------
+ * CANCELAR INCORPORACIÓN
+ * --------------------------------------------------
+ */
+
+btnCancelarIncorporacion?.addEventListener(
+    "click",
+    () => {
+
+        /*
+         * Cerrar formulario.
+         */
+        modalIncorporarObligado.style.display =
+            "none";
+
+
+        /*
+         * Limpiar privada.
+         */
+        if (incorporarPrivada) {
+            incorporarPrivada.value = "";
+        }
+
+
+        /*
+         * Limpiar lote.
+         */
+        if (incorporarLote) {
+
+            incorporarLote.innerHTML = `
+                <option value="">
+                    Seleccione un lote
+                </option>
+            `;
+
+            incorporarLote.value = "";
+        }
+
+
+        /*
+         * Limpiar fecha.
+         */
+        const fechaInicio =
+            document.getElementById(
+                "fechaInicioObligacion"
+            );
+
+        if (fechaInicio) {
+            fechaInicio.value = "";
+        }
+
+
+        /*
+         * Limpiar condición.
+         */
+        if (condicionInmueble) {
+            condicionInmueble.value = "";
+        }
+
+
+        /*
+         * Limpiar cantidad de lotes.
+         */
+        if (cantidadLotes) {
+            cantidadLotes.value = "";
+        }
+
+
+        /*
+         * Ocultar los campos que dependen
+         * de la selección del lote.
+         */
+        if (grupoLoteIncorporacion) {
+            grupoLoteIncorporacion.style.display =
+                "none";
+        }
+
+        if (grupoFechaIncorporacion) {
+            grupoFechaIncorporacion.style.display =
+                "none";
+        }
+
+        if (grupoCondicionIncorporacion) {
+            grupoCondicionIncorporacion.style.display =
+                "none";
+        }
+
+        if (grupoCantidadLotes) {
+            grupoCantidadLotes.style.display =
+                "none";
+        }
+
+    }
+);
+
+
+/*
+ * --------------------------------------------------
+ * CONFIRMAR INCORPORACIÓN
+ * --------------------------------------------------
+ *
+ * Por ahora solamente validamos y mostramos
+ * los datos en consola.
+ *
+ * Todavía NO ejecutamos la RPC.
  */
 
 btnConfirmarIncorporacion?.addEventListener(
@@ -1513,25 +1654,31 @@ btnConfirmarIncorporacion?.addEventListener(
             return;
         }
 
+
+        const datosIncorporacion = {
+
+            residenteId:
+                incorporarLote.value,
+
+            fechaInicio:
+                document.getElementById(
+                    "fechaInicioObligacion"
+                ).value,
+
+            condicion:
+                condicionInmueble.value,
+
+            cantidadLotes:
+                Number(
+                    cantidadLotes.value
+                )
+
+        };
+
+
         console.log(
             "Datos listos para incorporar:",
-            {
-                residenteId:
-                    incorporarLote.value,
-
-                fechaInicio:
-                    document.getElementById(
-                        "fechaInicioObligacion"
-                    ).value,
-
-                condicion:
-                    condicionInmueble.value,
-
-                cantidadLotes:
-                    Number(
-                        cantidadLotes.value
-                    )
-            }
+            datosIncorporacion
         );
 
     }
