@@ -261,6 +261,134 @@
 
         }
 
+/* ==================================================
+   MODAL DE INCORPORACIÓN AL RÉGIMEN
+   ================================================== */
+
+#modalIncorporarObligado {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.55);
+
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+#modalIncorporarObligado .modal-contenido {
+    position: relative;
+
+    width: min(700px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+
+    background: #ffffff;
+
+    border-radius: 18px;
+
+    padding: 32px;
+
+    box-sizing: border-box;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.35);
+
+    z-index: 10000;
+}
+
+#modalIncorporarObligado .modal-contenido h2 {
+    margin-top: 0;
+    margin-bottom: 28px;
+
+    color: #111827;
+
+    font-size: 28px;
+    line-height: 1.2;
+}
+
+#modalIncorporarObligado .tesoreria-form-group {
+    margin-bottom: 20px;
+}
+
+#modalIncorporarObligado .tesoreria-form-group label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #374151;
+
+    font-weight: 600;
+}
+
+#modalIncorporarObligado select,
+#modalIncorporarObligado input[type="date"] {
+    width: 100%;
+
+    min-height: 52px;
+
+    padding: 12px 14px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    color: #111827;
+
+    font-size: 16px;
+}
+
+#modalIncorporarObligado select:focus,
+#modalIncorporarObligado input[type="date"]:focus {
+    outline: none;
+
+    border-color: #2563eb;
+
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+#modalIncorporarObligado #accionesIncorporacion {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 12px;
+
+    margin-top: 28px;
+}
+
+#modalIncorporarObligado #accionesIncorporacion button {
+    min-height: 46px;
+
+    padding: 10px 20px;
+
+    border: none;
+    border-radius: 10px;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+#modalIncorporarObligado #btnCancelarIncorporacion {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+#modalIncorporarObligado #btnConfirmarIncorporacion {
+    background: #2563eb;
+    color: #ffffff;
+}
+        
     </style>
 
 </head>
@@ -1033,7 +1161,7 @@ incorporarPrivada?.addEventListener(
                 .select("id, privada, casa, identificador")
                 .eq("privada", privada)
                 .eq("es_residente", true)
-                .order("casa", { ascending: true });
+               
 
 
         if (error) {
@@ -1066,18 +1194,22 @@ incorporarPrivada?.addEventListener(
         `;
 
 
-        (data || []).forEach(residente => {
+const lotesOrdenados = [...(data || [])].sort(
+    (a, b) => Number(a.casa) - Number(b.casa)
+);
 
-            incorporarLote.innerHTML += `
-                <option
-                    value="${residente.id}"
-                    data-identificador="${residente.identificador || ""}"
-                >
-                    ${residente.identificador}
-                </option>
-            `;
+lotesOrdenados.forEach(residente => {
 
-        });
+    incorporarLote.innerHTML += `
+        <option
+            value="${residente.id}"
+            data-identificador="${residente.identificador || ""}"
+        >
+            ${residente.identificador}
+        </option>
+    `;
+
+});       
 
     }
 );
