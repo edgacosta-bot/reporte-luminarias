@@ -1886,8 +1886,10 @@ document
  * CONFIRMAR INCORPORACIÓN
  * --------------------------------------------------
  *
- * En esta etapa solamente validamos los datos.
- * Todavía NO ejecutamos la RPC.
+ * Esta función realiza la validación directamente
+ * sobre los controles del formulario.
+ *
+ * Todavía NO ejecuta ninguna RPC.
  * --------------------------------------------------
  */
 
@@ -1897,54 +1899,149 @@ document
         "click",
         function () {
 
-            console.log(
-                "Botón Incorporar al régimen presionado."
-            );
+            /*
+             * Obtener controles.
+             */
+
+            const lote =
+                document.getElementById(
+                    "incorporarLote"
+                );
+
+            const fecha =
+                document.getElementById(
+                    "fechaInicioObligacion"
+                );
+
+            const condicion =
+                document.getElementById(
+                    "condicionInmueble"
+                );
+
+            const cantidad =
+                document.getElementById(
+                    "cantidadLotes"
+                );
 
 
             /*
-             * Validar formulario.
+             * Obtener valores.
              */
 
-            if (
-                !validarDatosIncorporacion()
-            ) {
+            const residenteId =
+                lote?.value || "";
 
-                console.log(
-                    "Validación no superada."
-                );
+            const fechaInicio =
+                fecha?.value || "";
+
+            const condicionValor =
+                condicion?.value || "";
+
+            const cantidadValor =
+                cantidad?.value || "";
+
+
+            /*
+             * --------------------------------------------------
+             * VALIDACIÓN 1 — LOTE
+             * --------------------------------------------------
+             */
+
+            if (!residenteId) {
+
+                mostrarAlerta({
+                    titulo:
+                        "Datos incompletos",
+
+                    mensaje:
+                        "Debe seleccionar un lote."
+                });
 
                 return;
             }
 
 
             /*
-             * Obtener datos.
+             * --------------------------------------------------
+             * VALIDACIÓN 2 — FECHA
+             * --------------------------------------------------
+             */
+
+            if (!fechaInicio) {
+
+                mostrarAlerta({
+                    titulo:
+                        "Datos incompletos",
+
+                    mensaje:
+                        "Debe indicar la fecha de incorporación al régimen."
+                });
+
+                return;
+            }
+
+
+            /*
+             * --------------------------------------------------
+             * VALIDACIÓN 3 — CONDICIÓN
+             * --------------------------------------------------
+             */
+
+            if (!condicionValor) {
+
+                mostrarAlerta({
+                    titulo:
+                        "Datos incompletos",
+
+                    mensaje:
+                        "Debe seleccionar la condición del inmueble."
+                });
+
+                return;
+            }
+
+
+            /*
+             * --------------------------------------------------
+             * VALIDACIÓN 4 — CANTIDAD DE LOTES
+             * --------------------------------------------------
+             */
+
+            if (!cantidadValor) {
+
+                mostrarAlerta({
+                    titulo:
+                        "Datos incompletos",
+
+                    mensaje:
+                        "Debe seleccionar la cantidad de lotes."
+                });
+
+                return;
+            }
+
+
+            /*
+             * --------------------------------------------------
+             * DATOS COMPLETOS
+             * --------------------------------------------------
+             *
+             * Todavía no se registra nada.
              */
 
             const datosIncorporacion = {
 
                 residenteId:
-                    document.getElementById(
-                        "incorporarLote"
-                    )?.value,
+                    residenteId,
 
                 fechaInicio:
-                    document.getElementById(
-                        "fechaInicioObligacion"
-                    )?.value,
+                    fechaInicio,
 
                 condicion:
-                    document.getElementById(
-                        "condicionInmueble"
-                    )?.value,
+                    condicionValor,
 
                 cantidadLotes:
-                    Number(
-                        document.getElementById(
-                            "cantidadLotes"
-                        )?.value
-                    )
+                    Number(cantidadValor)
 
             };
 
