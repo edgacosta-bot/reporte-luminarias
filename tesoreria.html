@@ -1115,6 +1115,7 @@ async function cargarPrivadasIncorporacion() {
 }
                    
 /*
+/*
  * --------------------------------------------------
  * CARGAR LOTES DE LA PRIVADA SELECCIONADA
  * --------------------------------------------------
@@ -1127,18 +1128,33 @@ incorporarPrivada?.addEventListener(
         const privada =
             incorporarPrivada.value;
 
-        // Reiniciar selección de lote
+
+        /*
+         * Reiniciar selección de lote.
+         */
+
         incorporarLote.innerHTML = `
             <option value="">
                 Seleccione un lote
             </option>
         `;
 
-        grupoLoteIncorporacion.style.display = "none";
 
-        grupoFechaIncorporacion.style.display = "none";
-        grupoCondicionIncorporacion.style.display = "none";
-        grupoCantidadLotes.style.display = "none";
+        /*
+         * Ocultar campos dependientes.
+         */
+
+        grupoLoteIncorporacion.style.display =
+            "none";
+
+        grupoFechaIncorporacion.style.display =
+            "none";
+
+        grupoCondicionIncorporacion.style.display =
+            "none";
+
+        grupoCantidadLotes.style.display =
+            "none";
 
 
         if (!privada) {
@@ -1146,23 +1162,52 @@ incorporarPrivada?.addEventListener(
         }
 
 
+        /*
+         * Mostrar estado de carga.
+         */
+
         incorporarLote.innerHTML = `
             <option value="">
                 Cargando lotes...
             </option>
         `;
 
-        grupoLoteIncorporacion.style.display = "block";
+        grupoLoteIncorporacion.style.display =
+            "block";
 
+
+        /*
+         * --------------------------------------------------
+         * OBTENER TODOS LOS LOTES DE LA PRIVADA
+         * --------------------------------------------------
+         *
+         * No se filtra por:
+         * - es_residente
+         * - activo
+         * - obligado_pago
+         *
+         * Todos los registros de residentes de la
+         * privada seleccionada estarán disponibles.
+         * --------------------------------------------------
+         */
 
         const { data, error } =
             await supabaseClient
                 .from("residentes")
-                .select("id, privada, casa, identificador")
-                .eq("privada", privada)
-               .eq("obligado_pago", true)
-               
+                .select(
+                    "id, privada, casa, identificador, obligado_pago"
+                )
+                .eq(
+                    "privada",
+                    privada
+                );
 
+
+        /*
+         * --------------------------------------------------
+         * ERROR DE CONSULTA
+         * --------------------------------------------------
+         */
 
         if (error) {
 
@@ -1187,6 +1232,24 @@ incorporarPrivada?.addEventListener(
         }
 
 
+        /*
+         * --------------------------------------------------
+         * ORDEN NUMÉRICO DE LOS LOTES
+         * --------------------------------------------------
+         */
+
+        const lotesOrdenados =
+            [...(data || [])].sort(
+                (a, b) =>
+                    Number(a.casa) -
+                    Number(b.casa)
+            );
+
+
+        /*
+         * Reiniciar selector.
+         */
+
         incorporarLote.innerHTML = `
             <option value="">
                 Seleccione un lote
@@ -1194,26 +1257,52 @@ incorporarPrivada?.addEventListener(
         `;
 
 
-const lotesOrdenados = [...(data || [])].sort(
-    (a, b) => Number(a.casa) - Number(b.casa)
-);
+        /*
+         * --------------------------------------------------
+         * CREAR OPCIONES
+         * --------------------------------------------------
+         */
 
-lotesOrdenados.forEach(residente => {
+        lotesOrdenados.forEach(
+            residente => {
 
-    incorporarLote.innerHTML += `
-        <option
-            value="${residente.id}"
-            data-identificador="${residente.identificador || ""}"
-        >
-            ${residente.identificador}
-        </option>
-    `;
+                const option =
+                    document.createElement(
+                        "option"
+                    );
 
-});       
+                option.value =
+                    residente.id;
+
+                option.textContent =
+                    `Lote ${residente.casa}`;
+
+                /*
+                 * Guardamos información del registro
+                 * para utilizarla posteriormente al
+                 * seleccionar el lote.
+                 */
+
+                option.dataset.identificador =
+                    residente.identificador || "";
+
+                option.dataset.obligadoPago =
+                    residente.obligado_pago
+                        ? "true"
+                        : "false";
+
+                option.dataset.casa =
+                    residente.casa;
+
+                incorporarLote.appendChild(
+                    option
+                );
+
+            }
+        );
 
     }
 );
-
 
 /*
  * --------------------------------------------------
