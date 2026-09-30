@@ -1855,6 +1855,13 @@ btnConfirmarIncorporacion?.addEventListener(
  * ==================================================
  */
 
+
+/*
+ * --------------------------------------------------
+ * CANCELAR
+ * --------------------------------------------------
+ */
+
 document
     .getElementById("btnCancelarIncorporacion")
     ?.addEventListener(
@@ -1872,6 +1879,84 @@ document
 
         }
     );
+
+
+/*
+ * --------------------------------------------------
+ * CONFIRMAR INCORPORACIÓN
+ * --------------------------------------------------
+ *
+ * En esta etapa solamente validamos los datos.
+ * Todavía NO ejecutamos la RPC.
+ * --------------------------------------------------
+ */
+
+document
+    .getElementById("btnConfirmarIncorporacion")
+    ?.addEventListener(
+        "click",
+        function () {
+
+            console.log(
+                "Botón Incorporar al régimen presionado."
+            );
+
+
+            /*
+             * Validar formulario.
+             */
+
+            if (
+                !validarDatosIncorporacion()
+            ) {
+
+                console.log(
+                    "Validación no superada."
+                );
+
+                return;
+            }
+
+
+            /*
+             * Obtener datos.
+             */
+
+            const datosIncorporacion = {
+
+                residenteId:
+                    document.getElementById(
+                        "incorporarLote"
+                    )?.value,
+
+                fechaInicio:
+                    document.getElementById(
+                        "fechaInicioObligacion"
+                    )?.value,
+
+                condicion:
+                    document.getElementById(
+                        "condicionInmueble"
+                    )?.value,
+
+                cantidadLotes:
+                    Number(
+                        document.getElementById(
+                            "cantidadLotes"
+                        )?.value
+                    )
+
+            };
+
+
+            console.log(
+                "Datos listos para incorporar:",
+                datosIncorporacion
+            );
+
+        }
+    );
+
 </script>
     
 </body>
