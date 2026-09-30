@@ -1855,154 +1855,23 @@ btnConfirmarIncorporacion?.addEventListener(
  * ==================================================
  */
 
-const btnCancelarIncorporacion =
-    document.getElementById(
-        "btnCancelarIncorporacion"
+document
+    .getElementById("btnCancelarIncorporacion")
+    ?.addEventListener(
+        "click",
+        function () {
+
+            const modal =
+                document.getElementById(
+                    "modalIncorporarObligado"
+                );
+
+            if (modal) {
+                modal.style.display = "none";
+            }
+
+        }
     );
-
-
-/*
- * --------------------------------------------------
- * CANCELAR INCORPORACIÓN
- * --------------------------------------------------
- */
-
-btnCancelarIncorporacion?.addEventListener(
-    "click",
-    () => {
-
-        const modal =
-            document.getElementById(
-                "modalIncorporarObligado"
-            );
-
-        /*
-         * Cerrar el formulario.
-         */
-        if (modal) {
-            modal.style.display = "none";
-        }
-
-
-        /*
-         * Limpiar privada.
-         */
-        const privada =
-            document.getElementById(
-                "incorporarPrivada"
-            );
-
-        if (privada) {
-            privada.value = "";
-        }
-
-
-        /*
-         * Limpiar lote.
-         */
-        const lote =
-            document.getElementById(
-                "incorporarLote"
-            );
-
-        if (lote) {
-
-            lote.innerHTML = `
-                <option value="">
-                    Seleccione un lote
-                </option>
-            `;
-
-            lote.value = "";
-        }
-
-
-        /*
-         * Limpiar fecha.
-         */
-        const fecha =
-            document.getElementById(
-                "fechaInicioObligacion"
-            );
-
-        if (fecha) {
-            fecha.value = "";
-        }
-
-
-        /*
-         * Limpiar condición.
-         */
-        const condicion =
-            document.getElementById(
-                "condicionInmueble"
-            );
-
-        if (condicion) {
-            condicion.value = "";
-        }
-
-
-        /*
-         * Limpiar cantidad de lotes.
-         */
-        const cantidad =
-            document.getElementById(
-                "cantidadLotes"
-            );
-
-        if (cantidad) {
-            cantidad.value = "";
-        }
-
-
-        /*
-         * Ocultar nuevamente los campos
-         * que aparecen después de seleccionar
-         * el lote.
-         */
-
-        const grupoLote =
-            document.getElementById(
-                "grupoLoteIncorporacion"
-            );
-
-        if (grupoLote) {
-            grupoLote.style.display = "none";
-        }
-
-
-        const grupoFecha =
-            document.getElementById(
-                "grupoFechaIncorporacion"
-            );
-
-        if (grupoFecha) {
-            grupoFecha.style.display = "none";
-        }
-
-
-        const grupoCondicion =
-            document.getElementById(
-                "grupoCondicionIncorporacion"
-            );
-
-        if (grupoCondicion) {
-            grupoCondicion.style.display = "none";
-        }
-
-
-        const grupoCantidad =
-            document.getElementById(
-                "grupoCantidadLotes"
-            );
-
-        if (grupoCantidad) {
-            grupoCantidad.style.display = "none";
-        }
-
-    }
-);
 </script>
     
 </body>
