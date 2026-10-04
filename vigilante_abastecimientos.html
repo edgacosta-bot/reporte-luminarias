@@ -529,33 +529,41 @@ function renderObras(){
       .trim()
       .toLowerCase();
 
+
   const filtradas =
     obras.filter(o =>
-
       o.privada.toLowerCase().includes(filtro)
       ||
       o.casa.toLowerCase().includes(filtro)
-
     );
 
-  if(filtradas.length===0){
+
+  if(filtradas.length === 0){
 
     contenedor.innerHTML =
       "<div class='vacio'>Sin resultados</div>";
 
     return;
+
   }
+
 
   let html = "";
 
   let privadaActual = null;
 
-  filtradas.forEach(o=>{
+
+  filtradas.forEach(o => {
 
     const abiertosObra =
       abiertos.filter(
         a => a.obra_id === o.obra_id
       ).length;
+
+
+    const suspendida =
+      o.estado_operativo === "SUSPENDIDA";
+
 
     if(privadaActual !== o.privada){
 
@@ -566,7 +574,57 @@ function renderObras(){
           PRIVADA ${o.privada}
         </div>
       `;
+
     }
+
+
+    /* =========================================================
+       OBRA SUSPENDIDA
+       ========================================================= */
+
+    if(suspendida){
+
+      html += `
+
+        <div class="card card-suspendida">
+
+          <h3>
+            Lote ${o.casa}
+          </h3>
+
+
+          <div class="estado-suspendida">
+
+            🔴 OBRA SUSPENDIDA
+
+          </div>
+
+
+          <div class="mensaje-suspendida">
+
+            No se permite registrar abastecimientos
+            para esta obra.
+
+          </div>
+
+
+          <div>
+            DRO:
+            ${o.dro_nombre || "No especificado"}
+          </div>
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    /* =========================================================
+       OBRA EN EJECUCIÓN
+       ========================================================= */
 
     html += `
 
@@ -575,6 +633,7 @@ function renderObras(){
         <h3>
           Lote ${o.casa}
         </h3>
+
 
         <div style="
           margin-bottom:8px;
@@ -594,183 +653,206 @@ function renderObras(){
 
         </div>
 
+
         <div>
+
           DRO:
           ${o.dro_nombre || "No especificado"}
+
         </div>
 
-       <br>
 
-<button
-  class="btn entrada"
-  onclick="mostrarFormulario('${o.obra_id}')">
+        <br>
 
-  Registrar abastecimiento
 
-</button>
+        <button
+          class="btn entrada"
+          onclick="mostrarFormulario('${o.obra_id}')">
 
-${
-  obraExpandida === o.obra_id
-  ? `
+          Registrar abastecimiento
 
-    <div style="
-      margin-top:16px;
-      padding-top:16px;
-      border-top:1px solid #374151;
-    ">
+        </button>
 
-     <div style="margin-bottom:12px;">
 
-  <label>
-    Tipo ingreso *
-  </label>
+        ${
+          obraExpandida === o.obra_id
+          ? `
 
-  <select
-    id="tipo_${o.obra_id}"
-    onchange="cambiarTipoIngreso('${o.obra_id}')">
+            <div style="
+              margin-top:16px;
+              padding-top:16px;
+              border-top:1px solid #374151;
+            ">
 
-    <option value="">
-      Seleccione...
-    </option>
 
-    <option value="SUMINISTRO">
-      SUMINISTRO
-    </option>
+              <div style="margin-bottom:12px;">
 
-    <option value="MAQUINARIA">
-      MAQUINARIA
-    </option>
+                <label>
+                  Tipo ingreso *
+                </label>
 
-  </select>
+                <select
+                  id="tipo_${o.obra_id}"
+                  onchange="cambiarTipoIngreso('${o.obra_id}')">
 
-</div>
+                  <option value="">
+                    Seleccione...
+                  </option>
 
-<div
-  id="contenedor_maquinaria_${o.obra_id}"
-  style="display:none; margin-bottom:12px;">
+                  <option value="SUMINISTRO">
+                    SUMINISTRO
+                  </option>
 
-  <label>
-    Tipo maquinaria *
-  </label>
+                  <option value="MAQUINARIA">
+                    MAQUINARIA
+                  </option>
 
-  <select
-    id="maquinaria_${o.obra_id}">
+                </select>
 
-    <option value="">
-      Seleccione...
-    </option>
+              </div>
 
-    ${
-      tiposMaquinaria.map(m => `
-        <option value="${m.id}">
-          ${m.nombre}
-        </option>
-      `).join('')
-    }
 
-  </select>
+              <div
+                id="contenedor_maquinaria_${o.obra_id}"
+                style="display:none; margin-bottom:12px;">
 
-</div>
+                <label>
+                  Tipo maquinaria *
+                </label>
 
-<div style="margin-bottom:12px;">
+                <select
+                  id="maquinaria_${o.obra_id}">
 
-  <label>
-    Proveedor *
-  </label>
+                  <option value="">
+                    Seleccione...
+                  </option>
 
-  <input
-    id="proveedor_${o.obra_id}"
-    placeholder="Proveedor">
+                  ${
+                    tiposMaquinaria.map(m => `
+                      <option value="${m.id}">
+                        ${m.nombre}
+                      </option>
+                    `).join('')
+                  }
 
-</div>
+                </select>
 
-<div style="margin-bottom:12px;">
+              </div>
 
-  <label>
-    Nombre quien ingresa *
-  </label>
 
-  <input
-    id="nombre_${o.obra_id}"
-    placeholder="Nombre completo">
+              <div style="margin-bottom:12px;">
 
-</div>
+                <label>
+                  Proveedor *
+                </label>
 
-<div style="margin-bottom:12px;">
+                <input
+                  id="proveedor_${o.obra_id}"
+                  placeholder="Proveedor">
 
-  <label>
-    Descripción *
-  </label>
+              </div>
 
-  <textarea
-    id="descripcion_${o.obra_id}"
-    placeholder="Descripción"></textarea>
 
-</div>
+              <div style="margin-bottom:12px;">
 
-<div style="margin-bottom:12px;">
+                <label>
+                  Nombre quien ingresa *
+                </label>
 
-  <label>
-    Placas
-  </label>
+                <input
+                  id="nombre_${o.obra_id}"
+                  placeholder="Nombre completo">
 
-  <input
-    id="placas_${o.obra_id}"
-    placeholder="Placas">
+              </div>
 
-</div>
 
-<div style="margin-bottom:12px;">
+              <div style="margin-bottom:12px;">
 
-  <label>
-    Observaciones
-  </label>
+                <label>
+                  Descripción *
+                </label>
 
-  <textarea
-    id="observaciones_${o.obra_id}"
-    placeholder="Observaciones"></textarea>
+                <textarea
+                  id="descripcion_${o.obra_id}"
+                  placeholder="Descripción">
+                </textarea>
 
-</div>
+              </div>
 
-<div style="margin-bottom:12px;">
 
-  <label>
-    NIP vigilante *
-  </label>
+              <div style="margin-bottom:12px;">
 
-  <input
-    id="pin_${o.obra_id}"
-    type="password"
-    placeholder="NIP">
+                <label>
+                  Placas
+                </label>
 
-</div>
+                <input
+                  id="placas_${o.obra_id}"
+                  placeholder="Placas">
 
-<div
-  id="msg_${o.obra_id}"
-  class="vacio"
-  style="margin-bottom:12px;">
-</div>
+              </div>
 
-<button
-  class="btn entrada"
-  onclick="registrarIngreso('${o.obra_id}')">
 
-  Registrar ingreso
+              <div style="margin-bottom:12px;">
 
-</button>
+                <label>
+                  Observaciones
+                </label>
 
-    </div>
+                <textarea
+                  id="observaciones_${o.obra_id}"
+                  placeholder="Observaciones">
+                </textarea>
 
-  `
-  : ''
-}
+              </div>
+
+
+              <div style="margin-bottom:12px;">
+
+                <label>
+                  NIP vigilante *
+                </label>
+
+                <input
+                  id="pin_${o.obra_id}"
+                  type="password"
+                  placeholder="NIP">
+
+              </div>
+
+
+              <div
+                id="msg_${o.obra_id}"
+                class="vacio"
+                style="margin-bottom:12px;">
+              </div>
+
+
+              <button
+                class="btn entrada"
+                onclick="registrarIngreso('${o.obra_id}')">
+
+                Registrar ingreso
+
+              </button>
+
+
+            </div>
+
+          `
+          : ''
+        }
+
 
       </div>
 
     `;
+
   });
 
+
   contenedor.innerHTML = html;
+
 }
 
 async function cargarAbiertos(){
