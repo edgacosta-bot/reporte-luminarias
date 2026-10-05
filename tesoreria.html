@@ -1135,6 +1135,12 @@ const privadas = privadasPermitidas.filter(
  * --------------------------------------------------
  */
 
+/*
+ * --------------------------------------------------
+ * CARGAR LOTES DE LA PRIVADA SELECCIONADA
+ * --------------------------------------------------
+ */
+
 incorporarPrivada?.addEventListener(
     "change",
     async () => {
@@ -1195,13 +1201,13 @@ incorporarPrivada?.addEventListener(
          * OBTENER TODOS LOS LOTES DE LA PRIVADA
          * --------------------------------------------------
          *
-         * No se filtra por:
+         * NO se filtra por:
          * - es_residente
          * - activo
          * - obligado_pago
          *
-         * Todos los registros de residentes de la
-         * privada seleccionada estarán disponibles.
+         * Todos los registros de la privada seleccionada
+         * estarán disponibles para Tesorería.
          * --------------------------------------------------
          */
 
@@ -1285,16 +1291,28 @@ incorporarPrivada?.addEventListener(
                         "option"
                     );
 
+
+                /*
+                 * El valor interno sigue siendo
+                 * el UUID del registro.
+                 */
+
                 option.value =
                     residente.id;
+
+
+                /*
+                 * El usuario solamente ve:
+                 * Lote + número de casa.
+                 */
 
                 option.textContent =
                     `Lote ${residente.casa}`;
 
+
                 /*
-                 * Guardamos información del registro
-                 * para utilizarla posteriormente al
-                 * seleccionar el lote.
+                 * Guardar información adicional
+                 * para utilizarla posteriormente.
                  */
 
                 option.dataset.identificador =
@@ -1307,6 +1325,7 @@ incorporarPrivada?.addEventListener(
 
                 option.dataset.casa =
                     residente.casa;
+
 
                 incorporarLote.appendChild(
                     option
