@@ -1338,6 +1338,7 @@ incorporarPrivada?.addEventListener(
 );
 
 /*
+/*
  * --------------------------------------------------
  * SELECCIONAR LOTE
  * --------------------------------------------------
@@ -1350,42 +1351,128 @@ incorporarLote?.addEventListener(
         const residenteId =
             incorporarLote.value;
 
-        // No hay lote seleccionado
+
+        /*
+         * --------------------------------------------------
+         * NO HAY LOTE SELECCIONADO
+         * --------------------------------------------------
+         */
+
         if (!residenteId) {
 
-            grupoFechaIncorporacion.style.display = "none";
-            grupoCondicionIncorporacion.style.display = "none";
-            grupoCantidadLotes.style.display = "none";
+            grupoFechaIncorporacion.style.display =
+                "none";
+
+            grupoCondicionIncorporacion.style.display =
+                "none";
+
+            grupoCantidadLotes.style.display =
+                "none";
 
             return;
         }
 
-        // Lote seleccionado:
-        // habilitar datos de incorporación
-        
+
+        /*
+         * --------------------------------------------------
+         * COMPROBAR SI YA ESTÁ INCORPORADO
+         * --------------------------------------------------
+         */
+
+        const opcionSeleccionada =
+            incorporarLote.options[
+                incorporarLote.selectedIndex
+            ];
+
+
+        const obligadoPago =
+            opcionSeleccionada?.dataset
+                ?.obligadoPago === "true";
+
+
+        /*
+         * Si ya está incorporado al régimen,
+         * no continuar con la incorporación.
+         */
+
+        if (obligadoPago) {
+
+            grupoFechaIncorporacion.style.display =
+                "none";
+
+            grupoCondicionIncorporacion.style.display =
+                "none";
+
+            grupoCantidadLotes.style.display =
+                "none";
+
+
+            mostrarAlerta({
+                titulo:
+                    "Lote ya incorporado",
+
+                mensaje:
+                    "El lote seleccionado ya se encuentra incorporado al régimen de aportaciones."
+            });
+
+
+            /*
+             * Regresar el selector a su estado
+             * inicial para evitar que continúe
+             * una incorporación sobre ese lote.
+             */
+
+            incorporarLote.value = "";
+
+
+            return;
+        }
+
+
+        /*
+         * --------------------------------------------------
+         * LOTE DISPONIBLE PARA INCORPORACIÓN
+         * --------------------------------------------------
+         */
 
         const fechaHoy =
-            new Date().toISOString().split("T")[0];
-        
+            new Date()
+                .toISOString()
+                .split("T")[0];
+
+
         const fechaInicioObligacion =
             document.getElementById(
                 "fechaInicioObligacion"
             );
-        
+
+
         if (
             fechaInicioObligacion &&
             !fechaInicioObligacion.value
         ) {
-            fechaInicioObligacion.value = fechaHoy;
+
+            fechaInicioObligacion.value =
+                fechaHoy;
+
         }
 
-        
-        grupoFechaIncorporacion.style.display = "block";
-        grupoCondicionIncorporacion.style.display = "block";
-        grupoCantidadLotes.style.display = "block";
+
+        /*
+         * Mostrar datos de incorporación.
+         */
+
+        grupoFechaIncorporacion.style.display =
+            "block";
+
+        grupoCondicionIncorporacion.style.display =
+            "block";
+
+        grupoCantidadLotes.style.display =
+            "block";
 
     }
-);    
+);
 
 
 /*
