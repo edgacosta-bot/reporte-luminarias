@@ -1150,7 +1150,9 @@ incorporarPrivada?.addEventListener(
 
 
         /*
-         * Reiniciar selección de lote.
+         * --------------------------------------------------
+         * REINICIAR SELECCIÓN DE LOTE
+         * --------------------------------------------------
          */
 
         incorporarLote.innerHTML = `
@@ -1161,7 +1163,9 @@ incorporarPrivada?.addEventListener(
 
 
         /*
-         * Ocultar campos dependientes.
+         * --------------------------------------------------
+         * OCULTAR CAMPOS DEPENDIENTES
+         * --------------------------------------------------
          */
 
         grupoLoteIncorporacion.style.display =
@@ -1183,7 +1187,9 @@ incorporarPrivada?.addEventListener(
 
 
         /*
-         * Mostrar estado de carga.
+         * --------------------------------------------------
+         * MOSTRAR ESTADO DE CARGA
+         * --------------------------------------------------
          */
 
         incorporarLote.innerHTML = `
@@ -1198,16 +1204,15 @@ incorporarPrivada?.addEventListener(
 
         /*
          * --------------------------------------------------
-         * OBTENER TODOS LOS LOTES DE LA PRIVADA
+         * OBTENER ÚNICAMENTE LOTES NO INCORPORADOS
          * --------------------------------------------------
          *
-         * NO se filtra por:
-         * - es_residente
-         * - activo
-         * - obligado_pago
+         * Se excluyen los residentes que ya tienen:
          *
-         * Todos los registros de la privada seleccionada
-         * estarán disponibles para Tesorería.
+         *     obligado_pago = true
+         *
+         * Por tanto, Tesorería solamente podrá seleccionar
+         * inmuebles que todavía no estén incorporados.
          * --------------------------------------------------
          */
 
@@ -1220,6 +1225,10 @@ incorporarPrivada?.addEventListener(
                 .eq(
                     "privada",
                     privada
+                )
+                .eq(
+                    "obligado_pago",
+                    false
                 );
 
 
@@ -1267,7 +1276,9 @@ incorporarPrivada?.addEventListener(
 
 
         /*
-         * Reiniciar selector.
+         * --------------------------------------------------
+         * REINICIAR SELECTOR
+         * --------------------------------------------------
          */
 
         incorporarLote.innerHTML = `
@@ -1294,7 +1305,7 @@ incorporarPrivada?.addEventListener(
 
                 /*
                  * El valor interno sigue siendo
-                 * el UUID del registro.
+                 * el UUID del residente.
                  */
 
                 option.value =
@@ -1302,8 +1313,7 @@ incorporarPrivada?.addEventListener(
 
 
                 /*
-                 * El usuario solamente ve:
-                 * Lote + número de casa.
+                 * Texto visible para Tesorería.
                  */
 
                 option.textContent =
@@ -1311,8 +1321,7 @@ incorporarPrivada?.addEventListener(
 
 
                 /*
-                 * Guardar información adicional
-                 * para utilizarla posteriormente.
+                 * Información adicional.
                  */
 
                 option.dataset.identificador =
