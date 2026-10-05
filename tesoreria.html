@@ -2272,49 +2272,283 @@ btnConfirmarIncorporacion?.addEventListener(
 </div>
 
 <script>
+
 /*
  * ==================================================
- * ACCIONES DEL MODAL DE INCORPORACIÓN
+ * ACCIONES DEL MODAL DE INCORPORACIÓN AL RÉGIMEN
+ * ==================================================
+ *
+ * Este bloque es autosuficiente.
+ *
+ * El modal ya existe en el DOM cuando este código
+ * se ejecuta, por lo que aquí se obtienen directamente
+ * todos sus controles.
+ *
  * ==================================================
  */
 
 
 /*
  * --------------------------------------------------
- * CANCELAR
+ * REFERENCIAS DEL MODAL
  * --------------------------------------------------
  */
 
-document
-    .getElementById("btnCancelarIncorporacion")
-    ?.addEventListener(
-        "click",
-        function () {
+const modalIncorporarObligado =
+    document.getElementById(
+        "modalIncorporarObligado"
+    );
 
-            const modal =
-                document.getElementById(
-                    "modalIncorporarObligado"
-                );
+const incorporarPrivada =
+    document.getElementById(
+        "incorporarPrivada"
+    );
 
-            if (modal) {
-                modal.style.display = "none";
-            }
+const incorporarLote =
+    document.getElementById(
+        "incorporarLote"
+    );
 
-        }
+const fechaInicioObligacion =
+    document.getElementById(
+        "fechaInicioObligacion"
+    );
+
+const condicionInmueble =
+    document.getElementById(
+        "condicionInmueble"
+    );
+
+const cantidadLotes =
+    document.getElementById(
+        "cantidadLotes"
+    );
+
+const grupoLoteIncorporacion =
+    document.getElementById(
+        "grupoLoteIncorporacion"
+    );
+
+const grupoFechaIncorporacion =
+    document.getElementById(
+        "grupoFechaIncorporacion"
+    );
+
+const grupoCondicionIncorporacion =
+    document.getElementById(
+        "grupoCondicionIncorporacion"
+    );
+
+const grupoCantidadLotes =
+    document.getElementById(
+        "grupoCantidadLotes"
+    );
+
+const btnCancelarIncorporacion =
+    document.getElementById(
+        "btnCancelarIncorporacion"
+    );
+
+const btnConfirmarIncorporacion =
+    document.getElementById(
+        "btnConfirmarIncorporacion"
     );
 
 
 /*
  * --------------------------------------------------
- * CONFIRMAR INCORPORACIÓN
- * --------------------------------------------------
- *
- * Esta función realiza la validación directamente
- * sobre los controles del formulario.
- *
- * Todavía NO ejecuta ninguna RPC.
+ * VALIDAR DATOS DE INCORPORACIÓN
  * --------------------------------------------------
  */
+
+function validarDatosIncorporacionModal() {
+
+    const residenteId =
+        incorporarLote?.value;
+
+    const fechaInicio =
+        fechaInicioObligacion?.value;
+
+    const condicion =
+        condicionInmueble?.value;
+
+    const cantidad =
+        cantidadLotes?.value;
+
+
+    if (!residenteId) {
+
+        mostrarAlerta({
+            titulo:
+                "Datos incompletos",
+
+            mensaje:
+                "Debe seleccionar un lote."
+        });
+
+        return false;
+    }
+
+
+    if (!fechaInicio) {
+
+        mostrarAlerta({
+            titulo:
+                "Datos incompletos",
+
+            mensaje:
+                "Debe indicar la fecha de incorporación al régimen."
+        });
+
+        return false;
+    }
+
+
+    if (!condicion) {
+
+        mostrarAlerta({
+            titulo:
+                "Datos incompletos",
+
+            mensaje:
+                "Debe seleccionar la condición del inmueble."
+        });
+
+        return false;
+    }
+
+
+    if (!cantidad) {
+
+        mostrarAlerta({
+            titulo:
+                "Datos incompletos",
+
+            mensaje:
+                "Debe seleccionar la cantidad de lotes."
+        });
+
+        return false;
+    }
+
+
+    return true;
+}
+
+
+/*
+ * --------------------------------------------------
+ * CANCELAR INCORPORACIÓN
+ * --------------------------------------------------
+ */
+
+btnCancelarIncorporacion?.addEventListener(
+    "click",
+    () => {
+
+        /*
+         * Cerrar modal.
+         */
+
+        if (modalIncorporarObligado) {
+
+            modalIncorporarObligado.style.display =
+                "none";
+        }
+
+
+        /*
+         * Limpiar privada.
+         */
+
+        if (incorporarPrivada) {
+
+            incorporarPrivada.value =
+                "";
+        }
+
+
+        /*
+         * Limpiar lote.
+         */
+
+        if (incorporarLote) {
+
+            incorporarLote.innerHTML = `
+                <option value="">
+                    Seleccione un lote
+                </option>
+            `;
+
+            incorporarLote.value =
+                "";
+        }
+
+
+        /*
+         * Limpiar fecha.
+         */
+
+        if (fechaInicioObligacion) {
+
+            fechaInicioObligacion.value =
+                "";
+        }
+
+
+        /*
+         * Limpiar condición.
+         */
+
+        if (condicionInmueble) {
+
+            condicionInmueble.value =
+                "";
+        }
+
+
+        /*
+         * Limpiar cantidad.
+         */
+
+        if (cantidadLotes) {
+
+            cantidadLotes.value =
+                "";
+        }
+
+
+        /*
+         * Ocultar campos dependientes.
+         */
+
+        if (grupoLoteIncorporacion) {
+
+            grupoLoteIncorporacion.style.display =
+                "none";
+        }
+
+        if (grupoFechaIncorporacion) {
+
+            grupoFechaIncorporacion.style.display =
+                "none";
+        }
+
+        if (grupoCondicionIncorporacion) {
+
+            grupoCondicionIncorporacion.style.display =
+                "none";
+        }
+
+        if (grupoCantidadLotes) {
+
+            grupoCantidadLotes.style.display =
+                "none";
+        }
+
+    }
+);
+
 
 /*
  * --------------------------------------------------
@@ -2322,334 +2556,272 @@ document
  * --------------------------------------------------
  */
 
-document
-    .getElementById("btnConfirmarIncorporacion")
-    ?.addEventListener(
-        "click",
-        async function () {
+btnConfirmarIncorporacion?.addEventListener(
+    "click",
+    async () => {
+
+        /*
+         * --------------------------------------------------
+         * 1. VALIDAR DATOS
+         * --------------------------------------------------
+         */
+
+        if (
+            !validarDatosIncorporacionModal()
+        ) {
+
+            return;
+        }
+
+
+        /*
+         * --------------------------------------------------
+         * 2. OBTENER DATOS
+         * --------------------------------------------------
+         */
+
+        const residenteId =
+            incorporarLote.value;
+
+        const fechaInicio =
+            fechaInicioObligacion.value;
+
+        const condicion =
+            condicionInmueble.value;
+
+        const cantidad =
+            Number(
+                cantidadLotes.value
+            );
+
+
+        /*
+         * --------------------------------------------------
+         * 3. DESHABILITAR BOTÓN
+         * --------------------------------------------------
+         */
+
+        const textoOriginal =
+            btnConfirmarIncorporacion.textContent;
+
+
+        btnConfirmarIncorporacion.disabled =
+            true;
+
+        btnConfirmarIncorporacion.textContent =
+            "Registrando...";
+
+
+        try {
 
             /*
              * --------------------------------------------------
-             * 1. VALIDAR DATOS DEL FORMULARIO
+             * 4. EJECUTAR RPC
              * --------------------------------------------------
              */
 
-            if (
-                !validarDatosIncorporacion()
-            ) {
-                return;
-            }
+            const { data, error } =
+                await supabaseClient.rpc(
+                    "incorporar_obligado_pago",
+                    {
+                        p_residente_id:
+                            residenteId,
 
+                        p_fecha_inicio_obligacion:
+                            fechaInicio,
 
-            /*
-             * --------------------------------------------------
-             * 2. OBTENER DATOS
-             * --------------------------------------------------
-             */
+                        p_cantidad_lotes:
+                            cantidad,
 
-            const residenteId =
-                document.getElementById(
-                    "incorporarLote"
-                )?.value;
+                        p_condicion_inmueble:
+                            condicion,
 
-            const fechaInicio =
-                document.getElementById(
-                    "fechaInicioObligacion"
-                )?.value;
-
-            const condicion =
-                document.getElementById(
-                    "condicionInmueble"
-                )?.value;
-
-            const cantidad =
-                Number(
-                    document.getElementById(
-                        "cantidadLotes"
-                    )?.value
+                        p_observaciones:
+                            null
+                    }
                 );
 
 
             /*
              * --------------------------------------------------
-             * 3. DESHABILITAR BOTÓN
+             * 5. VALIDAR RESPUESTA
              * --------------------------------------------------
              */
 
-            const boton =
-                document.getElementById(
-                    "btnConfirmarIncorporacion"
-                );
-
-            const textoOriginal =
-                boton?.textContent ||
-                "Incorporar al régimen";
-
-
-            if (boton) {
-
-                boton.disabled = true;
-
-                boton.textContent =
-                    "Registrando...";
-
-            }
-
-
-            try {
-
-                /*
-                 * --------------------------------------------------
-                 * 4. EJECUTAR RPC
-                 * --------------------------------------------------
-                 */
-
-                const { data, error } =
-                    await supabaseClient.rpc(
-                        "incorporar_obligado_pago",
-                        {
-                            p_residente_id:
-                                residenteId,
-
-                            p_fecha_inicio_obligacion:
-                                fechaInicio,
-
-                            p_cantidad_lotes:
-                                cantidad,
-
-                            p_condicion_inmueble:
-                                condicion,
-
-                            p_observaciones:
-                                null
-                        }
-                    );
-
-
-                /*
-                 * --------------------------------------------------
-                 * 5. ERROR
-                 * --------------------------------------------------
-                 */
-
-                if (error) {
-
-                    console.error(
-                        "Error al incorporar al régimen:",
-                        error
-                    );
-
-
-                    mostrarAlerta({
-                        titulo:
-                            "No fue posible realizar la incorporación",
-
-                        mensaje:
-                            error.message ||
-                            "Ocurrió un error al registrar la incorporación."
-                    });
-
-                    return;
-                }
-
-
-                /*
-                 * --------------------------------------------------
-                 * 6. REGISTRO EXITOSO
-                 * --------------------------------------------------
-                 */
-
-                console.log(
-                    "Incorporación realizada correctamente:",
-                    data
-                );
-
-
-                mostrarAlerta({
-                    titulo:
-                        "Incorporación realizada",
-
-                    mensaje:
-                        "El lote fue incorporado correctamente al régimen de aportaciones."
-                });
-
-
-                /*
-                 * --------------------------------------------------
-                 * 7. CERRAR FORMULARIO
-                 * --------------------------------------------------
-                 */
-
-                const modal =
-                    document.getElementById(
-                        "modalIncorporarObligado"
-                    );
-
-
-                if (modal) {
-
-                    modal.style.display =
-                        "none";
-
-                }
-
-
-                /*
-                 * --------------------------------------------------
-                 * 8. LIMPIAR FORMULARIO
-                 * --------------------------------------------------
-                 */
-
-                const privada =
-                    document.getElementById(
-                        "incorporarPrivada"
-                    );
-
-                const lote =
-                    document.getElementById(
-                        "incorporarLote"
-                    );
-
-                const fecha =
-                    document.getElementById(
-                        "fechaInicioObligacion"
-                    );
-
-                const condicionControl =
-                    document.getElementById(
-                        "condicionInmueble"
-                    );
-
-                const cantidadControl =
-                    document.getElementById(
-                        "cantidadLotes"
-                    );
-
-
-                if (privada) {
-                    privada.value = "";
-                }
-
-
-                if (lote) {
-
-                    lote.innerHTML = `
-                        <option value="">
-                            Seleccione un lote
-                        </option>
-                    `;
-
-                    lote.value = "";
-
-                }
-
-
-                if (fecha) {
-                    fecha.value = "";
-                }
-
-
-                if (condicionControl) {
-                    condicionControl.value = "";
-                }
-
-
-                if (cantidadControl) {
-                    cantidadControl.value = "";
-                }
-
-
-                /*
-                 * Ocultar campos dependientes.
-                 */
-
-                const grupoLote =
-                    document.getElementById(
-                        "grupoLoteIncorporacion"
-                    );
-
-                const grupoFecha =
-                    document.getElementById(
-                        "grupoFechaIncorporacion"
-                    );
-
-                const grupoCondicion =
-                    document.getElementById(
-                        "grupoCondicionIncorporacion"
-                    );
-
-                const grupoCantidad =
-                    document.getElementById(
-                        "grupoCantidadLotes"
-                    );
-
-
-                if (grupoLote) {
-                    grupoLote.style.display =
-                        "none";
-                }
-
-                if (grupoFecha) {
-                    grupoFecha.style.display =
-                        "none";
-                }
-
-                if (grupoCondicion) {
-                    grupoCondicion.style.display =
-                        "none";
-                }
-
-                if (grupoCantidad) {
-                    grupoCantidad.style.display =
-                        "none";
-                }
-
-
-            } catch (error) {
-
-                /*
-                 * --------------------------------------------------
-                 * ERROR INESPERADO
-                 * --------------------------------------------------
-                 */
+            if (error) {
 
                 console.error(
-                    "Error inesperado durante la incorporación:",
+                    "Error al incorporar al régimen:",
                     error
                 );
 
 
                 mostrarAlerta({
                     titulo:
-                        "Error",
+                        "No fue posible realizar la incorporación",
 
                     mensaje:
-                        "Ocurrió un error inesperado al realizar la incorporación."
+                        error.message ||
+                        "Ocurrió un error al registrar la incorporación."
                 });
 
-
-            } finally {
-
-                /*
-                 * --------------------------------------------------
-                 * RESTAURAR BOTÓN
-                 * --------------------------------------------------
-                 */
-
-                if (boton) {
-
-                    boton.disabled =
-                        false;
-
-                    boton.textContent =
-                        textoOriginal;
-
-                }
-
+                return;
             }
 
+
+            /*
+             * --------------------------------------------------
+             * 6. INCORPORACIÓN EXITOSA
+             * --------------------------------------------------
+             */
+
+            console.log(
+                "Incorporación realizada correctamente:",
+                data
+            );
+
+
+            mostrarAlerta({
+                titulo:
+                    "Incorporación realizada",
+
+                mensaje:
+                    "El lote fue incorporado correctamente al régimen de aportaciones."
+            });
+
+
+            /*
+             * --------------------------------------------------
+             * 7. CERRAR MODAL
+             * --------------------------------------------------
+             */
+
+            if (modalIncorporarObligado) {
+
+                modalIncorporarObligado.style.display =
+                    "none";
+            }
+
+
+            /*
+             * --------------------------------------------------
+             * 8. LIMPIAR FORMULARIO
+             * --------------------------------------------------
+             */
+
+            if (incorporarPrivada) {
+
+                incorporarPrivada.value =
+                    "";
+            }
+
+
+            if (incorporarLote) {
+
+                incorporarLote.innerHTML = `
+                    <option value="">
+                        Seleccione un lote
+                    </option>
+                `;
+
+                incorporarLote.value =
+                    "";
+            }
+
+
+            if (fechaInicioObligacion) {
+
+                fechaInicioObligacion.value =
+                    "";
+            }
+
+
+            if (condicionInmueble) {
+
+                condicionInmueble.value =
+                    "";
+            }
+
+
+            if (cantidadLotes) {
+
+                cantidadLotes.value =
+                    "";
+            }
+
+
+            /*
+             * Ocultar campos dependientes.
+             */
+
+            if (grupoLoteIncorporacion) {
+
+                grupoLoteIncorporacion.style.display =
+                    "none";
+            }
+
+            if (grupoFechaIncorporacion) {
+
+                grupoFechaIncorporacion.style.display =
+                    "none";
+            }
+
+            if (grupoCondicionIncorporacion) {
+
+                grupoCondicionIncorporacion.style.display =
+                    "none";
+            }
+
+            if (grupoCantidadLotes) {
+
+                grupoCantidadLotes.style.display =
+                    "none";
+            }
+
+
+        } catch (error) {
+
+            /*
+             * --------------------------------------------------
+             * ERROR INESPERADO
+             * --------------------------------------------------
+             */
+
+            console.error(
+                "Error inesperado durante la incorporación:",
+                error
+            );
+
+
+            mostrarAlerta({
+                titulo:
+                    "Error",
+
+                mensaje:
+                    "Ocurrió un error inesperado al realizar la incorporación."
+            });
+
+
+        } finally {
+
+            /*
+             * --------------------------------------------------
+             * RESTAURAR BOTÓN
+             * --------------------------------------------------
+             */
+
+            btnConfirmarIncorporacion.disabled =
+                false;
+
+            btnConfirmarIncorporacion.textContent =
+                textoOriginal;
+
         }
-    );
+
+    }
+);
+
+</script>
 
 </script>
     
