@@ -1091,16 +1091,20 @@ async function cargarPrivadasIncorporacion() {
     }
 
 
-    const privadas = [
-        ...new Set(
-            (data || [])
-                .map(
-                    residente =>
-                        residente.privada
-                )
-                .filter(Boolean)
+   const privadasPermitidas = [
+    "I",
+    "II",
+    "III",
+    "IV"
+];
+
+const privadas = privadasPermitidas.filter(
+    privada =>
+        (data || []).some(
+            residente =>
+                residente.privada === privada
         )
-    ];
+);
 
 
     incorporarPrivada.innerHTML = `
