@@ -1059,12 +1059,14 @@ async function cargarPrivadasIncorporacion() {
         </option>
     `;
 
+
     const { data, error } =
         await supabaseClient
             .from("residentes")
             .select("privada")
-            .eq("es_residente", true)
+            .not("privada", "is", null)
             .order("privada");
+
 
     if (error) {
 
@@ -1088,13 +1090,18 @@ async function cargarPrivadasIncorporacion() {
         return;
     }
 
+
     const privadas = [
         ...new Set(
             (data || [])
-                .map(r => r.privada)
+                .map(
+                    residente =>
+                        residente.privada
+                )
                 .filter(Boolean)
         )
     ];
+
 
     incorporarPrivada.innerHTML = `
         <option value="">
@@ -1102,15 +1109,18 @@ async function cargarPrivadasIncorporacion() {
         </option>
     `;
 
-    privadas.forEach(privada => {
 
-        incorporarPrivada.innerHTML += `
-            <option value="${privada}">
-                ${privada}
-            </option>
-        `;
+    privadas.forEach(
+        privada => {
 
-    });
+            incorporarPrivada.innerHTML += `
+                <option value="${privada}">
+                    Privada ${privada}
+                </option>
+            `;
+
+        }
+    );
 
 }
                    
