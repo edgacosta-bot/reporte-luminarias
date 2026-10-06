@@ -1695,26 +1695,7 @@ document
                         }
                     );
 
-                    const { data: pruebaCondicion, error: errorCondicion } =
-                        await supabaseClient.rpc(
-                            "actualizar_condicion_inmueble",
-                            {
-                                p_residente_id:
-                                    "7cf59ac5-0587-4a87-b658-f845fb4c3eba",
-                    
-                                p_condicion_inmueble:
-                                    "residencia"
-                            }
-                        );
-                    
-                    console.log(
-                        "PRUEBA actualizar_condicion_inmueble:",
-                        {
-                            data: pruebaCondicion,
-                            error: errorCondicion
-                        }
-                    );
-
+                   
 
                 } catch (error) {
 
