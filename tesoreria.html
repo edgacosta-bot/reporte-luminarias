@@ -2152,26 +2152,57 @@ document
                  * --------------------------------------------------
                  */
 
-                const { data, error } =
-                    await supabaseClient.rpc(
-                        "incorporar_obligado_pago",
-                        {
-                            p_residente_id:
-                                residenteId,
+/*
+ * --------------------------------------------------
+ * DIAGNÓSTICO DE SESIÓN ANTES DE LA RPC
+ * --------------------------------------------------
+ */
 
-                            p_fecha_inicio_obligacion:
-                                fechaInicio,
+const {
+    data: sessionData,
+    error: sessionError
+} = await supabaseClient.auth.getSession();
 
-                            p_cantidad_lotes:
-                                cantidadValor,
+console.log(
+    "SESIÓN JUSTO ANTES DE INCORPORAR:",
+    {
+        sessionExiste:
+            !!sessionData?.session,
 
-                            p_condicion_inmueble:
-                                condicionValor,
+        userId:
+            sessionData?.session?.user?.id || null,
 
-                            p_observaciones:
-                                null
-                        }
-                    );
+        sessionError
+    }
+);
+
+
+/*
+ * --------------------------------------------------
+ * EJECUTAR RPC
+ * --------------------------------------------------
+ */
+
+const { data, error } =
+    await supabaseClient.rpc(
+        "incorporar_obligado_pago",
+        {
+            p_residente_id:
+                residenteId,
+
+            p_fecha_inicio_obligacion:
+                fechaInicio,
+
+            p_cantidad_lotes:
+                cantidadValor,
+
+            p_condicion_inmueble:
+                condicionValor,
+
+            p_observaciones:
+                null
+        }
+    );
 
 
                 /*
