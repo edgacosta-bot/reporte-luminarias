@@ -2152,29 +2152,6 @@ document
                  * --------------------------------------------------
                  */
 
-/*
- * --------------------------------------------------
- * DIAGNÓSTICO DE SESIÓN ANTES DE LA RPC
- * --------------------------------------------------
- */
-
-const {
-    data: sessionData,
-    error: sessionError
-} = await supabaseClient.auth.getSession();
-
-console.log(
-    "SESIÓN JUSTO ANTES DE INCORPORAR:",
-    {
-        sessionExiste:
-            !!sessionData?.session,
-
-        userId:
-            sessionData?.session?.user?.id || null,
-
-        sessionError
-    }
-);
 
 
 /*
@@ -2382,7 +2359,45 @@ const { data, error } =
 
         }
     );
+    }
 
+});
+
+
+/*
+ * ==================================================
+ * PRUEBA TEMPORAL — CAMBIO DE CONDICIÓN I-73
+ * ==================================================
+ */
+
+(async () => {
+
+    const {
+        data: cambioCondicion,
+        error: errorCambioCondicion
+    } = await supabaseClient.rpc(
+        "actualizar_condicion_inmueble",
+        {
+            p_residente_id:
+                "677059a1-36e9-408c-af69-8f915f33b1d7",
+
+            p_condicion_inmueble:
+                "obra_construccion"
+        }
+    );
+
+    console.log(
+        "PRUEBA CAMBIO CONDICIÓN I-73:",
+        {
+            data: cambioCondicion,
+            error: errorCambioCondicion
+        }
+    );
+
+})();
+
+
+})();
 
 })();
 </script>
