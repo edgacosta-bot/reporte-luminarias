@@ -559,6 +559,114 @@
     </div>
 </section>
 
+
+
+/* CONSULTAR INMUEBLES Y OBLIGACIONES PENDIENTES */
+btnConsultarObligaciones?.addEventListener("click", async () => {
+    const cuotaId = cuotaGenerarObligaciones?.value;
+
+    if (!cuotaId) {
+        mostrarAlerta({
+            titulo: "Selecciona una cuota",
+            mensaje: "Debes seleccionar el periodo que deseas consultar."
+        });
+        return;
+    }
+
+    btnConsultarObligaciones.disabled = true;
+    resumenGeneracionObligaciones.innerHTML = "Consultando inmuebles elegibles...";
+    resultadoGeneracionObligaciones.innerHTML = "";
+    btnEjecutarGeneracionObligaciones.disabled = true;
+
+    try {
+        const { data: cuota, error: errorCuota } = await supabaseClient
+            .from("cuotas")
+            .select("id, descripcion, periodo_mes, periodo_anio")
+            .eq("id", cuotaId)
+            .single();
+
+        if (errorCuota) throw errorCuota;
+
+        const { data: obligados, error: errorObligados } = await supabaseClient
+            .from("obligados_pago")
+            .select(`
+                residente_id,
+                fecha_inicio_obligacion,
+                cantidad_lotes,
+                condicion_inmueble,
+                residentes!inner (
+                    id, nombre, privada, casa
+                )
+            `)
+            .eq("activo", true);
+
+        if (errorObligados) throw errorObligados;
+
+        const { data: existentes, error: errorExistentes } = await supabaseClient
+            .from("obligaciones_cuotas")
+            .select("residente_id")
+            .eq("cuota_id", cuotaId);
+
+        if (errorExistentes) throw errorExistentes;
+
+        const periodo = cuota.periodo_anio * 100 + cuota.periodo_mes;
+        const idsExistentes = new Set(
+            (existentes || []).map(x => x.residente_id)
+        );
+
+        const elegibles = (obligados || []).filter(o => {
+            const fecha = o.fecha_inicio_obligacion;
+            if (!fecha) return false;
+
+            const partes = fecha.split("-").map(Number);
+            const periodoInicio = partes[0] * 100 + partes[1];
+
+            return periodoInicio <= periodo;
+        });
+
+        const pendientes = elegibles.filter(
+            o => !idsExistentes.has(o.residente_id)
+        );
+
+        window.obligacionesPendientesConsulta = {
+            cuotaId,
+            cuota,
+            pendientes
+        };
+
+        resumenGeneracionObligaciones.innerHTML = `
+            <p><strong>Periodo:</strong> ${cuota.descripcion}</p>
+            <p><strong>Inmuebles elegibles:</strong> ${elegibles.length}</p>
+            <p><strong>Obligaciones existentes:</strong> ${
+                elegibles.length - pendientes.length
+            }</p>
+            <p><strong>Obligaciones pendientes de generar:</strong> ${
+                pendientes.length
+            }</p>
+        `;
+
+        resultadoGeneracionObligaciones.innerHTML = pendientes.length
+            ? pendientes.map(o => `
+                <div style="padding:8px;border-bottom:1px solid #ddd">
+                    <strong>${o.residentes?.privada || ""}-${o.residentes?.casa || ""}</strong>
+                    — ${o.residentes?.nombre || "Sin nombre"}
+                    <br>
+                    <small>${o.condicion_inmueble} · ${o.cantidad_lotes} lote(s)</small>
+                </div>
+            `).join("")
+            : "<p>No hay obligaciones pendientes para este periodo.</p>";
+
+        btnEjecutarGeneracionObligaciones.disabled = pendientes.length === 0;
+
+    } catch (error) {
+        console.error("Error al consultar obligaciones:", error);
+        resumenGeneracionObligaciones.textContent =
+            "No fue posible consultar las obligaciones. Revisa la consola.";
+    } finally {
+        btnConsultarObligaciones.disabled = false;
+    }
+});
+
             
 <!-- ==================================================
      REGISTRAR PAGO
