@@ -530,6 +530,36 @@
             </section>
 
 
+<!-- GENERAR OBLIGACIONES -->
+<section
+    class="tesoreria-card"
+    id="opcionGenerarObligaciones"
+    role="button"
+    tabindex="0"
+>
+    <div class="tesoreria-card-header">
+        <div class="tesoreria-card-icon">📋</div>
+
+        <div class="tesoreria-card-content">
+            <h2 class="tesoreria-card-title">
+                Generar obligaciones
+            </h2>
+
+            <div class="tesoreria-card-description">
+                Generar las obligaciones de pago de una cuota
+                para los inmuebles incorporados al régimen,
+                evitando duplicar obligaciones existentes.
+            </div>
+
+            <div class="tesoreria-card-action">
+                Generar obligaciones
+                <span>→</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+            
 <!-- ==================================================
      REGISTRAR PAGO
      ================================================== -->
@@ -1618,6 +1648,109 @@ function validarDatosIncorporacion() {
 
     return true;
 }                   
+
+
+/* ==================================================
+   GENERAR OBLIGACIONES: ABRIR Y CARGAR CUOTAS
+   ================================================== */
+
+const opcionGenerarObligaciones =
+    document.getElementById("opcionGenerarObligaciones");
+
+const modalGenerarObligaciones =
+    document.getElementById("modalGenerarObligaciones");
+
+const cuotaGenerarObligaciones =
+    document.getElementById("cuotaGenerarObligaciones");
+
+const btnCerrarGeneracionObligaciones =
+    document.getElementById("btnCerrarGeneracionObligaciones");
+
+const btnConsultarObligaciones =
+    document.getElementById("btnConsultarObligaciones");
+
+const btnEjecutarGeneracionObligaciones =
+    document.getElementById("btnEjecutarGeneracionObligaciones");
+
+const resumenGeneracionObligaciones =
+    document.getElementById("resumenGeneracionObligaciones");
+
+const resultadoGeneracionObligaciones =
+    document.getElementById("resultadoGeneracionObligaciones");
+
+
+opcionGenerarObligaciones?.addEventListener("click", async () => {
+    modalGenerarObligaciones.style.display = "flex";
+
+    cuotaGenerarObligaciones.innerHTML =
+        '<option value="">Cargando cuotas...</option>';
+
+    resumenGeneracionObligaciones.innerHTML = "";
+    resultadoGeneracionObligaciones.innerHTML = "";
+    btnEjecutarGeneracionObligaciones.disabled = true;
+
+    const { data, error } = await supabaseClient
+        .from("cuotas")
+        .select(`
+            id,
+            tipo,
+            descripcion,
+            periodo_mes,
+            periodo_anio,
+            fecha_inicio_pago,
+            activa
+        `)
+        .eq("activa", true)
+        .not("periodo_mes", "is", null)
+        .not("periodo_anio", "is", null)
+        .order("periodo_anio", { ascending: true })
+        .order("periodo_mes", { ascending: true });
+
+    if (error) {
+        console.error("Error cargando cuotas:", error);
+
+        cuotaGenerarObligaciones.innerHTML =
+            '<option value="">Error al cargar cuotas</option>';
+
+        mostrarAlerta({
+            titulo: "Error",
+            mensaje: "No fue posible cargar las cuotas disponibles."
+        });
+
+        return;
+    }
+
+    const meses = [
+        "Enero", "Febrero", "Marzo", "Abril",
+        "Mayo", "Junio", "Julio", "Agosto",
+        "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+
+    cuotaGenerarObligaciones.innerHTML =
+        '<option value="">Seleccione una cuota</option>';
+
+    (data || []).forEach(cuota => {
+        const opcion = document.createElement("option");
+
+        opcion.value = cuota.id;
+        opcion.textContent =
+            `${meses[cuota.periodo_mes - 1]} ${cuota.periodo_anio}` +
+            ` — ${cuota.descripcion}`;
+
+        cuotaGenerarObligaciones.appendChild(opcion);
+    });
+
+    if (!data || data.length === 0) {
+        cuotaGenerarObligaciones.innerHTML =
+            '<option value="">No hay cuotas activas disponibles</option>';
+    }
+});
+
+
+btnCerrarGeneracionObligaciones?.addEventListener("click", () => {
+    modalGenerarObligaciones.style.display = "none";
+});
+
                     
 /*
  * ==================================================
@@ -1880,6 +2013,98 @@ document
 
 </div>
 
+
+<!-- MODAL: GENERAR OBLIGACIONES -->
+<div id="modalGenerarObligaciones" style="
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:10001;
+    background:rgba(0,0,0,.55);
+    padding:24px;
+    align-items:center;
+    justify-content:center;
+    box-sizing:border-box;
+">
+    <div style="
+        background:#fff;
+        width:min(900px,100%);
+        max-height:90vh;
+        overflow-y:auto;
+        border-radius:16px;
+        padding:28px;
+        box-sizing:border-box;
+    ">
+        <h2 style="margin-top:0;">
+            Generar obligaciones de pago
+        </h2>
+
+        <p>
+            Seleccione la cuota para consultar los inmuebles
+            elegibles y las obligaciones que faltan por generar.
+        </p>
+
+        <div style="margin-bottom:20px;">
+            <label for="cuotaGenerarObligaciones">
+                <strong>Cuota</strong>
+            </label>
+
+            <select
+                id="cuotaGenerarObligaciones"
+                style="
+                    display:block;
+                    width:100%;
+                    margin-top:8px;
+                    padding:12px;
+                    border:1px solid #d1d5db;
+                    border-radius:8px;
+                    font-size:16px;
+                "
+            >
+                <option value="">Cargando cuotas...</option>
+            </select>
+        </div>
+
+        <div id="resumenGeneracionObligaciones"></div>
+
+        <div
+            id="resultadoGeneracionObligaciones"
+            style="margin-top:20px;"
+        ></div>
+
+        <div style="
+            display:flex;
+            justify-content:flex-end;
+            gap:12px;
+            margin-top:24px;
+        ">
+            <button
+                type="button"
+                id="btnCerrarGeneracionObligaciones"
+            >
+                Cerrar
+            </button>
+
+            <button
+                type="button"
+                id="btnConsultarObligaciones"
+            >
+                Consultar inmuebles
+            </button>
+
+            <button
+                type="button"
+                id="btnEjecutarGeneracionObligaciones"
+                disabled
+            >
+                Generar obligaciones
+            </button>
+        </div>
+    </div>
+</div>
+
+
+    
 <script>
 
 /*
