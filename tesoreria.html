@@ -1859,6 +1859,86 @@ btnConsultarObligaciones?.addEventListener("click", async () => {
     }
 });
                     
+
+/* EJECUTAR GENERACIÓN DE OBLIGACIONES */
+btnEjecutarGeneracionObligaciones?.addEventListener("click", async () => {
+    const consulta = window.obligacionesPendientesConsulta;
+
+    if (!consulta || !consulta.cuotaId || !consulta.pendientes?.length) {
+        mostrarAlerta({
+            titulo: "Consulta requerida",
+            mensaje: "Consulta primero los inmuebles pendientes de generar."
+        });
+        return;
+    }
+
+    const confirmar = window.confirm(
+        `Se generarán ${consulta.pendientes.length} obligación(es) para ${consulta.cuota.descripcion}. ¿Deseas continuar?`
+    );
+
+    if (!confirmar) return;
+
+    btnEjecutarGeneracionObligaciones.disabled = true;
+    btnConsultarObligaciones.disabled = true;
+
+    let generadas = 0;
+    const errores = [];
+
+    try {
+        for (const inmueble of consulta.pendientes) {
+            const { error } = await supabaseClient.rpc(
+                "crear_obligacion_tesoreria",
+                {
+                    p_residente_id: inmueble.residente_id,
+                    p_cuota_id: consulta.cuotaId
+                }
+            );
+
+            if (error) {
+                console.error(
+                    "Error generando obligación:",
+                    inmueble.residente_id,
+                    error
+                );
+                errores.push(error.message || "Error desconocido");
+            } else {
+                generadas++;
+            }
+        }
+
+        resumenGeneracionObligaciones.innerHTML = `
+            <p><strong>Obligaciones generadas:</strong> ${generadas}</p>
+            <p><strong>Errores:</strong> ${errores.length}</p>
+        `;
+
+        resultadoGeneracionObligaciones.innerHTML = errores.length
+            ? `<p>No se pudieron generar todas las obligaciones. Revisa la consola.</p>`
+            : `<p>Generación terminada correctamente.</p>`;
+
+        if (errores.length === 0) {
+            window.obligacionesPendientesConsulta = null;
+            btnEjecutarGeneracionObligaciones.disabled = true;
+        } else {
+            mostrarAlerta({
+                titulo: "Generación parcial",
+                mensaje: "Algunas obligaciones no se generaron. Revisa los errores antes de reintentar."
+            });
+        }
+
+    } catch (error) {
+        console.error("Error en la generación:", error);
+        mostrarAlerta({
+            titulo: "Error",
+            mensaje: "No fue posible completar la generación. Verifica las obligaciones existentes antes de reintentar."
+        });
+    } finally {
+        btnConsultarObligaciones.disabled = false;
+        if (errores.length > 0) {
+            btnEjecutarGeneracionObligaciones.disabled = false;
+        }
+    }
+});
+
                     
 /*
  * ==================================================
