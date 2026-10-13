@@ -261,197 +261,6 @@
 
         }
 
-/* ==================================================
-   MODAL DE INCORPORACIÓN AL RÉGIMEN
-   ================================================== */
-
-#modalIncorporarObligado {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background: rgba(0, 0, 0, 0.55);
-
-    padding: 24px;
-    box-sizing: border-box;
-}
-
-#modalIncorporarObligado .modal-contenido {
-    position: relative;
-
-    width: min(700px, 100%);
-    max-height: 90vh;
-    overflow-y: auto;
-
-    background: #ffffff;
-
-    border-radius: 18px;
-
-    padding: 32px;
-
-    box-sizing: border-box;
-
-    box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.35);
-
-    z-index: 10000;
-}
-
-#modalIncorporarObligado .modal-contenido h2 {
-    margin-top: 0;
-    margin-bottom: 28px;
-
-    color: #111827;
-
-    font-size: 28px;
-    line-height: 1.2;
-}
-
-#modalIncorporarObligado .tesoreria-form-group {
-    margin-bottom: 20px;
-}
-
-#modalIncorporarObligado .tesoreria-form-group label {
-    display: block;
-
-    margin-bottom: 8px;
-
-    color: #374151;
-
-    font-weight: 600;
-}
-
-#modalIncorporarObligado select,
-#modalIncorporarObligado input[type="date"] {
-    width: 100%;
-
-    min-height: 52px;
-
-    padding: 12px 14px;
-
-    box-sizing: border-box;
-
-    border: 1px solid #d1d5db;
-    border-radius: 10px;
-
-    background: #ffffff;
-
-    color: #111827;
-
-    font-size: 16px;
-}
-
-#modalIncorporarObligado select:focus,
-#modalIncorporarObligado input[type="date"]:focus {
-    outline: none;
-
-    border-color: #2563eb;
-
-    box-shadow:
-        0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-
-#modalIncorporarObligado #accionesIncorporacion {
-    display: flex;
-
-    justify-content: flex-end;
-
-    gap: 12px;
-
-    margin-top: 28px;
-}
-
-#modalIncorporarObligado #accionesIncorporacion button {
-    min-height: 46px;
-
-    padding: 10px 20px;
-
-    border: none;
-    border-radius: 10px;
-
-    font-size: 15px;
-    font-weight: 600;
-
-    cursor: pointer;
-}
-
-#modalIncorporarObligado #btnCancelarIncorporacion {
-    background: #e5e7eb;
-    color: #374151;
-}
-
-#modalIncorporarObligado #btnConfirmarIncorporacion {
-    background: #2563eb;
-    color: #ffffff;
-}
-
-
-/* ==================================================
-   MODAL DE CONFIRMACIÓN DE GENERACIÓN
-   ================================================== */
-
-#modalConfirmarGeneracion {
-    position: fixed;
-    inset: 0;
-    z-index: 10002;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.55);
-    padding: 24px;
-    box-sizing: border-box;
-}
-
-#modalConfirmarGeneracion .modal-contenido {
-    position: relative;
-    width: min(600px, 100%);
-    max-height: 90vh;
-    overflow-y: auto;
-    background: #ffffff;
-    color: #111827;
-    border-radius: 18px;
-    padding: 32px;
-    box-sizing: border-box;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-}
-
-#modalConfirmarGeneracion .modal-contenido h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    color: #111827;
-    font-size: 24px;
-}
-
-#modalConfirmarGeneracion .modal-contenido p {
-    color: #374151;
-    line-height: 1.6;
-}
-
-#modalConfirmarGeneracion .modal-contenido button {
-    min-height: 44px;
-    padding: 10px 18px;
-    border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-#btnCancelarConfirmarGeneracion {
-    background: #e5e7eb;
-    color: #374151;
-}
-
-#btnAceptarConfirmarGeneracion {
-    background: #991b3f;
-    color: #ffffff;
-}
-        
-        
     </style>
 
 </head>
@@ -593,39 +402,6 @@
             </section>
 
 
-<!-- GENERAR OBLIGACIONES -->
-<section
-    class="tesoreria-card"
-    id="opcionGenerarObligaciones"
-    role="button"
-    tabindex="0"
->
-    <div class="tesoreria-card-header">
-        <div class="tesoreria-card-icon">📋</div>
-
-        <div class="tesoreria-card-content">
-            <h2 class="tesoreria-card-title">
-                Generar obligaciones
-            </h2>
-
-            <div class="tesoreria-card-description">
-                Generar las obligaciones de pago de una cuota
-                para los inmuebles incorporados al régimen,
-                evitando duplicar obligaciones existentes.
-            </div>
-
-            <div class="tesoreria-card-action">
-                Generar obligaciones
-                <span>→</span>
-            </div>
-        </div>
-    </div>
-</section>
-
-
-
-
-            
 <!-- ==================================================
      REGISTRAR PAGO
      ================================================== -->
@@ -1155,14 +931,12 @@ async function cargarPrivadasIncorporacion() {
         </option>
     `;
 
-
     const { data, error } =
         await supabaseClient
             .from("residentes")
             .select("privada")
-            .not("privada", "is", null)
+            .eq("es_residente", true)
             .order("privada");
-
 
     if (error) {
 
@@ -1186,22 +960,13 @@ async function cargarPrivadasIncorporacion() {
         return;
     }
 
-
-   const privadasPermitidas = [
-    "I",
-    "II",
-    "III",
-    "IV"
-];
-
-const privadas = privadasPermitidas.filter(
-    privada =>
-        (data || []).some(
-            residente =>
-                residente.privada === privada
+    const privadas = [
+        ...new Set(
+            (data || [])
+                .map(r => r.privada)
+                .filter(Boolean)
         )
-);
-
+    ];
 
     incorporarPrivada.innerHTML = `
         <option value="">
@@ -1209,28 +974,18 @@ const privadas = privadasPermitidas.filter(
         </option>
     `;
 
+    privadas.forEach(privada => {
 
-    privadas.forEach(
-        privada => {
+        incorporarPrivada.innerHTML += `
+            <option value="${privada}">
+                ${privada}
+            </option>
+        `;
 
-            incorporarPrivada.innerHTML += `
-                <option value="${privada}">
-                    Privada ${privada}
-                </option>
-            `;
-
-        }
-    );
+    });
 
 }
                    
-/*
-/*
- * --------------------------------------------------
- * CARGAR LOTES DE LA PRIVADA SELECCIONADA
- * --------------------------------------------------
- */
-
 /*
  * --------------------------------------------------
  * CARGAR LOTES DE LA PRIVADA SELECCIONADA
@@ -1244,37 +999,18 @@ incorporarPrivada?.addEventListener(
         const privada =
             incorporarPrivada.value;
 
-
-        /*
-         * --------------------------------------------------
-         * REINICIAR SELECCIÓN DE LOTE
-         * --------------------------------------------------
-         */
-
+        // Reiniciar selección de lote
         incorporarLote.innerHTML = `
             <option value="">
                 Seleccione un lote
             </option>
         `;
 
+        grupoLoteIncorporacion.style.display = "none";
 
-        /*
-         * --------------------------------------------------
-         * OCULTAR CAMPOS DEPENDIENTES
-         * --------------------------------------------------
-         */
-
-        grupoLoteIncorporacion.style.display =
-            "none";
-
-        grupoFechaIncorporacion.style.display =
-            "none";
-
-        grupoCondicionIncorporacion.style.display =
-            "none";
-
-        grupoCantidadLotes.style.display =
-            "none";
+        grupoFechaIncorporacion.style.display = "none";
+        grupoCondicionIncorporacion.style.display = "none";
+        grupoCantidadLotes.style.display = "none";
 
 
         if (!privada) {
@@ -1282,57 +1018,23 @@ incorporarPrivada?.addEventListener(
         }
 
 
-        /*
-         * --------------------------------------------------
-         * MOSTRAR ESTADO DE CARGA
-         * --------------------------------------------------
-         */
-
         incorporarLote.innerHTML = `
             <option value="">
                 Cargando lotes...
             </option>
         `;
 
-        grupoLoteIncorporacion.style.display =
-            "block";
+        grupoLoteIncorporacion.style.display = "block";
 
-
-        /*
-         * --------------------------------------------------
-         * OBTENER ÚNICAMENTE LOTES NO INCORPORADOS
-         * --------------------------------------------------
-         *
-         * Se excluyen los residentes que ya tienen:
-         *
-         *     obligado_pago = true
-         *
-         * Por tanto, Tesorería solamente podrá seleccionar
-         * inmuebles que todavía no estén incorporados.
-         * --------------------------------------------------
-         */
 
         const { data, error } =
             await supabaseClient
                 .from("residentes")
-                .select(
-                    "id, privada, casa, identificador, obligado_pago"
-                )
-                .eq(
-                    "privada",
-                    privada
-                )
-                .eq(
-                    "obligado_pago",
-                    false
-                );
+                .select("id, privada, casa, identificador")
+                .eq("privada", privada)
+                .eq("es_residente", true)
+                .order("casa", { ascending: true });
 
-
-        /*
-         * --------------------------------------------------
-         * ERROR DE CONSULTA
-         * --------------------------------------------------
-         */
 
         if (error) {
 
@@ -1357,26 +1059,6 @@ incorporarPrivada?.addEventListener(
         }
 
 
-        /*
-         * --------------------------------------------------
-         * ORDEN NUMÉRICO DE LOS LOTES
-         * --------------------------------------------------
-         */
-
-        const lotesOrdenados =
-            [...(data || [])].sort(
-                (a, b) =>
-                    Number(a.casa) -
-                    Number(b.casa)
-            );
-
-
-        /*
-         * --------------------------------------------------
-         * REINICIAR SELECTOR
-         * --------------------------------------------------
-         */
-
         incorporarLote.innerHTML = `
             <option value="">
                 Seleccione un lote
@@ -1384,65 +1066,23 @@ incorporarPrivada?.addEventListener(
         `;
 
 
-        /*
-         * --------------------------------------------------
-         * CREAR OPCIONES
-         * --------------------------------------------------
-         */
+        (data || []).forEach(residente => {
 
-        lotesOrdenados.forEach(
-            residente => {
+            incorporarLote.innerHTML += `
+                <option
+                    value="${residente.id}"
+                    data-identificador="${residente.identificador || ""}"
+                >
+                    ${residente.identificador}
+                </option>
+            `;
 
-                const option =
-                    document.createElement(
-                        "option"
-                    );
-
-
-                /*
-                 * El valor interno sigue siendo
-                 * el UUID del residente.
-                 */
-
-                option.value =
-                    residente.id;
-
-
-                /*
-                 * Texto visible para Tesorería.
-                 */
-
-                option.textContent =
-                    `Lote ${residente.casa}`;
-
-
-                /*
-                 * Información adicional.
-                 */
-
-                option.dataset.identificador =
-                    residente.identificador || "";
-
-                option.dataset.obligadoPago =
-                    residente.obligado_pago
-                        ? "true"
-                        : "false";
-
-                option.dataset.casa =
-                    residente.casa;
-
-
-                incorporarLote.appendChild(
-                    option
-                );
-
-            }
-        );
+        });
 
     }
 );
 
-/*
+
 /*
  * --------------------------------------------------
  * SELECCIONAR LOTE
@@ -1456,128 +1096,42 @@ incorporarLote?.addEventListener(
         const residenteId =
             incorporarLote.value;
 
-
-        /*
-         * --------------------------------------------------
-         * NO HAY LOTE SELECCIONADO
-         * --------------------------------------------------
-         */
-
+        // No hay lote seleccionado
         if (!residenteId) {
 
-            grupoFechaIncorporacion.style.display =
-                "none";
-
-            grupoCondicionIncorporacion.style.display =
-                "none";
-
-            grupoCantidadLotes.style.display =
-                "none";
+            grupoFechaIncorporacion.style.display = "none";
+            grupoCondicionIncorporacion.style.display = "none";
+            grupoCantidadLotes.style.display = "none";
 
             return;
         }
 
-
-        /*
-         * --------------------------------------------------
-         * COMPROBAR SI YA ESTÁ INCORPORADO
-         * --------------------------------------------------
-         */
-
-        const opcionSeleccionada =
-            incorporarLote.options[
-                incorporarLote.selectedIndex
-            ];
-
-
-        const obligadoPago =
-            opcionSeleccionada?.dataset
-                ?.obligadoPago === "true";
-
-
-        /*
-         * Si ya está incorporado al régimen,
-         * no continuar con la incorporación.
-         */
-
-        if (obligadoPago) {
-
-            grupoFechaIncorporacion.style.display =
-                "none";
-
-            grupoCondicionIncorporacion.style.display =
-                "none";
-
-            grupoCantidadLotes.style.display =
-                "none";
-
-
-            mostrarAlerta({
-                titulo:
-                    "Lote ya incorporado",
-
-                mensaje:
-                    "El lote seleccionado ya se encuentra incorporado al régimen de aportaciones."
-            });
-
-
-            /*
-             * Regresar el selector a su estado
-             * inicial para evitar que continúe
-             * una incorporación sobre ese lote.
-             */
-
-            incorporarLote.value = "";
-
-
-            return;
-        }
-
-
-        /*
-         * --------------------------------------------------
-         * LOTE DISPONIBLE PARA INCORPORACIÓN
-         * --------------------------------------------------
-         */
+        // Lote seleccionado:
+        // habilitar datos de incorporación
+        
 
         const fechaHoy =
-            new Date()
-                .toISOString()
-                .split("T")[0];
-
-
+            new Date().toISOString().split("T")[0];
+        
         const fechaInicioObligacion =
             document.getElementById(
                 "fechaInicioObligacion"
             );
-
-
+        
         if (
             fechaInicioObligacion &&
             !fechaInicioObligacion.value
         ) {
-
-            fechaInicioObligacion.value =
-                fechaHoy;
-
+            fechaInicioObligacion.value = fechaHoy;
         }
 
-
-        /*
-         * Mostrar datos de incorporación.
-         */
-
-        grupoFechaIncorporacion.style.display =
-            "block";
-
-        grupoCondicionIncorporacion.style.display =
-            "block";
-
-        grupoCantidadLotes.style.display =
-            "block";
+        
+        grupoFechaIncorporacion.style.display = "block";
+        grupoCondicionIncorporacion.style.display = "block";
+        grupoCantidadLotes.style.display = "block";
 
     }
-);
+);    
 
 
 /*
@@ -1714,334 +1268,6 @@ function validarDatosIncorporacion() {
 
     return true;
 }                   
-
-
-/* ==================================================
-   GENERAR OBLIGACIONES: ABRIR Y CARGAR CUOTAS
-   ================================================== */
-
-const opcionGenerarObligaciones =
-    document.getElementById("opcionGenerarObligaciones");
-
-const modalGenerarObligaciones =
-    document.getElementById("modalGenerarObligaciones");
-
-const cuotaGenerarObligaciones =
-    document.getElementById("cuotaGenerarObligaciones");
-
-const btnCerrarGeneracionObligaciones =
-    document.getElementById("btnCerrarGeneracionObligaciones");
-
-const btnConsultarObligaciones =
-    document.getElementById("btnConsultarObligaciones");
-
-const btnEjecutarGeneracionObligaciones =
-    document.getElementById("btnEjecutarGeneracionObligaciones");
-
-const resumenGeneracionObligaciones =
-    document.getElementById("resumenGeneracionObligaciones");
-
-const resultadoGeneracionObligaciones =
-    document.getElementById("resultadoGeneracionObligaciones");
-
-
-opcionGenerarObligaciones?.addEventListener("click", async () => {
-    modalGenerarObligaciones.style.display = "flex";
-
-    cuotaGenerarObligaciones.innerHTML =
-        '<option value="">Cargando cuotas...</option>';
-
-    resumenGeneracionObligaciones.innerHTML = "";
-    resultadoGeneracionObligaciones.innerHTML = "";
-    btnEjecutarGeneracionObligaciones.disabled = true;
-
-    const { data, error } = await supabaseClient
-        .from("cuotas")
-        .select(`
-            id,
-            tipo,
-            descripcion,
-            periodo_mes,
-            periodo_anio,
-            fecha_inicio_pago,
-            activa
-        `)
-        .eq("activa", true)
-        .not("periodo_mes", "is", null)
-        .not("periodo_anio", "is", null)
-        .order("periodo_anio", { ascending: true })
-        .order("periodo_mes", { ascending: true });
-
-    if (error) {
-        console.error("Error cargando cuotas:", error);
-
-        cuotaGenerarObligaciones.innerHTML =
-            '<option value="">Error al cargar cuotas</option>';
-
-        mostrarAlerta({
-            titulo: "Error",
-            mensaje: "No fue posible cargar las cuotas disponibles."
-        });
-
-        return;
-    }
-
-    const meses = [
-        "Enero", "Febrero", "Marzo", "Abril",
-        "Mayo", "Junio", "Julio", "Agosto",
-        "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    ];
-
-    cuotaGenerarObligaciones.innerHTML =
-        '<option value="">Seleccione una cuota</option>';
-
-    (data || []).forEach(cuota => {
-        const opcion = document.createElement("option");
-
-        opcion.value = cuota.id;
-        opcion.textContent =
-            `${meses[cuota.periodo_mes - 1]} ${cuota.periodo_anio}` +
-            ` — ${cuota.descripcion}`;
-
-        cuotaGenerarObligaciones.appendChild(opcion);
-    });
-
-    if (!data || data.length === 0) {
-        cuotaGenerarObligaciones.innerHTML =
-            '<option value="">No hay cuotas activas disponibles</option>';
-    }
-});
-
-
-btnCerrarGeneracionObligaciones?.addEventListener("click", () => {
-    modalGenerarObligaciones.style.display = "none";
-});
-
-
-/* CONSULTAR INMUEBLES Y OBLIGACIONES PENDIENTES */
-btnConsultarObligaciones?.addEventListener("click", async () => {
-    const cuotaId = cuotaGenerarObligaciones?.value;
-
-    if (!cuotaId) {
-        mostrarAlerta({
-            titulo: "Selecciona una cuota",
-            mensaje: "Debes seleccionar el periodo que deseas consultar."
-        });
-        return;
-    }
-
-    btnConsultarObligaciones.disabled = true;
-    resumenGeneracionObligaciones.textContent =
-        "Consultando inmuebles elegibles...";
-    resultadoGeneracionObligaciones.innerHTML = "";
-    btnEjecutarGeneracionObligaciones.disabled = true;
-
-    try {
-        const { data: cuota, error: errorCuota } = await supabaseClient
-            .from("cuotas")
-            .select("id, descripcion, periodo_mes, periodo_anio")
-            .eq("id", cuotaId)
-            .single();
-
-        if (errorCuota) throw errorCuota;
-
-        const { data: obligados, error: errorObligados } = await supabaseClient
-            .from("obligados_pago")
-            .select(`
-                residente_id,
-                fecha_inicio_obligacion,
-                cantidad_lotes,
-                condicion_inmueble,
-                residentes!inner (
-                    id, nombre, privada, casa
-                )
-            `)
-            .eq("activo", true);
-
-        if (errorObligados) throw errorObligados;
-
-        const { data: existentes, error: errorExistentes } = await supabaseClient
-            .from("obligaciones_cuotas")
-            .select("residente_id")
-            .eq("cuota_id", cuotaId);
-
-        if (errorExistentes) throw errorExistentes;
-
-        const periodo = cuota.periodo_anio * 100 + cuota.periodo_mes;
-        const idsExistentes = new Set(
-            (existentes || []).map(o => o.residente_id)
-        );
-
-        const elegibles = (obligados || []).filter(o => {
-            if (!o.fecha_inicio_obligacion) return false;
-
-            const partes = o.fecha_inicio_obligacion.split("-").map(Number);
-            const periodoInicio = partes[0] * 100 + partes[1];
-
-            return periodoInicio <= periodo;
-        });
-
-        const pendientes = elegibles.filter(
-            o => !idsExistentes.has(o.residente_id)
-        );
-
-        window.obligacionesPendientesConsulta = {
-            cuotaId,
-            cuota,
-            pendientes
-        };
-
-        resumenGeneracionObligaciones.innerHTML = `
-            <p><strong>Periodo:</strong> ${cuota.descripcion}</p>
-            <p><strong>Inmuebles elegibles:</strong> ${elegibles.length}</p>
-            <p><strong>Obligaciones existentes:</strong> ${
-                elegibles.length - pendientes.length
-            }</p>
-            <p><strong>Pendientes de generar:</strong> ${pendientes.length}</p>
-        `;
-
-        resultadoGeneracionObligaciones.innerHTML = pendientes.length
-            ? pendientes.map(o => `
-                <div style="padding:8px;border-bottom:1px solid #ddd">
-                    <strong>${o.residentes?.privada || ""}-${o.residentes?.casa || ""}</strong>
-                    — ${o.residentes?.nombre || "Sin nombre"}
-                    <br>
-                    <small>${o.condicion_inmueble} · ${o.cantidad_lotes} lote(s)</small>
-                </div>
-            `).join("")
-            : "<p>No hay obligaciones pendientes para este periodo.</p>";
-
-        btnEjecutarGeneracionObligaciones.disabled = pendientes.length === 0;
-
-    } catch (error) {
-        console.error("Error al consultar obligaciones:", error);
-        resumenGeneracionObligaciones.textContent =
-            "No fue posible consultar las obligaciones. Revisa la consola.";
-    } finally {
-        btnConsultarObligaciones.disabled = false;
-    }
-});
-                    
-
-
-/* EJECUTAR GENERACIÓN DE OBLIGACIONES */
-btnEjecutarGeneracionObligaciones?.addEventListener("click", () => {
-    const consulta = window.obligacionesPendientesConsulta;
-
-    if (!consulta || !consulta.cuotaId || !consulta.pendientes?.length) {
-        mostrarAlerta({
-            titulo: "Consulta requerida",
-            mensaje: "Consulta primero los inmuebles pendientes de generar."
-        });
-        return;
-    }
-
-    const modalConfirmacion =
-        document.getElementById("modalConfirmarGeneracion");
-
-    const textoConfirmacion =
-        document.getElementById("textoConfirmarGeneracion");
-
-    textoConfirmacion.textContent =
-        `Se generarán ${consulta.pendientes.length} obligación(es) para ${consulta.cuota.descripcion}. ¿Deseas continuar?`;
-
-    window.consultaConfirmadaGeneracion = consulta;
-    modalConfirmacion.style.display = "flex";
-});
-
-/* CANCELAR CONFIRMACIÓN */
-document.getElementById("btnCancelarConfirmarGeneracion")
-    ?.addEventListener("click", () => {
-        document.getElementById("modalConfirmarGeneracion").style.display = "none";
-        window.consultaConfirmadaGeneracion = null;
-    });
-
-/* CONFIRMAR Y EJECUTAR GENERACIÓN */
-document.getElementById("btnAceptarConfirmarGeneracion")
-    ?.addEventListener("click", async () => {
-        const consulta = window.consultaConfirmadaGeneracion;
-
-        if (!consulta || !consulta.pendientes?.length) {
-            mostrarAlerta({
-                titulo: "Consulta requerida",
-                mensaje: "Vuelve a consultar las obligaciones pendientes."
-            });
-            return;
-        }
-
-        const modalConfirmacion =
-            document.getElementById("modalConfirmarGeneracion");
-
-        const btnAceptar =
-            document.getElementById("btnAceptarConfirmarGeneracion");
-
-        modalConfirmacion.style.display = "none";
-        btnAceptar.disabled = true;
-        btnEjecutarGeneracionObligaciones.disabled = true;
-        btnConsultarObligaciones.disabled = true;
-
-        let generadas = 0;
-        const errores = [];
-
-        try {
-            for (const inmueble of consulta.pendientes) {
-                const { error } = await supabaseClient.rpc(
-                    "crear_obligacion_tesoreria",
-                    {
-                        p_residente_id: inmueble.residente_id,
-                        p_cuota_id: consulta.cuotaId
-                    }
-                );
-
-                if (error) {
-                    console.error(
-                        "Error generando obligación:",
-                        inmueble.residente_id,
-                        error
-                    );
-                    errores.push(error.message || "Error desconocido");
-                } else {
-                    generadas++;
-                }
-            }
-
-            resumenGeneracionObligaciones.innerHTML = `
-                <p><strong>Obligaciones generadas:</strong> ${generadas}</p>
-                <p><strong>Errores:</strong> ${errores.length}</p>
-            `;
-
-            resultadoGeneracionObligaciones.innerHTML = errores.length
-                ? "<p>No se pudieron generar todas las obligaciones. Revisa la consola.</p>"
-                : "<p>Generación terminada correctamente.</p>";
-
-            if (errores.length === 0) {
-                window.obligacionesPendientesConsulta = null;
-                btnEjecutarGeneracionObligaciones.disabled = true;
-            } else {
-                mostrarAlerta({
-                    titulo: "Generación parcial",
-                    mensaje: "Algunas obligaciones no se generaron. Revisa los errores antes de reintentar."
-                });
-            }
-
-        } catch (error) {
-            console.error("Error en la generación:", error);
-            mostrarAlerta({
-                titulo: "Error",
-                mensaje: "No fue posible completar la generación. Verifica las obligaciones existentes antes de reintentar."
-            });
-        } finally {
-            window.consultaConfirmadaGeneracion = null;
-            btnAceptar.disabled = false;
-            btnConsultarObligaciones.disabled = false;
-
-            if (errores.length > 0) {
-                btnEjecutarGeneracionObligaciones.disabled = false;
-            }
-        }
-    });
-
-
                     
 /*
  * ==================================================
@@ -2119,7 +1345,6 @@ document
                         }
                     );
 
-                   
 
                 } catch (error) {
 
@@ -2138,7 +1363,153 @@ document
 
 
 
+/*
+ * --------------------------------------------------
+ * ACCIONES DE INCORPORACIÓN
+ * --------------------------------------------------
+ */
 
+const accionesIncorporacion =
+    document.getElementById(
+        "accionesIncorporacion"
+    );
+
+const btnConfirmarIncorporacion =
+    document.getElementById(
+        "btnConfirmarIncorporacion"
+    );
+
+const btnCancelarIncorporacion =
+    document.getElementById(
+        "btnCancelarIncorporacion"
+    );
+
+
+/*
+ * Mostrar acciones cuando se seleccionen
+ * todos los datos necesarios.
+ */
+
+function actualizarAccionesIncorporacion() {
+
+    const residenteId =
+        incorporarLote?.value;
+
+    const fechaInicio =
+        document.getElementById(
+            "fechaInicioObligacion"
+        )?.value;
+
+    const condicion =
+        condicionInmueble?.value;
+
+    const cantidad =
+        cantidadLotes?.value;
+
+
+    const completo =
+        residenteId &&
+        fechaInicio &&
+        condicion &&
+        cantidad;
+
+
+    if (accionesIncorporacion) {
+
+        accionesIncorporacion.style.display =
+            completo
+                ? "block"
+                : "none";
+
+    }
+
+}
+
+
+/*
+ * Actualizar estado cuando cambie
+ * cualquiera de los campos.
+ */
+
+incorporarLote?.addEventListener(
+    "change",
+    actualizarAccionesIncorporacion
+);
+
+document
+    .getElementById("fechaInicioObligacion")
+    ?.addEventListener(
+        "change",
+        actualizarAccionesIncorporacion
+    );
+
+condicionInmueble?.addEventListener(
+    "change",
+    actualizarAccionesIncorporacion
+);
+
+cantidadLotes?.addEventListener(
+    "change",
+    actualizarAccionesIncorporacion
+);
+
+
+/*
+ * --------------------------------------------------
+ * CANCELAR
+ * --------------------------------------------------
+ */
+
+btnCancelarIncorporacion?.addEventListener(
+    "click",
+    () => {
+
+        modalIncorporarObligado.style.display =
+            "none";
+
+    }
+);
+
+
+/*
+ * --------------------------------------------------
+ * CONFIRMAR
+ * --------------------------------------------------
+ */
+
+btnConfirmarIncorporacion?.addEventListener(
+    "click",
+    () => {
+
+        if (
+            !validarDatosIncorporacion()
+        ) {
+            return;
+        }
+
+        console.log(
+            "Datos listos para incorporar:",
+            {
+                residenteId:
+                    incorporarLote.value,
+
+                fechaInicio:
+                    document.getElementById(
+                        "fechaInicioObligacion"
+                    ).value,
+
+                condicion:
+                    condicionInmueble.value,
+
+                cantidadLotes:
+                    Number(
+                        cantidadLotes.value
+                    )
+            }
+        );
+
+    }
+);
 
     </script>
 
@@ -2276,10 +1647,9 @@ document
 <div
     id="accionesIncorporacion"
     style="
-        display:flex;
-        justify-content:flex-end;
-        gap:12px;
-        margin-top:28px;
+        display:none;
+        margin-top:20px;
+        text-align:right;
     "
 >
 
@@ -2303,605 +1673,6 @@ document
     </div>
 
 </div>
-
-
-<!-- MODAL: GENERAR OBLIGACIONES -->
-<div id="modalGenerarObligaciones" style="
-    display:none;
-    position:fixed;
-    inset:0;
-    z-index:10001;
-    background:rgba(0,0,0,.55);
-    padding:24px;
-    align-items:center;
-    justify-content:center;
-    box-sizing:border-box;
-">
-    <div style="
-        background:#fff;
-        width:min(900px,100%);
-        max-height:90vh;
-        overflow-y:auto;
-        border-radius:16px;
-        padding:28px;
-        box-sizing:border-box;
-    ">
-        <h2 style="margin-top:0;">
-            Generar obligaciones de pago
-        </h2>
-
-        <p>
-            Seleccione la cuota para consultar los inmuebles
-            elegibles y las obligaciones que faltan por generar.
-        </p>
-
-        <div style="margin-bottom:20px;">
-            <label for="cuotaGenerarObligaciones">
-                <strong>Cuota</strong>
-            </label>
-
-            <select
-                id="cuotaGenerarObligaciones"
-                style="
-                    display:block;
-                    width:100%;
-                    margin-top:8px;
-                    padding:12px;
-                    border:1px solid #d1d5db;
-                    border-radius:8px;
-                    font-size:16px;
-                "
-            >
-                <option value="">Cargando cuotas...</option>
-            </select>
-        </div>
-
-        <div id="resumenGeneracionObligaciones"></div>
-
-        <div
-            id="resultadoGeneracionObligaciones"
-            style="margin-top:20px;"
-        ></div>
-
-        <div style="
-            display:flex;
-            justify-content:flex-end;
-            gap:12px;
-            margin-top:24px;
-        ">
-            <button
-                type="button"
-                id="btnCerrarGeneracionObligaciones"
-            >
-                Cerrar
-            </button>
-
-            <button
-                type="button"
-                id="btnConsultarObligaciones"
-            >
-                Consultar inmuebles
-            </button>
-
-            <button
-                type="button"
-                id="btnEjecutarGeneracionObligaciones"
-                disabled
-            >
-                Generar obligaciones
-            </button>
-        </div>
-    </div>
-</div>
-
-
-<!-- MODAL DE CONFIRMACIÓN DE GENERACIÓN -->
-<div id="modalConfirmarGeneracion" class="modal-overlay" style="display:none;">
-    <div class="modal-contenido">
-        <h2>Confirmar generación</h2>
-
-        <p id="textoConfirmarGeneracion">
-            ¿Deseas generar las obligaciones seleccionadas?
-        </p>
-
-        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:28px;">
-            <button type="button" id="btnCancelarConfirmarGeneracion">
-                Cancelar
-            </button>
-
-            <button type="button" id="btnAceptarConfirmarGeneracion">
-                Confirmar generación
-            </button>
-        </div>
-    </div>
-</div>
-
-    
-<script>
-
-/*
- * ==================================================
- * CONTROL DEL MODAL DE INCORPORACIÓN
- * ==================================================
- *
- * Este bloque se ejecuta después de que existe
- * el HTML del modal.
- *
- * Se encuentra encapsulado para evitar conflictos
- * con las constantes declaradas anteriormente
- * en tesoreria.html.
- * ==================================================
- */
-
-(() => {
-
-    /*
-     * --------------------------------------------------
-     * REFERENCIAS DEL MODAL
-     * --------------------------------------------------
-     */
-
-    const modal =
-        document.getElementById(
-            "modalIncorporarObligado"
-        );
-
-    const privada =
-        document.getElementById(
-            "incorporarPrivada"
-        );
-
-    const lote =
-        document.getElementById(
-            "incorporarLote"
-        );
-
-    const fecha =
-        document.getElementById(
-            "fechaInicioObligacion"
-        );
-
-    const condicion =
-        document.getElementById(
-            "condicionInmueble"
-        );
-
-    const cantidad =
-        document.getElementById(
-            "cantidadLotes"
-        );
-
-    const grupoLote =
-        document.getElementById(
-            "grupoLoteIncorporacion"
-        );
-
-    const grupoFecha =
-        document.getElementById(
-            "grupoFechaIncorporacion"
-        );
-
-    const grupoCondicion =
-        document.getElementById(
-            "grupoCondicionIncorporacion"
-        );
-
-    const grupoCantidad =
-        document.getElementById(
-            "grupoCantidadLotes"
-        );
-
-    const btnCancelar =
-        document.getElementById(
-            "btnCancelarIncorporacion"
-        );
-
-    const btnConfirmar =
-        document.getElementById(
-            "btnConfirmarIncorporacion"
-        );
-
-
-    /*
-     * --------------------------------------------------
-     * VALIDAR DATOS
-     * --------------------------------------------------
-     */
-
-    function validarDatos() {
-
-        const residenteId =
-            lote?.value;
-
-        const fechaInicio =
-            fecha?.value;
-
-        const condicionValor =
-            condicion?.value;
-
-        const cantidadValor =
-            cantidad?.value;
-
-
-        if (!residenteId) {
-
-            mostrarAlerta({
-                titulo:
-                    "Datos incompletos",
-
-                mensaje:
-                    "Debe seleccionar un lote."
-            });
-
-            return false;
-        }
-
-
-        if (!fechaInicio) {
-
-            mostrarAlerta({
-                titulo:
-                    "Datos incompletos",
-
-                mensaje:
-                    "Debe indicar la fecha de incorporación al régimen."
-            });
-
-            return false;
-        }
-
-
-        if (!condicionValor) {
-
-            mostrarAlerta({
-                titulo:
-                    "Datos incompletos",
-
-                mensaje:
-                    "Debe seleccionar la condición del inmueble."
-            });
-
-            return false;
-        }
-
-
-        if (!cantidadValor) {
-
-            mostrarAlerta({
-                titulo:
-                    "Datos incompletos",
-
-                mensaje:
-                    "Debe seleccionar la cantidad de lotes."
-            });
-
-            return false;
-        }
-
-
-        return true;
-    }
-
-
-    /*
-     * --------------------------------------------------
-     * CANCELAR
-     * --------------------------------------------------
-     */
-
-    btnCancelar?.addEventListener(
-        "click",
-        () => {
-
-            if (modal) {
-
-                modal.style.display =
-                    "none";
-            }
-
-        }
-    );
-
-
-    /*
-     * --------------------------------------------------
-     * CONFIRMAR INCORPORACIÓN
-     * --------------------------------------------------
-     */
-
-    btnConfirmar?.addEventListener(
-        "click",
-        async () => {
-
-            console.log(
-                "Botón Incorporar al régimen presionado."
-            );
-
-
-            /*
-             * --------------------------------------------------
-             * VALIDACIÓN
-             * --------------------------------------------------
-             */
-
-            if (!validarDatos()) {
-
-                return;
-            }
-
-
-            /*
-             * --------------------------------------------------
-             * DATOS
-             * --------------------------------------------------
-             */
-
-            const residenteId =
-                lote.value;
-
-            const fechaInicio =
-                fecha.value;
-
-            const condicionValor =
-                condicion.value;
-
-            const cantidadValor =
-                Number(
-                    cantidad.value
-                );
-
-
-            console.log(
-                "Datos de incorporación:",
-                {
-                    residenteId,
-                    fechaInicio,
-                    condicion:
-                        condicionValor,
-                    cantidadLotes:
-                        cantidadValor
-                }
-            );
-
-
-            /*
-             * --------------------------------------------------
-             * BLOQUEAR BOTÓN
-             * --------------------------------------------------
-             */
-
-            const textoOriginal =
-                btnConfirmar.textContent;
-
-
-            btnConfirmar.disabled =
-                true;
-
-            btnConfirmar.textContent =
-                "Registrando...";
-
-
-            try {
-
-                /*
-                 * --------------------------------------------------
-                 * EJECUTAR RPC
-                 * --------------------------------------------------
-                 */
-
-
-
-/*
- * --------------------------------------------------
- * EJECUTAR RPC
- * --------------------------------------------------
- */
-
-const { data, error } =
-    await supabaseClient.rpc(
-        "incorporar_obligado_pago",
-        {
-            p_residente_id:
-                residenteId,
-
-            p_fecha_inicio_obligacion:
-                fechaInicio,
-
-            p_cantidad_lotes:
-                cantidadValor,
-
-            p_condicion_inmueble:
-                condicionValor,
-
-            p_observaciones:
-                null
-        }
-    );
-
-
-                /*
-                 * --------------------------------------------------
-                 * ERROR DE LA RPC
-                 * --------------------------------------------------
-                 */
-
-                if (error) {
-
-                    console.error(
-                        "Error de incorporar_obligado_pago:",
-                        error
-                    );
-
-
-                    mostrarAlerta({
-                        titulo:
-                            "No fue posible realizar la incorporación",
-
-                        mensaje:
-                            error.message ||
-                            "Ocurrió un error al registrar la incorporación."
-                    });
-
-                    return;
-                }
-
-
-                /*
-                 * --------------------------------------------------
-                 * ÉXITO
-                 * --------------------------------------------------
-                 */
-
-                console.log(
-                    "Incorporación realizada correctamente:",
-                    data
-                );
-
-
-                mostrarAlerta({
-                    titulo:
-                        "Incorporación realizada",
-
-                    mensaje:
-                        "El lote fue incorporado correctamente al régimen de aportaciones."
-                });
-
-
-                /*
-                 * --------------------------------------------------
-                 * CERRAR MODAL
-                 * --------------------------------------------------
-                 */
-
-                if (modal) {
-
-                    modal.style.display =
-                        "none";
-                }
-
-
-                /*
-                 * --------------------------------------------------
-                 * LIMPIAR FORMULARIO
-                 * --------------------------------------------------
-                 */
-
-                if (privada) {
-
-                    privada.value =
-                        "";
-                }
-
-
-                if (lote) {
-
-                    lote.innerHTML = `
-                        <option value="">
-                            Seleccione un lote
-                        </option>
-                    `;
-
-                    lote.value =
-                        "";
-                }
-
-
-                if (fecha) {
-
-                    fecha.value =
-                        "";
-                }
-
-
-                if (condicion) {
-
-                    condicion.value =
-                        "";
-                }
-
-
-                if (cantidad) {
-
-                    cantidad.value =
-                        "";
-                }
-
-
-                /*
-                 * --------------------------------------------------
-                 * OCULTAR CAMPOS
-                 * --------------------------------------------------
-                 */
-
-                if (grupoLote) {
-
-                    grupoLote.style.display =
-                        "none";
-                }
-
-
-                if (grupoFecha) {
-
-                    grupoFecha.style.display =
-                        "none";
-                }
-
-
-                if (grupoCondicion) {
-
-                    grupoCondicion.style.display =
-                        "none";
-                }
-
-
-                if (grupoCantidad) {
-
-                    grupoCantidad.style.display =
-                        "none";
-                }
-
-
-            } catch (error) {
-
-                console.error(
-                    "Error inesperado durante la incorporación:",
-                    error
-                );
-
-
-                mostrarAlerta({
-                    titulo:
-                        "Error",
-
-                    mensaje:
-                        "Ocurrió un error inesperado al realizar la incorporación."
-                });
-
-
-            } finally {
-
-                /*
-                 * --------------------------------------------------
-                 * RESTAURAR BOTÓN
-                 * --------------------------------------------------
-                 */
-
-                btnConfirmar.disabled =
-                    false;
-
-                btnConfirmar.textContent =
-                    textoOriginal;
-
-            }
-
-        }
-    );
-    
-       
-})();
-
-</script>
-
     
 </body>
 
