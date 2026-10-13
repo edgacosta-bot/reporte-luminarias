@@ -452,6 +452,15 @@
 }
         
         
+
+#modalRegistrarPago { position:fixed; inset:0; z-index:10010; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.55); padding:20px; box-sizing:border-box; }
+#modalRegistrarPago .modal-contenido { width:min(680px,100%); max-height:90vh; overflow-y:auto; background:#fff; border-radius:16px; padding:28px; box-sizing:border-box; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+#modalRegistrarPago label { display:block; margin:14px 0 6px; color:#374151; font-weight:600; }
+#modalRegistrarPago input, #modalRegistrarPago select, #modalRegistrarPago textarea { width:100%; box-sizing:border-box; padding:11px 12px; border:1px solid #d1d5db; border-radius:8px; font:inherit; }
+#modalRegistrarPago .acciones { display:flex; justify-content:flex-end; gap:10px; margin-top:24px; }
+#modalRegistrarPago button { border:0; border-radius:8px; padding:11px 18px; cursor:pointer; font-weight:600; }
+#btnGuardarPago { background:#991b3f; color:#fff; }
+
     </style>
 
 </head>
@@ -2049,22 +2058,138 @@ document.getElementById("btnAceptarConfirmarGeneracion")
  * ==================================================
  */
 
-document
-    .getElementById("opcionRegistrarPago")
-    ?.addEventListener(
-        "click",
-        () => {
+const opcionRegistrarPago = document.getElementById("opcionRegistrarPago");
+const modalRegistrarPago = document.getElementById("modalRegistrarPago");
+const pagoResidente = document.getElementById("pagoResidente");
+const pagoObligacion = document.getElementById("pagoObligacion");
+const pagoResumenObligacion = document.getElementById("pagoResumenObligacion");
+const btnGuardarPago = document.getElementById("btnGuardarPago");
 
-            mostrarAlerta({
-                titulo: "Registrar pago",
-                mensaje: `
-                    La función para registrar pagos
-                    se incorporará en el siguiente paso.
-                `
-            });
+opcionRegistrarPago?.addEventListener("click", async () => {
+    modalRegistrarPago.style.display = "flex";
+    pagoResidente.innerHTML = '<option value="">Cargando residentes...</option>';
+    pagoObligacion.innerHTML = '<option value="">Seleccione un residente primero</option>';
+    pagoResumenObligacion.textContent = "";
 
-        }
-    );
+    const { data, error } = await supabaseClient
+        .from("residentes")
+        .select("id, nombre, privada, casa, identificador, obligado_pago")
+        .eq("es_residente", true)
+        .eq("obligado_pago", true)
+        .order("privada", { ascending: true })
+        .order("casa", { ascending: true });
+
+    if (error) {
+        console.error("Error cargando residentes para pago:", error);
+        pagoResidente.innerHTML = '<option value="">Error al cargar residentes</option>';
+        mostrarAlerta({ titulo: "Error", mensaje: "No fue posible cargar los residentes incorporados al régimen." });
+        return;
+    }
+
+    pagoResidente.innerHTML = '<option value="">Seleccione un residente</option>';
+    (data || []).forEach(r => {
+        const option = document.createElement("option");
+        option.value = r.id;
+        const lote = r.identificador || `Privada ${r.privada || "?"} · Lote ${r.casa || "?"}`;
+        option.textContent = `${lote} — ${r.nombre || "Sin nombre"}`;
+        pagoResidente.appendChild(option);
+    });
+    if (!data || data.length === 0) {
+        pagoResidente.innerHTML = '<option value="">No hay residentes incorporados</option>';
+    }
+});
+
+document.getElementById("btnCerrarModalPago")?.addEventListener("click", () => {
+    modalRegistrarPago.style.display = "none";
+});
+
+pagoResidente?.addEventListener("change", async () => {
+    const residenteId = pagoResidente.value;
+    pagoObligacion.innerHTML = '<option value="">Consultando mensualidades...</option>';
+    pagoResumenObligacion.textContent = "";
+    if (!residenteId) {
+        pagoObligacion.innerHTML = '<option value="">Seleccione un residente primero</option>';
+        return;
+    }
+
+    const { data, error } = await supabaseClient.rpc("preparar_pago_tesoreria", {
+        p_residente_id: residenteId
+    });
+    if (error) {
+        console.error("Error consultando mensualidades:", error);
+        pagoObligacion.innerHTML = '<option value="">Error al consultar mensualidades</option>';
+        mostrarAlerta({ titulo: "Error", mensaje: "No fue posible consultar las mensualidades pendientes." });
+        return;
+    }
+
+    const pendientes = (data || []).filter(o => o.estatus === "pendiente");
+    pagoObligacion.innerHTML = '<option value="">Seleccione la mensualidad exigible</option>';
+    if (!pendientes.length) {
+        pagoObligacion.innerHTML = '<option value="">No tiene mensualidades pendientes</option>';
+        pagoResumenObligacion.textContent = "Este residente no tiene obligaciones pendientes.";
+        return;
+    }
+
+    // Se conserva la regla financiera: solo se registra la mensualidad pendiente más antigua.
+    const actual = pendientes.find(o => o.es_obligacion_actual) || pendientes[0];
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    const option = document.createElement("option");
+    option.value = actual.obligacion_id;
+    option.textContent = `${meses[(actual.periodo_mes || 1) - 1]} ${actual.periodo_anio} — $${Number(actual.monto).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    pagoObligacion.appendChild(option);
+    pagoObligacion.value = actual.obligacion_id;
+    pagoResumenObligacion.textContent = `Mensualidad a registrar: ${option.textContent}. Pendiente total: $${Number(actual.monto_pendiente_total || actual.monto).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`;
+});
+
+btnGuardarPago?.addEventListener("click", async () => {
+    const residenteId = pagoResidente.value;
+    const obligacionId = pagoObligacion.value;
+    const folio = Number(document.getElementById("pagoFolio").value);
+    const fecha = document.getElementById("pagoFecha").value;
+    const metodo = document.getElementById("pagoMetodo").value;
+    const referencia = document.getElementById("pagoReferencia").value.trim() || null;
+    const observaciones = document.getElementById("pagoObservaciones").value.trim() || null;
+
+    if (!residenteId || !obligacionId || !Number.isInteger(folio) || folio <= 0 || !fecha || !metodo) {
+        mostrarAlerta({ titulo: "Datos incompletos", mensaje: "Selecciona residente y mensualidad, e indica folio, fecha y método de pago." });
+        return;
+    }
+
+    btnGuardarPago.disabled = true;
+    const textoOriginal = btnGuardarPago.textContent;
+    btnGuardarPago.textContent = "Registrando...";
+    try {
+        const { data: authData, error: authError } = await supabaseClient.auth.getUser();
+        if (authError || !authData?.user) throw new Error("No se pudo identificar al usuario que registra el pago.");
+
+        const { data, error } = await supabaseClient.rpc("registrar_pago_mensualidad_tesoreria", {
+            p_obligacion_id: obligacionId,
+            p_folio: folio,
+            p_fecha_pago: fecha,
+            p_metodo_pago: metodo,
+            p_referencia: referencia,
+            p_observaciones: observaciones,
+            p_registrado_por: authData.user.id
+        });
+        if (error) throw error;
+
+        const resultado = Array.isArray(data) ? data[0] : data;
+        modalRegistrarPago.style.display = "none";
+        mostrarAlerta({
+            titulo: "Pago registrado",
+            mensaje: `Se registró la mensualidad correctamente. Folio: ${resultado?.resultado_folio ?? folio}. Importe: $${Number(resultado?.resultado_monto ?? 0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`
+        });
+        document.getElementById("pagoFolio").value = "";
+        document.getElementById("pagoReferencia").value = "";
+        document.getElementById("pagoObservaciones").value = "";
+    } catch (error) {
+        console.error("Error registrando pago:", error);
+        mostrarAlerta({ titulo: "No se pudo registrar el pago", mensaje: error.message || "Ocurrió un error al registrar el pago." });
+    } finally {
+        btnGuardarPago.disabled = false;
+        btnGuardarPago.textContent = textoOriginal;
+    }
+});
 
                     /*
                      * ==================================================
@@ -2903,7 +3028,33 @@ const { data, error } =
 </script>
 
     
+
+<div id="modalRegistrarPago" role="dialog" aria-modal="true" aria-labelledby="tituloModalRegistrarPago">
+  <div class="modal-contenido">
+    <h2 id="tituloModalRegistrarPago" style="margin-top:0">Registrar pago por mensualidad</h2>
+    <p>Registra una mensualidad por operación. Si un recibo físico cubre varios meses, utiliza el mismo folio en cada registro mensual.</p>
+    <label for="pagoResidente">Residente / inmueble</label>
+    <select id="pagoResidente"><option value="">Seleccione un residente</option></select>
+    <label for="pagoObligacion">Mensualidad</label>
+    <select id="pagoObligacion"><option value="">Seleccione un residente primero</option></select>
+    <div id="pagoResumenObligacion" style="margin-top:10px;color:#4b5563"></div>
+    <label for="pagoFolio">Folio del recibo físico</label>
+    <input id="pagoFolio" type="number" min="1" step="1" inputmode="numeric" placeholder="Ej. 000123" />
+    <label for="pagoFecha">Fecha de pago</label>
+    <input id="pagoFecha" type="date" />
+    <label for="pagoMetodo">Método de pago</label>
+    <select id="pagoMetodo"><option value="">Seleccione</option><option value="transferencia">Transferencia</option><option value="efectivo">Efectivo</option><option value="deposito">Depósito</option><option value="otro">Otro</option></select>
+    <label for="pagoReferencia">Referencia (opcional)</label>
+    <input id="pagoReferencia" type="text" maxlength="200" />
+    <label for="pagoObservaciones">Observaciones (opcional)</label>
+    <textarea id="pagoObservaciones" rows="2"></textarea>
+    <div class="acciones">
+      <button type="button" id="btnCerrarModalPago" style="background:#e5e7eb;color:#374151">Cancelar</button>
+      <button type="button" id="btnGuardarPago">Registrar mensualidad</button>
+    </div>
+  </div>
+</div>
+
 </body>
 
 </html>
-
