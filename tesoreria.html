@@ -388,6 +388,69 @@
     background: #2563eb;
     color: #ffffff;
 }
+
+
+/* ==================================================
+   MODAL DE CONFIRMACIÓN DE GENERACIÓN
+   ================================================== */
+
+#modalConfirmarGeneracion {
+    position: fixed;
+    inset: 0;
+    z-index: 10002;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.55);
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+#modalConfirmarGeneracion .modal-contenido {
+    position: relative;
+    width: min(600px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #ffffff;
+    color: #111827;
+    border-radius: 18px;
+    padding: 32px;
+    box-sizing: border-box;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+#modalConfirmarGeneracion .modal-contenido h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #111827;
+    font-size: 24px;
+}
+
+#modalConfirmarGeneracion .modal-contenido p {
+    color: #374151;
+    line-height: 1.6;
+}
+
+#modalConfirmarGeneracion .modal-contenido button {
+    min-height: 44px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#btnCancelarConfirmarGeneracion {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+#btnAceptarConfirmarGeneracion {
+    background: #991b3f;
+    color: #ffffff;
+}
+        
         
     </style>
 
