@@ -2150,8 +2150,26 @@ btnGuardarPago?.addEventListener("click", async () => {
     const referencia = document.getElementById("pagoReferencia").value.trim() || null;
     const observaciones = document.getElementById("pagoObservaciones").value.trim() || null;
 
-    if (!residenteId || !obligacionId || !Number.isInteger(folio) || folio <= 0 || !fecha || !metodo) {
-        mostrarAlerta({ titulo: "Datos incompletos", mensaje: "Selecciona residente y mensualidad, e indica folio, fecha y método de pago." });
+    const camposFaltantes = [];
+    if (!residenteId) camposFaltantes.push("residente");
+    if (!obligacionId) camposFaltantes.push("mensualidad");
+    if (!Number.isInteger(folio) || folio <= 0) camposFaltantes.push("folio válido");
+    if (!fecha) camposFaltantes.push("fecha de pago");
+    if (!metodo) camposFaltantes.push("método de pago");
+
+    if (camposFaltantes.length > 0) {
+        console.warn("Validación de pago: campos no reconocidos", {
+            residenteId,
+            obligacionId,
+            folioCapturado: document.getElementById("pagoFolio").value,
+            fecha,
+            metodo,
+            camposFaltantes
+        });
+        mostrarAlerta({
+            titulo: "Revisa los datos del pago",
+            mensaje: "El sistema no reconoce: " + camposFaltantes.join(", ") + ". Verifica esos campos e inténtalo nuevamente."
+        });
         return;
     }
 
