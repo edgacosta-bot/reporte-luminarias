@@ -2123,6 +2123,16 @@ pagoResidente?.addEventListener("change", async () => {
     }
 
     const pendientes = (data || []).filter(o => o.estatus === "pendiente");
+
+    console.log(
+    "Mensualidades devueltas por preparar_pago_tesoreria:",
+    (data || []).map(o => ({
+        obligacion_id: o.obligacion_id,
+        periodo_mes: o.periodo_mes,
+        periodo_anio: o.periodo_anio,
+        estatus: o.estatus
+    }))
+);
     pagoObligacion.innerHTML = '<option value="">Seleccione la mensualidad exigible</option>';
     if (!pendientes.length) {
         pagoObligacion.innerHTML = '<option value="">No tiene mensualidades pendientes</option>';
