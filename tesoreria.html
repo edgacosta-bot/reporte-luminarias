@@ -2191,6 +2191,14 @@ btnGuardarPago?.addEventListener("click", async () => {
         const { data: authData, error: authError } = await supabaseClient.auth.getUser();
         if (authError || !authData?.user) throw new Error("No se pudo identificar al usuario que registra el pago.");
 
+        console.log("Intento de registro:", {
+          residenteId,
+          obligacionId,
+          folio,
+          fecha,
+          metodo
+        });
+        
         const { data, error } = await supabaseClient.rpc("registrar_pago_mensualidad_tesoreria", {
             p_obligacion_id: obligacionId,
             p_folio: folio,
