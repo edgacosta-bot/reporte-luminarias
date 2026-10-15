@@ -466,7 +466,7 @@
 #modalCuotasResidentes .cuotas-filtros { display:grid; grid-template-columns:minmax(210px,1.5fr) minmax(130px,.7fr) minmax(150px,.8fr) auto auto; gap:10px; align-items:end; margin:18px 0; }
 #modalCuotasResidentes label { display:block; font-weight:600; color:#374151; margin-bottom:6px; }
 #modalCuotasResidentes input, #modalCuotasResidentes select { width:100%; min-height:40px; box-sizing:border-box; padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; font:inherit; }
-#modalCuotasResidentes .cuotas-resumen { display:flex; flex-wrap:wrap; gap:10px; margin:14px 0; }
+#modalCuotasResidentes .cuotas-resumen { display:grid; grid-template-columns:repeat(auto-fit,minmax(155px,1fr)); gap:10px; margin:14px 0; }
 #modalCuotasResidentes .cuota-kpi { border:1px solid #e5e7eb; border-radius:10px; padding:10px 14px; min-width:145px; background:#f9fafb; }
 #modalCuotasResidentes .cuota-kpi strong { display:block; font-size:18px; margin-top:3px; color:#111827; }
 #modalCuotasResidentes .cuotas-tabla-wrap { overflow:auto; border:1px solid #e5e7eb; border-radius:10px; }
@@ -3294,7 +3294,7 @@ const { data, error } =
       </table>
     </div>
     <div class="cuotas-acciones">
-      <span style="font-size:12px;color:#6b7280;max-width:780px">“Por generar” identifica un periodo iniciado sin obligación registrada; no representa por sí mismo un adeudo. Los periodos futuros se muestran aparte. Los pagos cancelados no se suman a los importes pagados.</span>
+      <span style="font-size:12px;color:#6b7280;max-width:780px">“Periodos iniciados sin obligación” requieren revisión administrativa y no son adeudos registrados. “Periodos futuros por generar” son previsiones de trabajo, no deudas actuales. Los pagos cancelados no se suman a los importes pagados. Los indicadores respetan los filtros seleccionados.</span>
       <div class="cuotas-botones"><button type="button" id="btnCerrarCuotasResidentes">Cerrar</button></div>
     </div>
   </div>
@@ -3378,13 +3378,22 @@ const { data, error } =
     });
     const generated = rows.filter(r => r.obligacion_id);
     const paid = generated.filter(r => r.estado === "pagada").length;
-    const pending = generated.filter(r => r.estado === "pendiente").length;
-    const generate = rows.filter(r => r.estado === "por_generar").length;
+    const pendingRows = generated.filter(r => r.estado === "pendiente");
+    const pending = pendingRows.length;
+    const startedMissing = rows.filter(r => !r.obligacion_id && r.estado === "por_generar").length;
+    const futureMissing = rows.filter(r => !r.obligacion_id && r.estado === "futura").length;
     const review = rows.filter(r => estadoUI(r).key === "revisar").length;
-    const totalDue = generated.filter(r => r.estado === "pendiente").reduce((a,r) => a + Math.max(0,Number(r.monto || 0)-Number(r.monto_pagado_activo || 0)),0);
+    const totalDue = pendingRows.reduce((a,r) => a + Math.max(0,Number(r.monto || 0)-Number(r.monto_pagado_activo || 0)),0);
+    const totalPaid = generated.reduce((a,r) => a + Math.max(0,Number(r.monto_pagado_activo || 0)),0);
     summary.replaceChildren();
     const kpis = [
-      ["Registros filtrados", rows.length], ["Obligaciones pagadas", paid], ["Obligaciones pendientes", pending], ["Pendiente registrado", money(totalDue)], ["Periodos por generar", generate], ["Revisar conciliación", review]
+      ["Importe pagado activo", money(totalPaid)],
+      ["Obligaciones pagadas", paid],
+      ["Obligaciones pendientes", pending],
+      ["Importe pendiente registrado", money(totalDue)],
+      ["Requieren conciliación", review],
+      ["Periodos iniciados sin obligación", startedMissing],
+      ["Periodos futuros por generar", futureMissing]
     ];
     kpis.forEach(([label,value]) => { const div=document.createElement("div"); div.className="cuota-kpi"; const span=document.createElement("span"); span.textContent=label; const strong=document.createElement("strong"); strong.textContent=String(value); div.append(span,strong); summary.appendChild(div); });
   }
