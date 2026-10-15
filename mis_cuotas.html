@@ -39,7 +39,11 @@ function inicioPeriodo(o){
     : null;
 }
 function hoyLocal(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
-function esFuturo(o){const inicio=inicioPeriodo(o);return Boolean(inicio&&inicio>hoyLocal())}
+function esFuturo(o){
+  const inicio = inicioPeriodo(o);
+  return !inicio || inicio > hoyLocal();
+}
+
 function diasEntre(inicio,fin){if(!inicio||!fin)return null;const a=Date.parse(String(inicio).slice(0,10)+"T00:00:00Z"),b=Date.parse(String(fin).slice(0,10)+"T00:00:00Z");return Number.isFinite(a)&&Number.isFinite(b)?Math.floor((b-a)/86400000):null}
 function etiquetaOb(o){
  const s=String(o.estatus||"").toLowerCase(),hoy=hoyLocal(),limite=o.fecha_limite_pago?String(o.fecha_limite_pago).slice(0,10):null;
@@ -62,7 +66,11 @@ function etiquetaPago(v){const s=String(v||"").toLowerCase();if(s==="activo")ret
 function aviso(t,err=false){$("mensaje").textContent=t;$("mensaje").className=err?"notice error":"notice"}
 function renderObligaciones(){
 const rows=[...obligaciones].sort((a,b)=>(Number(a.periodo_anio)*100+Number(a.periodo_mes))-(Number(b.periodo_anio)*100+Number(b.periodo_mes)));
-const total=rows.reduce((s,o)=>s+Number(o.monto||0),0),pagado=rows.filter(o=>String(o.estatus).toLowerCase()==="pagada").reduce((s,o)=>s+Number(o.monto||0),0),adeudo=rows.filter(o=>String(o.estatus).toLowerCase()==="pendiente"&&!esFuturo(o)).reduce((s,o)=>s+Number(o.monto||0),0);
+const total=rows.reduce((s,o)=>s+Number(o.monto||0),0),pagado=rows.filter(o=>String(o.estatus).toLowerCase()==="pagada").reduce((s,o)=>s+Number(o.monto||0),0),adeudo=rows.filter(o=>
+  String(o.estatus).toLowerCase()==="pendiente" &&
+  Boolean(inicioPeriodo(o)) &&
+  !esFuturo(o)
+).reduce((s,o)=>s+Number(o.monto||0),0);
 $("totalObligaciones").textContent=money(total);$("totalPagado").textContent=money(pagado);$("saldoPendiente").textContent=money(adeudo);
 if(!rows.length){$("contenedorCuotas").className="empty";$("contenedorCuotas").textContent="No se encontraron obligaciones para esta cuenta.";$("listaCuotasMovil").innerHTML='<div class="empty">No se encontraron obligaciones para esta cuenta.</div>';return}
 $("contenedorCuotas").className="table-wrap";$("contenedorCuotas").innerHTML=`<table><thead><tr><th>Periodo</th><th>Concepto</th><th>Importe</th><th>Fecha límite</th><th>Fecha de pago</th><th>Estado</th></tr></thead><tbody>${rows.map(o=>`<tr><td>${esc(periodo(o.periodo_anio,o.periodo_mes))}</td><td>${esc(o.descripcion)}</td><td>${money(o.monto)}</td><td>${fecha(o.fecha_limite_pago)}</td><td>${fecha(o.fecha_pago)}</td><td>${etiquetaOb(o)}</td></tr>`).join("")}</tbody></table>`;
