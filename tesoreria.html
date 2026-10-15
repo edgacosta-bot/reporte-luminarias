@@ -461,6 +461,34 @@
 #modalRegistrarPago button { border:0; border-radius:8px; padding:11px 18px; cursor:pointer; font-weight:600; }
 #btnGuardarPago { background:#991b3f; color:#fff; }
 
+#modalCuotasResidentes { position:fixed; inset:0; z-index:10030; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.60); padding:16px; box-sizing:border-box; }
+#modalCuotasResidentes .cuotas-contenido { width:min(1450px,100%); max-height:94vh; overflow:auto; background:#fff; border-radius:16px; padding:24px; box-sizing:border-box; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+#modalCuotasResidentes .cuotas-filtros { display:grid; grid-template-columns:minmax(210px,1.5fr) minmax(130px,.7fr) minmax(150px,.8fr) auto auto; gap:10px; align-items:end; margin:18px 0; }
+#modalCuotasResidentes label { display:block; font-weight:600; color:#374151; margin-bottom:6px; }
+#modalCuotasResidentes input, #modalCuotasResidentes select { width:100%; min-height:40px; box-sizing:border-box; padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; font:inherit; }
+#modalCuotasResidentes .cuotas-resumen { display:flex; flex-wrap:wrap; gap:10px; margin:14px 0; }
+#modalCuotasResidentes .cuota-kpi { border:1px solid #e5e7eb; border-radius:10px; padding:10px 14px; min-width:145px; background:#f9fafb; }
+#modalCuotasResidentes .cuota-kpi strong { display:block; font-size:18px; margin-top:3px; color:#111827; }
+#modalCuotasResidentes .cuotas-tabla-wrap { overflow:auto; border:1px solid #e5e7eb; border-radius:10px; }
+#tablaCuotasResidentes { width:100%; border-collapse:collapse; min-width:1250px; font-size:12px; }
+#tablaCuotasResidentes th, #tablaCuotasResidentes td { padding:9px 10px; text-align:left; border-bottom:1px solid #e5e7eb; vertical-align:top; }
+#tablaCuotasResidentes th { background:#f9fafb; color:#374151; position:sticky; top:0; z-index:1; }
+#tablaCuotasResidentes tr:last-child td { border-bottom:0; }
+.cuota-badge { display:inline-block; padding:4px 7px; border-radius:6px; font-weight:700; white-space:nowrap; }
+.cuota-badge-pagada { background:#dcfce7; color:#166534; }
+.cuota-badge-pendiente { background:#fef3c7; color:#92400e; }
+.cuota-badge-generar { background:#dbeafe; color:#1d4ed8; }
+.cuota-badge-futura { background:#e5e7eb; color:#374151; }
+.cuota-badge-revisar { background:#fee2e2; color:#991b1b; }
+#modalCuotasResidentes button { border:0; border-radius:8px; padding:10px 14px; cursor:pointer; font-weight:600; }
+#btnActualizarCuotasResidentes { background:#991b3f; color:#fff; }
+#btnExportarCuotasResidentes { background:#374151; color:#fff; }
+#btnCerrarCuotasResidentes { background:#e5e7eb; color:#374151; }
+#modalCuotasResidentes .cuotas-acciones { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; margin-top:16px; }
+#modalCuotasResidentes .cuotas-botones { display:flex; flex-wrap:wrap; gap:8px; }
+@media (max-width:900px) { #modalCuotasResidentes .cuotas-filtros { grid-template-columns:1fr 1fr; } #modalCuotasResidentes .cuotas-contenido { padding:14px; } }
+@media (max-width:520px) { #modalCuotasResidentes .cuotas-filtros { grid-template-columns:1fr; } }
+
 #modalConsultarPagos { position:fixed; inset:0; z-index:10020; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.58); padding:18px; box-sizing:border-box; }
 #modalConsultarPagos .consulta-contenido { width:min(1200px,100%); max-height:92vh; overflow:auto; background:#fff; border-radius:16px; padding:24px; box-sizing:border-box; box-shadow:0 20px 60px rgba(0,0,0,.3); }
 #modalConsultarPagos .consulta-filtros { display:grid; grid-template-columns:minmax(220px,1fr) minmax(160px,220px) auto; gap:12px; align-items:end; margin:18px 0; }
@@ -751,7 +779,7 @@
                  ================================================== -->
 
             <section
-                class="tesoreria-card tesoreria-card-disabled"
+                class="tesoreria-card"
                 id="opcionCuotas"
                 role="button"
                 tabindex="0"
@@ -779,9 +807,10 @@
                         </div>
 
 
-                        <span class="tesoreria-estado">
-                            Próximamente
-                        </span>
+                        <div class="tesoreria-card-action">
+                            Consultar concentrado
+                            <span>→</span>
+                        </div>
 
                     </div>
 
@@ -2258,19 +2287,8 @@ btnGuardarPago?.addEventListener("click", async () => {
 
 
                     document
-                        .getElementById(
-                            "opcionCuotas"
-                        )
-                        ?.addEventListener(
-                            "click",
-                            () => {
-
-                                alert(
-                                    "Esta función se incorporará posteriormente."
-                                );
-
-                            }
-                        );
+                        .getElementById("opcionCuotas")
+                        ?.addEventListener("click", () => window.abrirCuotasResidentes?.());
 
 
                     /*
@@ -3249,6 +3267,158 @@ const { data, error } =
     status?.addEventListener("change", renderPayments);
     modal?.addEventListener("click", (event) => { if (event.target === modal) modal.style.display = "none"; });
     document.addEventListener("keydown", (event) => { if (event.key === "Escape" && modal.style.display === "flex") modal.style.display = "none"; });
+})();
+</script>
+
+
+
+<!-- CUOTAS DE RESIDENTES: concentrado financiero de solo lectura -->
+<div id="modalCuotasResidentes" role="dialog" aria-modal="true" aria-labelledby="tituloCuotasResidentes">
+  <div class="cuotas-contenido">
+    <h2 id="tituloCuotasResidentes" style="margin:0">Cuotas de residentes</h2>
+    <p style="color:#6b7280;margin:8px 0 0">Concentrado de obligaciones, pagos activos y periodos sin obligación generada. Esta pantalla no modifica datos financieros.</p>
+    <div class="cuotas-filtros">
+      <div><label for="filtroTextoCuotas">Buscar</label><input id="filtroTextoCuotas" type="search" placeholder="Residente, privada, lote, folio o concepto"></div>
+      <div><label for="filtroEstadoCuotas">Situación</label><select id="filtroEstadoCuotas"><option value="todos">Todas</option><option value="pagada">Pagadas</option><option value="pendiente">Pendientes</option><option value="por_generar">Por generar</option><option value="futura">Periodos futuros</option><option value="revisar">Revisar conciliación</option></select></div>
+      <div><label for="filtroPeriodoCuotas">Periodo</label><select id="filtroPeriodoCuotas"><option value="todos">Todos los periodos</option></select></div>
+      <button type="button" id="btnActualizarCuotasResidentes">Actualizar</button>
+      <button type="button" id="btnExportarCuotasResidentes">Exportar CSV</button>
+    </div>
+    <div class="cuotas-resumen" id="resumenCuotasResidentes" role="status" aria-live="polite">
+      <div class="cuota-kpi">Registros<strong>—</strong></div>
+    </div>
+    <div class="cuotas-tabla-wrap">
+      <table id="tablaCuotasResidentes">
+        <thead><tr><th>Privada</th><th>Lote</th><th>Residente</th><th>Periodo</th><th>Concepto</th><th>Importe obligación</th><th>Estado</th><th>Pagado activo</th><th>Fecha pago</th><th>Folio(s) activo(s)</th><th>Conciliación / observación</th></tr></thead>
+        <tbody id="cuerpoCuotasResidentes"><tr><td colspan="11">Abre el concentrado para cargar los datos.</td></tr></tbody>
+      </table>
+    </div>
+    <div class="cuotas-acciones">
+      <span style="font-size:12px;color:#6b7280;max-width:780px">“Por generar” identifica un periodo iniciado sin obligación registrada; no representa por sí mismo un adeudo. Los periodos futuros se muestran aparte. Los pagos cancelados no se suman a los importes pagados.</span>
+      <div class="cuotas-botones"><button type="button" id="btnCerrarCuotasResidentes">Cerrar</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const modal = document.getElementById("modalCuotasResidentes");
+  const tbody = document.getElementById("cuerpoCuotasResidentes");
+  const search = document.getElementById("filtroTextoCuotas");
+  const status = document.getElementById("filtroEstadoCuotas");
+  const period = document.getElementById("filtroPeriodoCuotas");
+  const summary = document.getElementById("resumenCuotasResidentes");
+  const openButton = document.getElementById("opcionCuotas");
+  let cache = [];
+  let loading = false;
+
+  const money = value => value == null || value === "" ? "—" : new Intl.NumberFormat("es-MX", {style:"currency",currency:"MXN"}).format(Number(value));
+  const date = value => {
+    if (!value) return "—";
+    const p = String(value).slice(0,10).split("-");
+    return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : String(value);
+  };
+  const val = value => value == null || value === "" ? "—" : String(value);
+  const labelPeriod = row => `${String(row.periodo_mes).padStart(2,"0")}/${row.periodo_anio}`;
+  const norm = value => String(value ?? "").toLocaleLowerCase("es-MX");
+
+  function setMessage(message, colspan=11) {
+    tbody.replaceChildren();
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = colspan;
+    td.textContent = message;
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  }
+
+  function estadoUI(row) {
+    if (row.conciliacion && String(row.conciliacion).toLowerCase().includes("revisar")) return {text:"Revisar conciliación", cls:"cuota-badge-revisar", key:"revisar"};
+    if (row.estado === "pagada") return {text:"Pagada", cls:"cuota-badge-pagada", key:"pagada"};
+    if (row.estado === "pendiente") return {text:"Pendiente", cls:"cuota-badge-pendiente", key:"pendiente"};
+    if (row.estado === "por_generar") return {text:"Por generar", cls:"cuota-badge-generar", key:"por_generar"};
+    return {text:"Periodo futuro", cls:"cuota-badge-futura", key:"futura"};
+  }
+
+  function fillPeriods() {
+    const selected = period.value;
+    const periods = [...new Set(cache.map(r => `${r.periodo_anio}-${String(r.periodo_mes).padStart(2,"0")}`))].sort().reverse();
+    period.replaceChildren();
+    const all = document.createElement("option"); all.value = "todos"; all.textContent = "Todos los periodos"; period.appendChild(all);
+    periods.forEach(key => {
+      const [year, month] = key.split("-");
+      const option = document.createElement("option"); option.value = key; option.textContent = `${month}/${year}`; period.appendChild(option);
+    });
+    period.value = periods.includes(selected) ? selected : "todos";
+  }
+
+  function filteredRows() {
+    const q = norm(search.value.trim());
+    const st = status.value;
+    const per = period.value;
+    return cache.filter(r => {
+      const state = estadoUI(r).key;
+      const periodKey = `${r.periodo_anio}-${String(r.periodo_mes).padStart(2,"0")}`;
+      const haystack = [r.privada,r.casa,r.residente,r.descripcion,r.folios_activos,r.obligacion_id,r.conciliacion,r.estado].map(norm).join(" ");
+      return (st === "todos" || state === st) && (per === "todos" || periodKey === per) && (!q || haystack.includes(q));
+    });
+  }
+
+  function render() {
+    const rows = filteredRows();
+    tbody.replaceChildren();
+    if (!rows.length) setMessage(cache.length ? "No hay registros que coincidan con los filtros." : "No hay obligaciones ni periodos por mostrar.");
+    else rows.forEach(r => {
+      const tr = document.createElement("tr");
+      const add = value => { const td=document.createElement("td"); td.textContent=val(value); tr.appendChild(td); };
+      add(r.privada); add(r.casa); add(r.residente); add(labelPeriod(r)); add(r.descripcion); add(money(r.monto));
+      const tdState = document.createElement("td"); const badge = document.createElement("span"); const st = estadoUI(r); badge.className=`cuota-badge ${st.cls}`; badge.textContent=st.text; tdState.appendChild(badge); tr.appendChild(tdState);
+      add(money(Number(r.monto_pagado_activo || 0))); add(date(r.fecha_pago)); add(r.folios_activos); add(r.conciliacion || (r.estado === "por_generar" ? "Sin obligación registrada; no contabilizar como adeudo" : r.estado === "futura" ? "Periodo futuro; no es adeudo actual" : "—"));
+      tbody.appendChild(tr);
+    });
+    const generated = rows.filter(r => r.obligacion_id);
+    const paid = generated.filter(r => r.estado === "pagada").length;
+    const pending = generated.filter(r => r.estado === "pendiente").length;
+    const generate = rows.filter(r => r.estado === "por_generar").length;
+    const review = rows.filter(r => estadoUI(r).key === "revisar").length;
+    const totalDue = generated.filter(r => r.estado === "pendiente").reduce((a,r) => a + Math.max(0,Number(r.monto || 0)-Number(r.monto_pagado_activo || 0)),0);
+    summary.replaceChildren();
+    const kpis = [
+      ["Registros filtrados", rows.length], ["Obligaciones pagadas", paid], ["Obligaciones pendientes", pending], ["Pendiente registrado", money(totalDue)], ["Periodos por generar", generate], ["Revisar conciliación", review]
+    ];
+    kpis.forEach(([label,value]) => { const div=document.createElement("div"); div.className="cuota-kpi"; const span=document.createElement("span"); span.textContent=label; const strong=document.createElement("strong"); strong.textContent=String(value); div.append(span,strong); summary.appendChild(div); });
+  }
+
+  async function load() {
+    if (loading) return;
+    loading = true; summary.textContent = "Consultando concentrado…"; setMessage("Cargando…");
+    try {
+      const {data,error} = await supabaseClient.rpc("consultar_cuotas_residentes_tesoreria");
+      if (error) throw error;
+      cache = Array.isArray(data) ? data : [];
+      fillPeriods(); render();
+    } catch (error) {
+      console.error("Error consultando cuotas de residentes:", error);
+      cache = []; summary.textContent = "No fue posible cargar el concentrado.";
+      setMessage(error?.message || "Ocurrió un error al consultar las cuotas.");
+    } finally { loading = false; }
+  }
+
+  window.abrirCuotasResidentes = async function() { modal.style.display="flex"; await load(); };
+  openButton?.addEventListener("keydown", event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); window.abrirCuotasResidentes(); } });
+  document.getElementById("btnCerrarCuotasResidentes")?.addEventListener("click", () => modal.style.display="none");
+  document.getElementById("btnActualizarCuotasResidentes")?.addEventListener("click", load);
+  search?.addEventListener("input", render); status?.addEventListener("change", render); period?.addEventListener("change", render);
+  modal?.addEventListener("click", event => { if (event.target === modal) modal.style.display="none"; });
+  document.addEventListener("keydown", event => { if (event.key === "Escape" && modal.style.display === "flex") modal.style.display="none"; });
+  document.getElementById("btnExportarCuotasResidentes")?.addEventListener("click", () => {
+    const rows = filteredRows();
+    const headers = ["Privada","Lote","Residente","Mes","Año","Concepto","Importe obligación","Estado","Monto pagado activo","Fecha de pago","Folios activos","Conciliación"];
+    const csvCell = value => `"${String(value ?? "").replaceAll('"','""')}"`;
+    const lines = [headers.map(csvCell).join(","), ...rows.map(r => [r.privada,r.casa,r.residente,r.periodo_mes,r.periodo_anio,r.descripcion,r.monto,estadoUI(r).text,r.monto_pagado_activo,r.fecha_pago,r.folios_activos,r.conciliacion].map(csvCell).join(","))];
+    const blob = new Blob(["\uFEFF" + lines.join("\r\n")], {type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href=url; a.download="cuotas_residentes_sigvic.csv"; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  });
 })();
 </script>
 
