@@ -2140,15 +2140,44 @@ pagoResidente?.addEventListener("change", async () => {
         return;
     }
 
-    // Se conserva la regla financiera: solo se registra la mensualidad pendiente más antigua.
+    
+    // Mostrar todas las mensualidades pendientes en orden cronológico.
     const actual = pendientes.find(o => o.es_obligacion_actual) || pendientes[0];
-    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-    const option = document.createElement("option");
-    option.value = actual.obligacion_id;
-    option.textContent = `${meses[(actual.periodo_mes || 1) - 1]} ${actual.periodo_anio} — $${Number(actual.monto).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    pagoObligacion.appendChild(option);
+
+    const meses = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+
+    pendientes.forEach(o => {
+        const option = document.createElement("option");
+        option.value = o.obligacion_id;
+
+        const mes = meses[o.periodo_mes - 1];
+        const importe = Number(o.monto).toLocaleString("es-MX", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+        option.textContent =
+            `${mes} ${o.periodo_anio} — $${importe}` +
+            (o.obligacion_id === actual.obligacion_id
+                ? " (más antigua; pago requerido primero)"
+                : "");
+
+        pagoObligacion.appendChild(option);
+    });
+
+    // Seleccionar inicialmente la mensualidad más antigua.
     pagoObligacion.value = actual.obligacion_id;
-    pagoResumenObligacion.textContent = `Mensualidad a registrar: ${option.textContent}. Pendiente total: $${Number(actual.monto_pendiente_total || actual.monto).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`;
+
+    pagoResumenObligacion.textContent =
+        `Mensualidad más antigua exigible: ${meses[actual.periodo_mes - 1]} ${actual.periodo_anio}. ` +
+        `Pendiente total: $${Number(actual.monto_pendiente_total || actual.monto).toLocaleString("es-MX", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })}. Debes cubrir las mensualidades en orden cronológico.`;
+
 });
 
 btnGuardarPago?.addEventListener("click", async () => {
