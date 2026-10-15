@@ -33,7 +33,11 @@ const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const meses=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 const periodo=(a,m)=>`${meses[Number(m)-1]||"Periodo"} ${a??""}`.trim();
 function fecha(v){if(!v)return "—";const p=String(v).slice(0,10).split("-");return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:esc(v)}
-function inicioPeriodo(o){if(o.fecha_inicio_pago)return String(o.fecha_inicio_pago).slice(0,10);const y=Number(o.periodo_anio),m=Number(o.periodo_mes);if(y&&m>=1&&m<=12)return `${y}-${String(m).padStart(2,"0")}-01`;return null}
+function inicioPeriodo(o){
+  return o.fecha_inicio_pago
+    ? String(o.fecha_inicio_pago).slice(0,10)
+    : null;
+}
 function hoyLocal(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
 function esFuturo(o){const inicio=inicioPeriodo(o);return Boolean(inicio&&inicio>hoyLocal())}
 function diasEntre(inicio,fin){if(!inicio||!fin)return null;const a=Date.parse(String(inicio).slice(0,10)+"T00:00:00Z"),b=Date.parse(String(fin).slice(0,10)+"T00:00:00Z");return Number.isFinite(a)&&Number.isFinite(b)?Math.floor((b-a)/86400000):null}
