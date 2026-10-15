@@ -1930,16 +1930,32 @@ btnConsultarObligaciones?.addEventListener("click", async () => {
             <p><strong>Pendientes de generar:</strong> ${pendientes.length}</p>
         `;
 
-        resultadoGeneracionObligaciones.innerHTML = pendientes.length
-            ? pendientes.map(o => `
-                <div style="padding:8px;border-bottom:1px solid #ddd">
-                    <strong>${o.residentes?.privada || ""}-${o.residentes?.casa || ""}</strong>
-                    — ${o.residentes?.nombre || "Sin nombre"}
-                    <br>
-                    <small>${o.condicion_inmueble} · ${o.cantidad_lotes} lote(s)</small>
-                </div>
-            `).join("")
-            : "<p>No hay obligaciones pendientes para este periodo.</p>";
+       const pendientesOrdenados = [...pendientes].sort((a, b) => {
+    const privadaA = String(a.residentes?.privada || "");
+    const privadaB = String(b.residentes?.privada || "");
+
+    const ordenPrivada = privadaA.localeCompare(privadaB, "es", {
+        numeric: true
+    });
+
+    if (ordenPrivada !== 0) {
+        return ordenPrivada;
+    }
+
+    return Number(a.residentes?.casa || 0) -
+           Number(b.residentes?.casa || 0);
+});
+
+resultadoGeneracionObligaciones.innerHTML = pendientesOrdenados.length
+    ? pendientesOrdenados.map(o => `
+        <div style="padding:8px;border-bottom:1px solid #ddd">
+            <strong>${o.residentes?.privada || ""}-${o.residentes?.casa || ""}</strong>
+            — ${o.residentes?.nombre || "Sin nombre"}
+            <br>
+            <small>${o.condicion_inmueble} · ${o.cantidad_lotes} lote(s)</small>
+        </div>
+    `).join("")
+    : "<p>No hay obligaciones pendientes para este periodo.</p>";
 
         btnEjecutarGeneracionObligaciones.disabled = pendientes.length === 0;
 
