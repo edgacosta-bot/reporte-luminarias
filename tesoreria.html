@@ -2180,6 +2180,28 @@ pagoResidente?.addEventListener("change", async () => {
 
 });
 
+
+pagoObligacion?.addEventListener("change", () => {
+    const seleccionada = pagoObligacion.value;
+
+    if (!seleccionada) return;
+
+    const opciones = Array.from(pagoObligacion.options);
+    const primeraPendiente = opciones.find(op =>
+        op.value && op.textContent.includes("(más antigua; pago requerido primero)")
+    );
+
+    if (primeraPendiente && seleccionada !== primeraPendiente.value) {
+        alert(
+            "Debes cubrir primero la mensualidad más antigua pendiente. " +
+            "Selecciona esa mensualidad antes de registrar el pago."
+        );
+
+        pagoObligacion.value = primeraPendiente.value;
+    }
+});
+
+                    
 btnGuardarPago?.addEventListener("click", async () => {
     const residenteId = pagoResidente.value;
     const obligacionId = pagoObligacion.value;
