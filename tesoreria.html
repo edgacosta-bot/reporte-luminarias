@@ -461,6 +461,26 @@
 #modalRegistrarPago button { border:0; border-radius:8px; padding:11px 18px; cursor:pointer; font-weight:600; }
 #btnGuardarPago { background:#991b3f; color:#fff; }
 
+#modalConsultarPagos { position:fixed; inset:0; z-index:10020; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.58); padding:18px; box-sizing:border-box; }
+#modalConsultarPagos .consulta-contenido { width:min(1200px,100%); max-height:92vh; overflow:auto; background:#fff; border-radius:16px; padding:24px; box-sizing:border-box; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+#modalConsultarPagos .consulta-filtros { display:grid; grid-template-columns:minmax(220px,1fr) minmax(160px,220px) auto; gap:12px; align-items:end; margin:18px 0; }
+#modalConsultarPagos label { display:block; font-weight:600; color:#374151; margin-bottom:6px; }
+#modalConsultarPagos input, #modalConsultarPagos select { width:100%; min-height:42px; box-sizing:border-box; padding:9px 11px; border:1px solid #d1d5db; border-radius:8px; font:inherit; }
+#modalConsultarPagos .consulta-tabla-wrap { overflow:auto; border:1px solid #e5e7eb; border-radius:10px; }
+#tablaConsultarPagos { width:100%; border-collapse:collapse; min-width:1000px; font-size:13px; }
+#tablaConsultarPagos th, #tablaConsultarPagos td { padding:10px 12px; text-align:left; border-bottom:1px solid #e5e7eb; vertical-align:top; }
+#tablaConsultarPagos th { background:#f9fafb; color:#374151; position:sticky; top:0; z-index:1; }
+#tablaConsultarPagos tr:last-child td { border-bottom:0; }
+.consulta-estado { display:inline-block; padding:4px 8px; border-radius:6px; font-weight:700; font-size:12px; }
+.consulta-estado-activo { background:#dcfce7; color:#166534; }
+.consulta-estado-cancelado { background:#fee2e2; color:#991b1b; }
+#modalConsultarPagos .consulta-acciones { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:18px; }
+#modalConsultarPagos .consulta-botones { display:flex; gap:10px; }
+#modalConsultarPagos button { border:0; border-radius:8px; padding:10px 16px; cursor:pointer; font-weight:600; }
+#btnActualizarConsultaPagos { background:#991b3f; color:#fff; }
+#btnCerrarConsultaPagos { background:#e5e7eb; color:#374151; }
+@media (max-width:700px) { #modalConsultarPagos .consulta-filtros { grid-template-columns:1fr; } #modalConsultarPagos .consulta-contenido { padding:16px; } #modalConsultarPagos .consulta-acciones { align-items:stretch; flex-direction:column; } #modalConsultarPagos .consulta-botones { justify-content:flex-end; } }
+
     </style>
 
 </head>
@@ -684,7 +704,7 @@
                  ================================================== -->
 
             <section
-                class="tesoreria-card tesoreria-card-disabled"
+                class="tesoreria-card"
                 id="opcionConsultarPagos"
                 role="button"
                 tabindex="0"
@@ -713,9 +733,10 @@
                         </div>
 
 
-                        <span class="tesoreria-estado">
-                            Próximamente
-                        </span>
+                        <div class="tesoreria-card-action">
+                            Ver pagos registrados
+                            <span>→</span>
+                        </div>
 
                     </div>
 
@@ -2123,16 +2144,6 @@ pagoResidente?.addEventListener("change", async () => {
     }
 
     const pendientes = (data || []).filter(o => o.estatus === "pendiente");
-
-    console.log(
-    "Mensualidades devueltas por preparar_pago_tesoreria:",
-    (data || []).map(o => ({
-        obligacion_id: o.obligacion_id,
-        periodo_mes: o.periodo_mes,
-        periodo_anio: o.periodo_anio,
-        estatus: o.estatus
-    }))
-);
     pagoObligacion.innerHTML = '<option value="">Seleccione la mensualidad exigible</option>';
     if (!pendientes.length) {
         pagoObligacion.innerHTML = '<option value="">No tiene mensualidades pendientes</option>';
@@ -2140,73 +2151,21 @@ pagoResidente?.addEventListener("change", async () => {
         return;
     }
 
-    
-    // Mostrar todas las mensualidades pendientes en orden cronológico.
+    // Se conserva la regla financiera: solo se registra la mensualidad pendiente más antigua.
     const actual = pendientes.find(o => o.es_obligacion_actual) || pendientes[0];
-
-    const meses = [
-        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    ];
-
-    pendientes.forEach(o => {
-        const option = document.createElement("option");
-        option.value = o.obligacion_id;
-
-        const mes = meses[o.periodo_mes - 1];
-        const importe = Number(o.monto).toLocaleString("es-MX", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-
-        option.textContent =
-            `${mes} ${o.periodo_anio} — $${importe}` +
-            (o.obligacion_id === actual.obligacion_id
-                ? " (más antigua; pago requerido primero)"
-                : "");
-
-        pagoObligacion.appendChild(option);
-    });
-
-    // Seleccionar inicialmente la mensualidad más antigua.
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    const option = document.createElement("option");
+    option.value = actual.obligacion_id;
+    option.textContent = `${meses[(actual.periodo_mes || 1) - 1]} ${actual.periodo_anio} — $${Number(actual.monto).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    pagoObligacion.appendChild(option);
     pagoObligacion.value = actual.obligacion_id;
-
-    pagoResumenObligacion.textContent =
-        `Mensualidad más antigua exigible: ${meses[actual.periodo_mes - 1]} ${actual.periodo_anio}. ` +
-        `Pendiente total: $${Number(actual.monto_pendiente_total || actual.monto).toLocaleString("es-MX", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        })}. Debes cubrir las mensualidades en orden cronológico.`;
-
+    pagoResumenObligacion.textContent = `Mensualidad a registrar: ${option.textContent}. Pendiente total: $${Number(actual.monto_pendiente_total || actual.monto).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`;
 });
 
-
-pagoObligacion?.addEventListener("change", () => {
-    const seleccionada = pagoObligacion.value;
-
-    if (!seleccionada) return;
-
-    const opciones = Array.from(pagoObligacion.options);
-    const primeraPendiente = opciones.find(op =>
-        op.value && op.textContent.includes("(más antigua; pago requerido primero)")
-    );
-
-    if (primeraPendiente && seleccionada !== primeraPendiente.value) {
-        alert(
-            "Debes cubrir primero la mensualidad más antigua pendiente. " +
-            "Selecciona esa mensualidad antes de registrar el pago."
-        );
-
-        pagoObligacion.value = primeraPendiente.value;
-    }
-});
-
-                    
 btnGuardarPago?.addEventListener("click", async () => {
     const residenteId = pagoResidente.value;
     const obligacionId = pagoObligacion.value;
-    const folioCapturado = document.getElementById("pagoFolio").value.trim();
-    const folio = /^\d+$/.test(folioCapturado) ? Number(folioCapturado) : NaN;
+    const folio = Number(document.getElementById("pagoFolio").value);
     const fecha = document.getElementById("pagoFecha").value;
     const metodo = document.getElementById("pagoMetodo").value;
     const referencia = document.getElementById("pagoReferencia").value.trim() || null;
@@ -2242,14 +2201,6 @@ btnGuardarPago?.addEventListener("click", async () => {
         const { data: authData, error: authError } = await supabaseClient.auth.getUser();
         if (authError || !authData?.user) throw new Error("No se pudo identificar al usuario que registra el pago.");
 
-        console.log("Intento de registro:", {
-          residenteId,
-          obligacionId,
-          folio,
-          fecha,
-          metodo
-        });
-        
         const { data, error } = await supabaseClient.rpc("registrar_pago_mensualidad_tesoreria", {
             p_obligacion_id: obligacionId,
             p_folio: folio,
@@ -2286,19 +2237,8 @@ btnGuardarPago?.addEventListener("click", async () => {
                      */
 
                     document
-                        .getElementById(
-                            "opcionConsultarPagos"
-                        )
-                        ?.addEventListener(
-                            "click",
-                            () => {
-
-                                alert(
-                                    "Esta función se incorporará posteriormente."
-                                );
-
-                            }
-                        );
+                        .getElementById("opcionConsultarPagos")
+                        ?.addEventListener("click", abrirConsultaPagos);
 
 
                     document
@@ -3142,6 +3082,159 @@ const { data, error } =
     </div>
   </div>
 </div>
+
+<!-- CONSULTA DE PAGOS: solo lectura -->
+<div id="modalConsultarPagos" role="dialog" aria-modal="true" aria-labelledby="tituloConsultarPagos">
+  <div class="consulta-contenido">
+    <h2 id="tituloConsultarPagos" style="margin:0">Consultar pagos registrados</h2>
+    <p style="color:#6b7280;margin:8px 0 0">Historial de recibos. Los pagos cancelados se conservan visibles para consulta histórica.</p>
+    <div class="consulta-filtros">
+      <div>
+        <label for="filtroTextoPagos">Buscar</label>
+        <input id="filtroTextoPagos" type="search" placeholder="Folio, residente, privada, casa o referencia">
+      </div>
+      <div>
+        <label for="filtroEstatusPagos">Estatus</label>
+        <select id="filtroEstatusPagos">
+          <option value="todos">Todos los estatus</option>
+          <option value="activo">Activos</option>
+          <option value="cancelado">Cancelados</option>
+        </select>
+      </div>
+      <div><button type="button" id="btnActualizarConsultaPagos">Actualizar listado</button></div>
+    </div>
+    <div id="resumenConsultaPagos" role="status" aria-live="polite" style="margin:10px 0;color:#4b5563">Preparando consulta…</div>
+    <div class="consulta-tabla-wrap">
+      <table id="tablaConsultarPagos">
+        <thead><tr><th>Folio</th><th>Fecha de pago</th><th>Residente / inmueble</th><th>Concepto y periodo</th><th>Importe</th><th>Método</th><th>Referencia</th><th>Estatus</th><th>Observaciones</th></tr></thead>
+        <tbody id="cuerpoConsultarPagos"><tr><td colspan="9">Abre la consulta para cargar los pagos.</td></tr></tbody>
+      </table>
+    </div>
+    <div class="consulta-acciones">
+      <span style="font-size:12px;color:#6b7280">Esta pantalla es de consulta; no registra, modifica ni cancela pagos.</span>
+      <div class="consulta-botones"><button type="button" id="btnCerrarConsultaPagos">Cerrar</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+    const modal = document.getElementById("modalConsultarPagos");
+    const body = document.getElementById("cuerpoConsultarPagos");
+    const summary = document.getElementById("resumenConsultaPagos");
+    const search = document.getElementById("filtroTextoPagos");
+    const status = document.getElementById("filtroEstatusPagos");
+    const openButton = document.getElementById("opcionConsultarPagos");
+    let pagosCache = [];
+    let consultaEnCurso = false;
+
+    const money = (value) => new Intl.NumberFormat("es-MX", {style:"currency", currency:"MXN"}).format(Number(value || 0));
+    const date = (value) => {
+        if (!value) return "—";
+        const parts = String(value).slice(0,10).split("-");
+        return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : String(value);
+    };
+    const text = (value) => value === null || value === undefined || value === "" ? "—" : String(value);
+
+    function addCell(row, value) {
+        const cell = document.createElement("td");
+        cell.textContent = text(value);
+        row.appendChild(cell);
+        return cell;
+    }
+
+    function renderPayments() {
+        const query = (search.value || "").trim().toLocaleLowerCase("es-MX");
+        const selectedStatus = status.value;
+        const filtered = pagosCache.filter((p) => {
+            const statusMatches = selectedStatus === "todos" || String(p.estatus || "").toLowerCase() === selectedStatus;
+            const haystack = [p.folio, p.residente, p.privada, p.casa, p.concepto, p.periodo_mes, p.periodo_anio, p.referencia, p.metodo_pago, p.observaciones, p.obligaciones]
+                .map((v) => v == null ? "" : String(v)).join(" ").toLocaleLowerCase("es-MX");
+            return statusMatches && (!query || haystack.includes(query));
+        });
+        body.replaceChildren();
+        if (!filtered.length) {
+            const row = document.createElement("tr");
+            const cell = document.createElement("td");
+            cell.colSpan = 9;
+            cell.textContent = pagosCache.length ? "No hay pagos que coincidan con los filtros." : "No hay pagos registrados para mostrar.";
+            row.appendChild(cell);
+            body.appendChild(row);
+        } else {
+            filtered.forEach((p) => {
+                const row = document.createElement("tr");
+                addCell(row, p.folio == null ? "Sin folio" : String(p.folio).padStart(4, "0"));
+                addCell(row, date(p.fecha_pago));
+                addCell(row, `${text(p.residente)} · ${text(p.privada)}-${text(p.casa)}`);
+                const conceptCell = addCell(row, `${text(p.concepto)}${p.obligaciones ? " | " + p.obligaciones : (p.periodo_mes && p.periodo_anio ? ` | ${p.periodo_mes}/${p.periodo_anio}` : "")}`);
+                addCell(row, money(p.monto));
+                addCell(row, p.metodo_pago);
+                addCell(row, p.referencia);
+                const stateCell = document.createElement("td");
+                const badge = document.createElement("span");
+                const normalized = String(p.estatus || "").toLowerCase();
+                badge.className = "consulta-estado " + (normalized === "cancelado" ? "consulta-estado-cancelado" : "consulta-estado-activo");
+                badge.textContent = normalized === "cancelado" ? "Cancelado" : text(p.estatus);
+                stateCell.appendChild(badge);
+                row.appendChild(stateCell);
+                addCell(row, p.observaciones);
+                body.appendChild(row);
+            });
+        }
+        const totalActivo = filtered.filter(p => String(p.estatus || "").toLowerCase() === "activo").reduce((sum,p) => sum + Number(p.monto || 0), 0);
+        summary.textContent = `${filtered.length} de ${pagosCache.length} pagos · Total de pagos activos filtrados: ${money(totalActivo)}`;
+    }
+
+    async function loadPayments() {
+        if (consultaEnCurso) return;
+        consultaEnCurso = true;
+        summary.textContent = "Consultando pagos…";
+        body.replaceChildren();
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 9;
+        cell.textContent = "Cargando…";
+        row.appendChild(cell);
+        body.appendChild(row);
+        try {
+            const {data, error} = await supabaseClient.rpc("consultar_pagos_tesoreria");
+            if (error) throw error;
+            pagosCache = Array.isArray(data) ? data : [];
+            renderPayments();
+        } catch (error) {
+            console.error("Error consultando pagos de Tesorería:", error);
+            summary.textContent = "No fue posible cargar los pagos.";
+            body.replaceChildren();
+            const errorRow = document.createElement("tr");
+            const errorCell = document.createElement("td");
+            errorCell.colSpan = 9;
+            errorCell.textContent = error?.message || "Ocurrió un error al consultar los pagos.";
+            errorRow.appendChild(errorCell);
+            body.appendChild(errorRow);
+        } finally {
+            consultaEnCurso = false;
+        }
+    }
+
+    window.abrirConsultaPagos = async function () {
+        modal.style.display = "flex";
+        await loadPayments();
+    };
+
+    openButton?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            window.abrirConsultaPagos();
+        }
+    });
+    document.getElementById("btnCerrarConsultaPagos")?.addEventListener("click", () => { modal.style.display = "none"; });
+    document.getElementById("btnActualizarConsultaPagos")?.addEventListener("click", loadPayments);
+    search?.addEventListener("input", renderPayments);
+    status?.addEventListener("change", renderPayments);
+    modal?.addEventListener("click", (event) => { if (event.target === modal) modal.style.display = "none"; });
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape" && modal.style.display === "flex") modal.style.display = "none"; });
+})();
+</script>
 
 </body>
 
