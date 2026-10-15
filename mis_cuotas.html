@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mis cuotas y recibos | SIGVIC</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="auth.js"></script>
+<style>
+:root{--bg:#f3f5f9;--ink:#172033;--muted:#64748b;--line:#e2e8f0;--wine:#7b243c;--green:#166534;--red:#991b1b;--amber:#92400e}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+header{background:linear-gradient(120deg,#0f172a,#24324a);color:#fff;padding:24px 18px}.head-inner,main{max-width:1100px;margin:auto}
+.topline{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}h1{font-size:clamp(22px,4vw,30px);margin:0 0 8px}.sub{margin:0;color:#dbe4f2;font-size:14px}
+.btn{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}.btn-light{background:#fff;color:#172554}.btn:disabled{opacity:.55;cursor:wait}
+main{padding:22px 16px 44px}.notice{padding:13px 15px;border-radius:12px;background:#fff;border:1px solid var(--line);margin-bottom:16px;color:#334155}.notice.error{border-color:#fecaca;background:#fef2f2;color:#991b1b}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:20px}.card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:18px;box-shadow:0 4px 14px #0f172a08}
+.metric-label{font-size:13px;color:var(--muted);margin-bottom:9px}.metric{font-size:clamp(22px,3vw,29px);font-weight:800}
+.section{margin-top:20px}.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:11px}h2{font-size:19px;margin:0}.small{font-size:12px;color:var(--muted)}
+.table-wrap{overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px}table{border-collapse:collapse;width:100%;min-width:680px}th,td{text-align:left;padding:13px 14px;border-bottom:1px solid #edf0f5;font-size:14px;vertical-align:top}th{background:#f8fafc;color:#475569;font-size:12px;text-transform:uppercase;letter-spacing:.035em}tr:last-child td{border-bottom:0}
+.status{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}.paid{background:#dcfce7;color:var(--green)}.pending{background:#fef3c7;color:var(--amber)}.cancelled{background:#fee2e2;color:var(--red)}.other{background:#e2e8f0;color:#334155}
+.empty{padding:22px;text-align:center;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:14px}.foot{margin-top:18px;color:var(--muted);font-size:12px;line-height:1.5}
+@media(max-width:700px){.cards{grid-template-columns:1fr}.card{padding:15px}main{padding:16px 10px 32px}header{padding:20px 14px}}
+</style></head><body>
+<header><div class="head-inner"><div class="topline"><div><h1>Mis cuotas y recibos</h1><p class="sub" id="identidad">Consultando cuenta...</p></div><div><button class="btn btn-light" id="btnActualizar" type="button">Actualizar</button> <a class="btn btn-light" href="index.html">Volver al inicio</a></div></div></div></header>
+<main><div id="mensaje" class="notice" role="status">Verificando sesión y consultando información financiera...</div>
+<section class="cards"><div class="card"><div class="metric-label">Total de obligaciones</div><div class="metric" id="totalObligaciones">—</div></div><div class="card"><div class="metric-label">Total pagado en obligaciones</div><div class="metric" id="totalPagado">—</div></div><div class="card"><div class="metric-label">Saldo pendiente</div><div class="metric" id="saldoPendiente">—</div></div></section>
+<section class="section"><div class="section-title"><h2>Mis cuotas</h2><span class="small">Del periodo más antiguo al más reciente</span></div><div id="contenedorCuotas" class="empty">Cargando obligaciones...</div></section>
+<section class="section"><div class="section-title"><h2>Mis recibos</h2><span class="small">Los pagos cancelados se conservan como historial</span></div><div id="contenedorRecibos" class="empty">Cargando recibos...</div></section>
+<p class="foot">La información se consulta para la cuenta autenticada. Si detectas diferencias en importes, periodos o folios, contacta a Tesorería.</p></main>
+<script>
+(() => {
+const $=id=>document.getElementById(id);let obligaciones=[],recibos=[];
+const money=v=>new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN"}).format(Number(v||0));
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const meses=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const periodo=(a,m)=>`${meses[Number(m)-1]||"Periodo"} ${a??""}`.trim();
+function fecha(v){if(!v)return "—";const p=String(v).slice(0,10).split("-");return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:esc(v)}
+function estadoOb(v){const s=String(v||"").toLowerCase();if(s==="pagada")return '<span class="status paid">Pagada</span>';if(s==="pendiente")return '<span class="status pending">Pendiente</span>';return `<span class="status other">${esc(v||"Sin estado")}</span>`}
+function estadoPago(v){const s=String(v||"").toLowerCase();if(s==="activo")return '<span class="status paid">Activo</span>';if(s==="cancelado")return '<span class="status cancelled">Cancelado</span>';return `<span class="status other">${esc(v||"Sin estado")}</span>`}
+function aviso(t,err=false){$("mensaje").textContent=t;$("mensaje").className=err?"notice error":"notice"}
+function renderObligaciones(){
+const rows=[...obligaciones].sort((a,b)=>(Number(a.periodo_anio)*100+Number(a.periodo_mes))-(Number(b.periodo_anio)*100+Number(b.periodo_mes)));
+const total=rows.reduce((s,o)=>s+Number(o.monto||0),0),pagado=rows.filter(o=>String(o.estatus).toLowerCase()==="pagada").reduce((s,o)=>s+Number(o.monto||0),0),pend=rows.filter(o=>String(o.estatus).toLowerCase()==="pendiente").reduce((s,o)=>s+Number(o.monto||0),0);
+$("totalObligaciones").textContent=money(total);$("totalPagado").textContent=money(pagado);$("saldoPendiente").textContent=money(pend);
+if(!rows.length){$("contenedorCuotas").className="empty";$("contenedorCuotas").textContent="No se encontraron obligaciones para esta cuenta.";return}
+$("contenedorCuotas").className="table-wrap";$("contenedorCuotas").innerHTML=`<table><thead><tr><th>Periodo</th><th>Concepto</th><th>Importe</th><th>Fecha límite</th><th>Fecha de pago</th><th>Estado</th></tr></thead><tbody>${rows.map(o=>`<tr><td>${esc(periodo(o.periodo_anio,o.periodo_mes))}</td><td>${esc(o.descripcion)}</td><td>${money(o.monto)}</td><td>${fecha(o.fecha_limite_pago)}</td><td>${fecha(o.fecha_pago)}</td><td>${estadoOb(o.estatus)}</td></tr>`).join("")}</tbody></table>`
+}
+function renderRecibos(){
+const rows=[...recibos].sort((a,b)=>String(b.fecha_pago||"").localeCompare(String(a.fecha_pago||""))||Number(b.folio||0)-Number(a.folio||0));
+if(!rows.length){$("contenedorRecibos").className="empty";$("contenedorRecibos").textContent="Todavía no hay recibos registrados para esta cuenta.";return}
+$("contenedorRecibos").className="table-wrap";$("contenedorRecibos").innerHTML=`<table><thead><tr><th>Folio</th><th>Fecha</th><th>Concepto / obligaciones</th><th>Importe</th><th>Método</th><th>Estado</th></tr></thead><tbody>${rows.map(p=>`<tr><td><strong>${p.folio==null?"Sin folio":esc(p.folio)}</strong></td><td>${fecha(p.fecha_pago)}</td><td>${esc(p.concepto)}${p.obligaciones?`<div class="small" style="margin-top:5px">${esc(p.obligaciones)}</div>`:""}</td><td>${money(p.monto)}</td><td>${esc(p.metodo_pago||"—")}</td><td>${estadoPago(p.estatus)}</td></tr>`).join("")}</tbody></table>`
+}
+async function cargar(){
+$("btnActualizar").disabled=true;
+try{
+if(!window.supabaseClient)throw new Error("No se encontró supabaseClient. Verifica auth.js.");
+const {data:sd,error:se}=await supabaseClient.auth.getSession();if(se)throw se;const user=sd?.session?.user;if(!user){window.location.href="login.html";return}
+const {data:r,error:re}=await supabaseClient.from("residentes").select("id,privada,casa,es_residente").eq("user_id",user.id).single();
+if(re)throw new Error("No se pudo identificar el registro de residente: "+re.message);if(r.es_residente!==true)throw new Error("Esta cuenta no está habilitada como residente.");
+$("identidad").textContent=`Privada ${r.privada??"—"} · Lote/Casa ${r.casa??"—"}`;
+const [o,p]=await Promise.all([supabaseClient.rpc("consultar_obligaciones_residente",{p_residente_id:r.id}),supabaseClient.rpc("consultar_recibos_residente")]);
+if(o.error)throw new Error("No se pudieron consultar las cuotas: "+o.error.message);if(p.error)throw new Error("No se pudieron consultar los recibos: "+p.error.message);
+obligaciones=o.data||[];recibos=p.data||[];renderObligaciones();renderRecibos();aviso(`Información actualizada. Obligaciones: ${obligaciones.length}; recibos: ${recibos.length}.`);
+}catch(e){console.error(e);aviso(e.message||"No se pudo cargar la información financiera.",true);$("contenedorCuotas").className="empty";$("contenedorCuotas").textContent="No fue posible consultar las obligaciones.";$("contenedorRecibos").className="empty";$("contenedorRecibos").textContent="No fue posible consultar los recibos."}
+finally{$("btnActualizar").disabled=false}
+}
+document.addEventListener("DOMContentLoaded",cargar);$("btnActualizar").addEventListener("click",cargar);
+})();
+</script></body></html>
