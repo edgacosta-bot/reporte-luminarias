@@ -2150,12 +2150,11 @@ opcionRegistrarPago?.addEventListener("click", async () => {
     pagoResumenObligacion.textContent = "";
 
     const { data, error } = await supabaseClient
-        .from("residentes")
-        .select("id, nombre, privada, casa, identificador, obligado_pago")
-        .eq("es_residente", true)
-        .eq("obligado_pago", true)
-        .order("privada", { ascending: true })
-        .order("casa", { ascending: true });
+    .from("residentes")
+    .select("id, nombre, privada, casa, identificador, obligado_pago")
+    .eq("obligado_pago", true)
+    .order("privada", { ascending: true })
+    .order("casa", { ascending: true });
 
     if (error) {
         console.error("Error cargando residentes para pago:", error);
