@@ -76,6 +76,12 @@ if(!rows.length){$("contenedorCuotas").className="empty";$("contenedorCuotas").t
 $("contenedorCuotas").className="table-wrap";$("contenedorCuotas").innerHTML=`<table><thead><tr><th>Periodo</th><th>Concepto</th><th>Importe</th><th>Fecha límite</th><th>Fecha de pago</th><th>Estado</th></tr></thead><tbody>${rows.map(o=>`<tr><td>${esc(periodo(o.periodo_anio,o.periodo_mes))}</td><td>${esc(o.descripcion)}</td><td>${money(o.monto)}</td><td>${fecha(o.fecha_limite_pago)}</td><td>${fecha(o.fecha_pago)}</td><td>${etiquetaOb(o)}</td></tr>`).join("")}</tbody></table>`;
 $("listaCuotasMovil").innerHTML=rows.map(o=>{const fut=String(o.estatus).toLowerCase()==="pendiente"&&esFuturo(o);return `<article class="item-card"><div class="item-head"><div><div class="item-title">${esc(periodo(o.periodo_anio,o.periodo_mes))}</div><div class="item-concept">${esc(o.descripcion||"Cuota")}</div></div>${etiquetaOb(o)}</div><div class="item-grid"><div><div class="field-label">Importe</div><div class="field-value">${money(o.monto)}</div></div><div><div class="field-label">Fecha límite</div><div class="field-value">${fecha(o.fecha_limite_pago)}</div></div><div><div class="field-label">Fecha de pago</div><div class="field-value">${fecha(o.fecha_pago)}</div></div></div>${fut?'<div class="future-note"><strong>Solo informativa:</strong> este periodo aún no inicia. No necesitas pagar ahora; si lo deseas, puedes anticipar el pago.</div>':""}</article>`}).join("")
 }
+
+function folioTexto(v) {
+  return v == null || v === "" ? "Sin folio" : esc(v);
+}
+
+  
 function conceptoRecibo(p) {
   const texto = String(p.obligaciones || p.concepto || "—").trim();
 
