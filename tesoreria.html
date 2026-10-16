@@ -818,6 +818,18 @@
 
             </section>
 
+            <section class="tesoreria-card" id="opcionAdministrarCuotas" role="button" tabindex="0" aria-label="Administrar cuotas">
+                <div class="tesoreria-card-header">
+                    <div class="tesoreria-card-icon">📅</div>
+                    <div class="tesoreria-card-content">
+                        <h2 class="tesoreria-card-title">Administrar cuotas</h2>
+                        <div class="tesoreria-card-description">Consultar periodos, registrar nuevas cuotas y administrar su disponibilidad.</div>
+                        <div class="tesoreria-card-action">Administrar periodos <span>→</span></div>
+                    </div>
+                </div>
+            </section>
+
+
         </div>
 
 
@@ -3428,6 +3440,66 @@ const { data, error } =
     const blob = new Blob(["\uFEFF" + lines.join("\r\n")], {type:"text/csv;charset=utf-8;"});
     const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href=url; a.download="cuotas_residentes_sigvic.csv"; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
   });
+})();
+</script>
+
+
+
+<div id="modalAdministrarCuotas" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;overflow:auto;padding:24px;box-sizing:border-box;align-items:flex-start;justify-content:center;">
+ <div style="background:#fff;width:min(1100px,100%);margin:20px auto;padding:24px;border-radius:14px;box-shadow:0 12px 40px #0003;box-sizing:border-box;">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:0;color:#991b3f">Administrar cuotas</h2><button id="btnCerrarAdministrarCuotas" type="button" class="btn-regresar">Cerrar ✕</button></div>
+  <p>Registra periodos de cuota y administra su disponibilidad. Esta pantalla no genera obligaciones ni modifica pagos.</p>
+  <div id="mensajeAdministrarCuotas" role="status" style="padding:10px;margin:12px 0;border-radius:8px;background:#f8f8f8;white-space:pre-wrap"></div>
+  <form id="formCrearCuotaTesoreria" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:18px 0;padding:16px;border:1px solid #e5e7eb;border-radius:10px">
+   <label>Tipo<select id="admCuotaTipo" required style="display:block;width:100%;padding:9px"><option value="ordinaria">Ordinaria</option><option value="extraordinaria">Extraordinaria</option></select></label>
+   <label>Mes<select id="admCuotaMes" required style="display:block;width:100%;padding:9px"><option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option><option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option><option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option></select></label>
+   <label>Año<input id="admCuotaAnio" type="number" min="2000" max="2100" required value="2027" style="display:block;width:100%;padding:9px;box-sizing:border-box"></label>
+   <label>Inicio de pago<input id="admCuotaInicio" type="date" required style="display:block;width:100%;padding:9px;box-sizing:border-box"></label>
+   <label>Fecha límite<input id="admCuotaLimite" type="date" required style="display:block;width:100%;padding:9px;box-sizing:border-box"></label>
+   <label style="grid-column:1/-1">Descripción<input id="admCuotaDescripcion" maxlength="200" required placeholder="Ej. Cuota ordinaria de enero de 2027" style="display:block;width:100%;padding:9px;box-sizing:border-box"></label>
+   <div style="grid-column:1/-1"><button type="submit" id="btnCrearCuotaTesoreria" style="background:#991b3f;color:#fff;border:0;border-radius:8px;padding:11px 18px;cursor:pointer">Registrar cuota</button></div>
+  </form>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><h3>Periodos registrados</h3><button id="btnRecargarAdministrarCuotas" type="button">Actualizar lista</button></div>
+  <div style="overflow:auto"><table style="width:100%;border-collapse:collapse;min-width:780px"><thead><tr style="background:#f5f5f5;text-align:left"><th style="padding:9px">Periodo</th><th style="padding:9px">Tipo</th><th style="padding:9px">Descripción</th><th style="padding:9px">Inicio</th><th style="padding:9px">Límite</th><th style="padding:9px">Estado</th><th style="padding:9px">Acción</th></tr></thead><tbody id="tbodyAdministrarCuotas"><tr><td colspan="7" style="padding:12px">Abre el módulo para consultar.</td></tr></tbody></table></div>
+ </div>
+</div>
+<script>
+(() => {
+ const modal=document.getElementById('modalAdministrarCuotas');
+ const msg=document.getElementById('mensajeAdministrarCuotas');
+ const tbody=document.getElementById('tbodyAdministrarCuotas');
+ const form=document.getElementById('formCrearCuotaTesoreria');
+ const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+ const safe=v=>String(v??'');
+ const mensaje=(t,err=false)=>{msg.textContent=t;msg.style.background=err?'#fde8e8':'#f8f8f8';msg.style.color=err?'#8b1e1e':'#333';};
+ const fecha=v=>v?safe(v).slice(0,10):'—';
+ async function listar(){
+  tbody.replaceChildren();mensaje('Consultando periodos…');
+  try {
+   const {data,error}=await supabaseClient.from('cuotas').select('id,tipo,descripcion,periodo_mes,periodo_anio,fecha_inicio_pago,fecha_limite_pago,activa').order('periodo_anio',{ascending:true}).order('periodo_mes',{ascending:true});
+   if(error) throw error;
+   if(!data?.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=7;td.textContent='No hay periodos registrados.';td.style.padding='12px';tr.appendChild(td);tbody.appendChild(tr);}
+   (data||[]).forEach(c=>{const tr=document.createElement('tr');[`${meses[(Number(c.periodo_mes)||1)-1]||c.periodo_mes} ${c.periodo_anio}`,c.tipo==='ordinaria'?'Ordinaria':'Extraordinaria',c.descripcion,fecha(c.fecha_inicio_pago),fecha(c.fecha_limite_pago),c.activa?'Activa':'Inactiva'].forEach(v=>{const td=document.createElement('td');td.textContent=safe(v);td.style.padding='9px';td.style.borderBottom='1px solid #eee';tr.appendChild(td);});const td=document.createElement('td');td.style.padding='9px';const b=document.createElement('button');b.type='button';b.textContent=c.activa?'Desactivar':'Activar';b.dataset.id=c.id;b.dataset.active=String(!c.activa);b.addEventListener('click',()=>cambiarEstado(c.id,!c.activa));td.appendChild(b);tr.appendChild(td);tbody.appendChild(tr);});
+   mensaje(`${data.length} periodo(s) consultado(s).`);
+  }catch(e){console.error(e);mensaje('No fue posible consultar las cuotas: '+(e?.message||e),true);}
+ }
+ async function cambiarEstado(id,activa){
+  const accion=activa?'activar':'desactivar';if(!confirm(`¿Confirmas ${accion} este periodo? No se generarán ni modificarán obligaciones o pagos.`))return;
+  mensaje('Actualizando estado…');
+  try{const {data,error}=await supabaseClient.rpc('cambiar_estado_cuota_tesoreria',{p_cuota_id:id,p_activa:activa});if(error)throw error;mensaje(data?.mensaje||`Periodo ${activa?'activado':'desactivado'}.`);await listar();}
+  catch(e){console.error(e);mensaje('No se pudo cambiar el estado: '+(e?.message||e),true);}
+ }
+ document.getElementById('opcionAdministrarCuotas')?.addEventListener('click',async()=>{modal.style.display='flex';await listar();});
+ document.getElementById('opcionAdministrarCuotas')?.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();modal.style.display='flex';listar();}});
+ document.getElementById('btnCerrarAdministrarCuotas').addEventListener('click',()=>modal.style.display='none');
+ document.getElementById('btnRecargarAdministrarCuotas').addEventListener('click',listar);
+ modal.addEventListener('click',e=>{if(e.target===modal)modal.style.display='none';});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.style.display==='flex')modal.style.display='none';});
+ form.addEventListener('submit',async e=>{e.preventDefault();const b=document.getElementById('btnCrearCuotaTesoreria');b.disabled=true;
+  const payload={p_tipo:document.getElementById('admCuotaTipo').value,p_descripcion:document.getElementById('admCuotaDescripcion').value.trim(),p_periodo_mes:Number(document.getElementById('admCuotaMes').value),p_periodo_anio:Number(document.getElementById('admCuotaAnio').value),p_fecha_inicio_pago:document.getElementById('admCuotaInicio').value,p_fecha_limite_pago:document.getElementById('admCuotaLimite').value};
+  try{if(!payload.p_descripcion)throw new Error('Escribe una descripción.');if(payload.p_fecha_limite_pago<payload.p_fecha_inicio_pago)throw new Error('La fecha límite no puede ser anterior al inicio.');mensaje('Registrando cuota…');const {data,error}=await supabaseClient.rpc('crear_cuota_tesoreria',payload);if(error)throw error;mensaje('Cuota registrada correctamente. No se generaron obligaciones.');form.reset();document.getElementById('admCuotaAnio').value=new Date().getFullYear();await listar();}
+  catch(err){console.error(err);mensaje('No fue posible registrar la cuota: '+(err?.message||err),true);}finally{b.disabled=false;}
+ });
 })();
 </script>
 
