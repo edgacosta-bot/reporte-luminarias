@@ -1814,6 +1814,75 @@ const resumenGeneracionObligaciones =
 
 const resultadoGeneracionObligaciones =
     document.getElementById("resultadoGeneracionObligaciones");
+const filtroPrivadaGeneracion = document.getElementById("filtroPrivadaGeneracion");
+const filtroCasaGeneracion = document.getElementById("filtroCasaGeneracion");
+const seleccionarTodosGeneracion = document.getElementById("seleccionarTodosGeneracion");
+const resumenSeleccionGeneracion = document.getElementById("resumenSeleccionGeneracion");
+
+function obtenerPendientesVisiblesGeneracion() {
+    const consulta = window.obligacionesPendientesConsulta;
+    if (!consulta) return [];
+    const privada = filtroPrivadaGeneracion?.value || "";
+    const casa = (filtroCasaGeneracion?.value || "").trim().toLowerCase();
+    return consulta.pendientes.filter(o => {
+        const coincidePrivada = !privada || String(o.residentes?.privada || "") === privada;
+        const identificador = String(o.residentes?.casa || "").toLowerCase();
+        const nombre = String(o.residentes?.nombre || "").toLowerCase();
+        return coincidePrivada && (!casa || identificador.includes(casa) || nombre.includes(casa));
+    });
+}
+
+function actualizarSeleccionGeneracion() {
+    const consulta = window.obligacionesPendientesConsulta;
+    if (!consulta) return;
+    const visibles = obtenerPendientesVisiblesGeneracion();
+    const seleccionados = consulta.pendientes.filter(o => consulta.seleccionados.has(o.residente_id));
+    if (resumenSeleccionGeneracion) {
+        resumenSeleccionGeneracion.textContent = `Seleccionados: ${seleccionados.length} de ${consulta.pendientes.length} inmuebles pendientes.`;
+    }
+    if (seleccionarTodosGeneracion) {
+        seleccionarTodosGeneracion.checked = visibles.length > 0 && visibles.every(o => consulta.seleccionados.has(o.residente_id));
+        seleccionarTodosGeneracion.indeterminate = visibles.some(o => consulta.seleccionados.has(o.residente_id)) && !seleccionarTodosGeneracion.checked;
+    }
+    btnEjecutarGeneracionObligaciones.disabled = seleccionados.length === 0;
+}
+
+function renderizarPendientesGeneracion() {
+    const consulta = window.obligacionesPendientesConsulta;
+    if (!consulta) return;
+    const visibles = obtenerPendientesVisiblesGeneracion().sort((a, b) => {
+        const privadaA = String(a.residentes?.privada || "");
+        const privadaB = String(b.residentes?.privada || "");
+        const ordenPrivada = privadaA.localeCompare(privadaB, "es", { numeric: true });
+        return ordenPrivada || Number(a.residentes?.casa || 0) - Number(b.residentes?.casa || 0);
+    });
+    resultadoGeneracionObligaciones.innerHTML = visibles.length ? visibles.map(o => `
+        <label style="display:flex;gap:10px;align-items:flex-start;padding:10px;border-bottom:1px solid #ddd;cursor:pointer;">
+            <input type="checkbox" class="checkboxInmuebleGeneracion" data-residente-id="${o.residente_id}" ${consulta.seleccionados.has(o.residente_id) ? "checked" : ""} style="margin-top:4px;">
+            <span><strong>${o.residentes?.privada || ""}-${o.residentes?.casa || ""}</strong> — ${o.residentes?.nombre || "Sin nombre"}<br><small>${o.condicion_inmueble || "Sin condición"} · ${o.cantidad_lotes ?? "—"} lote(s)</small></span>
+        </label>`).join("") : "<p>No hay inmuebles pendientes que coincidan con los filtros.</p>";
+    resultadoGeneracionObligaciones.querySelectorAll(".checkboxInmuebleGeneracion").forEach(checkbox => {
+        checkbox.addEventListener("change", () => {
+            const id = checkbox.dataset.residenteId;
+            if (checkbox.checked) consulta.seleccionados.add(id);
+            else consulta.seleccionados.delete(id);
+            actualizarSeleccionGeneracion();
+        });
+    });
+    actualizarSeleccionGeneracion();
+}
+
+filtroPrivadaGeneracion?.addEventListener("change", renderizarPendientesGeneracion);
+filtroCasaGeneracion?.addEventListener("input", renderizarPendientesGeneracion);
+seleccionarTodosGeneracion?.addEventListener("change", () => {
+    const consulta = window.obligacionesPendientesConsulta;
+    if (!consulta) return;
+    obtenerPendientesVisiblesGeneracion().forEach(o => {
+        if (seleccionarTodosGeneracion.checked) consulta.seleccionados.add(o.residente_id);
+        else consulta.seleccionados.delete(o.residente_id);
+    });
+    renderizarPendientesGeneracion();
+});
 
 
 opcionGenerarObligaciones?.addEventListener("click", async () => {
@@ -1824,6 +1893,11 @@ opcionGenerarObligaciones?.addEventListener("click", async () => {
 
     resumenGeneracionObligaciones.innerHTML = "";
     resultadoGeneracionObligaciones.innerHTML = "";
+    if (filtroPrivadaGeneracion) filtroPrivadaGeneracion.innerHTML = '<option value="">Todas las privadas</option>';
+    if (filtroCasaGeneracion) filtroCasaGeneracion.value = "";
+    if (seleccionarTodosGeneracion) seleccionarTodosGeneracion.checked = false;
+    if (resumenSeleccionGeneracion) resumenSeleccionGeneracion.textContent = "";
+    window.obligacionesPendientesConsulta = null;
     btnEjecutarGeneracionObligaciones.disabled = true;
 
     const { data, error } = await supabaseClient
@@ -1959,46 +2033,26 @@ btnConsultarObligaciones?.addEventListener("click", async () => {
         window.obligacionesPendientesConsulta = {
             cuotaId,
             cuota,
-            pendientes
+            pendientes,
+            seleccionados: new Set()
         };
 
         resumenGeneracionObligaciones.innerHTML = `
             <p><strong>Periodo:</strong> ${cuota.descripcion}</p>
             <p><strong>Inmuebles elegibles:</strong> ${elegibles.length}</p>
-            <p><strong>Obligaciones existentes:</strong> ${
-                elegibles.length - pendientes.length
-            }</p>
+            <p><strong>Obligaciones existentes:</strong> ${elegibles.length - pendientes.length}</p>
             <p><strong>Pendientes de generar:</strong> ${pendientes.length}</p>
         `;
 
-       const pendientesOrdenados = [...pendientes].sort((a, b) => {
-    const privadaA = String(a.residentes?.privada || "");
-    const privadaB = String(b.residentes?.privada || "");
-
-    const ordenPrivada = privadaA.localeCompare(privadaB, "es", {
-        numeric: true
-    });
-
-    if (ordenPrivada !== 0) {
-        return ordenPrivada;
-    }
-
-    return Number(a.residentes?.casa || 0) -
-           Number(b.residentes?.casa || 0);
-});
-
-resultadoGeneracionObligaciones.innerHTML = pendientesOrdenados.length
-    ? pendientesOrdenados.map(o => `
-        <div style="padding:8px;border-bottom:1px solid #ddd">
-            <strong>${o.residentes?.privada || ""}-${o.residentes?.casa || ""}</strong>
-            — ${o.residentes?.nombre || "Sin nombre"}
-            <br>
-            <small>${o.condicion_inmueble} · ${o.cantidad_lotes} lote(s)</small>
-        </div>
-    `).join("")
-    : "<p>No hay obligaciones pendientes para este periodo.</p>";
-
-        btnEjecutarGeneracionObligaciones.disabled = pendientes.length === 0;
+        if (filtroPrivadaGeneracion) {
+            const privadas = [...new Set(pendientes.map(o => String(o.residentes?.privada || "")).filter(Boolean))]
+                .sort((a, b) => a.localeCompare(b, "es", { numeric: true }));
+            filtroPrivadaGeneracion.innerHTML = '<option value="">Todas las privadas</option>' +
+                privadas.map(privada => `<option value="${privada}">Privada ${privada}</option>`).join("");
+        }
+        if (filtroCasaGeneracion) filtroCasaGeneracion.value = "";
+        if (seleccionarTodosGeneracion) seleccionarTodosGeneracion.checked = false;
+        renderizarPendientesGeneracion();
 
     } catch (error) {
         console.error("Error al consultar obligaciones:", error);
@@ -2015,10 +2069,11 @@ resultadoGeneracionObligaciones.innerHTML = pendientesOrdenados.length
 btnEjecutarGeneracionObligaciones?.addEventListener("click", () => {
     const consulta = window.obligacionesPendientesConsulta;
 
-    if (!consulta || !consulta.cuotaId || !consulta.pendientes?.length) {
+    const seleccionados = consulta?.pendientes?.filter(o => consulta.seleccionados?.has(o.residente_id)) || [];
+    if (!consulta || !consulta.cuotaId || seleccionados.length === 0) {
         mostrarAlerta({
-            titulo: "Consulta requerida",
-            mensaje: "Consulta primero los inmuebles pendientes de generar."
+            titulo: "Selecciona los inmuebles",
+            mensaje: "Marca al menos un inmueble para generar sus obligaciones."
         });
         return;
     }
@@ -2030,9 +2085,9 @@ btnEjecutarGeneracionObligaciones?.addEventListener("click", () => {
         document.getElementById("textoConfirmarGeneracion");
 
     textoConfirmacion.textContent =
-        `Se generarán ${consulta.pendientes.length} obligación(es) para ${consulta.cuota.descripcion}. ¿Deseas continuar?`;
+        `Se generarán ${seleccionados.length} obligación(es) para ${consulta.cuota.descripcion}. ¿Deseas continuar?`;
 
-    window.consultaConfirmadaGeneracion = consulta;
+    window.consultaConfirmadaGeneracion = { ...consulta, pendientes: seleccionados };
     modalConfirmacion.style.display = "flex";
 });
 
@@ -2554,6 +2609,23 @@ btnGuardarPago?.addEventListener("click", async () => {
             </select>
         </div>
 
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:16px 0;">
+            <div>
+                <label for="filtroPrivadaGeneracion"><strong>Filtrar por privada</strong></label>
+                <select id="filtroPrivadaGeneracion" style="display:block;width:100%;margin-top:6px;padding:10px;border:1px solid #d1d5db;border-radius:8px;">
+                    <option value="">Todas las privadas</option>
+                </select>
+            </div>
+            <div>
+                <label for="filtroCasaGeneracion"><strong>Casa, lote o residente</strong></label>
+                <input id="filtroCasaGeneracion" type="search" placeholder="Ej. I-38 o nombre" style="display:block;width:100%;margin-top:6px;padding:10px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box;">
+            </div>
+        </div>
+        <label style="display:flex;gap:8px;align-items:center;margin:12px 0;font-weight:600;">
+            <input type="checkbox" id="seleccionarTodosGeneracion">
+            Seleccionar todos los resultados visibles
+        </label>
+        <p id="resumenSeleccionGeneracion" aria-live="polite"></p>
         <div id="resumenGeneracionObligaciones"></div>
 
         <div
