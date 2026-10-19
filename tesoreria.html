@@ -461,6 +461,15 @@
 #modalRegistrarPago button { border:0; border-radius:8px; padding:11px 18px; cursor:pointer; font-weight:600; }
 #btnGuardarPago { background:#991b3f; color:#fff; }
 
+/* Lista compacta y legible de selección de inmuebles */
+#resultadoGeneracionObligaciones { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:8px; }
+.inmueble-generacion-fila { display:flex; align-items:flex-start; gap:10px; padding:12px 14px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; cursor:pointer; min-width:0; }
+.inmueble-generacion-fila:hover { border-color:#c9a2ae; background:#fffafb; }
+.inmueble-generacion-fila input[type="checkbox"] { width:17px; height:17px; flex:0 0 17px; margin:2px 0 0; accent-color:#991b3f; }
+.inmueble-generacion-datos { display:flex; flex-direction:column; gap:3px; min-width:0; }
+.inmueble-generacion-datos strong { color:#991b3f; font-size:14px; }
+.inmueble-generacion-datos span { color:#111827; overflow-wrap:anywhere; }
+.inmueble-generacion-datos small { color:#6b7280; }
 #modalCuotasResidentes { position:fixed; inset:0; z-index:10030; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.60); padding:16px; box-sizing:border-box; }
 #modalCuotasResidentes .cuotas-contenido { width:min(1450px,100%); max-height:94vh; overflow:auto; background:#fff; border-radius:16px; padding:24px; box-sizing:border-box; box-shadow:0 20px 60px rgba(0,0,0,.3); }
 #modalCuotasResidentes .cuotas-filtros { display:grid; grid-template-columns:minmax(210px,1.5fr) minmax(130px,.7fr) minmax(150px,.8fr) auto auto; gap:10px; align-items:end; margin:18px 0; }
@@ -470,7 +479,7 @@
 #modalCuotasResidentes .cuota-kpi { border:1px solid #e5e7eb; border-radius:10px; padding:10px 14px; min-width:145px; background:#f9fafb; }
 #modalCuotasResidentes .cuota-kpi strong { display:block; font-size:18px; margin-top:3px; color:#111827; }
 #modalCuotasResidentes .cuotas-tabla-wrap { overflow:auto; border:1px solid #e5e7eb; border-radius:10px; }
-#tablaCuotasResidentes { width:100%; border-collapse:collapse; min-width:1250px; font-size:12px; }
+#tablaCuotasResidentes { width:100%; border-collapse:collapse; min-width:1320px; font-size:12px; }
 #tablaCuotasResidentes th, #tablaCuotasResidentes td { padding:9px 10px; text-align:left; border-bottom:1px solid #e5e7eb; vertical-align:top; }
 #tablaCuotasResidentes th { background:#f9fafb; color:#374151; position:sticky; top:0; z-index:1; }
 #tablaCuotasResidentes tr:last-child td { border-bottom:0; }
@@ -1857,9 +1866,9 @@ function renderizarPendientesGeneracion() {
         return ordenPrivada || Number(a.residentes?.casa || 0) - Number(b.residentes?.casa || 0);
     });
     resultadoGeneracionObligaciones.innerHTML = visibles.length ? visibles.map(o => `
-        <label style="display:flex;gap:10px;align-items:flex-start;padding:10px;border-bottom:1px solid #ddd;cursor:pointer;">
-            <input type="checkbox" class="checkboxInmuebleGeneracion" data-residente-id="${o.residente_id}" ${consulta.seleccionados.has(o.residente_id) ? "checked" : ""} style="margin-top:4px;">
-            <span><strong>${o.residentes?.privada || ""}-${o.residentes?.casa || ""}</strong> — ${o.residentes?.nombre || "Sin nombre"}<br><small>${o.condicion_inmueble || "Sin condición"} · ${o.cantidad_lotes ?? "—"} lote(s)</small></span>
+        <label class="inmueble-generacion-fila">
+            <input type="checkbox" class="checkboxInmuebleGeneracion" data-residente-id="${o.residente_id}" ${consulta.seleccionados.has(o.residente_id) ? "checked" : ""}>
+            <span class="inmueble-generacion-datos"><strong>${o.residentes?.privada || ""}-${o.residentes?.casa || ""}</strong><span>${o.residentes?.nombre || "Sin nombre"}</span><small>${o.condicion_inmueble || "Sin condición"} · ${o.cantidad_lotes ?? "—"} lote(s)</small></span>
         </label>`).join("") : "<p>No hay inmuebles pendientes que coincidan con los filtros.</p>";
     resultadoGeneracionObligaciones.querySelectorAll(".checkboxInmuebleGeneracion").forEach(checkbox => {
         checkbox.addEventListener("change", () => {
@@ -3372,8 +3381,8 @@ const { data, error } =
     </div>
     <div class="cuotas-tabla-wrap">
       <table id="tablaCuotasResidentes">
-        <thead><tr><th>Privada</th><th>Lote</th><th>Residente</th><th>Periodo</th><th>Concepto</th><th>Importe obligación</th><th>Estado</th><th>Pagado activo</th><th>Fecha pago</th><th>Folio(s) activo(s)</th><th>Conciliación / observación</th></tr></thead>
-        <tbody id="cuerpoCuotasResidentes"><tr><td colspan="11">Abre el concentrado para cargar los datos.</td></tr></tbody>
+        <thead><tr><th>Privada</th><th>Lote</th><th>Residente</th><th>Periodo</th><th>Concepto</th><th>Importe obligación</th><th>Estado</th><th>Pagado activo</th><th>Fecha pago</th><th>Folio(s) activo(s)</th><th>Conciliación / observación</th><th>Acción</th></tr></thead>
+        <tbody id="cuerpoCuotasResidentes"><tr><td colspan="12">Abre el concentrado para cargar los datos.</td></tr></tbody>
       </table>
     </div>
     <div class="cuotas-acciones">
@@ -3405,7 +3414,7 @@ const { data, error } =
   const labelPeriod = row => `${String(row.periodo_mes).padStart(2,"0")}/${row.periodo_anio}`;
   const norm = value => String(value ?? "").toLocaleLowerCase("es-MX");
 
-  function setMessage(message, colspan=11) {
+  function setMessage(message, colspan=12) {
     tbody.replaceChildren();
     const tr = document.createElement("tr");
     const td = document.createElement("td");
@@ -3457,6 +3466,20 @@ const { data, error } =
       add(r.privada); add(r.casa); add(r.residente); add(labelPeriod(r)); add(r.descripcion); add(money(r.monto));
       const tdState = document.createElement("td"); const badge = document.createElement("span"); const st = estadoUI(r); badge.className=`cuota-badge ${st.cls}`; badge.textContent=st.text; tdState.appendChild(badge); tr.appendChild(tdState);
       add(money(Number(r.monto_pagado_activo || 0))); add(date(r.fecha_pago)); add(r.folios_activos); add(r.conciliacion || (r.estado === "por_generar" ? "Sin obligación registrada; no contabilizar como adeudo" : r.estado === "futura" ? "Periodo futuro; no es adeudo actual" : "—"));
+      const tdAction = document.createElement("td");
+      if (r.obligacion_id && r.estado === "pendiente") {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "btnEliminarObligacion";
+        btn.textContent = "Eliminar";
+        btn.title = "Archivar y retirar esta obligación pendiente";
+        btn.style.cssText = "background:#fff1f2;color:#9f1239;border:1px solid #fecdd3;border-radius:7px;padding:7px 10px;font-weight:700;cursor:pointer;white-space:nowrap";
+        btn.addEventListener("click", () => solicitarEliminacion(r, btn));
+        tdAction.appendChild(btn);
+      } else {
+        tdAction.textContent = "—";
+      }
+      tr.appendChild(tdAction);
       tbody.appendChild(tr);
     });
     const generated = rows.filter(r => r.obligacion_id);
@@ -3479,6 +3502,35 @@ const { data, error } =
       ["Periodos futuros por generar", futureMissing]
     ];
     kpis.forEach(([label,value]) => { const div=document.createElement("div"); div.className="cuota-kpi"; const span=document.createElement("span"); span.textContent=label; const strong=document.createElement("strong"); strong.textContent=String(value); div.append(span,strong); summary.appendChild(div); });
+  }
+
+  async function solicitarEliminacion(row, button) {
+    const periodo = labelPeriod(row);
+    const inmueble = `${row.privada || ""}-${row.casa || ""}`;
+    const motivo = window.prompt(`Vas a eliminar y archivar la obligación pendiente de ${inmueble}, periodo ${periodo}.\n\nEscribe el motivo para la trazabilidad (mínimo 5 caracteres):`, "Obligación registrada por error; pendiente de conciliación");
+    if (motivo === null) return;
+    if (motivo.trim().length < 5) {
+      alert("Escribe un motivo de al menos 5 caracteres.");
+      return;
+    }
+    const confirmar = window.confirm(`¿Confirmas eliminar la obligación de ${inmueble} correspondiente a ${periodo}?\n\nSe archivará una copia para trazabilidad. Esta acción no se puede deshacer desde esta pantalla.`);
+    if (!confirmar) return;
+    button.disabled = true;
+    button.textContent = "Procesando…";
+    try {
+      const { data, error } = await supabaseClient.rpc("eliminar_obligacion_tesoreria", {
+        p_obligacion_id: row.obligacion_id,
+        p_motivo: motivo.trim()
+      });
+      if (error) throw error;
+      alert("La obligación fue archivada y retirada del concentrado activo.");
+      await load();
+    } catch (error) {
+      console.error("Error eliminando obligación:", error);
+      alert(error?.message || "No fue posible eliminar la obligación. Verifica los permisos y el historial de pagos asociado.");
+      button.disabled = false;
+      button.textContent = "Eliminar";
+    }
   }
 
   async function load() {
