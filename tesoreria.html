@@ -783,6 +783,17 @@
 
 
 
+            <section class="tesoreria-card" id="opcionCambiarCondicion" role="button" tabindex="0" aria-label="Cambiar condición del inmueble">
+                <div class="tesoreria-card-header">
+                    <div class="tesoreria-card-icon">🏠</div>
+                    <div class="tesoreria-card-content">
+                        <h2 class="tesoreria-card-title">Cambiar condición del inmueble</h2>
+                        <div class="tesoreria-card-description">Actualizar la condición de un inmueble incorporado cuando cambia de obra en construcción a residencia o lote baldío.</div>
+                        <div class="tesoreria-card-action">Actualizar condición <span>→</span></div>
+                    </div>
+                </div>
+            </section>
+
             <!-- ==================================================
                  CUOTAS
                  ================================================== -->
@@ -3623,6 +3634,157 @@ const { data, error } =
   try{if(!payload.p_descripcion)throw new Error('Escribe una descripción.');if(payload.p_fecha_limite_pago<payload.p_fecha_inicio_pago)throw new Error('La fecha límite no puede ser anterior al inicio.');mensaje('Registrando cuota…');const {data,error}=await supabaseClient.rpc('crear_cuota_tesoreria',payload);if(error)throw error;mensaje('Cuota registrada correctamente. No se generaron obligaciones.');form.reset();document.getElementById('admCuotaAnio').value=new Date().getFullYear();await listar();}
   catch(err){console.error(err);mensaje('No fue posible registrar la cuota: '+(err?.message||err),true);}finally{b.disabled=false;}
  });
+})();
+</script>
+
+
+
+<!-- MODAL: CAMBIAR CONDICIÓN DEL INMUEBLE -->
+<div id="modalCambiarCondicion" style="display:none;position:fixed;inset:0;z-index:10040;background:rgba(0,0,0,.58);padding:18px;box-sizing:border-box;align-items:center;justify-content:center;">
+  <div style="width:min(680px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:16px;padding:26px;box-sizing:border-box;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <h2 style="margin-top:0">Cambiar condición del inmueble</h2>
+    <p style="color:#4b5563;line-height:1.5">Seleccione un inmueble ya incorporado y actualice su condición vigente. El cambio solo se utilizará para obligaciones futuras; no modifica obligaciones ni pagos anteriores.</p>
+    <label for="cambiarCondicionInmueble" style="display:block;font-weight:600;margin:16px 0 6px">Inmueble incorporado</label>
+    <select id="cambiarCondicionInmueble" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #d1d5db;border-radius:8px;font:inherit">
+      <option value="">Cargando inmuebles...</option>
+    </select>
+    <div id="resumenCondicionActual" style="margin-top:12px;padding:12px;background:#f9fafb;border-radius:8px;color:#374151">Seleccione un inmueble para consultar su condición actual.</div>
+    <label for="nuevaCondicionInmueble" style="display:block;font-weight:600;margin:16px 0 6px">Nueva condición</label>
+    <select id="nuevaCondicionInmueble" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #d1d5db;border-radius:8px;font:inherit">
+      <option value="">Seleccione una condición</option>
+      <option value="residencia">Residencia</option>
+      <option value="obra_construccion">Obra en construcción</option>
+      <option value="lote_baldio">Lote baldío</option>
+    </select>
+    <p style="font-size:13px;color:#6b7280;margin-top:10px">La tarifa se calculará conforme a la condición y cantidad de lotes al generar cada obligación futura.</p>
+    <div id="mensajeCambiarCondicion" role="status" style="margin-top:12px"></div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:22px">
+      <button type="button" id="btnCerrarCambiarCondicion" style="border:0;border-radius:8px;padding:11px 16px;cursor:pointer;background:#e5e7eb;color:#374151">Cerrar</button>
+      <button type="button" id="btnGuardarCambiarCondicion" disabled style="border:0;border-radius:8px;padding:11px 16px;cursor:pointer;background:#991b3f;color:#fff">Guardar cambio</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const modal = document.getElementById("modalCambiarCondicion");
+  const abrir = document.getElementById("opcionCambiarCondicion");
+  const selector = document.getElementById("cambiarCondicionInmueble");
+  const nueva = document.getElementById("nuevaCondicionInmueble");
+  const resumen = document.getElementById("resumenCondicionActual");
+  const mensaje = document.getElementById("mensajeCambiarCondicion");
+  const guardar = document.getElementById("btnGuardarCambiarCondicion");
+  const cerrar = document.getElementById("btnCerrarCambiarCondicion");
+  let inmuebles = [];
+
+  const etiquetaCondicion = valor => ({
+    residencia: "Residencia",
+    obra_construccion: "Obra en construcción",
+    lote_baldio: "Lote baldío"
+  }[valor] || valor || "Sin condición");
+
+  function actualizarResumen() {
+    const inmueble = inmuebles.find(x => x.residente_id === selector.value);
+    if (!inmueble) {
+      resumen.textContent = "Seleccione un inmueble para consultar su condición actual.";
+      nueva.value = "";
+      guardar.disabled = true;
+      return;
+    }
+    resumen.textContent = `Condición actual: ${etiquetaCondicion(inmueble.condicion_inmueble)} · ${inmueble.cantidad_lotes ?? "—"} lote(s).`;
+    nueva.value = inmueble.condicion_inmueble || "";
+    guardar.disabled = !nueva.value || nueva.value === inmueble.condicion_inmueble;
+  }
+
+  async function cargarInmuebles() {
+    selector.innerHTML = '<option value="">Cargando inmuebles...</option>';
+    mensaje.textContent = "";
+    guardar.disabled = true;
+    try {
+      const { data, error } = await supabaseClient
+        .from("obligados_pago")
+        .select("residente_id, condicion_inmueble, cantidad_lotes, residentes!inner(id, privada, casa, nombre)")
+        .eq("activo", true);
+      if (error) throw error;
+
+      inmuebles = (data || []).sort((a, b) => {
+        const pa = String(a.residentes?.privada || "");
+        const pb = String(b.residentes?.privada || "");
+        return pa.localeCompare(pb, "es", { numeric: true }) ||
+          Number(a.residentes?.casa || 0) - Number(b.residentes?.casa || 0);
+      });
+
+      selector.innerHTML = '<option value="">Seleccione un inmueble</option>';
+      inmuebles.forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item.residente_id;
+        opt.textContent = `Privada ${item.residentes?.privada || "?"} · Lote ${item.residentes?.casa || "?"} — ${etiquetaCondicion(item.condicion_inmueble)}`;
+        selector.appendChild(opt);
+      });
+      if (!inmuebles.length) {
+        selector.innerHTML = '<option value="">No hay inmuebles incorporados activos</option>';
+      }
+      actualizarResumen();
+    } catch (e) {
+      console.error("Error cargando inmuebles para cambio de condición:", e);
+      selector.innerHTML = '<option value="">Error al cargar inmuebles</option>';
+      mensaje.textContent = "No fue posible cargar los inmuebles: " + (e?.message || e);
+    }
+  }
+
+  abrir?.addEventListener("click", async () => {
+    modal.style.display = "flex";
+    await cargarInmuebles();
+  });
+  abrir?.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      modal.style.display = "flex";
+      cargarInmuebles();
+    }
+  });
+  selector?.addEventListener("change", actualizarResumen);
+  nueva?.addEventListener("change", () => {
+    const item = inmuebles.find(x => x.residente_id === selector.value);
+    guardar.disabled = !item || !nueva.value || nueva.value === item.condicion_inmueble;
+  });
+  cerrar?.addEventListener("click", () => { modal.style.display = "none"; });
+  modal?.addEventListener("click", e => { if (e.target === modal) modal.style.display = "none"; });
+
+  guardar?.addEventListener("click", async () => {
+    const item = inmuebles.find(x => x.residente_id === selector.value);
+    if (!item || !nueva.value || nueva.value === item.condicion_inmueble) {
+      mensaje.textContent = "Seleccione un inmueble y una condición diferente.";
+      return;
+    }
+    const lugar = `Privada ${item.residentes?.privada} · Lote ${item.residentes?.casa}`;
+    if (!confirm(`¿Confirma cambiar ${lugar} de "${etiquetaCondicion(item.condicion_inmueble)}" a "${etiquetaCondicion(nueva.value)}"? Las obligaciones anteriores no cambiarán.`)) return;
+
+    guardar.disabled = true;
+    mensaje.textContent = "Guardando cambio...";
+    try {
+      const { data, error } = await supabaseClient.rpc("actualizar_condicion_inmueble", {
+        p_residente_id: item.residente_id,
+        p_condicion_inmueble: nueva.value
+      });
+      if (error) throw error;
+
+      const actualizado = Array.isArray(data) ? data[0] : data;
+      if (!actualizado) throw new Error("La función no devolvió el registro actualizado.");
+      item.condicion_inmueble = actualizado.condicion_inmueble;
+      item.cantidad_lotes = actualizado.cantidad_lotes;
+      mensaje.textContent = `Condición actualizada correctamente para ${lugar}. Las obligaciones anteriores permanecen sin cambios.`;
+      actualizarResumen();
+      await cargarInmuebles();
+      selector.value = item.residente_id;
+      actualizarResumen();
+      mensaje.textContent = `Condición actualizada correctamente para ${lugar}. Las obligaciones anteriores permanecen sin cambios.`;
+    } catch (e) {
+      console.error("Error actualizando condición:", e);
+      mensaje.textContent = "No fue posible actualizar la condición: " + (e?.message || e);
+      guardar.disabled = false;
+    }
+  });
 })();
 </script>
 
