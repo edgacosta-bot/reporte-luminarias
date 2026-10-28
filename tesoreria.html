@@ -3643,7 +3643,7 @@ const { data, error } =
 <div id="modalCambiarCondicion" style="display:none;position:fixed;inset:0;z-index:10040;background:rgba(0,0,0,.58);padding:18px;box-sizing:border-box;align-items:center;justify-content:center;">
   <div style="width:min(680px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:16px;padding:26px;box-sizing:border-box;box-shadow:0 20px 60px rgba(0,0,0,.3);">
     <h2 style="margin-top:0">Cambiar condición del inmueble</h2>
-    <p style="color:#4b5563;line-height:1.5">Seleccione un inmueble ya incorporado y actualice su condición vigente. El cambio solo se utilizará para obligaciones futuras; no modifica obligaciones ni pagos anteriores.</p>
+    <p style="color:#4b5563;line-height:1.5">Seleccione un inmueble ya incorporado y actualice su condición vigente. Si elige Residencia, indique si comprende uno, dos o tres lotes. El cambio solo se utilizará para obligaciones futuras; no modifica obligaciones ni pagos anteriores.</p>
     <label for="cambiarCondicionInmueble" style="display:block;font-weight:600;margin:16px 0 6px">Inmueble incorporado</label>
     <select id="cambiarCondicionInmueble" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #d1d5db;border-radius:8px;font:inherit">
       <option value="">Cargando inmuebles...</option>
@@ -3656,6 +3656,15 @@ const { data, error } =
       <option value="obra_construccion">Obra en construcción</option>
       <option value="lote_baldio">Lote baldío</option>
     </select>
+    <div id="contenedorCantidadLotesResidencia" style="display:none;margin-top:16px">
+      <label for="cantidadLotesResidencia" style="display:block;font-weight:600;margin-bottom:6px">Cantidad de lotes de la residencia</label>
+      <select id="cantidadLotesResidencia" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #d1d5db;border-radius:8px;font:inherit">
+        <option value="">Seleccione la cantidad de lotes</option>
+        <option value="1">Un lote — $900 mensuales</option>
+        <option value="2">Dos lotes — $1,200 mensuales</option>
+        <option value="3">Tres lotes — $1,500 mensuales</option>
+      </select>
+    </div>
     <p style="font-size:13px;color:#6b7280;margin-top:10px">La tarifa se calculará conforme a la condición y cantidad de lotes al generar cada obligación futura.</p>
     <div id="mensajeCambiarCondicion" role="status" style="margin-top:12px"></div>
     <div style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:22px">
@@ -3671,6 +3680,8 @@ const { data, error } =
   const abrir = document.getElementById("opcionCambiarCondicion");
   const selector = document.getElementById("cambiarCondicionInmueble");
   const nueva = document.getElementById("nuevaCondicionInmueble");
+  const contenedorCantidad = document.getElementById("contenedorCantidadLotesResidencia");
+  const cantidadLotes = document.getElementById("cantidadLotesResidencia");
   const resumen = document.getElementById("resumenCondicionActual");
   const mensaje = document.getElementById("mensajeCambiarCondicion");
   const guardar = document.getElementById("btnGuardarCambiarCondicion");
@@ -3688,12 +3699,34 @@ const { data, error } =
     if (!inmueble) {
       resumen.textContent = "Seleccione un inmueble para consultar su condición actual.";
       nueva.value = "";
+      cantidadLotes.value = "";
+      contenedorCantidad.style.display = "none";
       guardar.disabled = true;
       return;
     }
     resumen.textContent = `Condición actual: ${etiquetaCondicion(inmueble.condicion_inmueble)} · ${inmueble.cantidad_lotes ?? "—"} lote(s).`;
     nueva.value = inmueble.condicion_inmueble || "";
-    guardar.disabled = !nueva.value || nueva.value === inmueble.condicion_inmueble;
+    cantidadLotes.value = String(inmueble.cantidad_lotes ?? "");
+    actualizarVisibilidadCantidad();
+    actualizarEstadoGuardar();
+  }
+
+  function actualizarVisibilidadCantidad() {
+    const esResidencia = nueva.value === "residencia";
+    contenedorCantidad.style.display = esResidencia ? "block" : "none";
+    if (!esResidencia) cantidadLotes.value = "";
+  }
+
+  function actualizarEstadoGuardar() {
+    const item = inmuebles.find(x => x.residente_id === selector.value);
+    if (!item || !nueva.value) {
+      guardar.disabled = true;
+      return;
+    }
+    const nuevaCantidad = nueva.value === "residencia" ? Number(cantidadLotes.value) : Number(item.cantidad_lotes);
+    const cantidadValida = nueva.value !== "residencia" || [1, 2, 3].includes(nuevaCantidad);
+    guardar.disabled = !cantidadValida ||
+      (nueva.value === item.condicion_inmueble && nuevaCantidad === Number(item.cantidad_lotes));
   }
 
   async function cargarInmuebles() {
@@ -3745,27 +3778,35 @@ const { data, error } =
   });
   selector?.addEventListener("change", actualizarResumen);
   nueva?.addEventListener("change", () => {
-    const item = inmuebles.find(x => x.residente_id === selector.value);
-    guardar.disabled = !item || !nueva.value || nueva.value === item.condicion_inmueble;
+    actualizarVisibilidadCantidad();
+    actualizarEstadoGuardar();
   });
+  cantidadLotes?.addEventListener("change", actualizarEstadoGuardar);
   cerrar?.addEventListener("click", () => { modal.style.display = "none"; });
   modal?.addEventListener("click", e => { if (e.target === modal) modal.style.display = "none"; });
 
   guardar?.addEventListener("click", async () => {
     const item = inmuebles.find(x => x.residente_id === selector.value);
-    if (!item || !nueva.value || nueva.value === item.condicion_inmueble) {
-      mensaje.textContent = "Seleccione un inmueble y una condición diferente.";
+    const nuevaCantidad = nueva.value === "residencia" ? Number(cantidadLotes.value) : Number(item?.cantidad_lotes);
+    if (!item || !nueva.value || (nueva.value === "residencia" && ![1, 2, 3].includes(nuevaCantidad))) {
+      mensaje.textContent = "Seleccione un inmueble, una condición y, si corresponde, la cantidad de lotes de la residencia.";
+      return;
+    }
+    if (nueva.value === item.condicion_inmueble && nuevaCantidad === Number(item.cantidad_lotes)) {
+      mensaje.textContent = "No hay cambios por guardar.";
       return;
     }
     const lugar = `Privada ${item.residentes?.privada} · Lote ${item.residentes?.casa}`;
-    if (!confirm(`¿Confirma cambiar ${lugar} de "${etiquetaCondicion(item.condicion_inmueble)}" a "${etiquetaCondicion(nueva.value)}"? Las obligaciones anteriores no cambiarán.`)) return;
+    const detalleCantidad = nueva.value === "residencia" ? ` con ${nuevaCantidad} lote(s)` : "";
+    if (!confirm(`¿Confirma cambiar ${lugar} a "${etiquetaCondicion(nueva.value)}"${detalleCantidad}? Las obligaciones anteriores no cambiarán.`)) return;
 
     guardar.disabled = true;
     mensaje.textContent = "Guardando cambio...";
     try {
       const { data, error } = await supabaseClient.rpc("actualizar_condicion_inmueble", {
         p_residente_id: item.residente_id,
-        p_condicion_inmueble: nueva.value
+        p_condicion_inmueble: nueva.value,
+        p_cantidad_lotes: nuevaCantidad
       });
       if (error) throw error;
 
