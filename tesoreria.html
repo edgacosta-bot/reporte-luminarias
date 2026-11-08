@@ -3342,7 +3342,12 @@ const { data, error } =
                 const row = document.createElement("tr");
                 addCell(row, p.folio == null ? "Sin folio" : String(p.folio).padStart(4, "0"));
                 addCell(row, date(p.fecha_pago));
-                addCell(row, `${text(p.residente)} · ${text(p.privada)}-${text(p.casa)}`);
+                const inmuebleLabel = `${text(p.privada)}-${text(p.casa)}`;
+                const nombreResidente = String(p.residente || "").trim();
+                const sinResidenteRegistrado = !nombreResidente || nombreResidente.toLocaleLowerCase("es-MX") === "pendiente";
+                addCell(row, sinResidenteRegistrado
+                    ? `${inmuebleLabel} · Sin residente registrado`
+                    : `${text(p.residente)} · ${inmuebleLabel}`);
                 const conceptCell = addCell(row, `${text(p.concepto)}${p.obligaciones ? " | " + p.obligaciones : (p.periodo_mes && p.periodo_anio ? ` | ${p.periodo_mes}/${p.periodo_anio}` : "")}`);
                 addCell(row, money(p.monto));
                 addCell(row, p.metodo_pago);
