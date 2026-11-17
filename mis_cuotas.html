@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mis cuotas y recibos | SIGVIC</title>
+<title>Mis cuotas e historial | SIGVIC</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="auth.js"></script>
 <style>
 :root{--bg:#f3f5f9;--ink:#172033;--muted:#64748b;--line:#e2e8f0;--wine:#7b243c;--green:#166534;--red:#991b1b;--amber:#92400e;--blue:#1d4ed8;--bluebg:#eff6ff;--yellow:#92400e}
@@ -19,15 +19,15 @@ main{padding:22px 16px 44px}.notice{padding:13px 15px;border-radius:12px;backgro
 @media(max-width:700px){header{padding:18px 14px}.topline{align-items:flex-start}.head-actions{display:flex;width:100%;gap:8px}.head-actions .btn{flex:1;padding:11px 9px;font-size:14px}main{padding:15px 10px 30px}.cards{grid-template-columns:1fr 1fr;gap:9px}.card{padding:13px}.metric-label{font-size:12px}.metric{font-size:22px}.metric-help{font-size:11px}.table-wrap{display:none}.mobile-list{display:block}.section-title{align-items:flex-start}.section-title .small{max-width:100%}.folio{font-size:20px}.receipt-note{font-size:13px}.foot{font-size:12px}}
 @media(max-width:380px){.cards{grid-template-columns:1fr}.item-grid{grid-template-columns:1fr 1fr}.head-actions .btn{font-size:13px}}
 </style></head><body>
-<header><div class="head-inner"><div class="topline"><div><h1>Mis cuotas y recibos</h1><p class="sub" id="identidad">Consultando cuenta...</p></div><div class="head-actions"><button class="btn btn-light" id="btnActualizar" type="button">Actualizar</button><a class="btn btn-light" href="index.html">Volver al inicio</a></div></div></div></header>
+<header><div class="head-inner"><div class="topline"><div><h1>Mis cuotas e historial</h1><p class="sub" id="identidad">Consultando cuenta...</p></div><div class="head-actions"><button class="btn btn-light" id="btnActualizar" type="button">Actualizar</button><a class="btn btn-light" href="index.html">Volver al inicio</a></div></div></div></header>
 <main><div id="mensaje" class="notice" role="status">Verificando sesión y consultando información financiera...</div>
 <section class="cards"><div class="card"><div class="metric-label">Total de cuotas registradas</div><div class="metric" id="totalObligaciones">—</div><div class="metric-help">Incluye cuotas actuales y futuras.</div></div><div class="card"><div class="metric-label">Total pagado en obligaciones</div><div class="metric" id="totalPagado">—</div><div class="metric-help">Según los registros de SIGVIC.</div></div><div class="card"><div class="metric-label">Pendiente del periodo actual</div><div class="metric" id="saldoPendiente">—</div><div class="metric-help">Obligaciones pendientes del periodo iniciado; el color indica plazo o atraso.</div></div></section>
 <section class="section"><div class="section-title"><h2>Mis cuotas</h2><span class="small">Ordenadas del periodo más antiguo al más reciente</span></div><div id="contenedorCuotas" class="empty">Cargando obligaciones...</div><div id="listaCuotasMovil" class="mobile-list"></div></section>
-<section class="section"><div class="section-title"><h2>Mis recibos</h2><span class="small">Conserva tu recibo físico y verifica el folio.</span></div><div id="contenedorRecibos" class="empty">Cargando recibos...</div><div id="listaRecibosMovil" class="mobile-list"></div><div class="receipt-note"><strong>¿Para qué sirve el folio?</strong> Es la referencia para comparar este registro con tu recibo físico. Verifica que coincidan el folio, la fecha, el concepto y el importe. Si detectas una diferencia, contacta a Tesorería.</div></section>
+<section class="section"><div class="section-title"><h2>Historial de pagos y amortizaciones</h2><span class="small">Movimientos ordenados del periodo más antiguo al más reciente.</span></div><div id="contenedorRecibos" class="empty">Cargando recibos...</div><div id="listaRecibosMovil" class="mobile-list"></div><div class="receipt-note"><strong>Importante:</strong> Los pagos muestran su folio, fecha y método de pago. Las amortizaciones se identifican por separado, no generan folio ni representan dinero recibido por la Asociación. Si detectas alguna diferencia, contacta a Tesorería.</div></section>
 <p class="foot">La información corresponde a la cuenta autenticada. Las cuotas de periodos futuros se muestran solo con fines informativos; puedes anticipar su pago si lo deseas. No se consideran adeudo actual antes de que inicie el periodo. Para obligaciones pendientes, SIGVIC aplica cinco días naturales de gracia después de la fecha límite; desde el sexto día se muestran como morosas. Las obligaciones pagadas conservan la referencia de si se liquidaron a tiempo o con atraso. Si detectas diferencias en importes, periodos o folios, contacta a Tesorería.</p></main>
 <script>
 (() => {
-const $=id=>document.getElementById(id);let obligaciones=[],recibos=[];
+const $=id=>document.getElementById(id);let obligaciones=[],movimientos=[];
 const money=v=>new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN"}).format(Number(v||0));
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const meses=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
@@ -47,7 +47,8 @@ function esFuturo(o){
 function diasEntre(inicio,fin){if(!inicio||!fin)return null;const a=Date.parse(String(inicio).slice(0,10)+"T00:00:00Z"),b=Date.parse(String(fin).slice(0,10)+"T00:00:00Z");return Number.isFinite(a)&&Number.isFinite(b)?Math.floor((b-a)/86400000):null}
 function etiquetaOb(o){
  const s=String(o.estatus||"").toLowerCase(),hoy=hoyLocal(),limite=o.fecha_limite_pago?String(o.fecha_limite_pago).slice(0,10):null;
- if(s==="pagada"){
+ if(s==="amortizada")return '<span class="status informative">Amortizada</span>';
+  if(s==="pagada"){
   const dias=limite&&o.fecha_pago?diasEntre(limite,o.fecha_pago):null;
   if(dias===null||dias<=0)return '<span class="status on-time">Pagada · al corriente</span>';
   if(dias<=5)return '<span class="status late">Pagada con atraso</span>';
@@ -81,25 +82,34 @@ function folioTexto(v) {
   return v == null || v === "" ? "Sin folio" : esc(v);
 }
 
-  
-function conceptoRecibo(p) {
-  const texto = String(p.obligaciones || p.concepto || "—").trim();
-
-  return texto.replace(
-    /(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+(\d{4})\s*[—–-]\s*\1\s+\2$/i,
-    "$1 $2"
-  );
+function etiquetaMovimiento(m) {
+  if (String(m.tipo_movimiento || "").toLowerCase() === "amortizacion" ||
+      String(m.estatus || "").toLowerCase() === "amortizada") {
+    return '<span class="status informative">Amortizada</span>';
+  }
+  if (String(m.estatus || "").toLowerCase() === "activo") {
+    return '<span class="status paid">Pago registrado</span>';
+  }
+  return `<span class="status other">${esc(m.estatus || "Sin estado")}</span>`;
 }
 
-  
-function renderRecibos(){
-const rows=[...recibos].sort((a,b)=>String(b.fecha_pago||"").localeCompare(String(a.fecha_pago||""))||Number(b.folio||0)-Number(a.folio||0));
-if(!rows.length){$("contenedorRecibos").className="empty";$("contenedorRecibos").textContent="Todavía no hay recibos registrados para esta cuenta.";$("listaRecibosMovil").innerHTML='<div class="empty">Todavía no hay recibos registrados para esta cuenta.</div>';return}
-$("contenedorRecibos").className="table-wrap";$("contenedorRecibos").innerHTML=`<table><thead><tr><th>Folio</th><th>Fecha</th><th>Concepto / obligaciones</th><th>Importe</th><th>Método</th><th>Estado</th></tr></thead><tbody>${rows.map(p=>`<tr><td><strong class="folio">${folioTexto(p.folio)}</strong></td><td>${fecha(p.fecha_pago)}</td>
-<td>${esc(conceptoRecibo(p))}</td>
-<td>${money(p.monto)}</td><td>${esc(p.metodo_pago||"—")}</td><td>${etiquetaPago(p.estatus)}</td></tr>`).join("")}</tbody></table>`;
-$("listaRecibosMovil").innerHTML=rows.map(p=>`<article class="item-card"><div class="item-head"><div><div class="field-label">Folio del recibo</div><div class="folio">${folioTexto(p.folio)}</div></div>${etiquetaPago(p.estatus)}</div><div class="item-grid"><div><div class="field-label">Fecha de pago</div><div class="field-value">${fecha(p.fecha_pago)}</div></div><div><div class="field-label">Importe</div><div class="field-value">${money(p.monto)}</div></div><div><div class="field-label">Método</div><div class="field-value">${esc(p.metodo_pago||"—")}</div></div><div><div class="field-label">Concepto</div><div class="field-value">${esc(conceptoRecibo(p))}</div></div></div></article>`).join("")
+function renderHistorial(){
+ const rows=[...movimientos].sort((a,b)=>(Number(a.periodo_anio)*100+Number(a.periodo_mes))-(Number(b.periodo_anio)*100+Number(b.periodo_mes))||String(a.fecha_movimiento||"").localeCompare(String(b.fecha_movimiento||"")));
+ if(!rows.length){
+   $("contenedorRecibos").className="empty";
+   $("contenedorRecibos").textContent="Todavía no hay pagos ni amortizaciones registrados para esta cuenta.";
+   $("listaRecibosMovil").innerHTML='<div class="empty">Todavía no hay pagos ni amortizaciones registrados para esta cuenta.</div>';
+   return;
+ }
+ const concepto=m=>m.detalle_periodos || m.concepto || "—";
+ const esAmortizacion=m=>String(m.tipo_movimiento||"").toLowerCase()==="amortizacion";
+ const folio=m=>esAmortizacion(m)?"No aplica":folioTexto(m.folio);
+ const metodo=m=>esAmortizacion(m)?"No aplica":(m.metodo_pago||"—");
+ $("contenedorRecibos").className="table-wrap";
+ $("contenedorRecibos").innerHTML=`<table><thead><tr><th>Periodo</th><th>Movimiento</th><th>Folio</th><th>Fecha</th><th>Concepto</th><th>Importe</th><th>Método</th><th>Estado</th></tr></thead><tbody>${rows.map(m=>`<tr><td>${esc(periodo(m.periodo_anio,m.periodo_mes))}</td><td>${esAmortizacion(m)?'Amortización':'Pago'}</td><td>${esAmortizacion(m)?'—':`<strong class="folio">${folio(m)}</strong>`}</td><td>${fecha(m.fecha_movimiento)}</td><td>${esc(concepto(m))}</td><td>${money(m.monto)}</td><td>${esc(metodo(m))}</td><td>${etiquetaMovimiento(m)}</td></tr>`).join("")}</tbody></table>`;
+ $("listaRecibosMovil").innerHTML=rows.map(m=>`<article class="item-card"><div class="item-head"><div><div class="item-title">${esc(periodo(m.periodo_anio,m.periodo_mes))}</div><div class="item-concept">${esAmortizacion(m)?'Amortización':'Pago'}</div></div>${etiquetaMovimiento(m)}</div><div class="item-grid"><div><div class="field-label">Importe</div><div class="field-value">${money(m.monto)}</div></div><div><div class="field-label">Fecha</div><div class="field-value">${fecha(m.fecha_movimiento)}</div></div><div><div class="field-label">Folio</div><div class="field-value">${folio(m)}</div></div><div><div class="field-label">Método</div><div class="field-value">${esc(metodo(m))}</div></div><div><div class="field-label">Concepto</div><div class="field-value">${esc(concepto(m))}</div></div></div></article>`).join("");
 }
+
 async function cargar(){
 $("btnActualizar").disabled=true;
 try{
@@ -108,10 +118,10 @@ const {data:sd,error:se}=await supabaseClient.auth.getSession();if(se)throw se;c
 const {data:r,error:re}=await supabaseClient.from("residentes").select("id,privada,casa,es_residente").eq("user_id",user.id).single();
 if(re)throw new Error("No se pudo identificar el registro de residente: "+re.message);if(r.es_residente!==true)throw new Error("Esta cuenta no está habilitada como residente.");
 $("identidad").textContent=`Privada ${r.privada??"—"} · Lote/Casa ${r.casa??"—"}`;
-const [o,p]=await Promise.all([supabaseClient.rpc("consultar_obligaciones_residente",{p_residente_id:r.id}),supabaseClient.rpc("consultar_recibos_residente")]);
-if(o.error)throw new Error("No se pudieron consultar las cuotas: "+o.error.message);if(p.error)throw new Error("No se pudieron consultar los recibos: "+p.error.message);
-obligaciones=o.data||[];recibos=p.data||[];renderObligaciones();renderRecibos();aviso(`Información actualizada. Obligaciones: ${obligaciones.length}; recibos: ${recibos.length}.`);
-}catch(e){console.error(e);aviso(e.message||"No se pudo cargar la información financiera.",true);$("contenedorCuotas").className="empty";$("contenedorCuotas").textContent="No fue posible consultar las obligaciones.";$("listaCuotasMovil").innerHTML="";$("contenedorRecibos").className="empty";$("contenedorRecibos").textContent="No fue posible consultar los recibos.";$("listaRecibosMovil").innerHTML=""}
+const [o,h]=await Promise.all([supabaseClient.rpc("consultar_obligaciones_residente",{p_residente_id:r.id}),supabaseClient.rpc("consultar_historial_residente")]);
+if(o.error)throw new Error("No se pudieron consultar las cuotas: "+o.error.message);if(h.error)throw new Error("No se pudo consultar el historial: "+h.error.message);
+obligaciones=o.data||[];movimientos=h.data||[];renderObligaciones();renderHistorial();aviso(`Información actualizada. Cuotas: ${obligaciones.length}; movimientos en historial: ${movimientos.length}.`);
+}catch(e){console.error(e);aviso(e.message||"No se pudo cargar la información financiera.",true);$("contenedorCuotas").className="empty";$("contenedorCuotas").textContent="No fue posible consultar las obligaciones.";$("listaCuotasMovil").innerHTML="";$("contenedorRecibos").className="empty";$("contenedorRecibos").textContent="No fue posible consultar el historial.";$("listaRecibosMovil").innerHTML=""}
 finally{$("btnActualizar").disabled=false}
 }
 document.addEventListener("DOMContentLoaded",cargar);$("btnActualizar").addEventListener("click",cargar);
