@@ -101,8 +101,21 @@ function renderHistorial(){
    $("listaRecibosMovil").innerHTML='<div class="empty">Todavía no hay pagos ni amortizaciones registrados para esta cuenta.</div>';
    return;
  }
- const concepto=m=>m.detalle_periodos || m.concepto || "—";
  const esAmortizacion=m=>String(m.tipo_movimiento||"").toLowerCase()==="amortizacion";
+ const nombrePeriodo=m=>periodo(m.periodo_anio,m.periodo_mes);
+ const concepto=m=>{
+   // En amortizaciones se muestra el concepto propio, sin repetir la descripción del periodo.
+   if(esAmortizacion(m)) return m.concepto || "Amortización";
+
+   // En pagos, detalle_periodos puede terminar con " — mes año", aunque
+   // el periodo ya aparece en su propia columna. Retiramos solo ese sufijo exacto.
+   let texto=String(m.detalle_periodos || m.concepto || "—").trim();
+   const sufijo=` — ${nombrePeriodo(m)}`;
+   if(texto.toLocaleLowerCase().endsWith(sufijo.toLocaleLowerCase())) {
+     texto=texto.slice(0,-sufijo.length).trim();
+   }
+   return texto || m.concepto || "—";
+ };
  const folio=m=>esAmortizacion(m)?"No aplica":folioTexto(m.folio);
  const metodo=m=>esAmortizacion(m)?"No aplica":(m.metodo_pago||"—");
  $("contenedorRecibos").className="table-wrap";
