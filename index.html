@@ -271,6 +271,14 @@ body {
   <button onclick="logout()">Cerrar sesión</button>
 </div>
 
+<!-- ACCESO ÚNICO A TESORERÍA -->
+<div class="menu" id="menuTesoreria" style="display:none;">
+  <a href="tesoreria.html" class="button btn-oro">
+    <span class="icon">💰</span>
+    Tesorería y administración
+  </a>
+</div>  
+
 <!-- KPI -->
 
 <div class="kpis">
@@ -472,10 +480,7 @@ body {
   <a href="admin_vigilantes.html" class="button btn-gris">Altas y bajas de vigilantes</a>
 </div>
 
-  <a href="aportaciones.html" class="button btn-gris">
-    <span class="icon">💰</span> Cuotas residentes
-  </a>
-
+ 
 </div>
 
 <!-- RESIDENTE -->
@@ -851,9 +856,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   
-  const { data: residente } = await supabaseClient
+const { data: residente } = await supabaseClient
   .from("residentes")
-  .select("tipo, privada, casa, es_residente")
+  .select(`
+    tipo,
+    privada,
+    casa,
+    es_residente,
+    es_mesa_directiva,
+    activo,
+    id_cargo
+  `)
   .eq("user_id", user.id)
   .single();
 
@@ -885,13 +898,30 @@ if (rol === "vigilante") {
 document.getElementById("rolTexto").innerHTML =
   `<strong>${vivienda}</strong> | ${descripcionRol}`;
 
-  if (rol === "administracion") {
+const esAdministracion =
+  ["admin", "administracion"].includes(
+    (rol || "").trim().toLowerCase()
+  );
+
+const esTesorero =
+  residente?.es_mesa_directiva === true &&
+  residente?.activo === true &&
+  residente?.id_cargo === "c731366e-11e6-454f-b6ee-a8005380d3c9";
+
+// Acceso único a Tesorería
+if (esAdministracion || esTesorero) {
+  document.getElementById("menuTesoreria").style.display = "flex";
+}
+
+if (rol === "administracion") {
   document.getElementById("menuAdmin").style.display = "block";
 
   await cargarKPIs();
 
-  setInterval(cargarKPIs, 30000); // 🔥 auto actualización cada 30s
+  setInterval(cargarKPIs, 30000);
 }
+
+    
   else if (rol === "residente" || rol === "colono") {
 
   if (esResidente === true) {
