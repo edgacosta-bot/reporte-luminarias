@@ -249,6 +249,25 @@ body {
   background: #b91c1c;
   color: white;
 }  
+
+/* AJUSTE DE ESPACIADO DEL MENÚ DE ADMINISTRACIÓN */
+#menuAdmin {
+  gap: 14px;
+}
+
+#menuAdmin > .button {
+  margin: 0;
+}
+
+/* ACCESO INDEPENDIENTE A TESORERÍA */
+#menuTesoreria {
+  padding: 10px 16px;
+  gap: 0;
+}
+
+#menuTesoreria .button {
+  margin: 0;
+}
   
 </style>
 
@@ -367,7 +386,13 @@ body {
 
 
 
-
+ <!-- ACCESO ÚNICO A TESORERÍA -->
+<div class="menu" id="menuTesoreria" style="display:none;">
+  <a href="tesoreria.html" class="button btn-oro">
+    <span class="icon">💰</span>
+    Tesorería y administración
+  </a>
+</div>  
 
 <!-- ADMIN (INTACTO) -->
 <div class="menu" id="menuAdmin" style="display:none;">
@@ -398,13 +423,7 @@ body {
 
 </div>
   
- <!-- ACCESO ÚNICO A TESORERÍA -->
-<div class="menu" id="menuTesoreria" style="display:none;">
-  <a href="tesoreria.html" class="button btn-oro">
-    <span class="icon">💰</span>
-    Tesorería y administración
-  </a>
-</div>   
+
   <!-- PEGAS AQUÍ TU BLOQUE ORIGINAL -->
 
   <a href="admin_reporte_general.html" class="button btn-vino">
