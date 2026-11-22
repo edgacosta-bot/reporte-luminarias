@@ -384,7 +384,34 @@ body {
   
 </div>
 
+<!-- INTRODUCCIÓN SIGVIC -->
+<div class="menu" id="menuIntroduccion" style="display:none;">
 
+  <button class="button btn-oro"
+          onclick="toggleMenu('sigvic_admin')">
+    📘 Acerca de SIGVIC
+  </button>
+
+  <div id="sigvic_admin" class="submenu">
+
+    <a href="protocolos.html?modulo=informacion"
+       class="button btn-gris">
+       ¿Qué es SIGVIC?
+    </a>
+
+    <a href="protocolos.html"
+       class="button btn-gris">
+       Reglas SIGVIC
+    </a>
+
+    <a href="protocolos.html?modulo=privacidad"
+       class="button btn-gris">
+       Aviso de privacidad
+    </a>
+
+  </div>
+
+</div>
 
  <!-- ACCESO ÚNICO A TESORERÍA -->
 <div class="menu" id="menuTesoreria" style="display:none;">
@@ -396,36 +423,7 @@ body {
 
 <!-- ADMIN (INTACTO) -->
 <div class="menu" id="menuAdmin" style="display:none;">
-  <button class="button btn-oro" onclick="toggleMenu('sigvic_admin')">
-  📘 Acerca de SIGVIC
-</button>
-
   
-<div id="sigvic_admin" class="submenu">
-
-  <a href="protocolos.html?modulo=informacion"
-     class="button btn-gris">
-
-     ¿Qué es SIGVIC?
-  </a>
-
-  <a href="protocolos.html"
-     class="button btn-gris">
-
-     Reglas SIGVIC
-  </a>
-
-  <a href="protocolos.html?modulo=privacidad"
-     class="button btn-gris">
-
-     Aviso de privacidad
-  </a>
-
-</div>
-  
-
-  <!-- PEGAS AQUÍ TU BLOQUE ORIGINAL -->
-
   <a href="admin_reporte_general.html" class="button btn-vino">
     <span class="icon">📊</span> Reporte general
   </a>
@@ -930,13 +928,17 @@ const esTesorero =
   residente?.activo === true &&
   residente?.id_cargo === "c731366e-11e6-454f-b6ee-a8005380d3c9";
 
-// Acceso único a Tesorería
+// Accesos de Administración y Tesorería
 if (esAdministracion || esTesorero) {
+
+  document.getElementById("menuIntroduccion").style.display = "flex";
+
   document.getElementById("menuTesoreria").style.display = "flex";
+
 }
 
 if (rol === "administracion") {
-  document.getElementById("menuAdmin").style.display = "block";
+  document.getElementById("menuAdmin").style.display = "flex";
 
   await cargarKPIs();
 
