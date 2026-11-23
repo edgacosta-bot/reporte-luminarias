@@ -1975,9 +1975,40 @@ tablaObrasFianzas?.addEventListener("click", async (evento) => {
                 ${
                     recepcion
                     ? `
-                        <div style="margin-top:20px;">
-                            <strong>Recepción de fianza:</strong>
-                            Registrada.
+                        <div style="margin-top:20px;padding:16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;line-height:1.9;">
+                            <h3 style="margin:0 0 10px;color:#166534;">Recepción de fianza registrada</h3>
+                            <strong>Importe recibido:</strong>
+                            $${Number(recepcion.monto_recibido || 0).toLocaleString("es-MX", {minimumFractionDigits:2})}
+                            <br><strong>Fecha de recepción:</strong> ${escaparTextoFianza(recepcion.fecha_recepcion || "No disponible")}
+                            <br><strong>Forma de pago:</strong> ${escaparTextoFianza(recepcion.forma_pago || "No registrada")}
+                            <br><strong>Folio / referencia:</strong> ${escaparTextoFianza(recepcion.referencia || "No proporcionado")}
+                        </div>
+                    `
+                    : determinacion?.determinacion === "REQUIERE_FIANZA"
+                    ? `
+                        <div style="margin-top:20px;padding:18px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;">
+                            <h3 style="margin:0 0 14px;color:#111827;">Registrar recepción de fianza</h3>
+                            <div style="margin-bottom:14px;">
+                                <label for="montoRecepcionFianza" style="display:block;font-weight:600;margin-bottom:7px;">Importe recibido</label>
+                                <input id="montoRecepcionFianza" type="number" value="${Number(determinacion.monto || 15000)}" readonly style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #d1d5db;border-radius:8px;background:#f3f4f6;">
+                            </div>
+                            <div style="margin-bottom:14px;">
+                                <label for="fechaRecepcionFianza" style="display:block;font-weight:600;margin-bottom:7px;">Fecha de recepción</label>
+                                <input id="fechaRecepcionFianza" type="date" required style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #d1d5db;border-radius:8px;">
+                            </div>
+                            <div style="margin-bottom:14px;">
+                                <label for="formaPagoFianza" style="display:block;font-weight:600;margin-bottom:7px;">Forma de pago</label>
+                                <select id="formaPagoFianza" required style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #d1d5db;border-radius:8px;background:#fff;">
+                                    <option value="">Seleccione una forma de pago</option>
+                                    <option value="efectivo">Efectivo</option>
+                                    <option value="transferencia bancaria">Transferencia bancaria</option>
+                                </select>
+                            </div>
+                            <div style="margin-bottom:14px;">
+                                <label for="referenciaRecepcionFianza" style="display:block;font-weight:600;margin-bottom:7px;">Folio o referencia</label>
+                                <input id="referenciaRecepcionFianza" type="text" maxlength="150" placeholder="Número de folio o referencia (opcional)" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #d1d5db;border-radius:8px;">
+                            </div>
+                            <button type="button" id="btnGuardarRecepcionFianza" style="padding:11px 18px;border:0;border-radius:8px;background:#166534;color:#fff;font-weight:600;cursor:pointer;">Registrar recepción</button>
                         </div>
                     `
                     : ""
@@ -2082,6 +2113,72 @@ tablaObrasFianzas?.addEventListener("click", async (evento) => {
 
         });
         
+        // Registro de recepción de fianza.
+        const btnGuardarRecepcion = document.getElementById("btnGuardarRecepcionFianza");
+
+        if (btnGuardarRecepcion) {
+            const fechaInput = document.getElementById("fechaRecepcionFianza");
+            const hoy = new Date();
+            fechaInput.value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-${String(hoy.getDate()).padStart(2, "0")}`;
+
+            btnGuardarRecepcion.addEventListener("click", async () => {
+                const monto = Number(document.getElementById("montoRecepcionFianza").value);
+                const fecha = fechaInput.value;
+                const formaPago = document.getElementById("formaPagoFianza").value;
+                const referencia = document.getElementById("referenciaRecepcionFianza").value.trim();
+
+                if (!fecha || !formaPago) {
+                    await mostrarDialogoFianza({
+                        titulo: "Datos incompletos",
+                        mensaje: "Indique la fecha de recepción y la forma de pago."
+                    });
+                    return;
+                }
+
+                const confirmarRecepcion = await mostrarDialogoFianza({
+                    titulo: "Confirmar recepción de fianza",
+                    mensaje: `¿Confirma el registro de la recepción por $${monto.toLocaleString("es-MX", {minimumFractionDigits:2})}, mediante ${formaPago === "efectivo" ? "efectivo" : "transferencia bancaria"}?`,
+                    confirmar: true,
+                    textoAceptar: "Registrar",
+                    textoCancelar: "Cancelar"
+                });
+                if (!confirmarRecepcion) return;
+
+                btnGuardarRecepcion.disabled = true;
+                btnGuardarRecepcion.textContent = "Registrando...";
+
+                try {
+                    const { error } = await supabaseClient.rpc("registrar_recepcion_fianza", {
+                        p_determinacion_id: determinacion.id,
+                        p_monto_recibido: monto,
+                        p_fecha_recepcion: fecha,
+                        p_forma_pago: formaPago,
+                        p_referencia: referencia || null
+                    });
+                    if (error) throw error;
+
+                    await mostrarDialogoFianza({
+                        titulo: "Recepción registrada",
+                        mensaje: "La recepción de la fianza se registró correctamente."
+                    });
+
+                    const botonObra = Array.from(
+                        tablaObrasFianzas.querySelectorAll(".btnAdministrarFianza")
+                    ).find(boton => boton.dataset.obraId === obraId);
+                    if (botonObra) botonObra.click();
+
+                } catch (error) {
+                    console.error("Error registrando recepción de fianza:", error);
+                    await mostrarDialogoFianza({
+                        titulo: "No fue posible registrar",
+                        mensaje: error.message || "Ocurrió un error al registrar la recepción de fianza."
+                    });
+                    btnGuardarRecepcion.disabled = false;
+                    btnGuardarRecepcion.textContent = "Registrar recepción";
+                }
+            });
+        }
+
     } catch (error) {
 
         console.error("Error consultando fianza:", error);
