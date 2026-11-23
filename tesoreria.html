@@ -1146,6 +1146,32 @@
 
         </div>
 
+              <!-- DETALLE DE FIANZA -->
+
+            <div
+                id="detalleFianza"
+                style="
+                    display:none;
+                    margin-top:24px;
+                    padding:20px;
+                    border:1px solid #d1d5db;
+                    border-radius:10px;
+                    background:#f9fafb;
+                "
+            >
+
+                <h2 style="margin-top:0;color:#111827;">
+                    Información de la fianza
+                </h2>
+
+                <div
+                    id="contenidoDetalleFianza"
+                    style="color:#374151;"
+                >
+                </div>
+
+            </div>      
+
     </div>
 
 </div>
@@ -1640,8 +1666,23 @@ function renderizarObrasFianzas() {
                 )}
             </td>
 
-            <td style="padding:12px;color:#6b7280;">
-                En preparación
+            <td style="padding:12px;">
+                <button
+                    type="button"
+                    class="btnAdministrarFianza"
+                    data-obra-id="${escaparTextoFianza(obra.id)}"
+                    style="
+                        padding:8px 12px;
+                        border:0;
+                        border-radius:7px;
+                        background:#991b3f;
+                        color:#ffffff;
+                        font-weight:600;
+                        cursor:pointer;
+                    "
+                >
+                    Administrar
+                </button>
             </td>
 
         </tr>
@@ -1674,6 +1715,91 @@ filtroEstadoFianzas?.addEventListener(
     renderizarObrasFianzas
 );
 
+/* ==================================================
+   CONSULTAR FIANZA DE LA OBRA SELECCIONADA
+   ================================================== */
+
+tablaObrasFianzas?.addEventListener("click", async (evento) => {
+
+    const boton = evento.target.closest(".btnAdministrarFianza");
+
+    if (!boton) return;
+
+    const obraId = boton.dataset.obraId;
+
+    const obra = window.obrasFianzas.find(
+        item => String(item.id) === String(obraId)
+    );
+
+    if (!obra) {
+        alert("No se encontró la información de la obra seleccionada.");
+        return;
+    }
+
+    const detalle = document.getElementById("detalleFianza");
+    const contenido = document.getElementById("contenidoDetalleFianza");
+
+    detalle.style.display = "block";
+
+    contenido.textContent = "Consultando información de la fianza...";
+
+    detalle.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+
+    try {
+
+        const { data, error } = await supabaseClient.rpc(
+            "obtener_fianza_obra",
+            {
+                p_obra_id: obraId
+            }
+        );
+
+        if (error) throw error;
+
+        contenido.innerHTML = `
+            <div style="margin-bottom:16px;">
+                <strong>Privada:</strong>
+                ${escaparTextoFianza(obra.privada)}
+                <br>
+
+                <strong>Casa / Lote:</strong>
+                ${escaparTextoFianza(obra.casa || obra.lote_numero)}
+                <br>
+
+                <strong>Tipo de obra:</strong>
+                ${escaparTextoFianza(obra.tipo_obra_nombre)}
+            </div>
+
+            <h3 style="color:#111827;">
+                Respuesta de la consulta
+            </h3>
+
+            <pre style="
+                padding:16px;
+                background:#f3f4f6;
+                border-radius:8px;
+                white-space:pre-wrap;
+                overflow-wrap:anywhere;
+                font-size:13px;
+            ">${escaparTextoFianza(
+                JSON.stringify(data, null, 2)
+            )}</pre>
+        `;
+
+    } catch (error) {
+
+        console.error("Error consultando fianza:", error);
+
+        contenido.textContent =
+            error.message || "No fue posible consultar la fianza.";
+
+    }
+
+});
+                    
 /*
  * ==================================================
  * 8. INCORPORAR AL RÉGIMEN DE APORTACIONES
