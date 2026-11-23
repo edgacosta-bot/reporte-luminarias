@@ -1877,7 +1877,10 @@ tablaObrasFianzas?.addEventListener("click", async (evento) => {
                 }
 
             </div>
-          const btnGuardarFianza = document.getElementById(
+         
+        `;
+
+        const btnGuardarFianza = document.getElementById(
             "btnGuardarDeterminacionFianza"
         );
 
@@ -1918,7 +1921,7 @@ tablaObrasFianzas?.addEventListener("click", async (evento) => {
 
             try {
 
-                const { data, error } = await supabaseClient.rpc(
+                const { error } = await supabaseClient.rpc(
                     "registrar_determinacion_fianza",
                     {
                         p_obra_id: obraId,
@@ -1959,8 +1962,8 @@ tablaObrasFianzas?.addEventListener("click", async (evento) => {
 
             }
 
-        });          
-        `;
+        });
+        
     } catch (error) {
 
         console.error("Error consultando fianza:", error);
