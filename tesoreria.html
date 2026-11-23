@@ -1087,135 +1087,88 @@
 
 
                     /*
-                     * ==================================================
-                     * 5. CARGO AUTORIZADO
-                     *
-                     * TEMPORAL:
-                     * SECRETARIO
-                     *
-                     * DEFINITIVO:
-                     * TESORERO
-                     * ==================================================
-                     */
+                     
+/*
+ * ==================================================
+ * 5. IDENTIFICACIÓN DE PERFILES AUTORIZADOS
+ * ==================================================
+ */
 
-                    let esTesorero = false;
+let esTesorero = false;
+let esSecretario = false;
 
+if (
+    residente.es_mesa_directiva === true &&
+    residente.activo === true &&
+    residente.id_cargo
+) {
+    const {
+        data: cargo,
+        error: cargoError
+    } = await supabaseClient
+        .from("catalogo_cargos")
+        .select("nombre, clave, activo")
+        .eq("id", residente.id_cargo)
+        .maybeSingle();
 
-                    if (
+    if (cargoError) {
+        console.error("Error consultando cargo:", cargoError);
+        alert("No fue posible validar el cargo del usuario.");
+        window.location.href = "index.html";
+        return;
+    }
 
-                        residente.es_mesa_directiva === true &&
+    if (cargo && cargo.activo === true) {
+        esTesorero = cargo.clave === "TESO";
+        esSecretario = cargo.clave === "SECR";
+    }
 
-                        residente.activo === true &&
+    const usuarioActual = document.getElementById("usuarioActual");
 
-                        residente.id_cargo
+    if (usuarioActual) {
+        usuarioActual.textContent =
+            cargo?.nombre || (esAdministracion ? "Administración" : "Usuario");
+    }
+}
 
-                    ) {
+/*
+ * ==================================================
+ * 6. AUTORIZACIÓN Y PERMISOS
+ * ==================================================
+ */
 
+const puedeConsultar =
+    esAdministracion || esTesorero || esSecretario;
 
-                        const {
-                            data: cargo,
-                            error: cargoError
-                        } =
-                            await supabaseClient
-                                .from("catalogo_cargos")
-                                .select("nombre")
-                                .eq(
-                                    "id",
-                                    residente.id_cargo
-                                )
-                                .maybeSingle();
+const puedeOperar =
+    esAdministracion || esTesorero;
 
+// Compartir permisos con los demás bloques de JavaScript.
+window.puedeConsultarTesoreria = puedeConsultar;
+window.puedeOperarTesoreria = puedeOperar;
 
-                        if (cargoError) {
+if (!puedeConsultar) {
+    alert("No tiene autorización para acceder al módulo de Tesorería.");
+    window.location.href = "index.html";
+    return;
+}
 
-                            console.error(
-                                "Error consultando cargo:",
-                                cargoError
-                            );
+// Secretaría puede consultar, pero no realizar operaciones.
+if (!puedeOperar) {
+    [
+        "opcionIncorporarObligado",
+        "opcionGenerarObligaciones",
+        "opcionRegistrarAmortizacion",
+        "opcionRegistrarPago",
+        "opcionRegistrarPagoAdicional",
+        "opcionCambiarCondicion",
+        "opcionAdministrarCuotas"
+    ].forEach(id => {
+        const elemento = document.getElementById(id);
+        if (elemento) elemento.style.display = "none";
+    });
+}
 
-                            window.location.href =
-                                "index.html";
-
-                            return;
-
-                        }
-
-
-                        const nombreCargo =
-                            (
-                                cargo?.nombre ||
-                                ""
-                            )
-                                .trim()
-                                .toLowerCase();
-
-
-                        /*
-                         * ==============================================
-                         * PRUEBA TEMPORAL
-                         *
-                         * Secretario = acceso al módulo
-                         *
-                         * AL FINAL:
-                         *
-                         * nombreCargo === "tesorero"
-                         * ==============================================
-                         */
-
-                        esTesorero =
-                            nombreCargo === "tesorero";
-
-
-
-                        /*
-                         * Mostrar cargo en encabezado
-                         */
-
-                        const usuarioActual =
-                            document.getElementById(
-                                "usuarioActual"
-                            );
-
-
-                        if (usuarioActual) {
-
-                            usuarioActual.textContent =
-                                cargo?.nombre ||
-                                (
-                                    esAdministracion
-                                        ? "Administración"
-                                        : "Usuario"
-                                );
-
-                        }
-
-                    }
-
-
-
-                    /*
-                     * ==================================================
-                     * 6. AUTORIZACIÓN
-                     * ==================================================
-                     */
-
-                    if (
-
-                        !esAdministracion &&
-                        !esTesorero
-
-                    ) {
-
-                        alert(
-                            "No tiene autorización para acceder al módulo de Tesorería."
-                        );
-
-                        window.location.href =
-                            "index.html";
-
-                        return;
-
-                    }
 
 
 
@@ -3565,7 +3518,12 @@ const { data, error } =
       const tdState = document.createElement("td"); const badge = document.createElement("span"); const st = estadoUI(r); badge.className=`cuota-badge ${st.cls}`; badge.textContent=st.text; tdState.appendChild(badge); tr.appendChild(tdState);
       add(money(Number(r.monto_pagado_activo || 0))); add(date(r.fecha_pago)); add(r.folios_activos); add(r.conciliacion || (r.estado === "por_generar" ? "Sin obligación registrada; no contabilizar como adeudo" : r.estado === "futura" ? "Periodo futuro; no es adeudo actual" : "—"));
       const tdAction = document.createElement("td");
-      if (r.obligacion_id && r.estado === "pendiente") {
+     
+        if (
+            window.puedeOperarTesoreria === true &&
+            r.obligacion_id &&
+            r.estado === "pendiente"
+        ) {
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "btnEliminarObligacion";
