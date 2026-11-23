@@ -549,6 +549,57 @@
 #btnGuardarAmortizacion:disabled { opacity:.55; cursor:not-allowed; }
 @media (max-width:520px) { #modalRegistrarAmortizacion .amortizacion-contenido { padding:17px; } #modalRegistrarAmortizacion .amortizacion-acciones { flex-direction:column-reverse; } #modalRegistrarAmortizacion .amortizacion-acciones button { width:100%; } }
 
+    
+/* ==================================================
+   ESTADO FINANCIERO SIGVIC
+   ================================================== */
+#modalEstadoFinanciero {
+    display:none; position:fixed; inset:0; z-index:10060;
+    background:#f8fafc; overflow-y:auto; padding:22px; box-sizing:border-box;
+}
+#modalEstadoFinanciero .ef-contenido { max-width:1500px; margin:0 auto; }
+#modalEstadoFinanciero .ef-panel {
+    background:#fff; border:1px solid #e5e7eb; border-radius:14px;
+    padding:20px; margin-bottom:18px;
+}
+#modalEstadoFinanciero .ef-kpis {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:12px; margin:16px 0;
+}
+#modalEstadoFinanciero .ef-kpi {
+    background:#fff; border:1px solid #e5e7eb; border-radius:12px;
+    padding:16px; min-width:0;
+}
+#modalEstadoFinanciero .ef-kpi small { display:block; color:#6b7280; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; }
+#modalEstadoFinanciero .ef-kpi strong { display:block; margin-top:8px; color:#111827; font-size:24px; overflow-wrap:anywhere; }
+#modalEstadoFinanciero .ef-kpi span { display:block; margin-top:5px; color:#6b7280; font-size:12px; }
+#modalEstadoFinanciero .ef-filtros {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:12px; align-items:end;
+}
+#modalEstadoFinanciero label { display:block; color:#374151; font-weight:600; font-size:13px; margin-bottom:6px; }
+#modalEstadoFinanciero input, #modalEstadoFinanciero select {
+    width:100%; min-height:42px; padding:9px 11px; box-sizing:border-box;
+    border:1px solid #d1d5db; border-radius:8px; background:#fff; font:inherit;
+}
+#modalEstadoFinanciero .ef-tabla-wrap { overflow:auto; border:1px solid #e5e7eb; border-radius:10px; }
+#modalEstadoFinanciero table { width:100%; border-collapse:collapse; min-width:720px; font-size:13px; }
+#modalEstadoFinanciero th, #modalEstadoFinanciero td { padding:10px 12px; text-align:left; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
+#modalEstadoFinanciero th { background:#f3f4f6; color:#374151; position:sticky; top:0; z-index:1; }
+#modalEstadoFinanciero td.num, #modalEstadoFinanciero th.num { text-align:right; font-variant-numeric:tabular-nums; }
+#modalEstadoFinanciero .ef-titulo-seccion { margin:0 0 12px; color:#111827; font-size:18px; }
+#modalEstadoFinanciero .ef-aviso { padding:12px 14px; border:1px solid #fde68a; background:#fffbeb; color:#92400e; border-radius:9px; font-size:13px; line-height:1.5; }
+#modalEstadoFinanciero .ef-acciones { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:18px; }
+#modalEstadoFinanciero button { border:0; border-radius:8px; padding:10px 16px; cursor:pointer; font-weight:600; }
+#btnCerrarEstadoFinanciero { background:#e5e7eb; color:#374151; }
+#btnActualizarEstadoFinanciero { background:#991b3f; color:#fff; }
+#efEstadoCarga { color:#6b7280; font-size:13px; margin:8px 0; }
+@media(max-width:600px) {
+    #modalEstadoFinanciero { padding:10px; }
+    #modalEstadoFinanciero .ef-panel { padding:14px; }
+    #modalEstadoFinanciero .ef-kpi strong { font-size:21px; }
+}
+
     </style>
 
 </head>
@@ -964,7 +1015,31 @@
         </div>
 
     </div>
-</section>            
+</section>
+
+            <!-- ESTADO FINANCIERO -->
+            <section
+                class="tesoreria-card"
+                id="opcionEstadoFinanciero"
+                role="button"
+                tabindex="0"
+                aria-label="Consultar estado financiero"
+            >
+                <div class="tesoreria-card-header">
+                    <div class="tesoreria-card-icon">📊</div>
+                    <div class="tesoreria-card-content">
+                        <h2 class="tesoreria-card-title">Estado financiero</h2>
+                        <div class="tesoreria-card-description">
+                            Consultar ingresos ordinarios, ajustes, fianzas y amortizaciones,
+                            con concentrados por periodo y privada. Los egresos se incorporarán
+                            cuando esté disponible su módulo de registro.
+                        </div>
+                        <div class="tesoreria-card-action">
+                            Consultar estado financiero <span>→</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
         </div>
 
@@ -1249,6 +1324,104 @@
         </div>
     </div>
 </div>
+
+    
+<!-- ==========================================================
+     ESTADO FINANCIERO
+     ========================================================== -->
+<div id="modalEstadoFinanciero" role="dialog" aria-modal="true" aria-labelledby="tituloEstadoFinanciero">
+    <div class="ef-contenido">
+        <div class="ef-acciones">
+            <div>
+                <h1 id="tituloEstadoFinanciero" style="margin:0;color:#111827;">📊 Estado financiero</h1>
+                <p style="margin:7px 0 0;color:#6b7280;">Concentrado de movimientos registrados en SIGVIC</p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button type="button" id="btnActualizarEstadoFinanciero">Actualizar información</button>
+                <button type="button" id="btnCerrarEstadoFinanciero">← Regresar a Tesorería</button>
+            </div>
+        </div>
+
+        <section class="ef-panel">
+            <h2 class="ef-titulo-seccion">Filtros de consulta</h2>
+            <div class="ef-filtros">
+                <div>
+                    <label for="efFiltroAnio">Año de recepción</label>
+                    <select id="efFiltroAnio"><option value="">Todos los años</option></select>
+                </div>
+                <div>
+                    <label for="efFiltroMes">Mes de recepción</label>
+                    <select id="efFiltroMes">
+                        <option value="">Todos los meses</option>
+                        <option value="1">Enero</option><option value="2">Febrero</option>
+                        <option value="3">Marzo</option><option value="4">Abril</option>
+                        <option value="5">Mayo</option><option value="6">Junio</option>
+                        <option value="7">Julio</option><option value="8">Agosto</option>
+                        <option value="9">Septiembre</option><option value="10">Octubre</option>
+                        <option value="11">Noviembre</option><option value="12">Diciembre</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="efFiltroPrivada">Privada</label>
+                    <select id="efFiltroPrivada">
+                        <option value="">Todas las privadas</option>
+                        <option value="I">Privada I</option><option value="II">Privada II</option>
+                        <option value="III">Privada III</option><option value="IV">Privada IV</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button type="button" id="btnLimpiarFiltrosEF" style="background:#e5e7eb;color:#374151;">Limpiar filtros</button>
+                </div>
+            </div>
+            <div id="efEstadoCarga" aria-live="polite">Preparando consulta…</div>
+        </section>
+
+        <div class="ef-kpis">
+            <div class="ef-kpi"><small>Ingresos ordinarios</small><strong id="efKpiOrdinarios">$0.00</strong><span id="efMovOrdinarios">0 movimientos</span></div>
+            <div class="ef-kpi"><small>Ajustes y diferencias</small><strong id="efKpiAjustes">$0.00</strong><span id="efMovAjustes">0 movimientos</span></div>
+            <div class="ef-kpi"><small>Fianzas recibidas</small><strong id="efKpiFianzas">$0.00</strong><span id="efPendienteFianzas">Pendiente: $0.00</span><span id="efDetalleFianzas">Devuelto: $0.00 · Retenido: $0.00</span></div>
+            <div class="ef-kpi"><small>Amortizaciones</small><strong id="efKpiAmortizaciones">$0.00</strong><span id="efMovAmortizaciones">0 movimientos · no son recaudación</span></div>
+            <div class="ef-kpi"><small>Egresos</small><strong>Por integrar</strong><span>No se calcula saldo neto</span></div>
+        </div>
+
+        <div class="ef-aviso" style="margin-bottom:18px;">
+            Las fianzas se presentan por separado porque son garantías sujetas a devolución o retención.
+            Las amortizaciones tampoco se suman a los ingresos ordinarios. El saldo neto y la disponibilidad
+            de recursos no se calculan hasta incorporar los egresos.
+        </div>
+
+        <section class="ef-panel">
+            <h2 class="ef-titulo-seccion">Resumen por privada</h2>
+            <div class="ef-tabla-wrap">
+                <table>
+                    <thead><tr><th>Privada</th><th>Apartado</th><th class="num">Movimientos</th><th class="num">Inmuebles</th><th class="num">Importe</th><th class="num">Saldo pendiente</th></tr></thead>
+                    <tbody id="efTablaPrivadas"><tr><td colspan="6">Cargando…</td></tr></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="ef-panel">
+            <h2 class="ef-titulo-seccion">Movimientos por mes de recepción</h2>
+            <div class="ef-tabla-wrap">
+                <table>
+                    <thead><tr><th>Mes</th><th>Privada</th><th>Apartado</th><th class="num">Movimientos</th><th class="num">Importe</th><th class="num">Saldo pendiente</th></tr></thead>
+                    <tbody id="efTablaMensual"><tr><td colspan="6">Cargando…</td></tr></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="ef-panel">
+            <h2 class="ef-titulo-seccion">Detalle de movimientos</h2>
+            <div class="ef-tabla-wrap">
+                <table>
+                    <thead><tr><th>Fecha</th><th>Privada</th><th>Inmueble</th><th>Apartado</th><th>Concepto</th><th class="num">Importe</th><th class="num">Pendiente</th></tr></thead>
+                    <tbody id="efTablaDetalle"><tr><td colspan="7">Cargando…</td></tr></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+
 
     <!-- ==========================================================
          AUTORIZACIÓN
@@ -5546,6 +5719,103 @@ const { data, error } =
             }
         }
     });
+})();
+</script>
+
+
+<script>
+/* ESTADO FINANCIERO — consulta de vistas consolidadas; solo lectura. */
+(() => {
+    "use strict";
+    const $ = id => document.getElementById(id);
+    const modal = $("modalEstadoFinanciero");
+    const abrir = $("opcionEstadoFinanciero");
+    if (!modal || !abrir) return;
+    let movimientosEF = [];
+    const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+    const orden = {I:1,II:2,III:3,IV:4};
+    const n = v => Number(v || 0);
+    const mxn = v => new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN",minimumFractionDigits:2}).format(n(v));
+    const esc = v => String(v ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    const fecha = v => { if(!v)return "—"; const d=new Date(String(v).slice(0,10)+"T12:00:00"); return Number.isNaN(d.getTime())?"—":d.toLocaleDateString("es-MX"); };
+
+    function filtrados(){
+        const y=$("efFiltroAnio").value, m=$("efFiltroMes").value, p=$("efFiltroPrivada").value;
+        return movimientosEF.filter(x=>{
+            const f=String(x.fecha_movimiento||"").slice(0,10);
+            return (!y||f.slice(0,4)===y)&&(!m||Number(f.slice(5,7))===Number(m))&&(!p||String(x.privada||"")===p);
+        });
+    }
+    function suma(rows, apartado){
+        const a=rows.filter(x=>x.apartado===apartado);
+        return {count:a.length,total:a.reduce((s,x)=>s+n(x.importe),0),pending:a.reduce((s,x)=>s+n(x.saldo_pendiente),0),returned:a.reduce((s,x)=>s+n(x.importe_devuelto),0),retained:a.reduce((s,x)=>s+n(x.importe_retenido),0)};
+    }
+    function render(){
+        const rows=filtrados();
+        const o=suma(rows,"INGRESOS ORDINARIOS"), a=suma(rows,"AJUSTES Y DIFERENCIAS"), f=suma(rows,"FIANZAS"), am=suma(rows,"AMORTIZACIONES");
+        $("efKpiOrdinarios").textContent=mxn(o.total); $("efMovOrdinarios").textContent=`${o.count} movimientos`;
+        $("efKpiAjustes").textContent=mxn(a.total); $("efMovAjustes").textContent=`${a.count} movimientos`;
+        $("efKpiFianzas").textContent=mxn(f.total); $("efPendienteFianzas").textContent=`Pendiente: ${mxn(f.pending)}`; $("efDetalleFianzas").textContent=`Devuelto: ${mxn(f.returned)} · Retenido: ${mxn(f.retained)}`;
+        $("efKpiAmortizaciones").textContent=mxn(am.total); $("efMovAmortizaciones").textContent=`${am.count} movimientos · no son recaudación`;
+
+        const priv=new Map();
+        rows.forEach(x=>{
+            const key=`${x.privada||"Sin privada"}|${x.apartado}`;
+            if(!priv.has(key))priv.set(key,{p:x.privada||"Sin privada",a:x.apartado,c:0,l:new Set(),v:0,s:0});
+            const r=priv.get(key);r.c++;if(x.lote_id!=null)r.l.add(String(x.lote_id));r.v+=n(x.importe);r.s+=n(x.saldo_pendiente);
+        });
+        const pv=[...priv.values()].sort((x,y)=>(orden[x.p]||99)-(orden[y.p]||99)||x.a.localeCompare(y.a,"es"));
+        $("efTablaPrivadas").innerHTML=pv.length?pv.map(r=>`<tr><td>${esc(r.p)}</td><td>${esc(r.a)}</td><td class="num">${r.c}</td><td class="num">${r.l.size}</td><td class="num">${mxn(r.v)}</td><td class="num">${mxn(r.s)}</td></tr>`).join(""):`<tr><td colspan="6">No hay movimientos para los filtros seleccionados.</td></tr>`;
+
+        const monthly=new Map();
+        rows.forEach(x=>{
+            const ym=String(x.fecha_movimiento||"").slice(0,7),key=`${ym}|${x.privada||"Sin privada"}|${x.apartado}`;
+            if(!monthly.has(key))monthly.set(key,{ym,p:x.privada||"Sin privada",a:x.apartado,c:0,v:0,s:0});
+            const r=monthly.get(key);r.c++;r.v+=n(x.importe);r.s+=n(x.saldo_pendiente);
+        });
+        const mm=[...monthly.values()].sort((x,y)=>x.ym.localeCompare(y.ym)||(orden[x.p]||99)-(orden[y.p]||99)||x.a.localeCompare(y.a,"es"));
+        $("efTablaMensual").innerHTML=mm.length?mm.map(r=>{const [y,m]=r.ym.split("-");return `<tr><td>${meses[Number(m)-1]||r.ym} ${y}</td><td>${esc(r.p)}</td><td>${esc(r.a)}</td><td class="num">${r.c}</td><td class="num">${mxn(r.v)}</td><td class="num">${mxn(r.s)}</td></tr>`}).join(""):`<tr><td colspan="6">No hay movimientos para los filtros seleccionados.</td></tr>`;
+
+        const det=[...rows].sort((x,y)=>String(y.fecha_movimiento||"").localeCompare(String(x.fecha_movimiento||"")));
+        $("efTablaDetalle").innerHTML=det.length?det.map(x=>`<tr><td>${fecha(x.fecha_movimiento)}</td><td>${esc(x.privada||"—")}</td><td>${esc(x.inmueble||"—")}</td><td>${esc(x.apartado||"—")}</td><td>${esc(x.concepto||x.tipo_movimiento||"—")}</td><td class="num">${mxn(x.importe)}</td><td class="num">${mxn(x.saldo_pendiente)}</td></tr>`).join(""):`<tr><td colspan="7">No hay movimientos para los filtros seleccionados.</td></tr>`;
+        $("efEstadoCarga").textContent=`Se muestran ${rows.length} movimientos de ${movimientosEF.length} registrados. Importes en pesos mexicanos.`;
+    }
+    function poblarAnios(){
+        const sel=$("efFiltroAnio"),prev=sel.value;
+        const years=[...new Set(movimientosEF.map(x=>String(x.fecha_movimiento||"").slice(0,4)).filter(x=>/^\d{4}$/.test(x)))].sort().reverse();
+        sel.innerHTML='<option value="">Todos los años</option>'+years.map(y=>`<option value="${esc(y)}">${esc(y)}</option>`).join("");
+        if(years.includes(prev))sel.value=prev;
+    }
+    async function cargar(){
+        $("efEstadoCarga").textContent="Consultando movimientos financieros…";
+        for(const [id,span] of [["efTablaPrivadas",6],["efTablaMensual",6],["efTablaDetalle",7]])$(id).innerHTML=`<tr><td colspan="${span}">Cargando…</td></tr>`;
+        try{
+            const {data,error}=await supabaseClient.from("vw_estado_financiero_consolidado")
+                .select("apartado,tipo_movimiento,movimiento_id,fecha_movimiento,privada,inmueble,lote_id,residente,concepto,periodo_mes,periodo_anio,importe,importe_devuelto,importe_retenido,saldo_pendiente,referencia,forma_pago,condicion_historica,certeza_clasificacion")
+                .order("fecha_movimiento",{ascending:true}).limit(5000);
+            if(error)throw error;
+            movimientosEF=data||[];poblarAnios();render();
+            if(!movimientosEF.length)$("efEstadoCarga").textContent="La vista no devolvió movimientos. Verifica permisos de lectura y datos.";
+        }catch(e){
+            console.error("Error consultando Estado Financiero:",e);movimientosEF=[];
+            $("efEstadoCarga").textContent=`No fue posible consultar el Estado Financiero: ${e.message||"error desconocido"}`;
+            $("efTablaPrivadas").innerHTML='<tr><td colspan="6">Error de consulta.</td></tr>';
+            $("efTablaMensual").innerHTML='<tr><td colspan="6">Error de consulta.</td></tr>';
+            $("efTablaDetalle").innerHTML='<tr><td colspan="7">Error de consulta.</td></tr>';render();
+        }
+    }
+    async function abrirModal(){
+        if(window.puedeConsultarTesoreria!==true){alert("No tiene autorización para consultar el Estado Financiero.");return;}
+        modal.style.display="block";await cargar();
+    }
+    abrir.addEventListener("click",abrirModal);
+    abrir.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();abrirModal();}});
+    $("btnCerrarEstadoFinanciero").addEventListener("click",()=>modal.style.display="none");
+    $("btnActualizarEstadoFinanciero").addEventListener("click",cargar);
+    ["efFiltroAnio","efFiltroMes","efFiltroPrivada"].forEach(id=>$(id).addEventListener("change",render));
+    $("btnLimpiarFiltrosEF").addEventListener("click",()=>{$("efFiltroAnio").value="";$("efFiltroMes").value="";$("efFiltroPrivada").value="";render();});
+    modal.addEventListener("click",e=>{if(e.target===modal)modal.style.display="none";});
+    document.addEventListener("keydown",e=>{if(e.key==="Escape"&&modal.style.display==="block")modal.style.display="none";});
 })();
 </script>
 
