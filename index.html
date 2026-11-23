@@ -918,19 +918,39 @@ const esAdministracion =
     (rol || "").trim().toLowerCase()
   );
 
+
 const esTesorero =
   residente?.es_mesa_directiva === true &&
   residente?.activo === true &&
   residente?.id_cargo === "c731366e-11e6-454f-b6ee-a8005380d3c9";
 
-// Accesos de Administración y Tesorería
-if (esAdministracion || esTesorero) {
+// Identificar Secretaría mediante el catálogo de cargos
+let esSecretaria = false;
 
-  document.getElementById("menuIntroduccion").style.display = "flex";
+if (
+  residente?.es_mesa_directiva === true &&
+  residente?.activo === true &&
+  residente?.id_cargo
+) {
+  const { data: cargo, error: errorCargo } = await supabaseClient
+    .from("catalogo_cargos")
+    .select("clave")
+    .eq("id", residente.id_cargo)
+    .maybeSingle();
 
-  document.getElementById("menuTesoreria").style.display = "flex";
+  if (errorCargo) {
+    console.error("Error al consultar cargo:", errorCargo);
+  }
 
+  esSecretaria = cargo?.clave === "SECR";
 }
+
+// Accesos de Administración, Tesorería y Secretaría
+if (esAdministracion || esTesorero || esSecretaria) {
+  document.getElementById("menuIntroduccion").style.display = "flex";
+  document.getElementById("menuTesoreria").style.display = "flex";
+}
+
 
 if (rol === "administracion") {
   document.getElementById("menuAdmin").style.display = "flex";
