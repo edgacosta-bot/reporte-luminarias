@@ -1869,6 +1869,7 @@ tablaObrasFianzas?.addEventListener("click", async (evento) => {
                 const determinacion = data?.determinacion;
 
         const recepcion = data?.recepcion;
+        const devolucion = data?.devolucion;
 
         contenido.innerHTML = `
             <div style="
@@ -1983,6 +1984,51 @@ tablaObrasFianzas?.addEventListener("click", async (evento) => {
                             <br><strong>Forma de pago:</strong> ${escaparTextoFianza(recepcion.forma_pago || "No registrada")}
                             <br><strong>Folio / referencia:</strong> ${escaparTextoFianza(recepcion.referencia || "No proporcionado")}
                         </div>
+                        ${
+                            devolucion
+                            ? `
+                                <div style="margin-top:16px;padding:16px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;line-height:1.9;">
+                                    <h3 style="margin:0 0 10px;color:#1d4ed8;">Devolución de fianza registrada</h3>
+                                    <strong>Recibe:</strong> ${escaparTextoFianza(devolucion.nombre_receptor)}
+                                    <br><strong>Fecha:</strong> ${escaparTextoFianza(devolucion.fecha_devolucion)}
+                                    <br><strong>Referencia:</strong> ${escaparTextoFianza(devolucion.referencia || "No proporcionada")}
+                                    <br><strong>Monto devuelto:</strong> $${Number(devolucion.monto_devuelto || 0).toLocaleString("es-MX", {minimumFractionDigits:2})}
+                                    <br><strong>Monto retenido:</strong> $${Number(devolucion.monto_retenido || 0).toLocaleString("es-MX", {minimumFractionDigits:2})}
+                                    ${Number(devolucion.monto_retenido || 0) > 0 ? `<br><strong>Motivo de retención:</strong> ${escaparTextoFianza(devolucion.motivo_retencion || "")}` : ""}
+                                </div>
+                            `
+                            : `
+                                <div style="margin-top:16px;padding:18px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;">
+                                    <h3 style="margin:0 0 14px;color:#111827;">Devolver fianza</h3>
+                                    <p style="margin-top:0;color:#4b5563;">Registre la devolución total o parcial. La suma devuelta y retenida debe coincidir con el importe recibido.</p>
+                                    <div style="margin-bottom:12px;">
+                                        <label for="nombreReceptorDevolucionFianza" style="display:block;font-weight:600;margin-bottom:6px;">Nombre de quien recibe la devolución</label>
+                                        <input id="nombreReceptorDevolucionFianza" type="text" maxlength="200" required style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #d1d5db;border-radius:8px;">
+                                    </div>
+                                    <div style="margin-bottom:12px;">
+                                        <label for="fechaDevolucionFianza" style="display:block;font-weight:600;margin-bottom:6px;">Fecha de devolución</label>
+                                        <input id="fechaDevolucionFianza" type="date" required style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #d1d5db;border-radius:8px;">
+                                    </div>
+                                    <div style="margin-bottom:12px;">
+                                        <label for="referenciaDevolucionFianza" style="display:block;font-weight:600;margin-bottom:6px;">No. de referencia bancaria o de recibo</label>
+                                        <input id="referenciaDevolucionFianza" type="text" maxlength="150" placeholder="Folio o referencia" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #d1d5db;border-radius:8px;">
+                                    </div>
+                                    <div style="margin-bottom:12px;">
+                                        <label for="montoDevueltoFianza" style="display:block;font-weight:600;margin-bottom:6px;">Monto devuelto</label>
+                                        <input id="montoDevueltoFianza" type="number" min="0" step="0.01" value="${Number(recepcion.monto_recibido || 0)}" required style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #d1d5db;border-radius:8px;">
+                                    </div>
+                                    <div style="margin-bottom:12px;">
+                                        <label for="montoRetenidoFianza" style="display:block;font-weight:600;margin-bottom:6px;">Monto retenido</label>
+                                        <input id="montoRetenidoFianza" type="number" min="0" step="0.01" value="0" required style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #d1d5db;border-radius:8px;">
+                                    </div>
+                                    <div id="grupoMotivoRetencionFianza" style="display:none;margin-bottom:14px;">
+                                        <label for="motivoRetencionFianza" style="display:block;font-weight:600;margin-bottom:6px;">Motivo de la retención</label>
+                                        <textarea id="motivoRetencionFianza" rows="3" maxlength="1000" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #d1d5db;border-radius:8px;"></textarea>
+                                    </div>
+                                    <button type="button" id="btnGuardarDevolucionFianza" style="padding:11px 18px;border:0;border-radius:8px;background:#166534;color:#fff;font-weight:600;cursor:pointer;">Registrar devolución</button>
+                                </div>
+                            `
+                        }
                     `
                     : determinacion?.determinacion === "REQUIERE_FIANZA"
                     ? `
@@ -2175,6 +2221,104 @@ tablaObrasFianzas?.addEventListener("click", async (evento) => {
                     });
                     btnGuardarRecepcion.disabled = false;
                     btnGuardarRecepcion.textContent = "Registrar recepción";
+                }
+            });
+        }
+
+        // Registro de devolución de fianza.
+        const btnGuardarDevolucion = document.getElementById("btnGuardarDevolucionFianza");
+
+        if (btnGuardarDevolucion) {
+            const fechaDevolucionInput = document.getElementById("fechaDevolucionFianza");
+            const ahora = new Date();
+            fechaDevolucionInput.value = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, "0")}-${String(ahora.getDate()).padStart(2, "0")}`;
+
+            const montoDevueltoInput = document.getElementById("montoDevueltoFianza");
+            const montoRetenidoInput = document.getElementById("montoRetenidoFianza");
+            const grupoMotivo = document.getElementById("grupoMotivoRetencionFianza");
+
+            const actualizarMotivoRetencion = () => {
+                grupoMotivo.style.display = Number(montoRetenidoInput.value) > 0 ? "block" : "none";
+            };
+            montoRetenidoInput.addEventListener("input", actualizarMotivoRetencion);
+
+            btnGuardarDevolucion.addEventListener("click", async () => {
+                const nombreReceptor = document.getElementById("nombreReceptorDevolucionFianza").value.trim();
+                const fechaDevolucion = fechaDevolucionInput.value;
+                const referenciaDevolucion = document.getElementById("referenciaDevolucionFianza").value.trim();
+                const montoDevuelto = Number(montoDevueltoInput.value);
+                const montoRetenido = Number(montoRetenidoInput.value);
+                const motivoRetencion = document.getElementById("motivoRetencionFianza").value.trim();
+                const montoRecibido = Number(recepcion.monto_recibido);
+
+                if (!nombreReceptor || !fechaDevolucion) {
+                    await mostrarDialogoFianza({
+                        titulo: "Datos incompletos",
+                        mensaje: "Indique el nombre de quien recibe la devolución y la fecha."
+                    });
+                    return;
+                }
+
+                if (!Number.isFinite(montoDevuelto) || !Number.isFinite(montoRetenido) ||
+                    montoDevuelto < 0 || montoRetenido < 0 ||
+                    Math.round((montoDevuelto + montoRetenido) * 100) !== Math.round(montoRecibido * 100)) {
+                    await mostrarDialogoFianza({
+                        titulo: "Importes incorrectos",
+                        mensaje: `El monto devuelto más el retenido debe sumar exactamente $${montoRecibido.toLocaleString("es-MX", {minimumFractionDigits:2})}.`
+                    });
+                    return;
+                }
+
+                if (montoRetenido > 0 && !motivoRetencion) {
+                    await mostrarDialogoFianza({
+                        titulo: "Falta el motivo de retención",
+                        mensaje: "Indique el motivo por el que se retiene una parte de la fianza."
+                    });
+                    return;
+                }
+
+                const confirmarDevolucion = await mostrarDialogoFianza({
+                    titulo: "Confirmar devolución de fianza",
+                    mensaje: `Se devolverán $${montoDevuelto.toLocaleString("es-MX", {minimumFractionDigits:2})} y se retendrán $${montoRetenido.toLocaleString("es-MX", {minimumFractionDigits:2})}. ¿Confirma el registro?`,
+                    confirmar: true,
+                    textoAceptar: "Registrar devolución",
+                    textoCancelar: "Cancelar"
+                });
+                if (!confirmarDevolucion) return;
+
+                btnGuardarDevolucion.disabled = true;
+                btnGuardarDevolucion.textContent = "Registrando...";
+
+                try {
+                    const { error } = await supabaseClient.rpc("registrar_devolucion_fianza", {
+                        p_recepcion_id: recepcion.id,
+                        p_nombre_receptor: nombreReceptor,
+                        p_fecha_devolucion: fechaDevolucion,
+                        p_referencia: referenciaDevolucion || null,
+                        p_monto_devuelto: montoDevuelto,
+                        p_monto_retenido: montoRetenido,
+                        p_motivo_retencion: montoRetenido > 0 ? motivoRetencion : null
+                    });
+                    if (error) throw error;
+
+                    await mostrarDialogoFianza({
+                        titulo: "Devolución registrada",
+                        mensaje: "La devolución de la fianza quedó registrada correctamente."
+                    });
+
+                    const botonObra = Array.from(
+                        tablaObrasFianzas.querySelectorAll(".btnAdministrarFianza")
+                    ).find(boton => boton.dataset.obraId === obraId);
+                    if (botonObra) botonObra.click();
+
+                } catch (error) {
+                    console.error("Error registrando devolución de fianza:", error);
+                    await mostrarDialogoFianza({
+                        titulo: "No fue posible registrar",
+                        mensaje: error.message || "Ocurrió un error al registrar la devolución."
+                    });
+                    btnGuardarDevolucion.disabled = false;
+                    btnGuardarDevolucion.textContent = "Registrar devolución";
                 }
             });
         }
