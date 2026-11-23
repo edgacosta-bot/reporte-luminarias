@@ -927,6 +927,44 @@
                 </div>
             </section>
 
+<!-- ==================================================
+     FIANZAS DE OBRAS PARTICULARES
+     ================================================== -->
+
+<section
+    class="tesoreria-card"
+    id="opcionFianzas"
+    role="button"
+    tabindex="0"
+    aria-label="Administrar fianzas"
+>
+    <div class="tesoreria-card-header">
+
+        <div class="tesoreria-card-icon">
+            🛡️
+        </div>
+
+        <div class="tesoreria-card-content">
+
+            <h2 class="tesoreria-card-title">
+                Fianzas de obras particulares
+            </h2>
+
+            <div class="tesoreria-card-description">
+                Consultar las obras, registrar la determinación
+                de fianza, documentar su recepción y dar seguimiento
+                a las garantías entregadas.
+            </div>
+
+            <div class="tesoreria-card-action">
+                Administrar fianzas
+                <span>→</span>
+            </div>
+
+        </div>
+
+    </div>
+</section>            
 
         </div>
 
@@ -964,7 +1002,153 @@
 
     </main>
 
+<!-- ==========================================================
+     MÓDULO DE FIANZAS
+     ========================================================== -->
 
+<div
+    id="modalFianzas"
+    style="
+        display:none;
+        position:fixed;
+        inset:0;
+        z-index:10050;
+        background:#f8fafc;
+        overflow-y:auto;
+        padding:24px;
+        box-sizing:border-box;
+    "
+>
+
+    <div style="max-width:1400px;margin:0 auto;">
+
+        <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:16px;
+            flex-wrap:wrap;
+            margin-bottom:24px;
+        ">
+
+            <div>
+                <h1 style="margin:0;color:#111827;">
+                    🛡️ Administración de fianzas
+                </h1>
+
+                <p style="color:#6b7280;margin-top:8px;">
+                    Control de garantías de obras particulares.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                id="btnCerrarFianzas"
+                style="
+                    padding:11px 18px;
+                    border:0;
+                    border-radius:8px;
+                    background:#e5e7eb;
+                    color:#374151;
+                    font-weight:600;
+                    cursor:pointer;
+                "
+            >
+                ← Regresar a Tesorería
+            </button>
+
+        </div>
+
+        <div style="
+            background:#ffffff;
+            border:1px solid #e5e7eb;
+            border-radius:14px;
+            padding:22px;
+        ">
+
+            <h2 style="margin-top:0;color:#111827;">
+                Obras registradas
+            </h2>
+
+            <div style="
+                display:flex;
+                gap:12px;
+                flex-wrap:wrap;
+                margin-bottom:18px;
+            ">
+
+                <input
+                    type="text"
+                    id="filtroObrasFianzas"
+                    placeholder="Buscar por privada, casa o propietario..."
+                    style="
+                        flex:1;
+                        min-width:240px;
+                        padding:12px;
+                        border:1px solid #d1d5db;
+                        border-radius:8px;
+                        font-size:14px;
+                    "
+                >
+
+                <select
+                    id="filtroEstadoFianzas"
+                    style="
+                        min-width:190px;
+                        padding:12px;
+                        border:1px solid #d1d5db;
+                        border-radius:8px;
+                        font-size:14px;
+                    "
+                >
+                    <option value="">Todos los estados</option>
+                    <option value="EJECUCION">En ejecución</option>
+                    <option value="PENDIENTE_VOBOS">Pendiente de V°B°</option>
+                    <option value="SUSPENDIDA">Suspendida</option>
+                    <option value="TERMINADA">Terminada</option>
+                </select>
+
+            </div>
+
+            <div
+                id="estadoCargaObrasFianzas"
+                style="margin:12px 0;color:#6b7280;"
+            >
+                Las obras aparecerán aquí.
+            </div>
+
+            <div style="overflow-x:auto;">
+
+                <table style="
+                    width:100%;
+                    border-collapse:collapse;
+                    min-width:850px;
+                    font-size:14px;
+                ">
+
+                    <thead>
+                        <tr style="background:#f3f4f6;text-align:left;">
+                            <th style="padding:12px;">Privada</th>
+                            <th style="padding:12px;">Casa / Lote</th>
+                            <th style="padding:12px;">Propietario</th>
+                            <th style="padding:12px;">Tipo de obra</th>
+                            <th style="padding:12px;">Estado</th>
+                            <th style="padding:12px;">Acción</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaObrasFianzas">
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
     <!-- ==========================================================
          AUTORIZACIÓN
@@ -1216,6 +1400,279 @@ document.body.style.visibility = "visible";
                         regresar
                     );
 
+
+/* ==================================================
+   7.1. MÓDULO DE FIANZAS
+   ================================================== */
+
+const opcionFianzas =
+    document.getElementById("opcionFianzas");
+
+const modalFianzas =
+    document.getElementById("modalFianzas");
+
+const btnCerrarFianzas =
+    document.getElementById("btnCerrarFianzas");
+
+const tablaObrasFianzas =
+    document.getElementById("tablaObrasFianzas");
+
+const estadoCargaObrasFianzas =
+    document.getElementById("estadoCargaObrasFianzas");
+
+const filtroObrasFianzas =
+    document.getElementById("filtroObrasFianzas");
+
+const filtroEstadoFianzas =
+    document.getElementById("filtroEstadoFianzas");
+
+window.obrasFianzas = [];
+
+function escaparTextoFianza(valor) {
+    return String(valor ?? "").replace(/[&<>"']/g, caracter => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[caracter]);
+}
+
+function obtenerNombreEstadoFianza(estado) {
+    const nombres = {
+        EJECUCION: "En ejecución",
+        PENDIENTE_VOBOS: "Pendiente de V°B°",
+        SUSPENDIDA: "Suspendida",
+        TERMINADA: "Terminada"
+    };
+
+    return nombres[estado] || estado || "Sin estado";
+}
+
+async function cargarObrasFianzas() {
+
+    estadoCargaObrasFianzas.textContent =
+        "Cargando obras registradas...";
+
+    tablaObrasFianzas.innerHTML = "";
+
+    try {
+
+        const { data: obras, error } = await supabaseClient
+            .from("obras_v2")
+            .select(`
+                id,
+                privada,
+                casa,
+                lote_id,
+                propietario_id,
+                tipo_obra_id,
+                estatus,
+                estado_operativo,
+                aprobada
+            `)
+            .order("privada")
+            .order("casa");
+
+        if (error) throw error;
+
+        const loteIds = [...new Set(
+            (obras || [])
+                .map(o => o.lote_id)
+                .filter(Boolean)
+        )];
+
+        const propietarioIds = [...new Set(
+            (obras || [])
+                .map(o => o.propietario_id)
+                .filter(Boolean)
+        )];
+
+        const tipoIds = [...new Set(
+            (obras || [])
+                .map(o => o.tipo_obra_id)
+                .filter(Boolean)
+        )];
+
+        let lotes = [];
+        let propietarios = [];
+        let tipos = [];
+
+        if (loteIds.length) {
+            const resultado = await supabaseClient
+                .from("lotes")
+                .select("id, lote")
+                .in("id", loteIds);
+
+            if (resultado.error) throw resultado.error;
+            lotes = resultado.data || [];
+        }
+
+        if (propietarioIds.length) {
+            const resultado = await supabaseClient
+                .from("propietarios_obra")
+                .select("id, nombre")
+                .in("id", propietarioIds);
+
+            if (resultado.error) throw resultado.error;
+            propietarios = resultado.data || [];
+        }
+
+        if (tipoIds.length) {
+            const resultado = await supabaseClient
+                .from("catalogo_tipos_obra")
+                .select("id, nombre")
+                .in("id", tipoIds);
+
+            if (resultado.error) throw resultado.error;
+            tipos = resultado.data || [];
+        }
+
+        const mapaLotes = new Map(
+            lotes.map(item => [String(item.id), item])
+        );
+
+        const mapaPropietarios = new Map(
+            propietarios.map(item => [item.id, item])
+        );
+
+        const mapaTipos = new Map(
+            tipos.map(item => [String(item.id), item])
+        );
+
+        window.obrasFianzas = (obras || []).map(obra => {
+
+            const lote = mapaLotes.get(String(obra.lote_id));
+            const propietario =
+                mapaPropietarios.get(obra.propietario_id);
+
+            const tipo =
+                mapaTipos.get(String(obra.tipo_obra_id));
+
+            return {
+                ...obra,
+                lote_numero: lote?.lote || obra.casa || "—",
+                propietario_nombre: propietario?.nombre || "",
+                tipo_obra_nombre: tipo?.nombre || "Sin tipo"
+            };
+
+        });
+
+        renderizarObrasFianzas();
+
+        estadoCargaObrasFianzas.textContent =
+            `Se encontraron ${window.obrasFianzas.length} obras registradas.`;
+
+    } catch (error) {
+
+        console.error("Error cargando obras para Fianzas:", error);
+
+        estadoCargaObrasFianzas.textContent =
+            error.message || "No fue posible cargar las obras.";
+
+    }
+
+}
+
+function renderizarObrasFianzas() {
+
+    const busqueda =
+        (filtroObrasFianzas.value || "").trim().toLowerCase();
+
+    const estado =
+        filtroEstadoFianzas.value || "";
+
+    const obrasFiltradas = window.obrasFianzas.filter(obra => {
+
+        const texto = [
+            obra.privada,
+            obra.casa,
+            obra.lote_numero,
+            obra.propietario_nombre,
+            obra.tipo_obra_nombre
+        ].join(" ").toLowerCase();
+
+        const coincideTexto = texto.includes(busqueda);
+
+        const coincideEstado =
+            !estado || obra.estado_operativo === estado;
+
+        return coincideTexto && coincideEstado;
+
+    });
+
+    if (!obrasFiltradas.length) {
+
+        tablaObrasFianzas.innerHTML = `
+            <tr>
+                <td colspan="6" style="padding:18px;text-align:center;color:#6b7280;">
+                    No se encontraron obras.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    tablaObrasFianzas.innerHTML = obrasFiltradas.map(obra => `
+
+        <tr style="border-bottom:1px solid #e5e7eb;">
+
+            <td style="padding:12px;">
+                ${escaparTextoFianza(obra.privada)}
+            </td>
+
+            <td style="padding:12px;">
+                ${escaparTextoFianza(obra.casa || obra.lote_numero)}
+            </td>
+
+            <td style="padding:12px;">
+                ${escaparTextoFianza(obra.propietario_nombre || "No vinculado")}
+            </td>
+
+            <td style="padding:12px;">
+                ${escaparTextoFianza(obra.tipo_obra_nombre)}
+            </td>
+
+            <td style="padding:12px;">
+                ${escaparTextoFianza(
+                    obtenerNombreEstadoFianza(obra.estado_operativo)
+                )}
+            </td>
+
+            <td style="padding:12px;color:#6b7280;">
+                En preparación
+            </td>
+
+        </tr>
+
+    `).join("");
+
+}
+
+opcionFianzas?.addEventListener("click", async () => {
+
+    modalFianzas.style.display = "block";
+
+    await cargarObrasFianzas();
+
+});
+
+btnCerrarFianzas?.addEventListener("click", () => {
+
+    modalFianzas.style.display = "none";
+
+});
+
+filtroObrasFianzas?.addEventListener(
+    "input",
+    renderizarObrasFianzas
+);
+
+filtroEstadoFianzas?.addEventListener(
+    "change",
+    renderizarObrasFianzas
+);
 
 /*
  * ==================================================
