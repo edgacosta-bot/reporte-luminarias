@@ -1176,6 +1176,80 @@
 
 </div>
 
+<!-- DIÁLOGO INSTITUCIONAL DEL MÓDULO DE FIANZAS -->
+<div
+    id="modalDialogoFianza"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tituloDialogoFianza"
+    style="
+        display:none;
+        position:fixed;
+        inset:0;
+        z-index:11000;
+        align-items:center;
+        justify-content:center;
+        padding:20px;
+        box-sizing:border-box;
+        background:rgba(17,24,39,.58);
+    "
+>
+    <div style="
+        width:min(520px,100%);
+        background:#ffffff;
+        border:1px solid #e5e7eb;
+        border-radius:16px;
+        padding:26px;
+        box-sizing:border-box;
+        box-shadow:0 20px 60px rgba(0,0,0,.25);
+    ">
+        <h2 id="tituloDialogoFianza"
+            style="margin:0 0 12px;color:#111827;font-size:21px;">
+            Confirmar operación
+        </h2>
+        <p id="mensajeDialogoFianza"
+           style="margin:0;color:#4b5563;line-height:1.6;white-space:pre-line;">
+        </p>
+        <div style="
+            display:flex;
+            justify-content:flex-end;
+            gap:10px;
+            flex-wrap:wrap;
+            margin-top:26px;
+        ">
+            <button
+                type="button"
+                id="btnCancelarDialogoFianza"
+                style="
+                    display:none;
+                    min-height:42px;
+                    padding:10px 17px;
+                    border:1px solid #d1d5db;
+                    border-radius:8px;
+                    background:#f3f4f6;
+                    color:#374151;
+                    font-weight:600;
+                    cursor:pointer;
+                "
+            >Cancelar</button>
+            <button
+                type="button"
+                id="btnAceptarDialogoFianza"
+                style="
+                    min-height:42px;
+                    padding:10px 18px;
+                    border:0;
+                    border-radius:8px;
+                    background:#991b3f;
+                    color:#ffffff;
+                    font-weight:700;
+                    cursor:pointer;
+                "
+            >Aceptar</button>
+        </div>
+    </div>
+</div>
+
     <!-- ==========================================================
          AUTORIZACIÓN
          ========================================================== -->
@@ -1719,6 +1793,39 @@ filtroEstadoFianzas?.addEventListener(
    CONSULTAR FIANZA DE LA OBRA SELECCIONADA
    ================================================== */
 
+function mostrarDialogoFianza({
+    titulo,
+    mensaje,
+    confirmar = false,
+    textoAceptar = "Aceptar",
+    textoCancelar = "Cancelar"
+}) {
+    const modal = document.getElementById("modalDialogoFianza");
+    const tituloElemento = document.getElementById("tituloDialogoFianza");
+    const mensajeElemento = document.getElementById("mensajeDialogoFianza");
+    const btnAceptar = document.getElementById("btnAceptarDialogoFianza");
+    const btnCancelar = document.getElementById("btnCancelarDialogoFianza");
+
+    tituloElemento.textContent = titulo;
+    mensajeElemento.textContent = mensaje;
+    btnAceptar.textContent = textoAceptar;
+    btnCancelar.textContent = textoCancelar;
+    btnCancelar.style.display = confirmar ? "inline-block" : "none";
+    modal.style.display = "flex";
+
+    return new Promise(resolve => {
+        const cerrar = resultado => {
+            modal.style.display = "none";
+            btnAceptar.onclick = null;
+            btnCancelar.onclick = null;
+            resolve(resultado);
+        };
+
+        btnAceptar.onclick = () => cerrar(true);
+        btnCancelar.onclick = () => cerrar(false);
+    });
+}
+
 tablaObrasFianzas?.addEventListener("click", async (evento) => {
 
     const boton = evento.target.closest(".btnAdministrarFianza");
@@ -1897,7 +2004,10 @@ tablaObrasFianzas?.addEventListener("click", async (evento) => {
             const tipoDeterminacion = seleccion?.value;
 
             if (!tipoDeterminacion) {
-                alert("Seleccione si la obra requiere o no requiere fianza.");
+                await mostrarDialogoFianza({
+                    titulo: "Determinación pendiente",
+                    mensaje: "Seleccione si la obra requiere o no requiere fianza."
+                });
                 return;
             }
 
@@ -1908,11 +2018,15 @@ tablaObrasFianzas?.addEventListener("click", async (evento) => {
             const textoObservaciones =
                 observaciones?.value.trim() || null;
 
-            const confirmar = confirm(
-                tipoDeterminacion === "REQUIERE_FIANZA"
+            const confirmar = await mostrarDialogoFianza({
+                titulo: "Confirmar determinación de fianza",
+                mensaje: tipoDeterminacion === "REQUIERE_FIANZA"
                     ? "¿Confirma que esta obra requiere una fianza de $15,000.00?"
-                    : "¿Confirma que esta obra no requiere fianza?"
-            );
+                    : "¿Confirma que esta obra no requiere fianza?",
+                confirmar: true,
+                textoAceptar: "Confirmar",
+                textoCancelar: "Cancelar"
+            });
 
             if (!confirmar) return;
 
@@ -1933,7 +2047,10 @@ tablaObrasFianzas?.addEventListener("click", async (evento) => {
 
                 if (error) throw error;
 
-                alert("La determinación de fianza se registró correctamente.");
+                await mostrarDialogoFianza({
+                    titulo: "Registro exitoso",
+                    mensaje: "La determinación de fianza se registró correctamente."
+                });
 
                 const botonObra = Array.from(
                     tablaObrasFianzas.querySelectorAll(
@@ -1952,10 +2069,11 @@ tablaObrasFianzas?.addEventListener("click", async (evento) => {
                     error
                 );
 
-                alert(
-                    error.message ||
-                    "No fue posible registrar la determinación."
-                );
+                await mostrarDialogoFianza({
+                    titulo: "No fue posible guardar",
+                    mensaje: error.message ||
+                        "No fue posible registrar la determinación."
+                });
 
                 btnGuardarFianza.disabled = false;
                 btnGuardarFianza.textContent = "Guardar determinación";
