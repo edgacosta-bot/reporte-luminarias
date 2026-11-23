@@ -386,6 +386,7 @@ body {
           onclick="toggleMenu('sigvic_admin')">
     📘 Acerca de SIGVIC
   </button>
+  
 
   <div id="sigvic_admin" class="submenu">
 
@@ -408,7 +409,7 @@ body {
 
 </div>
 
- <!-- ACCESO ÚNICO A TESORERÍA -->
+<!-- ACCESO ÚNICO A TESORERÍA -->
 <div class="menu" id="menuTesoreria" style="display:none;">
   <a href="tesoreria.html" class="button btn-oro">
     <span class="icon">💰</span>
@@ -510,6 +511,14 @@ body {
     <a href="protocolos.html" class="button btn-res-3">Reglas SIGVIC</a>
     <a href="protocolos.html?modulo=privacidad" class="button btn-res-3">Aviso de privacidad</a>
   </div>
+
+   <!-- ACCESO A TESORERÍA -->
+  <a href="tesoreria.html" class="button btn-oro"
+     id="btnTesoreriaSecretaria"
+     style="display:none;">
+    <span class="icon">💰</span>
+    Tesorería y administración
+  </a> 
 
    <button class="button btn-res-2" onclick="toggleMenu('qr_res')">
     🔐 Generar código QR
@@ -919,6 +928,7 @@ const esAdministracion =
   );
 
 
+
 const esTesorero =
   residente?.es_mesa_directiva === true &&
   residente?.activo === true &&
@@ -945,15 +955,21 @@ if (
   esSecretaria = cargo?.clave === "SECR";
 }
 
-// Accesos de Administración y Tesorería
+// Menú de introducción: Administración y Tesorero
 if (esAdministracion || esTesorero) {
   document.getElementById("menuIntroduccion").style.display = "flex";
 }
 
-// Acceso de Secretaría, Tesorería y Administración
-if (esAdministracion || esTesorero || esSecretaria) {
+// Acceso a Tesorería: Administración y Tesorero
+if (esAdministracion || esTesorero) {
   document.getElementById("menuTesoreria").style.display = "flex";
 }
+
+// Acceso de Secretaría dentro de su menú de residente
+if (esSecretaria) {
+  document.getElementById("btnTesoreriaSecretaria").style.display = "flex";
+}
+
 
 if (rol === "administracion") {
   document.getElementById("menuAdmin").style.display = "flex";
