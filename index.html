@@ -945,12 +945,15 @@ if (
   esSecretaria = cargo?.clave === "SECR";
 }
 
-// Accesos de Administración, Tesorería y Secretaría
-if (esAdministracion || esTesorero || esSecretaria) {
+// Accesos de Administración y Tesorería
+if (esAdministracion || esTesorero) {
   document.getElementById("menuIntroduccion").style.display = "flex";
-  document.getElementById("menuTesoreria").style.display = "flex";
 }
 
+// Acceso de Secretaría, Tesorería y Administración
+if (esAdministracion || esTesorero || esSecretaria) {
+  document.getElementById("menuTesoreria").style.display = "flex";
+}
 
 if (rol === "administracion") {
   document.getElementById("menuAdmin").style.display = "flex";
