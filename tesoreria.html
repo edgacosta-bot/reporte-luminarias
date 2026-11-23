@@ -1759,8 +1759,19 @@ tablaObrasFianzas?.addEventListener("click", async (evento) => {
 
         if (error) throw error;
 
+                const determinacion = data?.determinacion;
+
+        const recepcion = data?.recepcion;
+
         contenido.innerHTML = `
-            <div style="margin-bottom:16px;">
+            <div style="
+                padding:16px;
+                margin-bottom:20px;
+                background:#ffffff;
+                border:1px solid #e5e7eb;
+                border-radius:10px;
+                line-height:1.8;
+            ">
                 <strong>Privada:</strong>
                 ${escaparTextoFianza(obra.privada)}
                 <br>
@@ -1773,22 +1784,183 @@ tablaObrasFianzas?.addEventListener("click", async (evento) => {
                 ${escaparTextoFianza(obra.tipo_obra_nombre)}
             </div>
 
-            <h3 style="color:#111827;">
-                Respuesta de la consulta
-            </h3>
+            <div style="
+                padding:18px;
+                background:#ffffff;
+                border:1px solid #e5e7eb;
+                border-radius:10px;
+            ">
 
-            <pre style="
-                padding:16px;
-                background:#f3f4f6;
-                border-radius:8px;
-                white-space:pre-wrap;
-                overflow-wrap:anywhere;
-                font-size:13px;
-            ">${escaparTextoFianza(
-                JSON.stringify(data, null, 2)
-            )}</pre>
+                <h3 style="margin-top:0;color:#111827;">
+                    Determinación de fianza
+                </h3>
+
+                ${
+                    determinacion
+                    ? `
+                        <p>
+                            Ya existe una determinación registrada:
+                            <strong>
+                                ${escaparTextoFianza(
+                                    determinacion.determinacion
+                                )}
+                            </strong>
+                        </p>
+                    `
+                    : `
+                        <p>
+                            Esta obra todavía no tiene una determinación
+                            de fianza registrada.
+                        </p>
+
+                        <div style="margin-top:18px;">
+
+                            <label for="seleccionDeterminacionFianza"
+                                style="display:block;font-weight:600;margin-bottom:7px;">
+                                Determinación
+                            </label>
+
+                            <select
+                                id="seleccionDeterminacionFianza"
+                                style="width:100%;padding:12px;border:1px solid #d1d5db;border-radius:8px;"
+                            >
+                                <option value="">
+                                    Seleccione una opción
+                                </option>
+
+                                <option value="REQUIERE_FIANZA">
+                                    Requiere fianza - $15,000.00
+                                </option>
+
+                                <option value="NO_REQUIERE_FIANZA">
+                                    No requiere fianza
+                                </option>
+                            </select>
+
+                            <div style="margin-top:16px;">
+
+                                <label for="observacionesDeterminacionFianza"
+                                    style="display:block;font-weight:600;margin-bottom:7px;">
+                                    Observaciones
+                                </label>
+
+                                <textarea
+                                    id="observacionesDeterminacionFianza"
+                                    rows="3"
+                                    style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #d1d5db;border-radius:8px;"
+                                    placeholder="Observaciones (opcional)"
+                                ></textarea>
+
+                            </div>
+
+                            <button
+                                type="button"
+                                id="btnGuardarDeterminacionFianza"
+                                style="margin-top:18px;padding:11px 18px;border:0;border-radius:8px;background:#991b3f;color:#fff;font-weight:600;cursor:pointer;"
+                            >
+                                Guardar determinación
+                            </button>
+
+                        </div>
+                    `
+                }
+
+                ${
+                    recepcion
+                    ? `
+                        <div style="margin-top:20px;">
+                            <strong>Recepción de fianza:</strong>
+                            Registrada.
+                        </div>
+                    `
+                    : ""
+                }
+
+            </div>
+          const btnGuardarFianza = document.getElementById(
+            "btnGuardarDeterminacionFianza"
+        );
+
+        btnGuardarFianza?.addEventListener("click", async () => {
+
+            const seleccion = document.getElementById(
+                "seleccionDeterminacionFianza"
+            );
+
+            const observaciones = document.getElementById(
+                "observacionesDeterminacionFianza"
+            );
+
+            const tipoDeterminacion = seleccion?.value;
+
+            if (!tipoDeterminacion) {
+                alert("Seleccione si la obra requiere o no requiere fianza.");
+                return;
+            }
+
+            const monto = tipoDeterminacion === "REQUIERE_FIANZA"
+                ? 15000
+                : 0;
+
+            const textoObservaciones =
+                observaciones?.value.trim() || null;
+
+            const confirmar = confirm(
+                tipoDeterminacion === "REQUIERE_FIANZA"
+                    ? "¿Confirma que esta obra requiere una fianza de $15,000.00?"
+                    : "¿Confirma que esta obra no requiere fianza?"
+            );
+
+            if (!confirmar) return;
+
+            btnGuardarFianza.disabled = true;
+            btnGuardarFianza.textContent = "Guardando...";
+
+            try {
+
+                const { data, error } = await supabaseClient.rpc(
+                    "registrar_determinacion_fianza",
+                    {
+                        p_obra_id: obraId,
+                        p_determinacion: tipoDeterminacion,
+                        p_monto: monto,
+                        p_observaciones: textoObservaciones
+                    }
+                );
+
+                if (error) throw error;
+
+                alert("La determinación de fianza se registró correctamente.");
+
+                const botonObra = Array.from(
+                    tablaObrasFianzas.querySelectorAll(
+                        ".btnAdministrarFianza"
+                    )
+                ).find(boton => boton.dataset.obraId === obraId);
+
+                if (botonObra) {
+                    botonObra.click();
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Error registrando determinación de fianza:",
+                    error
+                );
+
+                alert(
+                    error.message ||
+                    "No fue posible registrar la determinación."
+                );
+
+                btnGuardarFianza.disabled = false;
+                btnGuardarFianza.textContent = "Guardar determinación";
+
+            }
+
+        });          
         `;
-
     } catch (error) {
 
         console.error("Error consultando fianza:", error);
