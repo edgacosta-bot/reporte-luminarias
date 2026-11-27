@@ -4648,7 +4648,10 @@ const { data, error } =
 
     function abrirModalCancelacion(pago) {
         if (window.puedeOperarTesoreria !== true) {
-            alert("Tu perfil tiene permiso de consulta, pero no de cancelación de pagos.");
+            mostrarAlerta({
+                titulo: "Acceso no autorizado",
+                mensaje: "Tu perfil tiene permiso de consulta, pero no de cancelación de pagos."
+            });
             return;
         }
         if (!pago?.pago_id || String(pago.estatus || "").toLowerCase() !== "activo") return;
@@ -4764,22 +4767,32 @@ const { data, error } =
     async function confirmarCancelacion() {
         if (cancelacionEnCurso) return;
         if (window.puedeOperarTesoreria !== true) {
-            alert("No tienes autorización para cancelar pagos.");
+            mostrarAlerta({
+                titulo: "Acceso no autorizado",
+                mensaje: "No tienes autorización para cancelar pagos."
+            });
             return;
         }
         const motivo = (cancelReason.value || "").trim();
         if (!pagoSeleccionado?.pago_id) {
-            alert("No se identificó el pago que se desea cancelar.");
+            mostrarAlerta({
+                titulo: "No se identificó el pago",
+                mensaje: "No fue posible identificar el registro que se desea cancelar. Cierra esta ventana y vuelve a seleccionar el pago."
+            });
             return;
         }
         if (!motivo) {
-            alert("Debes indicar el motivo de la cancelación.");
+            mostrarAlerta({
+                titulo: "Motivo requerido",
+                mensaje: "Debes indicar el motivo de la cancelación antes de continuar."
+            });
             cancelReason.focus();
             return;
         }
         const folio = pagoSeleccionado.folio == null ? "Sin folio" : String(pagoSeleccionado.folio).padStart(4, "0");
-        if (!window.confirm(`¿Confirmas la cancelación del pago con folio ${folio} por ${money(pagoSeleccionado.monto)}? Esta operación conservará el historial, pero no se puede deshacer desde esta pantalla.`)) return;
 
+        // El modal SIGVIC ya presenta el folio, importe y motivo, y funciona como confirmación.
+        // No se utiliza confirm() nativo del navegador.
         cancelacionEnCurso = true;
         confirmCancelButton.disabled = true;
         confirmCancelButton.textContent = "Cancelando…";
@@ -4794,10 +4807,16 @@ const { data, error } =
             pagoSeleccionado = null;
             cancelReason.value = "";
             await loadPayments();
-            alert(`El pago con folio ${resultado?.resultado_folio ?? folio} fue cancelado. Se revisaron ${resultado?.obligaciones_revertidas ?? 0} obligación(es) relacionada(s).`);
+            mostrarAlerta({
+                titulo: "Pago cancelado",
+                mensaje: `El pago con folio ${resultado?.resultado_folio ?? folio} fue cancelado correctamente. Se revisaron ${resultado?.obligaciones_revertidas ?? 0} obligación(es) relacionada(s). El registro y su folio se conservaron en el historial.`
+            });
         } catch (error) {
             console.error("Error cancelando pago:", error);
-            alert(error?.message || "No fue posible cancelar el pago.");
+            mostrarAlerta({
+                titulo: "No fue posible cancelar el pago",
+                mensaje: error?.message || "Ocurrió un error al procesar la cancelación. El pago no debe considerarse cancelado."
+            });
         } finally {
             cancelacionEnCurso = false;
             confirmCancelButton.disabled = false;
