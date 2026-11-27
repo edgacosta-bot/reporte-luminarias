@@ -533,6 +533,20 @@
 #btnCerrarConsultaPagos { background:#e5e7eb; color:#374151; }
 @media (max-width:700px) { #modalConsultarPagos .consulta-filtros { grid-template-columns:1fr; } #modalConsultarPagos .consulta-contenido { padding:16px; } #modalConsultarPagos .consulta-acciones { align-items:stretch; flex-direction:column; } #modalConsultarPagos .consulta-botones { justify-content:flex-end; } }
 
+#tablaConsultarPagos { min-width:1120px; }
+.btn-cancelar-pago { background:#991b1b; color:#fff; padding:7px 10px !important; font-size:12px; white-space:nowrap; }
+.btn-cancelar-pago:disabled { opacity:.55; cursor:not-allowed; }
+#modalCancelarPago { position:fixed; inset:0; z-index:10100; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.62); padding:18px; box-sizing:border-box; }
+#modalCancelarPago .cancelar-pago-contenido { width:min(560px,100%); max-height:90vh; overflow:auto; background:#fff; border-radius:16px; padding:26px; box-sizing:border-box; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+#modalCancelarPago label { display:block; margin:16px 0 7px; color:#374151; font-weight:600; }
+#modalCancelarPago textarea { width:100%; min-height:110px; resize:vertical; box-sizing:border-box; padding:11px 12px; border:1px solid #d1d5db; border-radius:8px; font:inherit; }
+#modalCancelarPago .cancelar-pago-resumen { padding:13px 15px; margin:16px 0; border:1px solid #fecaca; background:#fff7f7; border-radius:10px; color:#374151; line-height:1.6; }
+#modalCancelarPago .cancelar-pago-acciones { display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap; margin-top:22px; }
+#modalCancelarPago button { border:0; border-radius:8px; padding:11px 17px; cursor:pointer; font-weight:600; }
+#btnConfirmarCancelacionPago { background:#991b1b; color:#fff; }
+#btnConfirmarCancelacionPago:disabled { opacity:.55; cursor:not-allowed; }
+#btnCerrarModalCancelarPago { background:#e5e7eb; color:#374151; }
+
 
 
 /* Registro independiente de amortizaciones: no representa un pago */
@@ -4574,13 +4588,28 @@ const { data, error } =
     <div id="resumenConsultaPagos" role="status" aria-live="polite" style="margin:10px 0;color:#4b5563">Preparando consulta…</div>
     <div class="consulta-tabla-wrap">
       <table id="tablaConsultarPagos">
-        <thead><tr><th>Folio</th><th>Fecha de pago</th><th>Residente / inmueble</th><th>Concepto y periodo</th><th>Importe</th><th>Método</th><th>Referencia</th><th>Estatus</th><th>Observaciones</th></tr></thead>
-        <tbody id="cuerpoConsultarPagos"><tr><td colspan="9">Abre la consulta para cargar los pagos.</td></tr></tbody>
+        <thead><tr><th>Folio</th><th>Fecha de pago</th><th>Residente / inmueble</th><th>Concepto y periodo</th><th>Importe</th><th>Método</th><th>Referencia</th><th>Estatus</th><th>Observaciones</th><th>Acción</th></tr></thead>
+        <tbody id="cuerpoConsultarPagos"><tr><td colspan="10">Abre la consulta para cargar los pagos.</td></tr></tbody>
       </table>
     </div>
     <div class="consulta-acciones">
-      <span style="font-size:12px;color:#6b7280">Esta pantalla es de consulta; no registra, modifica ni cancela pagos.</span>
+      <span style="font-size:12px;color:#6b7280">Los pagos activos pueden cancelarse por Administración o Tesorería. Los registros y folios se conservan en el historial.</span>
       <div class="consulta-botones"><button type="button" id="btnCerrarConsultaPagos">Cerrar</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRMACIÓN Y MOTIVO DE CANCELACIÓN DE PAGO -->
+<div id="modalCancelarPago" role="dialog" aria-modal="true" aria-labelledby="tituloCancelarPago">
+  <div class="cancelar-pago-contenido">
+    <h2 id="tituloCancelarPago" style="margin:0;color:#991b1b">Cancelar pago</h2>
+    <p style="color:#4b5563;line-height:1.5">Esta operación cambiará el estatus del pago a cancelado y actualizará las obligaciones relacionadas. El folio y el historial se conservarán.</p>
+    <div id="resumenCancelarPago" class="cancelar-pago-resumen"></div>
+    <label for="motivoCancelarPago">Motivo de cancelación <span style="color:#991b1b">*</span></label>
+    <textarea id="motivoCancelarPago" maxlength="1000" placeholder="Describe por qué se cancela este pago..."></textarea>
+    <div class="cancelar-pago-acciones">
+      <button type="button" id="btnCerrarModalCancelarPago">Regresar</button>
+      <button type="button" id="btnConfirmarCancelacionPago">Confirmar cancelación</button>
     </div>
   </div>
 </div>
@@ -4593,8 +4622,14 @@ const { data, error } =
     const search = document.getElementById("filtroTextoPagos");
     const status = document.getElementById("filtroEstatusPagos");
     const openButton = document.getElementById("opcionConsultarPagos");
+    const cancelModal = document.getElementById("modalCancelarPago");
+    const cancelSummary = document.getElementById("resumenCancelarPago");
+    const cancelReason = document.getElementById("motivoCancelarPago");
+    const confirmCancelButton = document.getElementById("btnConfirmarCancelacionPago");
     let pagosCache = [];
     let consultaEnCurso = false;
+    let pagoSeleccionado = null;
+    let cancelacionEnCurso = false;
 
     const money = (value) => new Intl.NumberFormat("es-MX", {style:"currency", currency:"MXN"}).format(Number(value || 0));
     const date = (value) => {
@@ -4611,6 +4646,30 @@ const { data, error } =
         return cell;
     }
 
+    function abrirModalCancelacion(pago) {
+        if (window.puedeOperarTesoreria !== true) {
+            alert("Tu perfil tiene permiso de consulta, pero no de cancelación de pagos.");
+            return;
+        }
+        if (!pago?.pago_id || String(pago.estatus || "").toLowerCase() !== "activo") return;
+        pagoSeleccionado = pago;
+        const folio = pago.folio == null ? "Sin folio" : String(pago.folio).padStart(4, "0");
+        const inmueble = `${text(pago.privada)}-${text(pago.casa)}`;
+        cancelSummary.textContent = `Folio: ${folio} · Residente: ${text(pago.residente)} · Inmueble: ${inmueble} · Importe: ${money(pago.monto)}`;
+        cancelReason.value = "";
+        confirmCancelButton.disabled = false;
+        confirmCancelButton.textContent = "Confirmar cancelación";
+        cancelModal.style.display = "flex";
+        setTimeout(() => cancelReason.focus(), 0);
+    }
+
+    function cerrarModalCancelacion() {
+        if (cancelacionEnCurso) return;
+        cancelModal.style.display = "none";
+        pagoSeleccionado = null;
+        cancelReason.value = "";
+    }
+
     function renderPayments() {
         const query = (search.value || "").trim().toLocaleLowerCase("es-MX");
         const selectedStatus = status.value;
@@ -4624,7 +4683,7 @@ const { data, error } =
         if (!filtered.length) {
             const row = document.createElement("tr");
             const cell = document.createElement("td");
-            cell.colSpan = 9;
+            cell.colSpan = 10;
             cell.textContent = pagosCache.length ? "No hay pagos que coincidan con los filtros." : "No hay pagos registrados para mostrar.";
             row.appendChild(cell);
             body.appendChild(row);
@@ -4639,7 +4698,7 @@ const { data, error } =
                 addCell(row, sinResidenteRegistrado
                     ? `${inmuebleLabel} · Sin residente registrado`
                     : `${text(p.residente)} · ${inmuebleLabel}`);
-                const conceptCell = addCell(row, `${text(p.concepto)}${p.obligaciones ? " | " + p.obligaciones : (p.periodo_mes && p.periodo_anio ? ` | ${p.periodo_mes}/${p.periodo_anio}` : "")}`);
+                addCell(row, `${text(p.concepto)}${p.obligaciones ? " | " + p.obligaciones : (p.periodo_mes && p.periodo_anio ? ` | ${p.periodo_mes}/${p.periodo_anio}` : "")}`);
                 addCell(row, money(p.monto));
                 addCell(row, p.metodo_pago);
                 addCell(row, p.referencia);
@@ -4651,6 +4710,19 @@ const { data, error } =
                 stateCell.appendChild(badge);
                 row.appendChild(stateCell);
                 addCell(row, p.observaciones);
+
+                const actionCell = document.createElement("td");
+                if (normalized === "activo" && window.puedeOperarTesoreria === true) {
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = "btn-cancelar-pago";
+                    button.textContent = "Cancelar pago";
+                    button.addEventListener("click", () => abrirModalCancelacion(p));
+                    actionCell.appendChild(button);
+                } else {
+                    actionCell.textContent = normalized === "cancelado" ? "Sin acciones" : "Solo consulta";
+                }
+                row.appendChild(actionCell);
                 body.appendChild(row);
             });
         }
@@ -4665,7 +4737,7 @@ const { data, error } =
         body.replaceChildren();
         const row = document.createElement("tr");
         const cell = document.createElement("td");
-        cell.colSpan = 9;
+        cell.colSpan = 10;
         cell.textContent = "Cargando…";
         row.appendChild(cell);
         body.appendChild(row);
@@ -4680,12 +4752,56 @@ const { data, error } =
             body.replaceChildren();
             const errorRow = document.createElement("tr");
             const errorCell = document.createElement("td");
-            errorCell.colSpan = 9;
+            errorCell.colSpan = 10;
             errorCell.textContent = error?.message || "Ocurrió un error al consultar los pagos.";
             errorRow.appendChild(errorCell);
             body.appendChild(errorRow);
         } finally {
             consultaEnCurso = false;
+        }
+    }
+
+    async function confirmarCancelacion() {
+        if (cancelacionEnCurso) return;
+        if (window.puedeOperarTesoreria !== true) {
+            alert("No tienes autorización para cancelar pagos.");
+            return;
+        }
+        const motivo = (cancelReason.value || "").trim();
+        if (!pagoSeleccionado?.pago_id) {
+            alert("No se identificó el pago que se desea cancelar.");
+            return;
+        }
+        if (!motivo) {
+            alert("Debes indicar el motivo de la cancelación.");
+            cancelReason.focus();
+            return;
+        }
+        const folio = pagoSeleccionado.folio == null ? "Sin folio" : String(pagoSeleccionado.folio).padStart(4, "0");
+        if (!window.confirm(`¿Confirmas la cancelación del pago con folio ${folio} por ${money(pagoSeleccionado.monto)}? Esta operación conservará el historial, pero no se puede deshacer desde esta pantalla.`)) return;
+
+        cancelacionEnCurso = true;
+        confirmCancelButton.disabled = true;
+        confirmCancelButton.textContent = "Cancelando…";
+        try {
+            const {data, error} = await supabaseClient.rpc("cancelar_pago_tesoreria", {
+                p_pago_id: pagoSeleccionado.pago_id,
+                p_observaciones: motivo
+            });
+            if (error) throw error;
+            const resultado = Array.isArray(data) ? data[0] : data;
+            cancelModal.style.display = "none";
+            pagoSeleccionado = null;
+            cancelReason.value = "";
+            await loadPayments();
+            alert(`El pago con folio ${resultado?.resultado_folio ?? folio} fue cancelado. Se revisaron ${resultado?.obligaciones_revertidas ?? 0} obligación(es) relacionada(s).`);
+        } catch (error) {
+            console.error("Error cancelando pago:", error);
+            alert(error?.message || "No fue posible cancelar el pago.");
+        } finally {
+            cancelacionEnCurso = false;
+            confirmCancelButton.disabled = false;
+            confirmCancelButton.textContent = "Confirmar cancelación";
         }
     }
 
@@ -4702,10 +4818,16 @@ const { data, error } =
     });
     document.getElementById("btnCerrarConsultaPagos")?.addEventListener("click", () => { modal.style.display = "none"; });
     document.getElementById("btnActualizarConsultaPagos")?.addEventListener("click", loadPayments);
+    document.getElementById("btnCerrarModalCancelarPago")?.addEventListener("click", cerrarModalCancelacion);
+    confirmCancelButton?.addEventListener("click", confirmarCancelacion);
     search?.addEventListener("input", renderPayments);
     status?.addEventListener("change", renderPayments);
     modal?.addEventListener("click", (event) => { if (event.target === modal) modal.style.display = "none"; });
-    document.addEventListener("keydown", (event) => { if (event.key === "Escape" && modal.style.display === "flex") modal.style.display = "none"; });
+    cancelModal?.addEventListener("click", (event) => { if (event.target === cancelModal) cerrarModalCancelacion(); });
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && cancelModal.style.display === "flex") cerrarModalCancelacion();
+        else if (event.key === "Escape" && modal.style.display === "flex") modal.style.display = "none";
+    });
 })();
 </script>
 
